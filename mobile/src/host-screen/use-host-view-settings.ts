@@ -2,12 +2,9 @@ import { useCallback, useEffect, useMemo } from 'react'
 import type { RpcClient } from '../transport/rpc-client'
 import type { ConnectionState, RpcSuccess } from '../transport/types'
 import { getMobileWorkspaceLineageGroupKey } from '../worktree/mobile-workspace-lineage'
-import { WORKSPACE_SORT_OPTIONS as SORT_OPTIONS } from '../worktree/workspace-list-picker-options'
 import {
   applyDesktopViewSettings,
   buildWorkspaceViewSettingsUpdate,
-  type MobileGroupMode,
-  type MobileSortMode,
   type MobileViewState,
   type WorkspaceViewSettings
 } from '../worktree/workspace-view-settings'
@@ -28,8 +25,6 @@ export function useHostViewSettings(args: {
     groupMode,
     setCollapsedGroups,
     setFilters,
-    setGroupMode,
-    setSortMode,
     setWorkspaceStatuses,
     sortMode,
     viewStateRef,
@@ -51,9 +46,8 @@ export function useHostViewSettings(args: {
 
   // Apply a MobileViewState onto the individual states and the snapshot ref in one shot.
   const applyViewState = useCallback((next: MobileViewState) => {
-    viewStateRef.current = next
-    setGroupMode(next.groupMode)
-    setSortMode(next.sortMode)
+    // Mobile keeps activity ordering and a flat list regardless of desktop preferences.
+    viewStateRef.current = { ...next, sortMode: 'smart', groupMode: 'none' }
     setWorkspaceStatuses(next.workspaceStatuses)
     setCollapsedGroups(new Set(next.collapsedGroups))
     setFilters({
@@ -108,13 +102,6 @@ export function useHostViewSettings(args: {
     }
   }, [client, connState, hostId, applyViewState])
 
-  const handleSortChange = useCallback(
-    (value: MobileSortMode) => {
-      persistViewSettings({ sortMode: value })
-    },
-    [persistViewSettings]
-  )
-
   const toggleHideSleeping = useCallback(() => {
     persistViewSettings({ hideSleeping: !viewStateRef.current.hideSleeping })
   }, [persistViewSettings])
@@ -151,16 +138,6 @@ export function useHostViewSettings(args: {
     count += filters.filterRepoIds.size
     return count
   }, [filters])
-  const selectedSortLabel =
-    SORT_OPTIONS.find((option) => option.value === sortMode)?.label ?? 'Recent'
-
-  const handleGroupChange = useCallback(
-    (value: MobileGroupMode) => {
-      persistViewSettings({ groupMode: value })
-    },
-    [persistViewSettings]
-  )
-
   const toggleCollapsed = useCallback(
     (key: string) => {
       const next = new Set(viewStateRef.current.collapsedGroups)
@@ -179,9 +156,6 @@ export function useHostViewSettings(args: {
   return {
     activeFilterCount,
     clearFilters,
-    handleGroupChange,
-    handleSortChange,
-    selectedSortLabel,
     syncViewSettingsFromDesktop,
     toggleCollapsed,
     toggleHideDefaultBranch,

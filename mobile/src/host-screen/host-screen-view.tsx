@@ -1,6 +1,7 @@
-import { Text, View } from 'react-native'
+import { KeyboardAvoidingView, Platform, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { hostScreenStyles as styles } from './host-screen-styles'
+import { HostWorkspaceToolbar } from './host-workspace-toolbar'
 import { HostScreenHeader } from './host-screen-header'
 import { HostScreenOverlays } from './host-screen-overlays'
 import { HostWorkspaceList } from './host-workspace-list'
@@ -17,8 +18,17 @@ export function HostScreenView({ controller }: { controller: HostScreenControlle
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <HostScreenHeader controller={controller} />
-      <HostWorkspaceList controller={controller} />
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={controller.insets.top}
+      >
+        <HostScreenHeader controller={controller} />
+        <View style={styles.workspaceList}>
+          <HostWorkspaceList controller={controller} />
+        </View>
+        <HostWorkspaceToolbar controller={controller} />
+      </KeyboardAvoidingView>
       <HostScreenOverlays controller={controller} />
     </SafeAreaView>
   )
