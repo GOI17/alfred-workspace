@@ -4,10 +4,8 @@ import { AuthFailedBanner } from '../components/AuthFailedBanner'
 import { HostDiagnosticsLink } from '../components/HostDiagnosticsLink'
 import { HostRouteNoticeBanner } from '../components/HostRouteNoticeBanner'
 import { MobileRepoIcon } from '../components/MobileRepoIcon'
-import { MobileSearchField } from '../components/MobileSearchField'
-import { NewWorkspaceFab, FAB_SIZE } from '../components/NewWorkspaceFab'
 import { WorktreeListRow } from '../components/WorktreeListRow'
-import { colors, spacing } from '../theme/mobile-theme'
+import { colors } from '../theme/mobile-theme'
 import { getWorktreeRowIdentity } from '../worktree/worktree-host-row-identity'
 import { HostWorkspaceListStates } from '../worktree/host-workspace-list-states'
 import { getWorktreeStatus } from '../worktree/workspace-list-sections'
@@ -26,7 +24,6 @@ export function HostWorkspaceList({ controller }: { controller: HostScreenContro
     embedded,
     forceReconnectHost,
     hostId,
-    insets,
     isReadOnly,
     isWideLayout,
     noticeParam,
@@ -73,21 +70,6 @@ export function HostWorkspaceList({ controller }: { controller: HostScreenContro
         />
       )}
 
-      {/* Search bar */}
-      {state.showSearch && (
-        <View style={styles.searchBar}>
-          <MobileSearchField
-            value={state.search}
-            onChangeText={state.setSearch}
-            placeholder="Search worktrees…"
-            autoFocus
-            // Why: new key per open remounts the focus effect across rapid toggles so the keyboard reappears.
-            focusKey={state.showSearch}
-            accessibilityLabel="Search worktrees"
-          />
-        </View>
-      )}
-
       <HostWorkspaceListStates
         connState={connState}
         worktreesLoaded={state.worktreesLoaded}
@@ -108,11 +90,9 @@ export function HostWorkspaceList({ controller }: { controller: HostScreenContro
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           onScrollToIndexFailed={activeWorktreeScroll.onScrollToIndexFailed}
-          // Why: edge-to-edge under the system nav bar; insets.bottom keeps the last row above it.
+          style={styles.workspaceList}
           contentContainerStyle={[
             styles.list,
-            // Reserve room so the last row stays tappable above the phone's floating "+" (embedded uses the toolbar +).
-            { paddingBottom: (embedded ? spacing.lg : FAB_SIZE + spacing.xl) + insets.bottom },
             isWideLayout &&
               !embedded && { maxWidth: contentMaxWidth, width: '100%', alignSelf: 'center' }
           ]}
@@ -180,14 +160,6 @@ export function HostWorkspaceList({ controller }: { controller: HostScreenContro
               onToggleLineage={settings.toggleWorktreeLineage}
             />
           )}
-        />
-      )}
-
-      {/* Floating "new workspace" button — phone only; embedded sidebars keep the toolbar +. */}
-      {!embedded && (
-        <NewWorkspaceFab
-          onPress={actions.openNewWorktreeModal}
-          disabled={connState !== 'connected'}
         />
       )}
     </>

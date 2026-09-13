@@ -43,15 +43,14 @@ export function useHostScreenState(hostId: string | undefined, action: string | 
   const [error, setError] = useState('')
   const [lastKnownWorktrees, setLastKnownWorktrees] = useState<Worktree[]>(initialCache ?? [])
   const [search, setSearch] = useState('')
-  const [showSearch, setShowSearch] = useState(false)
-  const [sortMode, setSortMode] = useState<MobileSortMode>('recent')
+  const [sortMode] = useState<MobileSortMode>('smart')
   const [filters, setFilters] = useState<FilterState>({
     filterRepoIds: new Set(),
     hideSleeping: false,
     hideDefaultBranch: false,
     alwaysShowDefaultBranch: true
   })
-  const [groupMode, setGroupMode] = useState<MobileGroupMode>('repo')
+  const [groupMode] = useState<MobileGroupMode>('none')
   const [workspaceStatuses, setWorkspaceStatuses] = useState<readonly WorkspaceStatusDefinition[]>(
     DEFAULT_MOBILE_WORKSPACE_STATUSES
   )
@@ -63,8 +62,6 @@ export function useHostScreenState(hostId: string | undefined, action: string | 
   )
   const [hostLabelById, setHostLabelById] = useState<Map<ExecutionHostId, string>>(new Map())
   const [hostPlatform, setHostPlatform] = useState<NodeJS.Platform | null>(null)
-  const [showSortPicker, setShowSortPicker] = useState(false)
-  const [showGroupPicker, setShowGroupPicker] = useState(false)
   const [showFilterModal, setShowFilterModal] = useState(false)
   const [actionTarget, setActionTarget] = useState<Worktree | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<Worktree | null>(null)
@@ -77,8 +74,8 @@ export function useHostScreenState(hostId: string | undefined, action: string | 
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
   // Why: ref so the ui.get merge and ui.set writes read the latest values without re-creating callbacks on every state change.
   const viewStateRef = useRef<MobileViewState>({
-    groupMode: 'repo',
-    sortMode: 'recent',
+    groupMode: 'none',
+    sortMode: 'smart',
     hideSleeping: false,
     hideDefaultBranch: false,
     alwaysShowDefaultBranch: true,
@@ -122,7 +119,6 @@ export function useHostScreenState(hostId: string | undefined, action: string | 
     setConfirmRemoveHost,
     setError,
     setFilters,
-    setGroupMode,
     setHostLabelById,
     setHostName,
     setHostPlatform,
@@ -136,18 +132,11 @@ export function useHostScreenState(hostId: string | undefined, action: string | 
     setRouteActionState,
     setSearch,
     setShowFilterModal,
-    setShowGroupPicker,
-    setShowSearch,
-    setShowSortPicker,
     setSleptIds,
-    setSortMode,
     setWorkspaceStatuses,
     setWorktrees,
     setWorktreesLoaded,
     showFilterModal,
-    showGroupPicker,
-    showSearch,
-    showSortPicker,
     sleptIds,
     sortMode,
     viewStateRef,

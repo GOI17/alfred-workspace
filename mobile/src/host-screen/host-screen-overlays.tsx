@@ -5,14 +5,9 @@ import { ActionSheetContent } from '../components/ActionSheetModal'
 import { BottomDrawer } from '../components/BottomDrawer'
 import { ConfirmModal } from '../components/ConfirmModal'
 import { NewWorktreeModalController } from '../components/NewWorktreeModalController'
-import { PickerModal } from '../components/PickerModal'
 import { colors } from '../theme/mobile-theme'
 import { hostNewWorktreeSessionRoute } from '../host-route-action-state'
 import { getWorktreeRowIdentity } from '../worktree/worktree-host-row-identity'
-import {
-  WORKSPACE_GROUP_OPTIONS as GROUP_OPTIONS,
-  WORKSPACE_SORT_OPTIONS as SORT_OPTIONS
-} from '../worktree/workspace-list-picker-options'
 import { isWorktreePinned } from '../worktree/workspace-list-sections'
 import { hostScreenStyles as styles } from './host-screen-styles'
 import type { HostScreenController } from './use-host-screen-controller'
@@ -33,24 +28,6 @@ export function HostScreenOverlays({ controller }: { controller: HostScreenContr
 
   return (
     <>
-      <PickerModal
-        visible={state.showSortPicker}
-        title="Sort By"
-        options={SORT_OPTIONS}
-        selected={state.sortMode}
-        onSelect={settings.handleSortChange}
-        onClose={() => state.setShowSortPicker(false)}
-      />
-
-      <PickerModal
-        visible={state.showGroupPicker}
-        title="Group By"
-        options={GROUP_OPTIONS}
-        selected={state.groupMode}
-        onSelect={settings.handleGroupChange}
-        onClose={() => state.setShowGroupPicker(false)}
-      />
-
       <BottomDrawer visible={state.showFilterModal} onClose={() => state.setShowFilterModal(false)}>
         <View style={styles.filterModalHeader}>
           <Text style={styles.filterModalTitle}>Filter</Text>
