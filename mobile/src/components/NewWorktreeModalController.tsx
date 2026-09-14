@@ -11,6 +11,7 @@ type Props = {
   routeVisible: boolean
   client: RpcClient | null
   hostId?: string
+  hostLabel?: string
   existingWorktreePaths?: readonly string[]
   existingWorktrees?: readonly { repoId: string; branch: string }[]
   openExternalUrl: (url: string) => Promise<unknown>
@@ -25,6 +26,7 @@ export const NewWorktreeModalController = forwardRef<NewWorktreeModalControllerH
       routeVisible,
       client,
       hostId,
+      hostLabel,
       existingWorktreePaths,
       existingWorktrees,
       openExternalUrl,
@@ -61,6 +63,7 @@ export const NewWorktreeModalController = forwardRef<NewWorktreeModalControllerH
         visible={visible}
         client={client}
         hostId={hostId}
+        hostLabel={hostLabel}
         existingWorktreePaths={existingWorktreePaths}
         existingWorktrees={existingWorktrees}
         openExternalUrl={openExternalUrl}

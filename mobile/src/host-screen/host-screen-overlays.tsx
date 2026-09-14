@@ -190,6 +190,7 @@ export function HostScreenOverlays({ controller }: { controller: HostScreenContr
         routeVisible={showNewWorktree}
         client={client}
         hostId={hostId}
+        hostLabel={state.hostName}
         existingWorktreePaths={existingWorktreePaths}
         existingWorktrees={state.worktrees}
         openExternalUrl={(url) => Linking.openURL(url)}

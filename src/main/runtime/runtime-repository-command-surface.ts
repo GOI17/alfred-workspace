@@ -56,6 +56,9 @@ export type RuntimeRepositoryCommandSurface = {
   isGitAvailable: RuntimeServerEnvironmentCommands['isGitAvailable']
   listSparsePresets: RuntimeRepositorySparsePresets['list']
   saveSparsePreset: RuntimeRepositorySparsePresets['save']
+  addRemoteRepo: RuntimeRepositoryRegistrationController['addRemote']
+  createRemoteRepo: RuntimeRepositoryRegistrationController['createRemote']
+  cloneRemoteRepo: RuntimeRepositoryCloneController['cloneRemote']
   addRepo: RuntimeRepositoryRegistrationController['add']
   createRepo: RuntimeRepositoryRegistrationController['create']
   cloneRepo: RuntimeRepositoryCloneController['clone']
@@ -131,6 +134,9 @@ export function installRuntimeRepositoryCommandSurface(
     isGitAvailable: server.isGitAvailable.bind(server),
     listSparsePresets: sparse.list.bind(sparse),
     saveSparsePreset: sparse.save.bind(sparse),
+    addRemoteRepo: registrations.addRemote.bind(registrations),
+    createRemoteRepo: registrations.createRemote.bind(registrations),
+    cloneRemoteRepo: clones.cloneRemote.bind(clones),
     addRepo: registrations.add.bind(registrations),
     createRepo: registrations.create.bind(registrations),
     cloneRepo: clones.clone.bind(clones),

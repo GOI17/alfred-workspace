@@ -1,4 +1,3 @@
-import type { Store } from '../../persistence'
 import type { Repo } from '../../../shared/repo-types'
 import {
   isRuntimePathAbsolute,
@@ -9,11 +8,11 @@ import { getSshGitProvider } from '../../providers/ssh-git-dispatch'
 import { getSshFilesystemProvider } from '../../providers/ssh-filesystem-dispatch'
 import { joinRemotePath } from '../../ssh/ssh-remote-platform'
 import { emitRepoAdded } from './repo-added-telemetry'
-import { addRemoteRepoFromPath } from './remote-repo-registration'
+import { addRemoteRepoFromPath, type RemoteRepoStore } from './remote-repo-registration'
 import { resolveRemoteHomePath } from './remote-home-path'
 
 export async function createRemoteRepo(
-  store: Store,
+  store: RemoteRepoStore,
   args: {
     connectionId: string
     parentPath: string

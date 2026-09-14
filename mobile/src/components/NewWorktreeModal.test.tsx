@@ -43,7 +43,8 @@ vi.mock('./PickerListDrawer', () => ({ PickerListDrawer: 'PickerListDrawer' }))
 vi.mock('./MobileAgentIcon', () => ({ MobileAgentIcon: 'MobileAgentIcon' }))
 vi.mock('./TaskProviderLogo', () => ({ TaskProviderLogo: 'TaskProviderLogo' }))
 
-import { setCachedRepos } from '../cache/repo-cache'
+import { AddProjectDrawer } from './AddProjectDrawer'
+import { getCachedRepos, setCachedRepos } from '../cache/repo-cache'
 import { getLocalExecutionHostLabel } from '../../../src/shared/execution-host'
 import { NewWorktreeModal } from './NewWorktreeModal'
 
@@ -129,6 +130,111 @@ describe('NewWorktreeModal project targets', () => {
     expect(pickerItems(renderer, 'Run on')).toEqual([
       expect.objectContaining({ label: LOCAL_HOST_LABEL, detail: '/src/orca' })
     ])
+  })
+
+  it('adds and selects a project from the picker, preserving it across an older list reply', async () => {
+    let resolveList: (value: {
+      id: string
+      ok: true
+      result: { repos: typeof repos }
+    }) => void = () => {}
+    const client: RpcClient = {
+      sendRequest: vi.fn().mockImplementation((method: string) =>
+        method === 'repo.list'
+          ? new Promise((resolve) => {
+              resolveList = resolve
+            })
+          : new Promise(() => {})
+      ),
+      subscribe: () => () => {},
+      updateTerminalSubscriptionViewport: () => {},
+      getState: () => 'connected',
+      getReconnectAttempt: () => 0,
+      getLastConnectedAt: () => null,
+      onStateChange: () => () => {},
+      notifyForeground: () => {},
+      close: () => {}
+    }
+    await act(async () => {
+      renderer = create(
+        createElement(NewWorktreeModal, {
+          visible: true,
+          client,
+          hostId: 'host-1',
+          openExternalUrl: async () => {},
+          onCreated: () => {},
+          onClose: () => {}
+        })
+      )
+    })
+    const picker = renderer.root
+      .findAll((node) => node.type === 'PickerListDrawer')
+      .find((node) => node.props.title === 'Project')!
+    expect(picker.props.action.label).toBe('Add project')
+    vi.useFakeTimers()
+    try {
+      act(() => picker.props.action.onPress())
+      act(() => vi.advanceTimersByTime(500))
+      const drawer = renderer.root.findByType(AddProjectDrawer)
+      expect(drawer.props.visible).toBe(true)
+      const added = {
+        id: 'new-project',
+        displayName: 'notes',
+        path: '/home/dev/notes',
+        kind: 'folder' as const
+      }
+      act(() => drawer.props.onAdded(added))
+      act(() => vi.advanceTimersByTime(500))
+      expect(pickerItems(renderer, 'Project').map((item) => item.label)).toEqual(['orca', 'notes'])
+      expect(pickerItems(renderer, 'Run on')).toEqual([
+        expect.objectContaining({ detail: added.path })
+      ])
+      await act(async () => {
+        resolveList({ id: 'test', ok: true, result: { repos } })
+      })
+      expect(pickerItems(renderer, 'Run on')).toEqual([
+        expect.objectContaining({ detail: added.path })
+      ])
+      expect(getCachedRepos('host-1')).toContainEqual(added)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('keeps the project picker available before the first project is added', async () => {
+    setCachedRepos('empty-host', [])
+    await act(async () => {
+      renderer = create(
+        createElement(NewWorktreeModal, {
+          visible: true,
+          client: null,
+          hostId: 'empty-host',
+          openExternalUrl: async () => {},
+          onCreated: () => {},
+          onClose: () => {}
+        })
+      )
+    })
+    const select = renderer.root
+      .findAll((node) => node.type === 'Pressable')
+      .find((node) =>
+        node
+          .findAll((child) => child.type === 'Text')
+          .some((child) => child.props.children === 'Select a project')
+      )!
+    expect(select).toBeDefined()
+    vi.useFakeTimers()
+    try {
+      act(() => select.props.onPress())
+      act(() => vi.advanceTimersByTime(500))
+      const picker = renderer.root
+        .findAll((node) => node.type === 'PickerListDrawer')
+        .find((node) => node.props.title === 'Project')!
+      expect(picker.props.visible).toBe(true)
+      expect(picker.props.action.label).toBe('Add project')
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('groups same-name checkouts under one project with separate run targets', async () => {

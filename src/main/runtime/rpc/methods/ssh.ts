@@ -1,4 +1,5 @@
 import {
+  getSshConnectionManager,
   connectRegisteredSshTarget,
   getRegisteredSshState,
   listRegisteredRemovedSshTargetLabels,
@@ -7,7 +8,8 @@ import {
 import { defineMethod } from '../core'
 import { getPublicSshError, getPublicSshState } from '../../public-ssh-state'
 import type { SshTargetSummary } from '../../../../shared/ssh-types'
-import { SshTarget } from '../../../../shared/rpc-contract/ssh-params'
+import { browseSshDirectory } from '../../../ssh/ssh-directory-browse'
+import { SshTarget, SshBrowseDirectory } from '../../../../shared/rpc-contract/ssh-params'
 
 // Why: `generation` stays optional on the wire — an old server simply omits it and its rows key on target id alone.
 function listRegisteredSshTargetSummaries(): SshTargetSummary[] {
@@ -26,6 +28,17 @@ function listRegisteredSshTargetSummaries(): SshTargetSummary[] {
 }
 
 export const SSH_METHODS = [
+  defineMethod({
+    name: 'ssh.browseDir',
+    params: SshBrowseDirectory,
+    handler: (params) => {
+      const connection = getSshConnectionManager()?.getConnection(params.targetId)
+      if (!connection) {
+        throw new Error('SSH host is not connected')
+      }
+      return browseSshDirectory(connection, params.dirPath)
+    }
+  }),
   defineMethod({
     name: 'ssh.getState',
     params: SshTarget,

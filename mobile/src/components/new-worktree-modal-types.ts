@@ -21,6 +21,7 @@ export type NewWorktreeModalProps = {
   visible: boolean
   client: RpcClient | null
   hostId?: string
+  hostLabel?: string
   existingWorktreePaths?: readonly string[]
   existingWorktrees?: readonly { repoId: string; branch: string }[]
   openExternalUrl: (url: string) => Promise<unknown>

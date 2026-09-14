@@ -415,6 +415,9 @@ import {
   ProjectGroupScanNested,
   ProjectGroupSelector,
   ProjectGroupUpdate,
+  RemoteRepoClone,
+  RemoteRepoCreate,
+  RemoteRepoPath,
   RepoClone,
   RepoCreate,
   RepoIssueCommandWrite,
@@ -452,7 +455,7 @@ import {
   DictationStart,
   SpeechModelAction
 } from './speech-params'
-import { SshTarget } from './ssh-params'
+import { SshBrowseDirectory, SshTarget } from './ssh-params'
 import {
   AttachParams,
   CancelParams,
@@ -1014,9 +1017,12 @@ export const RPC_PARAMS_BY_METHOD = {
   'projectHostSetup.setupExistingFolder': ProjectHostSetupExistingFolder,
   'projectHostSetup.update': ProjectHostSetupUpdate,
   'repo.add': RepoPath,
+  'repo.addRemote': RemoteRepoPath,
   'repo.baseRefDefault': RepoSelector,
   'repo.clone': RepoClone,
+  'repo.cloneRemote': RemoteRepoClone,
   'repo.create': RepoCreate,
+  'repo.createRemote': RemoteRepoCreate,
   'repo.gitAvailable': null,
   'repo.hooks': RepoSelector,
   'repo.hooksCheck': RepoSelector,
@@ -1077,6 +1083,7 @@ export const RPC_PARAMS_BY_METHOD = {
   'speech.models.delete': SpeechModelAction,
   'speech.models.download': SpeechModelAction,
   'speech.models.list': null,
+  'ssh.browseDir': SshBrowseDirectory,
   'ssh.connect': SshTarget,
   'ssh.getState': SshTarget,
   'ssh.listRemovedTargetLabels': null,
