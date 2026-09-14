@@ -6,6 +6,7 @@ import { pickWorkspaceAgent } from '../tasks/workspace-agent-selection'
 export type NewWorktreeRuntimeSettings = {
   defaultTuiAgent?: TuiAgent | 'blank' | null
   disabledTuiAgents?: TuiAgent[]
+  workspaceDir?: string
 }
 
 export type NewWorktreeAgentOption = {

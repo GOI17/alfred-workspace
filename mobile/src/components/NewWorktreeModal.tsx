@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Keyboard } from 'react-native'
 import { getComposerRepoWorktreeBranches } from '../../../src/shared/composer-branch-selection'
 import { getProjectIdentityKey } from '../../../src/shared/project-host-setup-projection'
@@ -65,12 +65,15 @@ function NewWorktreeModalContent(props: NewWorktreeModalProps) {
     onCreated,
     onClose
   } = props
-  const { repos, selectedRepo, setSelectedRepo, loading } = useNewWorkspaceRepositories({
-    client,
-    hostId,
-    visible
-  })
+  const { repos, selectedRepo, setSelectedRepo, loading, upsertRepo } = useNewWorkspaceRepositories(
+    {
+      client,
+      hostId,
+      visible
+    }
+  )
   const navigation = useNewWorktreeDrawerNavigation(visible)
+  const addProjectBackRef = useRef<(() => void) | null>(null)
   const [note, setNote] = useState('')
   const [error, setError] = useState('')
   const runtime = useNewWorkspaceRuntimeContext(client, visible, hostId)
@@ -191,6 +194,8 @@ function NewWorktreeModalContent(props: NewWorktreeModalProps) {
   function requestClose(): void {
     if (navigation.drawerView === 'form') {
       onClose()
+    } else if (navigation.drawerView === 'addProject') {
+      addProjectBackRef.current?.()
     } else if (navigation.drawerView === 'trust') {
       createSubmit.closeSetupTrust()
     } else {
@@ -242,6 +247,8 @@ function NewWorktreeModalContent(props: NewWorktreeModalProps) {
       <NewWorktreeModalDrawers
         visible={visible}
         drawerView={navigation.drawerView}
+        hostLabel={props.hostLabel}
+        defaultParent={runtime.runtimeSettings?.workspaceDir}
         client={client}
         composer={composer}
         sourceAvailability={sourceAvailability}
@@ -256,6 +263,14 @@ function NewWorktreeModalContent(props: NewWorktreeModalProps) {
         selectedAgent={agentSelection.selectedAgent}
         setupTrustPrompt={createSubmit.setupTrustPrompt}
         creating={createSubmit.creating}
+        addProjectBackRef={addProjectBackRef}
+        onOpenAddProject={() => navigation.transitionDrawer('addProject')}
+        onCloseAddProject={() => navigation.transitionDrawer('project')}
+        onProjectAdded={(repo) => {
+          upsertRepo(repo)
+          selectRepo(repo, true)
+          navigation.transitionDrawer('form')
+        }}
         onSourceRepoChange={(repo) => selectRepo(repo, false)}
         onRepoChange={(repo) => selectRepo(repo, true)}
         onAgentChange={(agent) => {

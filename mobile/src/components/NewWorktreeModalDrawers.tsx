@@ -1,3 +1,5 @@
+import type { RefObject } from 'react'
+import { AddProjectDrawer } from './AddProjectDrawer'
 import { View } from 'react-native'
 import { Monitor } from 'lucide-react-native'
 import type { SmartModeAvailabilityInput } from '../tasks/mobile-smart-source-modes'
@@ -22,6 +24,9 @@ type Composer = ReturnType<typeof useMobileComposerSource>
 
 export function NewWorktreeModalDrawers(props: {
   visible: boolean
+  addProjectBackRef: RefObject<(() => void) | null>
+  hostLabel?: string
+  defaultParent?: string
   drawerView: NewWorktreeDrawerView
   client: Parameters<typeof SmartWorkspaceSourceDrawer>[0]['client']
   composer: Composer
@@ -37,6 +42,9 @@ export function NewWorktreeModalDrawers(props: {
   selectedAgent: NewWorktreeAgentOption
   setupTrustPrompt: SetupTrustPrompt | null
   creating: boolean
+  onOpenAddProject: () => void
+  onCloseAddProject: () => void
+  onProjectAdded: (repo: MobileWorkspaceRepo) => void
   onSourceRepoChange: (repo: MobileWorkspaceRepo) => void
   onRepoChange: (repo: MobileWorkspaceRepo) => void
   onAgentChange: (agent: NewWorktreeAgentOption) => void
@@ -47,6 +55,15 @@ export function NewWorktreeModalDrawers(props: {
 }) {
   return (
     <>
+      <AddProjectDrawer
+        backHandlerRef={props.addProjectBackRef}
+        visible={props.visible && props.drawerView === 'addProject'}
+        client={props.client}
+        hostLabel={props.hostLabel}
+        defaultParent={props.defaultParent}
+        onAdded={props.onProjectAdded}
+        onClose={props.onCloseAddProject}
+      />
       <SmartWorkspaceSourceDrawer
         visible={props.visible && props.drawerView === 'source'}
         client={props.client}
@@ -67,6 +84,7 @@ export function NewWorktreeModalDrawers(props: {
       <PickerListDrawer
         visible={props.visible && props.drawerView === 'project'}
         title="Project"
+        action={{ label: 'Add project', onPress: props.onOpenAddProject }}
         items={props.projectPickerItems}
         selectedId={props.selectedProjectId ?? ''}
         onSelect={(item) => props.onRepoChange(item.repo)}

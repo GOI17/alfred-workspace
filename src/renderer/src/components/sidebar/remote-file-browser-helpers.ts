@@ -2,12 +2,7 @@ import { translate } from '@/i18n/i18n'
 import { shouldHandleTextControlPaste } from '@/lib/text-control-paste'
 import { isClipboardTextByteLengthOverLimit } from '../../../../shared/clipboard-text'
 import type { FilesystemPathFlavor } from '../../../../shared/filesystem-entry-types'
-import {
-  driveRootOf,
-  isDrivePath,
-  joinDrivePath,
-  parentOfDrivePath
-} from './remote-file-browser-drive-paths'
+import { driveRootOf, isDrivePath } from './remote-file-browser-drive-paths'
 export type DirEntry = {
   name: string
   isDirectory: boolean
@@ -61,31 +56,7 @@ export function decideEscAction(filter: string): EscAction {
   return filter.length > 0 ? { type: 'clearFilter' } : { type: 'cancel' }
 }
 
-export function joinPath(
-  resolvedPath: string,
-  name: string,
-  pathFlavor: FilesystemPathFlavor = 'posix'
-): string {
-  // Drive rows in a Windows host-root listing are already absolute (`M:\`).
-  if (pathFlavor === 'win32' && resolvedPath === '/' && isDrivePath(name)) {
-    return driveRootOf(name)
-  }
-  if (pathFlavor === 'win32' && isDrivePath(resolvedPath)) {
-    return joinDrivePath(resolvedPath, name)
-  }
-  return resolvedPath === '/' ? `/${name}` : `${resolvedPath}/${name}`
-}
-
-export function parentPath(p: string, pathFlavor: FilesystemPathFlavor = 'posix'): string {
-  if (pathFlavor === 'win32' && isDrivePath(p)) {
-    return parentOfDrivePath(p)
-  }
-  if (p === '/' || p === '') {
-    return '/'
-  }
-  const parent = p.replace(/\/[^/]+\/?$/, '')
-  return parent || '/'
-}
+export { joinPath, parentPath } from '../../../../shared/server-directory-paths'
 
 // ---------- Path-aware filter parsing ----------
 

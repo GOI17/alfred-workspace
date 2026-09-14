@@ -12,9 +12,9 @@ import { deriveCloneRepoNameFromUrl } from '../../git/repo-clone-path'
 import { getSshGitProvider } from '../../providers/ssh-git-dispatch'
 import { getSshFilesystemProvider } from '../../providers/ssh-filesystem-dispatch'
 import { joinRemotePath } from '../../ssh/ssh-remote-platform'
-import { getActiveMultiplexer } from '../ssh'
+import { getActiveMultiplexer } from '../../ssh/ssh-target-registry'
 import { emitRepoAdded } from './repo-added-telemetry'
-import { addRemoteRepoFromPath } from './remote-repo-registration'
+import { addRemoteRepoFromPath, type RemoteRepoStore } from './remote-repo-registration'
 import { resolveRemoteHomePath } from './remote-home-path'
 
 type ActiveRemoteCloneMetadata = {
@@ -27,8 +27,8 @@ let activeRemoteClone: ActiveRemoteCloneMetadata | null = null
 const remoteCloneInFlightByPath = new Set<string>()
 
 export async function cloneRemoteRepo(
-  store: Store,
-  mainWindow: BrowserWindow,
+  store: RemoteRepoStore & Pick<Store, 'updateRepo'>,
+  mainWindow: BrowserWindow | null,
   args: {
     connectionId: string
     url: string
@@ -91,7 +91,7 @@ export async function cloneRemoteRepo(
         signal: controller.signal,
         timeoutMs: 10 * 60_000,
         onProgress: (progress) => {
-          if (!mainWindow.isDestroyed()) {
+          if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send('repos:clone-progress', progress)
           }
         }

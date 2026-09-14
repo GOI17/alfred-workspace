@@ -9,8 +9,11 @@ import { detectRepoIconAndUpstream } from '../../repo-icon-autodetect'
 import { getActiveMultiplexer } from '../../ssh/ssh-target-registry'
 import { resolveRemoteHomePath } from './remote-home-path'
 
+export type RemoteRepoStore = Pick<Store, 'getRepos' | 'addRepo'> &
+  Partial<Pick<Store, 'getSshTarget'>>
+
 export async function addRemoteRepoFromPath(
-  store: Store,
+  store: RemoteRepoStore,
   args: {
     connectionId: string
     remotePath: string
@@ -75,7 +78,7 @@ export async function addRemoteRepoFromPath(
   const folderName = getRemoteRepoFolderName(resolvedPath)
   let displayName = args.displayName || folderName
   if (!args.displayName && (args.remotePath === '~' || args.remotePath === '~/')) {
-    const sshTarget = store.getSshTarget(args.connectionId)
+    const sshTarget = store.getSshTarget?.(args.connectionId)
     if (sshTarget) {
       displayName = sshTarget.label
     }

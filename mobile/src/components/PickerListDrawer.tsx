@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
-import { Check } from 'lucide-react-native'
+import { Check, Plus } from 'lucide-react-native'
 
 import { colors, spacing, typography } from '../theme/mobile-theme'
 import { BottomDrawer } from './BottomDrawer'
@@ -15,6 +15,7 @@ type Props<T extends PickerListItem> = {
   selectedId: string
   onSelect: (item: T) => void
   onClose: () => void
+  action?: { label: string; onPress: () => void }
   renderIcon?: (item: T) => ReactNode
 }
 
@@ -25,7 +26,8 @@ export function PickerListDrawer<T extends PickerListItem>({
   selectedId,
   onSelect,
   onClose,
-  renderIcon
+  renderIcon,
+  action
 }: Props<T>) {
   const [closing, setClosing] = useState(false)
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -107,6 +109,17 @@ export function PickerListDrawer<T extends PickerListItem>({
           )
         }}
       />
+      {action ? (
+        <Pressable
+          accessibilityRole="button"
+          style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
+          disabled={closing}
+          onPress={action.onPress}
+        >
+          <Plus size={16} color={colors.textPrimary} />
+          <Text style={styles.itemText}>{action.label}</Text>
+        </Pressable>
+      ) : null}
     </BottomDrawer>
   )
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { RpcClient } from '../transport/rpc-client'
 import type { RpcSuccess } from '../transport/types'
 import { getCachedRepos, setCachedRepos } from '../cache/repo-cache'
@@ -19,11 +19,13 @@ export function useNewWorkspaceRepositories(args: {
   selectedRepo: MobileWorkspaceRepo | null
   setSelectedRepo: (repo: MobileWorkspaceRepo | null) => void
   loading: boolean
+  upsertRepo: (repo: MobileWorkspaceRepo) => void
 } {
   const { client, hostId, visible } = args
   const [initialRepos] = useState(() =>
     hostId ? (getCachedRepos(hostId) as MobileWorkspaceRepo[] | null) : null
   )
+  const addedRepos = useRef(new Map<string, MobileWorkspaceRepo>())
   const [repos, setRepos] = useState<MobileWorkspaceRepo[]>(initialRepos ?? [])
   const [selectedRepo, setSelectedRepo] = useState<MobileWorkspaceRepo | null>(null)
   const [loading, setLoading] = useState(initialRepos == null)
@@ -57,12 +59,18 @@ export function useNewWorkspaceRepositories(args: {
           return
         }
         const result = (response as RpcSuccess).result as { repos: MobileWorkspaceRepo[] }
-        setRepos(result.repos)
+        // Keep additions made while this list request was in flight.
+        const nextRepos = [
+          ...result.repos.filter((repo) => !addedRepos.current.has(repo.id)),
+          ...addedRepos.current.values()
+        ]
+        addedRepos.current.clear()
+        setRepos(nextRepos)
         if (hostId) {
-          setCachedRepos(hostId, result.repos)
+          setCachedRepos(hostId, nextRepos)
         }
         setSelectedRepo((current) =>
-          refreshMobileNewWorkspaceDialogSelectedRepo(result.repos, current)
+          refreshMobileNewWorkspaceDialogSelectedRepo(nextRepos, current)
         )
       })
       .catch(() => undefined)
@@ -76,5 +84,19 @@ export function useNewWorkspaceRepositories(args: {
     }
   }, [visible, client, hostId])
 
-  return { repos, selectedRepo, setSelectedRepo, loading: loading && repos.length === 0 }
+  function upsertRepo(repo: MobileWorkspaceRepo): void {
+    addedRepos.current.set(repo.id, repo)
+    setRepos((current) => [...current.filter((entry) => entry.id !== repo.id), repo])
+    if (hostId) {
+      setCachedRepos(hostId, [...repos.filter((entry) => entry.id !== repo.id), repo])
+    }
+  }
+
+  return {
+    upsertRepo,
+    repos,
+    selectedRepo,
+    setSelectedRepo,
+    loading: loading && repos.length === 0
+  }
 }

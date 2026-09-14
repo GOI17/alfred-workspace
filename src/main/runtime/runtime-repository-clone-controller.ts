@@ -1,3 +1,4 @@
+import { cloneRemoteRepo } from '../ipc/repos/remote-repo-clone'
 import { randomUUID } from 'node:crypto'
 import { mkdir } from 'node:fs/promises'
 import { DEFAULT_REPO_BADGE_COLOR } from '../../shared/constants'
@@ -184,6 +185,17 @@ export class RuntimeRepositoryCloneController {
     invalidateAuthorizedRootsCache()
     this.invalidate(repo.id)
     return store.getRepo(repo.id) ?? repo
+  }
+
+  async cloneRemote(args: Parameters<typeof cloneRemoteRepo>[2]): Promise<Repo> {
+    const store = this.deps.getStore()
+    if (!store) {
+      throw new Error('runtime_unavailable')
+    }
+    const repo = await cloneRemoteRepo(store, null, args)
+    invalidateAuthorizedRootsCache()
+    this.invalidate(repo.id)
+    return repo
   }
 
   private invalidate(repoId: string): void {

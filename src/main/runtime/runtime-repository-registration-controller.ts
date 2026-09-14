@@ -1,3 +1,5 @@
+import { addRemoteRepoFromPath } from '../ipc/repos/remote-repo-registration'
+import { createRemoteRepo } from '../ipc/repos/remote-repo-creation'
 import { randomUUID } from 'node:crypto'
 import { mkdir, readdir, rm, stat } from 'node:fs/promises'
 import { isAbsolute, join } from 'node:path'
@@ -26,6 +28,27 @@ type RuntimeRepositoryRegistrationDependencies = {
 
 export class RuntimeRepositoryRegistrationController {
   constructor(private readonly deps: RuntimeRepositoryRegistrationDependencies) {}
+
+  async addRemote(args: Parameters<typeof addRemoteRepoFromPath>[1]): Promise<Repo> {
+    const result = await addRemoteRepoFromPath(this.requireStore(), args)
+    if ('error' in result) {
+      throw new Error(result.error)
+    }
+    invalidateAuthorizedRootsCache()
+    this.invalidate(result.repo.id)
+    return result.repo
+  }
+
+  async createRemote(
+    args: Parameters<typeof createRemoteRepo>[1]
+  ): Promise<{ repo: Repo } | { error: string }> {
+    const result = await createRemoteRepo(this.requireStore(), args)
+    if ('repo' in result) {
+      invalidateAuthorizedRootsCache()
+      this.invalidate(result.repo.id)
+    }
+    return result
+  }
 
   async add(
     path: string,

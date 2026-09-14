@@ -69,6 +69,13 @@ export function NewWorktreeFormSheet(props: {
       ) : !props.hasRepos ? (
         <View style={styles.loadingContainer}>
           <Text style={styles.emptyText}>No projects found</Text>
+          <Pressable
+            accessibilityRole="button"
+            style={styles.advancedToggle}
+            onPress={props.onOpenProject}
+          >
+            <Text style={styles.advancedText}>Select a project</Text>
+          </Pressable>
         </View>
       ) : (
         <>
