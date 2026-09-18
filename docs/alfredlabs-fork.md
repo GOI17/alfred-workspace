@@ -7,6 +7,19 @@ the initial audit, not a completed rebrand or a release-ready independent build.
 The preparation branch starts from upstream commit
 `f24f38bd4105753adb0d8e24132c2fc57f80f5c6` on `origin/main`.
 
+## Established repository
+
+The public GitHub repository is independent of the upstream fork network and
+retains the source history leading to the base commit. Its default branch is
+`main`. The initial Alfredlabs changes are in commit `73c0fc9d37`.
+
+The local checkout has its own `.git` directory. `origin` points to
+`GOI17/alfred-workspace`; `orca-source` points to the original repository for
+explicit source reads, with a disabled push URL. The default push target is
+`origin`. These settings do not alter the original Orca checkout or its worktrees.
+Inherited GitHub Actions are disabled at the repository level until their
+release and service configuration is adapted.
+
 ## Attribution and identity
 
 Keep the original [MIT license](../LICENSE), including the Lovecast Inc.

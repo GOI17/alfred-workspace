@@ -10,8 +10,8 @@ Alfredlabs determines the product direction, development priorities, and release
 
 ## Current status
 
-The fork is being established. This branch contains the initial attribution and
-migration inventory. The application still contains inherited Orca branding,
+The public repository is established with its source history, initial attribution,
+and migration inventory. The application still contains inherited Orca branding,
 identifiers, and service configuration; it is not yet an independent Alfredlabs
 release. No Alfred Workspace download or hosted service is advertised here.
 
