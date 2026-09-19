@@ -91,6 +91,7 @@ const EXPECTED_PACKAGING_JOBS = [
   'daily-mac-build.yml build-daily-mac',
   'dev-channel-win-build.yml build-win',
   'hourly-mac-build.yml build-hourly-mac',
+  'hourly-mac-build.yml build-alfred',
   'pr.yml package',
   'pr.yml package_windows',
   'release-cut.yml build',

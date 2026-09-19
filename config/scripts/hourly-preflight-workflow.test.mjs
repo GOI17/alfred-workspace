@@ -23,8 +23,16 @@ async function checkFreshness(overrides = {}) {
         `gh() {
           case "$1 $2" in
             "api "*) printf '%s\\n' "$HEAD_SHA" ;;
-            "release list") printf '%s\\n' "$LAST_TAG" ;;
-            "release view") printf '%s\\n' "$LAST_SHA" ;;
+            "release list")
+              if [[ "$GITHUB_REPOSITORY" == GOI17/alfred-workspace ]]; then
+                printf 'unexpected_release_query=true\\n' >> "$GITHUB_OUTPUT"
+              fi
+              printf '%s\\n' "$LAST_TAG" ;;
+            "release view")
+              if [[ "$GITHUB_REPOSITORY" == GOI17/alfred-workspace ]]; then
+                printf 'unexpected_release_query=true\\n' >> "$GITHUB_OUTPUT"
+              fi
+              printf '%s\\n' "$LAST_SHA" ;;
             *) return 1 ;;
           esac
         }
@@ -55,6 +63,29 @@ async function checkFreshness(overrides = {}) {
 }
 
 describe('hourly build preflight', () => {
+  it('replaces the hourly schedule with main pushes and retains manual dispatch', () => {
+    expect(workflow.on.push).toEqual({ branches: ['main'] })
+    expect(workflow.on.schedule).toBeUndefined()
+    expect(workflow.on.workflow_dispatch).toBeDefined()
+  })
+
+  it('builds Alfred without querying upstream releases', async () => {
+    const result = await checkFreshness({ GITHUB_REPOSITORY: 'GOI17/alfred-workspace' })
+    expect(result.exitCode).toBe(0)
+    expect(result.stderr).toBe('')
+    expect(result.output).toBe(`head_sha=${head}\nshould_build=true\n`)
+    expect(preflight.steps.find((step) => step.id === 'app_token').if).toBe(
+      "github.repository == 'stablyai/orca'"
+    )
+    const fork = workflow.jobs['build-alfred']
+    expect(fork.if).toBe("github.repository == 'GOI17/alfred-workspace'")
+    expect(fork.needs).toBe('preflight')
+    expect(fork.steps.find((step) => step.name === 'Checkout build commit').with.ref).toBe(
+      '${{ needs.preflight.outputs.head_sha }}'
+    )
+    expect(fork.steps.find((step) => step.name === 'Package app').run).toContain('--publish never')
+  })
+
   it('gates Mac allocation and pins the checkout and downstream identity', () => {
     const build = workflow.jobs['build-hourly-mac']
     expect(preflight['runs-on']).toBe('ubuntu-latest')
@@ -63,13 +94,15 @@ describe('hourly build preflight', () => {
       preflight.steps.find((step) => step.id === 'app_token').with['permission-contents']
     ).toBe('read')
     expect(build.needs).toBe('preflight')
-    expect(build.if).toBe("needs.preflight.outputs.should_build == 'true'")
+    expect(build.if).toBe(
+      "github.repository == 'stablyai/orca' && needs.preflight.outputs.should_build == 'true'"
+    )
     expect(build.steps.find((step) => step.name === 'Checkout').with.ref).toBe(
       build.outputs.head_sha
     )
     expect(build.outputs.head_sha).toBe('${{ needs.preflight.outputs.head_sha }}')
     expect(build.steps.find((step) => step.id === 'release').env.SHA).toBe(build.outputs.head_sha)
-    expect(workflow.concurrency).toEqual({ group: 'hourly-mac-build', 'cancel-in-progress': false })
+    expect(workflow.concurrency).toEqual({ group: 'hourly-mac-build', 'cancel-in-progress': true })
   })
 
   it.each([
