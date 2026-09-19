@@ -20,6 +20,10 @@ explicit source reads, with a disabled push URL. The default push target is
 Inherited GitHub Actions are disabled at the repository level until their
 release and service configuration is adapted.
 
+The adapted [Hourly build workflow](reference/main-branch-builds.md)
+produces development artifacts and cancels superseded builds after each merge.
+Its activation instructions preserve the boundary around inherited workflows.
+
 ## Attribution and identity
 
 Keep the original [MIT license](../LICENSE), including the Lovecast Inc.

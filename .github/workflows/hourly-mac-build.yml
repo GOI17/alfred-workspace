@@ -1,44 +1,12 @@
-name: Hourly macOS Dev Build
+name: Hourly macOS + Windows Dev Build
 
-# Why: gives developers a signed macOS build of main every hour that the in-app
-# updater can install directly, without waiting for an RC cut.
-#
-# Deliberately narrow scope:
-#   - macOS only. Other platforms keep using RC/stable.
-#   - No tests, no lint, no e2e. This channel trades safety for latency; PR CI
-#     and release-cut remain the gates that matter.
-#   - Signed AND notarized, exactly like a release. The notary round trip is the
-#     one slow step kept: macOS anchors a notarized app's TCC grants on identifier
-#     + team rather than on its cdhash, so those grants survive an update. Without
-#     a ticket every hourly reads as a new client and silently loses file access
-#     under Documents/Desktop/Downloads — 24 times a day.
-#
-# Artifacts publish to stablyai/orca-hourly, never to stablyai/orca: the main
-# repo's releases atom feed exposes only its 10 newest entries, so 24 hourly
-# tags a day would evict every stable/RC entry and break updates for real users.
-#
-# GITHUB_TOKEN is scoped to this repo and cannot publish there, so writes use a
-# GitHub App installed on orca-hourly with Contents: Read and write. Its private
-# key does not expire, unlike a PAT — nothing here needs yearly rotation, and the
-# credential belongs to the org rather than to whoever created it.
-#
-# Provision the two secrets with `bash config/scripts/setup-hourly-release-token.sh`:
-#   HOURLY_RELEASE_APP_ID           the App's numeric id
-#   HOURLY_RELEASE_APP_PRIVATE_KEY  the App's .pem private key
-#
-# Installation tokens live one hour, so the build job mints twice. Install and
-# build need no token at all, and notarization can hold the publish step for tens
-# of minutes; minting again once the build is done starts the clock at the first
-# call that actually uses it rather than burning a third of it on `pnpm install`.
-# A pathological retry can still outrun the second token, but the release is an
-# unpublished draft until the manifest check passes, so the damage is a stranded
-# invisible draft — and the build-number query counts drafts, so it holds its
-# number and the next run does not reuse it.
+# Builds main after each merge; Hourly remains the channel name.
+# Alfred Workspace uploads development artifacts without upstream credentials.
+# The upstream release jobs remain restricted to stablyai/orca.
 
 on:
-  schedule:
-    # Top of every hour. Skipped automatically when main has not moved.
-    - cron: '0 * * * *'
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       force:
@@ -52,17 +20,79 @@ permissions:
 
 concurrency:
   group: hourly-mac-build
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 env:
+  ORCA_BACKGROUND_LAUNCH: '1'
   HOURLY_REPO: stablyai/orca-hourly
-  # Keep ~3 days of history so a regression can be bisected across a weekend.
+  # Bound upstream release storage independently of merge frequency.
   HOURLY_RETAIN_COUNT: 72
 
 jobs:
+  build-alfred:
+    if: github.repository == 'GOI17/alfred-workspace'
+    needs: preflight
+    name: Build (${{ matrix.target }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    env:
+      NODE_OPTIONS: --max-old-space-size=4096
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: macos-arm64
+            runner: macos-15
+            package-args: --mac zip --arm64
+            artifact: dist/orca-macos-arm64.zip
+          - target: windows-x64
+            runner: windows-2022
+            package-args: --win nsis --x64
+            artifact: dist/orca-windows-setup.exe
+    steps:
+      - name: Checkout build commit
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.preflight.outputs.head_sha }}
+          persist-credentials: false
+
+      - uses: ./.github/actions/install-node-dependencies
+        with:
+          native-runtime: electron
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            mobile/pnpm-lock.yaml
+
+      - uses: ./.github/actions/install-mobile-dependencies
+
+      - name: Build Windows process-table addon for the relay
+        if: runner.os == 'Windows'
+        run: |
+          node config/scripts/build-windows-process-tree-relay-addon.mjs --arch=x64
+          node config/scripts/build-windows-process-tree-relay-addon.mjs --arch=arm64
+
+      - name: Build app
+        run: pnpm run build:release
+
+      - name: Prepare Electron native runtime
+        run: node config/scripts/ensure-native-runtime.mjs --runtime=electron
+
+      - name: Package app
+        run: pnpm exec electron-builder --config config/electron-builder.config.cjs ${{ matrix.package-args }} --publish never
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: alfred-workspace-hourly-${{ matrix.target }}-${{ needs.preflight.outputs.head_sha }}
+          path: ${{ matrix.artifact }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+
   # Avoid occupying the limited Mac pool when main has not moved.
   preflight:
-    if: github.repository == 'stablyai/orca'
+    if: github.repository == 'stablyai/orca' || github.repository == 'GOI17/alfred-workspace'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -70,6 +100,7 @@ jobs:
       head_sha: ${{ steps.freshness.outputs.head_sha }}
     steps:
       - name: Mint hourly repo token
+        if: github.repository == 'stablyai/orca'
         id: app_token
         uses: actions/create-github-app-token@v2
         with:
@@ -91,6 +122,11 @@ jobs:
           head_sha="$(GH_TOKEN="$MAIN_REPO_TOKEN" gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)"
           [[ "$head_sha" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::Could not resolve main"; exit 1; }
           echo "head_sha=$head_sha" >>"$GITHUB_OUTPUT"
+          # Fork builds do not query the upstream release repository.
+          if [[ "$GITHUB_REPOSITORY" == "GOI17/alfred-workspace" ]]; then
+            echo "should_build=true" >>"$GITHUB_OUTPUT"
+            exit 0
+          fi
           if [[ "$FORCED" == "true" ]]; then
             echo "should_build=true" >>"$GITHUB_OUTPUT"
             echo "Forced dispatch; building $head_sha."
@@ -118,7 +154,7 @@ jobs:
 
   build-hourly-mac:
     needs: preflight
-    if: needs.preflight.outputs.should_build == 'true'
+    if: github.repository == 'stablyai/orca' && needs.preflight.outputs.should_build == 'true'
     outputs:
       tag: ${{ steps.release.outputs.tag }}
       version: ${{ steps.hourly.outputs.version }}
@@ -322,10 +358,7 @@ jobs:
       - name: Publish hourly macOS artifacts
         uses: nick-fields/retry@v4
         with:
-          # Why 45 like the release pipeline: an attempt is pack + notarize +
-          # upload, and the notary queue is the unbounded part. Why 2 attempts and
-          # not 3: a missed hourly costs an hour, and the next cron picks the same
-          # commit up, so a third attempt buys less than it costs in runner time.
+          # Bound notarization retries; another merge or manual dispatch can retry a failed build.
           timeout_minutes: 45
           max_attempts: 2
           retry_wait_seconds: 30
@@ -472,7 +505,7 @@ jobs:
   # are computed inside that job, so until it has run nothing else can name the
   # release to upload into. The cost is small enough not to matter — the Windows
   # leg measures ~7.5 min (install 2m45, build 35s, NSIS package 3m) against a
-  # ~9.5 min mac run, which keeps a hourly run far inside its interval.
+  # ~9.5 min mac run.
   #
   # Why `./` rather than a pinned `@main`: `uses:` resolves against the ref this
   # file itself came from, which for an ordinary dispatch is main. Someone who
