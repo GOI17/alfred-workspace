@@ -1,3 +1,4 @@
+import { getDefaultSettings } from '../../shared/constants'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const {
@@ -80,10 +81,10 @@ describe('registerAlfredProfileHandlers auth channels', () => {
     }
     getCurrentAlfredProfileAuthStatusMock.mockReturnValue(status)
     registerAlfredProfileHandlers({
-      flush: vi.fn(),
+      flushPendingOrThrowAsync: vi.fn(async () => {}),
       freezeWrites: vi.fn(),
-      getSettings: () => ({})
-    } as never)
+      getSettings: () => getDefaultSettings('/tmp')
+    })
 
     await expect(Promise.resolve(handlers.get('alfredProfiles:authStatus')?.(null))).resolves.toBe(
       status
@@ -97,10 +98,10 @@ describe('registerAlfredProfileHandlers auth channels', () => {
     connectCurrentAlfredProfileMock.mockResolvedValue(connectResult)
     signOutCurrentAlfredProfileMock.mockResolvedValue(signOutResult)
     registerAlfredProfileHandlers({
-      flush: vi.fn(),
+      flushPendingOrThrowAsync: vi.fn(async () => {}),
       freezeWrites: vi.fn(),
-      getSettings: () => ({})
-    } as never)
+      getSettings: () => getDefaultSettings('/tmp')
+    })
 
     await expect(
       Promise.resolve(handlers.get('alfredProfiles:connectCurrent')?.(null))
@@ -116,10 +117,10 @@ describe('registerAlfredProfileHandlers auth channels', () => {
     const refreshResult = { status: 'refreshed', auth: { activeProfileId: 'local-default' } }
     refreshCurrentAlfredProfileAuthMock.mockResolvedValue(refreshResult)
     registerAlfredProfileHandlers({
-      flush: vi.fn(),
+      flushPendingOrThrowAsync: vi.fn(async () => {}),
       freezeWrites: vi.fn(),
-      getSettings: () => ({})
-    } as never)
+      getSettings: () => getDefaultSettings('/tmp')
+    })
 
     await expect(Promise.resolve(handlers.get('alfredProfiles:refreshAuth')?.(null))).resolves.toBe(
       refreshResult
@@ -131,10 +132,10 @@ describe('registerAlfredProfileHandlers auth channels', () => {
     const selectResult = { status: 'selected', auth: { activeProfileId: 'local-default' } }
     selectCurrentAlfredProfileOrgMock.mockResolvedValue(selectResult)
     registerAlfredProfileHandlers({
-      flush: vi.fn(),
+      flushPendingOrThrowAsync: vi.fn(async () => {}),
       freezeWrites: vi.fn(),
-      getSettings: () => ({})
-    } as never)
+      getSettings: () => getDefaultSettings('/tmp')
+    })
 
     await expect(
       Promise.resolve(handlers.get('alfredProfiles:selectOrg')?.(null, { orgId: ' org-1 ' }))
@@ -156,10 +157,10 @@ describe('registerAlfredProfileHandlers auth channels', () => {
     }
     createCloudLinkedAlfredProfileMock.mockResolvedValue(createResult)
     registerAlfredProfileHandlers({
-      flush: vi.fn(),
+      flushPendingOrThrowAsync: vi.fn(async () => {}),
       freezeWrites: vi.fn(),
-      getSettings: () => ({})
-    } as never)
+      getSettings: () => getDefaultSettings('/tmp')
+    })
 
     await expect(
       Promise.resolve(

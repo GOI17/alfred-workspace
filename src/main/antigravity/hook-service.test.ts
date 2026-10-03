@@ -66,12 +66,7 @@ describe('AntigravityHookService', () => {
 
     const config = JSON.parse(
       readFileSync(join(homeDir, '.gemini', 'config', 'hooks.json'), 'utf8')
-    ) as {
-      'alfred-status': Record<
-        string,
-        { matcher?: string; command?: string; hooks?: { command: string }[] }[]
-      >
-    }
+    )
     expect(Object.keys(config['alfred-status']).sort()).toEqual(
       ['PostInvocation', 'PostToolUse', 'PreInvocation', 'PreToolUse', 'Stop'].sort()
     )
@@ -160,7 +155,7 @@ describe('AntigravityHookService', () => {
 
       const config = JSON.parse(
         readFileSync(join(homeDir, '.gemini', 'config', 'hooks.json'), 'utf8')
-      ) as { 'alfred-status': Record<string, { hooks?: { command: string }[] }[]> }
+      )
       const command = config['alfred-status'].PreToolUse[0].hooks?.[0]?.command
 
       const result = spawnSync('/bin/sh', ['-c', command!], {
@@ -182,9 +177,7 @@ describe('AntigravityHookService', () => {
 
       const config = JSON.parse(
         readFileSync(join(homeDir, '.gemini', 'config', 'hooks.json'), 'utf8')
-      ) as {
-        'alfred-status': Record<string, { command?: string; hooks?: { command: string }[] }[]>
-      }
+      )
       const postToolUse = config['alfred-status'].PostToolUse[0].hooks?.[0]?.command
       const preInvocation = config['alfred-status'].PreInvocation[0].command
 
@@ -238,12 +231,7 @@ describe('AntigravityHookService', () => {
 
       expect(status.state).toBe('installed')
 
-      const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
-        'alfred-status': Record<
-          string,
-          { matcher?: string; command?: string; hooks?: { command: string }[] }[]
-        >
-      }
+      const config = JSON.parse(readFileSync(configPath, 'utf8'))
       expect(config['alfred-status'].PreToolUse).toHaveLength(1)
 
       const expectedWrappers = {
@@ -310,10 +298,7 @@ describe('AntigravityHookService', () => {
 
     new AntigravityHookService().install()
 
-    const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
-      'user-hook': { PreInvocation: { command: string }[] }
-      'alfred-status': { PreInvocation: { command: string }[] }
-    }
+    const config = JSON.parse(readFileSync(configPath, 'utf8'))
     expect(config['user-hook'].PreInvocation[0].command).toBe('/usr/local/bin/user-hook')
     const commands = config['alfred-status'].PreInvocation.map((entry) => entry.command)
     expect(commands).toContain('/usr/local/bin/alfred-extra')
@@ -351,9 +336,7 @@ describe('AntigravityHookService', () => {
 
     new AntigravityHookService().install()
 
-    const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
-      'alfred-status': Record<string, { command?: string; hooks?: { command: string }[] }[]>
-    }
+    const config = JSON.parse(readFileSync(configPath, 'utf8'))
     expect(config['alfred-status'].OldEvent).toBeUndefined()
     // Why: the pre-a480e6b7 PreToolUse entry pointed at a script with no gate branch; it must be replaced, not kept.
     const preToolCommands = config['alfred-status'].PreToolUse.flatMap((definition) =>

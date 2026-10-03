@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 /**
  * STA-4593 incident: closing paired-remote tabs "worked briefly" but the tabs
  * returned seconds later and after workspace switches, on a host whose PTYs
@@ -120,7 +121,7 @@ function createHarness() {
   const closeTerminal = vi.fn()
   const closeTerminalTab = vi.fn(() => relayAck.promise)
   const kill = vi.fn(() => true)
-  const runtime = new AlfredRuntimeService(store as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
   runtime.setNotifier({ closeTerminal, closeTerminalTab } as never)
   runtime.setPtyController({
     write: () => true,
@@ -290,7 +291,7 @@ function createSplitHarness() {
     },
     flushOrThrow: () => {}
   }
-  const runtime = new AlfredRuntimeService(store as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
   runtime.setNotifier({ closeTerminal: vi.fn(), closeTerminalTab: vi.fn(async () => {}) } as never)
   runtime.setPtyController({
     write: () => true,

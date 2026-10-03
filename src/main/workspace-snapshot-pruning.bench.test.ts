@@ -61,10 +61,10 @@ describeBench('workspace snapshot bulk pruning', () => {
     const pruneMs = performance.now() - startedAt
     const cleanupPayload = JSON.parse(
       await readFile(join(snapshotDirectory, 'alfred-workspace-cleanup-scan.json'), 'utf-8')
-    ) as { result: { candidates: unknown[] } }
+    )
     const spacePayload = JSON.parse(
       await readFile(join(snapshotDirectory, 'alfred-workspace-space-analysis.json'), 'utf-8')
-    ) as { analysis: { worktrees: unknown[] } }
+    )
 
     console.log(
       `[bench] rows=${ROW_COUNT} deleted=${DELETE_COUNT} bulkPrune=${pruneMs.toFixed(2)}ms`

@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../../../runtime-service-test-double'
 import { mkdtemp, rm, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
@@ -48,12 +49,12 @@ describe('exact orchestration worker output', () => {
       nextCursor: '9'
     })
     sshProviderLookup = vi.spyOn(sshFilesystemDispatch, 'getSshFilesystemProvider')
-    runtime = {
+    runtime = createRuntimeServiceTestDouble({
       getExactWorkerProviderSession: vi.fn(() => providerSession),
       getTerminalProcessIncarnation: vi.fn(() => 'pty:incarnation-1'),
       getTerminalPaneKey: vi.fn(() => 'tab:worker'),
       readTerminal
-    } as unknown as AlfredRuntimeService
+    })
   })
 
   afterEach(async () => {

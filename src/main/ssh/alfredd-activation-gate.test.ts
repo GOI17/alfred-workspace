@@ -58,7 +58,7 @@ describe('evaluateAlfreddActivation', () => {
 
   it('refuses a readiness payload with no health, rather than reading silence as healthy', () => {
     const { health: _dropped, ...withoutHealth } = readiness()
-    const verdict = evaluateAlfreddActivation(withoutHealth as ServeReadiness, EXPECTED)
+    const verdict = evaluateAlfreddActivation(withoutHealth, EXPECTED)
     expect(verdict).toMatchObject({ decision: 'reject', code: 'alfredd_activation_no_health' })
   })
 

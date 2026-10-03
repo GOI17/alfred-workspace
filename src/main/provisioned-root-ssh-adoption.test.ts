@@ -1,3 +1,6 @@
+import { createPersistenceStoreTestDouble } from './persistence/persistence-store-test-double'
+import { createSshGitProviderTestDouble } from './providers/ssh-git-provider-test-double'
+import { getDefaultSettings } from '../shared/constants'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -304,10 +307,13 @@ describe('adoptProvisionedRootSshCheckout', () => {
   it('compares Windows checkout roots using runtime path semantics', async () => {
     const windowsRoot = 'C:\\Workspace\\Alfred'
     seedRuntime(userDataPath, windowsRoot)
-    registerSshGitProvider(connectionId, {
-      listWorktrees: vi.fn().mockResolvedValue([gitWorktree('c:/workspace/alfred/')]),
-      exec: sparseCheckoutProbe(false)
-    } as never)
+    registerSshGitProvider(
+      connectionId,
+      createSshGitProviderTestDouble({
+        listWorktrees: vi.fn().mockResolvedValue([gitWorktree('c:/workspace/alfred/')]),
+        exec: sparseCheckoutProbe(false)
+      })
+    )
     const { store } = makeStore()
 
     const result = await adoptProvisionedRootSshCheckout({
@@ -409,7 +415,7 @@ function gitWorktree(path: string, overrides: Partial<GitWorktreeInfo> = {}): Gi
   }
 }
 
-function sparseCheckoutProbe(enabled: boolean): ReturnType<typeof vi.fn> {
+function sparseCheckoutProbe(enabled: boolean) {
   return vi.fn().mockResolvedValue({ stdout: `${enabled}\n`, stderr: '' })
 }
 
@@ -431,10 +437,14 @@ function makeStore(): {
     ...updates
   }))
   return {
-    store: {
-      getSettings: () => ({ nestWorkspaces: false, workspaceDir: '.alfred/worktrees' }),
+    store: createPersistenceStoreTestDouble({
+      getSettings: () => ({
+        ...getDefaultSettings('/tmp'),
+        nestWorkspaces: false,
+        workspaceDir: '.alfred/worktrees'
+      }),
       setWorktreeMeta
-    } as unknown as Store,
+    }),
     setWorktreeMeta
   }
 }

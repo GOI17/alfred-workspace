@@ -21,5 +21,6 @@ const requireFromMain = createRequire(__filename)
 
 export function loadWindowsNativeRegistry(): WindowsNativeRegistryModule {
   // Why: non-Windows installs omit this optional dependency, so never resolve it at module load.
-  return requireFromMain('@alfred/windows-registry') as WindowsNativeRegistryModule
+  const registry: WindowsNativeRegistryModule = requireFromMain('@alfred/windows-registry')
+  return registry
 }

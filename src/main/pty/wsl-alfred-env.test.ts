@@ -27,7 +27,7 @@ describe('addAlfredWslInteropEnv', () => {
     addAlfredWslInteropEnv(env)
 
     expect(env.ALFRED_SHELL_READY_ROOT).toBe(getShellReadyWrapperRoot())
-    expect(isAbsolute(env.ALFRED_SHELL_READY_ROOT as string)).toBe(true)
+    expect(isAbsolute(env.ALFRED_SHELL_READY_ROOT)).toBe(true)
     // /p, not /u: the guest reads a Windows path through /mnt/c.
     expect(env.WSLENV?.split(':')).toContain('ALFRED_SHELL_READY_ROOT/p')
   })

@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { settledWriteStub } from '../providers/settled-pty-write-stub'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -83,7 +84,7 @@ describe('orchestration while Structured Chat owns an agent session', () => {
     directory = await mkdtemp(join(tmpdir(), 'alfred-orchestration-structured-chat-'))
     recordStore = await AgentSessionRecordStore.open({ directory, hostId: 'local' })
     db = new OrchestrationDb(':memory:')
-    runtime = new AlfredRuntimeService(makeStore() as never)
+    runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
     runtime.setOrchestrationDb(db)
     vi.spyOn(runtime, 'showManagedTerminalWorkspace').mockResolvedValue({
       id: WORKTREE_ID,

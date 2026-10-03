@@ -1,3 +1,5 @@
+import type { RuntimeStore } from '../runtime-store-contract'
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   MAX_QUICK_COMMANDS,
@@ -19,21 +21,26 @@ describe('AlfredRuntimeService', () => {
         scope: { type: 'global' as const }
       }
     ]
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getSettings: () => ({
-        ...store.getSettings(),
-        hostSettingOverrides: {
-          'ssh:target-1': { displayLabel: 'Build host', defaultWorktreeLocation: '/srv/worktrees' }
-        },
-        experimentalNewWorktreeCardStyle: true,
-        compactWorktreeCards: true,
-        minimaxGroupId: 'group-42',
-        minimaxUsageModels: 'general,abab6.5',
-        minimaxEndpoint: 'cn',
-        terminalQuickCommands
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getSettings: () => ({
+          ...store.getSettings(),
+          hostSettingOverrides: {
+            'ssh:target-1': {
+              displayLabel: 'Build host',
+              defaultWorktreeLocation: '/srv/worktrees'
+            }
+          },
+          experimentalNewWorktreeCardStyle: true,
+          compactWorktreeCards: true,
+          minimaxGroupId: 'group-42',
+          minimaxUsageModels: 'general,abab6.5',
+          minimaxEndpoint: 'cn',
+          terminalQuickCommands
+        })
       })
-    } as never)
+    )
 
     expect(runtime.getClientSettings()).toMatchObject({
       worktreeVisibilityDefaults: { external: 'hide' },
@@ -60,15 +67,20 @@ describe('AlfredRuntimeService', () => {
       appendEnter: true,
       scope: { type: 'global' as const }
     }
-    let settings = { ...store.getSettings(), terminalQuickCommands: [existing] }
+    let settings: ReturnType<RuntimeStore['getSettings']> = {
+      ...store.getSettings(),
+      terminalQuickCommands: [existing]
+    }
     const updateSettings = vi.fn((updates: Partial<typeof settings>) => {
       settings = { ...settings, ...updates }
     })
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getSettings: () => settings,
-      updateSettings
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getSettings: () => settings,
+        updateSettings
+      })
+    )
     const command = {
       id: 'status',
       label: 'Status',
@@ -88,7 +100,7 @@ describe('AlfredRuntimeService', () => {
   })
 
   it('applies native-chat option deltas atomically on the runtime host', () => {
-    let settings = {
+    let settings: ReturnType<RuntimeStore['getSettings']> = {
       ...store.getSettings(),
       nativeChatSessionOptions: {
         claude: { model: 'opus', valuesByModel: { opus: { effort: 'high' } } }
@@ -97,11 +109,13 @@ describe('AlfredRuntimeService', () => {
     const updateSettings = vi.fn((updates: Partial<typeof settings>) => {
       settings = { ...settings, ...updates }
     })
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getSettings: () => settings,
-      updateSettings
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getSettings: () => settings,
+        updateSettings
+      })
+    )
 
     runtime.updateClientNativeChatSessionOptions({
       type: 'apply-picks',
@@ -131,18 +145,20 @@ describe('AlfredRuntimeService', () => {
   })
 
   it('compares retired models against the host record at mutation time', () => {
-    let settings = {
+    let settings: ReturnType<RuntimeStore['getSettings']> = {
       ...store.getSettings(),
       nativeChatSessionOptions: { grok: { model: 'grok-5' } }
     }
     const updateSettings = vi.fn((updates: Partial<typeof settings>) => {
       settings = { ...settings, ...updates }
     })
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getSettings: () => settings,
-      updateSettings
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getSettings: () => settings,
+        updateSettings
+      })
+    )
 
     runtime.updateClientNativeChatSessionOptions({
       type: 'clear-model-if-missing',
@@ -169,11 +185,13 @@ describe('AlfredRuntimeService', () => {
       scope: { type: 'global' as const }
     }))
     const updateSettings = vi.fn()
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getSettings: () => ({ ...store.getSettings(), terminalQuickCommands }),
-      updateSettings
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getSettings: () => ({ ...store.getSettings(), terminalQuickCommands }),
+        updateSettings
+      })
+    )
 
     expect(() =>
       runtime.updateClientTerminalQuickCommands({
@@ -192,7 +210,7 @@ describe('AlfredRuntimeService', () => {
   })
 
   it('accepts runtime-backed setting updates from paired clients', async () => {
-    let settings = {
+    let settings: ReturnType<RuntimeStore['getSettings']> = {
       ...store.getSettings(),
       experimentalNewWorktreeCardStyle: false,
       compactWorktreeCards: false,
@@ -204,11 +222,13 @@ describe('AlfredRuntimeService', () => {
       settings = { ...settings, ...updates }
       return settings
     })
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getSettings: () => settings,
-      updateSettings
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getSettings: () => settings,
+        updateSettings
+      })
+    )
 
     expect(
       await runtime.updateClientSettings({
@@ -245,14 +265,19 @@ describe('AlfredRuntimeService', () => {
   })
 
   it('broadcasts visibility default changes to paired clients', async () => {
-    let settings = { ...store.getSettings(), worktreeVisibilityDefaults: { external: 'hide' } }
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getSettings: () => settings,
-      updateSettings: (updates: Partial<typeof settings>) => {
-        settings = { ...settings, ...updates }
-      }
-    } as never)
+    let settings: ReturnType<RuntimeStore['getSettings']> = {
+      ...store.getSettings(),
+      worktreeVisibilityDefaults: { external: 'hide' }
+    }
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getSettings: () => settings,
+        updateSettings: (updates: Partial<typeof settings>) => {
+          settings = { ...settings, ...updates }
+        }
+      })
+    )
     const events: unknown[] = []
     runtime.onClientEvent((event) => events.push(event))
 
@@ -263,7 +288,7 @@ describe('AlfredRuntimeService', () => {
 
   it('reconciles hooks only when paired-client hook settings change', async () => {
     electronMocks.app.isPackaged = true
-    let settings = {
+    let settings: ReturnType<RuntimeStore['getSettings']> = {
       ...store.getSettings(),
       agentStatusHooksEnabled: true,
       disabledTuiAgents: ['codex', 'claude']
@@ -272,20 +297,22 @@ describe('AlfredRuntimeService', () => {
       settings = { ...settings, ...updates }
       return settings
     })
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getSettings: () => settings,
-      updateSettings
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getSettings: () => settings,
+        updateSettings
+      })
+    )
 
     await runtime.updateClientSettings({ disabledTuiAgents: ['claude', 'codex'] })
     expect(applyAgentStatusHooksEnabledMock).not.toHaveBeenCalled()
 
-    await runtime.updateClientSettings({ disabledTuiAgents: ['claude'] })
+    await runtime.updateClientSettings({ disabledTuiAgents: ['claude' as const] })
     expect(applyAgentStatusHooksEnabledMock).toHaveBeenCalledOnce()
     expect(applyAgentStatusHooksEnabledMock).toHaveBeenCalledWith(
       true,
-      expect.objectContaining({ disabledTuiAgents: ['claude'] }),
+      expect.objectContaining({ disabledTuiAgents: ['claude' as const] }),
       expect.objectContaining({
         shouldContinue: expect.any(Function),
         shouldHydrateShellPath: true
@@ -294,7 +321,7 @@ describe('AlfredRuntimeService', () => {
   })
 
   it('serializes paired-client hook reconciliation and reads current settings', async () => {
-    let settings = {
+    let settings: ReturnType<RuntimeStore['getSettings']> = {
       ...store.getSettings(),
       agentStatusHooksEnabled: true,
       disabledTuiAgents: ['codex', 'claude']
@@ -307,13 +334,15 @@ describe('AlfredRuntimeService', () => {
     applyAgentStatusHooksEnabledMock
       .mockImplementationOnce(() => firstReconciliation.promise)
       .mockResolvedValueOnce([])
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getSettings: () => settings,
-      updateSettings
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getSettings: () => settings,
+        updateSettings
+      })
+    )
 
-    const first = runtime.updateClientSettings({ disabledTuiAgents: ['claude'] })
+    const first = runtime.updateClientSettings({ disabledTuiAgents: ['claude' as const] })
     await vi.waitFor(() => expect(applyAgentStatusHooksEnabledMock).toHaveBeenCalledOnce())
     const second = runtime.updateClientSettings({ disabledTuiAgents: [] })
 
@@ -333,11 +362,13 @@ describe('AlfredRuntimeService', () => {
   })
 
   it('rejects relative paths for runtime nested repo scan/import', async () => {
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      createProjectGroup: vi.fn(),
-      moveProjectToGroup: vi.fn()
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        createProjectGroup: vi.fn(),
+        moveProjectToGroup: vi.fn()
+      })
+    )
 
     await expect(runtime.scanNestedRepos('relative/project')).rejects.toThrow(
       'Project path must be an absolute path'

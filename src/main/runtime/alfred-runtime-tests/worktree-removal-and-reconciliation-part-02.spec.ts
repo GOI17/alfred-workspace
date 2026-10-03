@@ -89,7 +89,7 @@ describe('AlfredRuntimeService', () => {
       shutdown: vi.fn(async () => {})
     }
     const getSshProvider = vi.fn(() => sshProvider as never)
-    const runtime = new AlfredRuntimeService(orphanStore as never, undefined, {
+    const runtime = new AlfredRuntimeService(orphanStore, undefined, {
       getLocalProvider: () => localProvider as never,
       getSshProvider
     })
@@ -451,14 +451,14 @@ describe('AlfredRuntimeService', () => {
           displayName: 'repo',
           badgeColor: 'blue',
           sourceRepoIds: [TEST_REPO_ID],
-          localWindowsRuntimePreference: { kind: 'wsl', distro: 'Ubuntu' },
+          localWindowsRuntimePreference: { kind: 'wsl' as const, distro: 'Ubuntu' },
           createdAt: 0,
           updatedAt: 0
         }
       ],
       getSettings: () => ({
         ...store.getSettings(),
-        localWindowsRuntimeDefault: { kind: 'windows-host' }
+        localWindowsRuntimeDefault: { kind: 'windows-host' as const }
       })
     }
     const runtime = createWorktreeRemovalRuntime(runtimeStore)
@@ -508,14 +508,14 @@ describe('AlfredRuntimeService', () => {
           displayName: 'repo',
           badgeColor: 'blue',
           sourceRepoIds: [TEST_REPO_ID],
-          localWindowsRuntimePreference: { kind: 'wsl', distro: 'Ubuntu' },
+          localWindowsRuntimePreference: { kind: 'wsl' as const, distro: 'Ubuntu' },
           createdAt: 0,
           updatedAt: 0
         }
       ],
       getSettings: () => ({
         ...store.getSettings(),
-        localWindowsRuntimeDefault: { kind: 'windows-host' }
+        localWindowsRuntimeDefault: { kind: 'windows-host' as const }
       })
     }
     const runtime = createWorktreeRemovalRuntime(runtimeStore)
@@ -565,14 +565,14 @@ describe('AlfredRuntimeService', () => {
           displayName: 'repo',
           badgeColor: 'blue',
           sourceRepoIds: [TEST_REPO_ID],
-          localWindowsRuntimePreference: { kind: 'wsl', distro: 'Ubuntu' },
+          localWindowsRuntimePreference: { kind: 'wsl' as const, distro: 'Ubuntu' },
           createdAt: 0,
           updatedAt: 0
         }
       ],
       getSettings: () => ({
         ...store.getSettings(),
-        localWindowsRuntimeDefault: { kind: 'windows-host' }
+        localWindowsRuntimeDefault: { kind: 'windows-host' as const }
       })
     }
     const runtime = createWorktreeRemovalRuntime(runtimeStore)

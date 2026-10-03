@@ -48,9 +48,7 @@ export async function startPanelNavigationObserver(
     ): void => {
       observation.didFrameNavigations.push({ isMainFrame, url })
     }
-    const probeGlobal = globalThis as typeof globalThis & {
-      __alfredPanelNavigationProbe?: MainPanelNavigationProbe
-    }
+    const probeGlobal = globalThis
     probeGlobal.__alfredPanelNavigationProbe?.dispose()
     const originalOpenExternal = shell.openExternal
     const recordOpenExternal = async (url: string): Promise<void> => {
@@ -77,11 +75,7 @@ export async function readPanelNavigationObserver(
   electronApp: ElectronApplication
 ): Promise<PanelNavigationObservation> {
   return electronApp.evaluate(() => {
-    const probe = (
-      globalThis as typeof globalThis & {
-        __alfredPanelNavigationProbe?: MainPanelNavigationProbe
-      }
-    ).__alfredPanelNavigationProbe
+    const probe = globalThis.__alfredPanelNavigationProbe
     if (!probe) {
       throw new Error('panel navigation observer is not active')
     }
@@ -93,9 +87,7 @@ export async function stopPanelNavigationObserver(
   electronApp: ElectronApplication
 ): Promise<PanelNavigationObservation> {
   return electronApp.evaluate(() => {
-    const probeGlobal = globalThis as typeof globalThis & {
-      __alfredPanelNavigationProbe?: MainPanelNavigationProbe
-    }
+    const probeGlobal = globalThis
     const probe = probeGlobal.__alfredPanelNavigationProbe
     if (!probe) {
       throw new Error('panel navigation observer is not active')
@@ -105,4 +97,8 @@ export async function stopPanelNavigationObserver(
     delete probeGlobal.__alfredPanelNavigationProbe
     return observation
   })
+}
+
+declare global {
+  var __alfredPanelNavigationProbe: MainPanelNavigationProbe | undefined
 }

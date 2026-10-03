@@ -234,13 +234,16 @@ describe('RuntimeClient orchestration recovery identity', () => {
 
     expect(receivedRequest?.orchestrationRequestId).toBe('prompt-transport-timeout')
     expect(error).toBeInstanceOf(RuntimeClientError)
+    if (!(error instanceof RuntimeClientError)) {
+      throw new Error('Expected a runtime client error')
+    }
     expect(error).not.toBeInstanceOf(RuntimeRpcFailureError)
-    expect((error as RuntimeClientError).code).toBe('runtime_timeout')
+    expect(error.code).toBe('runtime_timeout')
     expect(error).toMatchObject({ data: { orchestrationRequestId: 'prompt-transport-timeout' } })
     expect((error as Error).message).toContain(
       '--retry-request prompt-transport-timeout --wait-submit <seconds>'
     )
-    expect((error as RuntimeClientError).data).not.toHaveProperty('retrySafe')
+    expect(error.data).not.toHaveProperty('retrySafe')
   })
 
   it('blocks retry when a downgraded runtime rejects after capability preflight', async () => {
@@ -327,9 +330,12 @@ describe('RuntimeClient orchestration recovery identity', () => {
 
     expect(receivedRequest?.orchestrationRequestId).toBe('prompt-downgraded-lost-reply')
     expect(error).toBeInstanceOf(RuntimeClientError)
+    if (!(error instanceof RuntimeClientError)) {
+      throw new Error('Expected a runtime client error')
+    }
     expect(error).not.toBeInstanceOf(RuntimeRpcFailureError)
     expectPromptRetryBlockedJson(error, 'prompt-downgraded-lost-reply')
-    expect(JSON.stringify((error as RuntimeClientError).data)).not.toContain('Update Alfred')
+    expect(JSON.stringify(error.data)).not.toContain('Update Alfred')
   })
 
   it('reports an unknown legacy prompt outcome without advertising an unsafe retry', async () => {
@@ -364,6 +370,9 @@ describe('RuntimeClient orchestration recovery identity', () => {
       .catch((caught: unknown) => caught)
 
     expect(error).toBeInstanceOf(RuntimeClientError)
+    if (!(error instanceof RuntimeClientError)) {
+      throw new Error('Expected a runtime client error')
+    }
     expect(error).not.toBeInstanceOf(RuntimeRpcFailureError)
     expect(error).toMatchObject({
       data: {
@@ -375,7 +384,7 @@ describe('RuntimeClient orchestration recovery identity', () => {
         ])
       }
     })
-    expect((error as RuntimeClientError).data).not.toHaveProperty('orchestrationRequestId')
+    expect(error.data).not.toHaveProperty('orchestrationRequestId')
     expect(receivedRequest).not.toHaveProperty('orchestrationRequestId')
     expect((error as Error).message).not.toContain('--retry-request')
     expect((error as Error).message).toContain('do not resend automatically')

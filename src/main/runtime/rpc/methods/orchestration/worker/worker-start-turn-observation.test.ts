@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import type { RuntimeTerminalPromptDelivery } from '../../../../../../shared/runtime-terminal-contracts'
 import type { AlfredRuntimeService } from '../../../../alfred-runtime'
@@ -24,7 +25,7 @@ function runtimeObserving(result: RuntimeTerminalPromptDelivery): {
 } {
   const observe = vi.fn().mockResolvedValue(result)
   return {
-    runtime: { observeTerminalAgentPrompt: observe } as unknown as AlfredRuntimeService,
+    runtime: createRuntimeServiceTestDouble({ observeTerminalAgentPrompt: observe }),
     observe
   }
 }

@@ -1,3 +1,5 @@
+import { getDefaultRuntimeClientSettings } from '../../runtime-client-settings-test-fixture'
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   CLAUDE_STRUCTURED_AGENT_SESSION_RUNTIME_CAPABILITY,
@@ -5,7 +7,6 @@ import {
   type RuntimeCapability
 } from '../../../../shared/protocol-version'
 import type { RuntimeMobileSessionTabsResult } from '../../../../shared/runtime-types'
-import type { AlfredRuntimeService } from '../../alfred-runtime'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcDispatchStreamingOptions } from '../dispatcher-stream-options'
 import { SESSION_TAB_METHODS } from './session-tabs'
@@ -127,12 +128,15 @@ describe('session tab structured capability mutations', () => {
     async (method) => {
       const snapshot = agentSnapshot()
       const closeMobileSessionTab = vi.fn().mockResolvedValue({ closed: true })
-      const runtime = {
+      const runtime = createRuntimeServiceTestDouble({
         getRuntimeId: () => 'test-runtime',
-        getClientSettings: vi.fn(() => ({ experimentalStructuredNativeChat: true })),
+        getClientSettings: vi.fn(() => ({
+          ...getDefaultRuntimeClientSettings(),
+          experimentalStructuredNativeChat: true
+        })),
         listMobileSessionTabs: vi.fn().mockResolvedValue(snapshot),
         closeMobileSessionTab
-      } as unknown as AlfredRuntimeService
+      })
       const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
       const replies: string[] = []
       await dispatcher.dispatchStreaming(
@@ -176,16 +180,17 @@ function createFixture(
     moveMobileSessionTab: vi.fn().mockResolvedValue({ moved: true }),
     setMobileSessionTabProps: vi.fn().mockResolvedValue({ updated: true })
   }
-  const runtime = {
+  const runtime = createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
     listMobileSessionTabs: vi.fn().mockResolvedValue(snapshot),
     getClientSettings: () => ({
+      ...getDefaultRuntimeClientSettings(),
       // Why: defaults on, so a fixture that says nothing about the setting exercises capability
       // gating alone; callers opt into the off case explicitly.
       experimentalStructuredNativeChat: options.structuredNativeChatEnabled !== false
     }),
     ...calls
-  } as unknown as AlfredRuntimeService
+  })
   const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
   const context: RpcDispatchStreamingOptions = {
     clientKind: options.clientKind ?? 'runtime',

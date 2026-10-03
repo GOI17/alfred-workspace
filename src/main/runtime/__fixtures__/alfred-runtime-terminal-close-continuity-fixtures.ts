@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { vi, type Mock } from 'vitest'
 import { makePaneKey } from '../../../shared/stable-pane-id'
 import type { WorkspaceSessionState } from '../../../shared/workspace-session-state-types'
@@ -108,7 +109,8 @@ function createHarness(
     getWorktreeMeta: () => undefined,
     getSettings: () => ({ workspaceDir: '/tmp/workspaces' }),
     getProjects: () => [],
-    getWorkspaceSession: () => (sessionAvailable ? session : undefined),
+    // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: Simulates missing persisted state to test recovery while the session is unavailable.
+    getWorkspaceSession: () => (sessionAvailable ? session : undefined) as WorkspaceSessionState,
     setWorkspaceSession: (next: WorkspaceSessionState) => {
       session = next
     },
@@ -161,7 +163,7 @@ function createHarness(
       : []),
     ...(options.includeCanary ? [canaryProcess] : [])
   ])
-  const runtime = new AlfredRuntimeService(store as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
   runtime.setNotifier({ closeTerminal, closeTerminalTab } as never)
   runtime.setPtyController({
     write: () => true,

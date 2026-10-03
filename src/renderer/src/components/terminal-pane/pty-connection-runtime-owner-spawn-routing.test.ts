@@ -239,7 +239,7 @@ describe('connectPanePty', () => {
         ...mockStoreState.settings,
         activeRuntimeEnvironmentId: 'focused-runtime'
       }
-    } as StoreState
+    }
 
     const pane = createPane(2)
     const manager = createManager(2)
@@ -287,7 +287,7 @@ describe('connectPanePty', () => {
         ...mockStoreState.settings,
         activeRuntimeEnvironmentId: 'focused-runtime'
       }
-    } as StoreState
+    }
 
     const pane = createPane(2)
     const manager = createManager(2)

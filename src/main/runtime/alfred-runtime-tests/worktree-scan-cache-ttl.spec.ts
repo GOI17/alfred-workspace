@@ -64,7 +64,7 @@ describe('resolveWorktreeScanCacheTtlMs', () => {
             addedAt: 1
           }
         ]
-      } as never)
+      })
       const internals = runtime as unknown as { listResolvedWorktrees: () => Promise<unknown> }
       const scanCallsFor = (path: string): number =>
         vi.mocked(listWorktrees).mock.calls.filter((call) => call[0] === path).length
@@ -95,7 +95,7 @@ describe('resolveWorktreeScanCacheTtlMs', () => {
     const repos = [
       { id: 'repo-1', path: '/tmp/repo', displayName: 'repo', badgeColor: 'blue', addedAt: 1 }
     ]
-    const runtime = new AlfredRuntimeService({ ...store, getRepos: () => repos } as never)
+    const runtime = new AlfredRuntimeService({ ...store, getRepos: () => repos })
     const internals = runtime as unknown as { listResolvedWorktrees: () => Promise<unknown> }
     const scanCallsFor = (path: string): number =>
       vi.mocked(listWorktrees).mock.calls.filter((call) => call[0] === path).length

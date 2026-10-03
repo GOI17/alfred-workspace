@@ -158,8 +158,7 @@ export function useTabBarRuntimeModel({
       ),
     [agentCmdOverrides, defaultAgent, detectedIds, disabledTuiAgents]
   )
-  const isWebClient =
-    (globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__ === true
+  const isWebClient = globalThis.__ALFRED_WEB_CLIENT__ === true
   const windowsTerminalCapabilityOwnerKey = getWindowsTerminalCapabilityOwnerKey(
     activeRuntimeEnvironmentId,
     worktreeConnectionId

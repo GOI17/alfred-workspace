@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   MOCK_GIT_WORKTREES,
@@ -45,17 +46,17 @@ describe('AlfredRuntimeService', () => {
           displayName: 'repo',
           badgeColor: 'blue',
           sourceRepoIds: [TEST_REPO_ID],
-          localWindowsRuntimePreference: { kind: 'wsl', distro: 'Ubuntu' },
+          localWindowsRuntimePreference: { kind: 'wsl' as const, distro: 'Ubuntu' },
           createdAt: 0,
           updatedAt: 0
         }
       ],
       getSettings: () => ({
         ...store.getSettings(),
-        localWindowsRuntimeDefault: { kind: 'windows-host' }
+        localWindowsRuntimeDefault: { kind: 'windows-host' as const }
       })
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     const localGitOptions = { wslDistro: 'Ubuntu' }
     const prRepo = { owner: 'acme', repo: 'alfred', host: 'github.acme.test' }
     const checkDetailsSignal = new AbortController().signal
@@ -355,7 +356,7 @@ describe('AlfredRuntimeService', () => {
       getRepos: () => repos,
       getRepo: (id: string) => repos.find((repo) => repo.id === id)
     }
-    const runtime = new AlfredRuntimeService(multiRepoStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(multiRepoStore))
 
     await expect(
       runtime.getHostedReviewCreationEligibility({
@@ -400,7 +401,7 @@ describe('AlfredRuntimeService', () => {
       getRepos: () => [remoteRepo],
       getRepo: (id: string) => (id === TEST_REPO_ID ? remoteRepo : undefined)
     }
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
 
     await runtime.getHostedReviewCreationEligibility({
       repoSelector: `id:${TEST_REPO_ID}`,
@@ -469,17 +470,17 @@ describe('AlfredRuntimeService', () => {
           displayName: 'repo',
           badgeColor: 'blue',
           sourceRepoIds: [TEST_REPO_ID],
-          localWindowsRuntimePreference: { kind: 'wsl', distro: 'Ubuntu' },
+          localWindowsRuntimePreference: { kind: 'wsl' as const, distro: 'Ubuntu' },
           createdAt: 0,
           updatedAt: 0
         }
       ],
       getSettings: () => ({
         ...store.getSettings(),
-        localWindowsRuntimeDefault: { kind: 'windows-host' }
+        localWindowsRuntimeDefault: { kind: 'windows-host' as const }
       })
     }
-    const runtime = new AlfredRuntimeService(wslStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(wslStore))
     getHostedReviewForBranchMock.mockResolvedValueOnce({
       provider: 'github',
       number: 76,
@@ -583,7 +584,7 @@ describe('AlfredRuntimeService', () => {
           connectionId: 'ssh-1'
         }
       ],
-      getWorktreeMeta: () => null
+      getWorktreeMeta: () => undefined
     }
     const gitProvider = {
       listWorktrees: vi.fn().mockResolvedValue([
@@ -597,7 +598,7 @@ describe('AlfredRuntimeService', () => {
       ])
     }
     registerSshGitProvider('ssh-1', gitProvider as never)
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
 
     try {
       await expect(runtime.probeWorktreeDrift('path:/remote/repo')).resolves.toBeNull()

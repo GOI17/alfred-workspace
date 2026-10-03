@@ -1,3 +1,7 @@
+import { deriveGlobalWindowsRuntimeDefaultFromLegacySettings } from '../../../shared/project-execution-runtime'
+import { getDefaultSettings as completeGetDefaultSettings } from '../../../shared/constants'
+import { makeRepo as completeMakeRepo } from '../../../shared/repo-test-fixture'
+import { makeWorktree as completeMakeWorktree } from '../../../shared/worktree/worktree-test-fixture'
 import { describe, expect, it, vi } from 'vitest'
 import type { AppState } from '@/store'
 import { getCodexSelectionLaneKey } from '../../../shared/codex-selection-lane'
@@ -30,8 +34,31 @@ function laneState(args?: {
   localWindowsRuntimeDefault?: { kind: 'wsl'; distro: string | null }
 }): LaneState {
   return {
-    folderWorkspaces: args?.folderPath ? [{ id: 'fw1', folderPath: args.folderPath }] : [],
+    activeRepoId: null,
+    activeWorktreeId: null,
+    folderWorkspaces: args?.folderPath
+      ? [
+          {
+            id: 'fw1',
+            folderPath: args.folderPath,
+            name: 'Folder',
+            projectGroupId: 'group',
+            linkedTask: null,
+            comment: '',
+            isArchived: false,
+            isUnread: false,
+            isPinned: false,
+            sortOrder: 0,
+            lastActivityAt: 1,
+            createdAt: 1,
+            updatedAt: 1
+          }
+        ]
+      : [],
     settings: {
+      ...completeGetDefaultSettings('/tmp'),
+      localWindowsRuntimeDefault:
+        deriveGlobalWindowsRuntimeDefaultFromLegacySettings(args).defaultRuntime,
       activeRuntimeEnvironmentId: args?.activeRuntimeEnvironmentId ?? null,
       ...(args?.terminalWindowsShell ? { terminalWindowsShell: args.terminalWindowsShell } : {}),
       ...(args?.localWindowsRuntimeDefault
@@ -39,20 +66,30 @@ function laneState(args?: {
         : {}),
       terminalWindowsWslDistro: args?.terminalWindowsWslDistro ?? null
     },
-    repos: [{ id: 'repo1', path: 'C:\\code\\app' }],
+    repos: [completeMakeRepo({ id: 'repo1', path: 'C:\\code\\app' })],
     projects: args?.projectWslDistro
       ? [
           {
             id: 'proj1',
+            displayName: 'Project',
+            badgeColor: '#999999',
+            createdAt: 1,
+            updatedAt: 1,
             sourceRepoIds: ['repo1'],
             localWindowsRuntimePreference: { kind: 'wsl', distro: args.projectWslDistro }
           }
         ]
       : [],
     worktreesByRepo: {
-      repo1: [{ id: 'wt1', repoId: 'repo1', path: args?.worktreePath ?? '/Users/dev/code/alfred' }]
+      repo1: [
+        completeMakeWorktree({
+          id: 'wt1',
+          repoId: 'repo1',
+          path: args?.worktreePath ?? '/Users/dev/code/alfred'
+        })
+      ]
     }
-  } as unknown as LaneState
+  }
 }
 
 /** The Windows-only shell resolution is gated on the renderer platform. */
@@ -449,7 +486,10 @@ describe('getCodexAccountSwitchLaneMatcher', () => {
 
   it('scopes a switch made against a runtime environment to that machine', () => {
     const environmentSwitch = getCodexAccountSwitchLaneMatcher({
-      settings: { activeRuntimeEnvironmentId: 'env-1' },
+      settings: {
+        ...completeGetDefaultSettings('/tmp'),
+        activeRuntimeEnvironmentId: 'env-1'
+      },
       target: { runtime: 'host' }
     })
     expect(environmentSwitch('env:env-1')).toBe(true)

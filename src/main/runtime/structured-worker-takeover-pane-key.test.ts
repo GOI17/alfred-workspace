@@ -51,7 +51,7 @@ function registerWorker(): string {
 function runtime() {
   return Object.assign(Object.create(AlfredRuntimeWithGetPtyRecordForPaneKey.prototype), {
     _orchestrationDb: null
-  }) as { getStructuredWorkerPaneKeyForSession: (sessionId: string) => string | null }
+  })
 }
 
 describe('resolving a structured worker takeover by session', () => {

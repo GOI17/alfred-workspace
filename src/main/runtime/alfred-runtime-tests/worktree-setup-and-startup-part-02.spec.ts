@@ -28,7 +28,7 @@ describe('AlfredRuntimeService', () => {
       getRepos: () => [waitRepo],
       getRepo: (id: string) => (id === 'repo-1' ? waitRepo : undefined)
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const createTerminal = vi.spyOn(runtime, 'createTerminal')
     const revealTerminalSession = vi.fn().mockResolvedValue({ tabId: 'tab-headless-startup' })
     const spawn = vi
@@ -517,7 +517,7 @@ describe('AlfredRuntimeService', () => {
         setupScriptLaunchMode: 'split-vertical' as const
       })
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const activateWorktree = vi.fn()
     const revealTerminalSession = vi.fn().mockResolvedValue({ tabId: 'tab-cli-setup-split' })
     const spawn = vi

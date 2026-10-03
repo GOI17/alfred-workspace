@@ -70,7 +70,10 @@ test.describe('AI Vault session delete', () => {
     const session = await findSession(alfredPage, 'gemini', title)
     expect(session, 'seeded gemini session should be listed').toBeTruthy()
 
-    const result = await deleteSession(alfredPage, session as AiVaultSession)
+    if (!session) {
+      throw new Error('Seeded session was not listed')
+    }
+    const result = await deleteSession(alfredPage, session)
 
     expect(result.outcome).toBe('deleted')
     expect(existsSync(filePath), 'transcript should be gone from disk').toBe(false)
@@ -113,7 +116,10 @@ test.describe('AI Vault session delete', () => {
     const session = await findSession(alfredPage, 'claude', title)
     expect(session, 'seeded claude session should be listed').toBeTruthy()
 
-    const result = await deleteSession(alfredPage, session as AiVaultSession)
+    if (!session) {
+      throw new Error('Seeded session was not listed')
+    }
+    const result = await deleteSession(alfredPage, session)
 
     expect(result.outcome).toBe('deleted')
     expect(existsSync(transcript), 'transcript gone').toBe(false)

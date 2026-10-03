@@ -53,7 +53,7 @@ export function useTerminalPaneReconciliation(controller: TerminalPaneCloseContr
     }
     if (
       !isHostAuthoritativeLayout({
-        isWebClient: !!(globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__,
+        isWebClient: !!globalThis.__ALFRED_WEB_CLIENT__,
         ptyIdsByLeafId: restoredLayout.ptyIdsByLeafId
       })
     ) {

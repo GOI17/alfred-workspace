@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   TerminalStreamOpcode,
@@ -10,7 +11,6 @@ import { publishMultiplexInitialSnapshot } from './terminal/terminal-multiplex-i
 import { TerminalSourceRangeRegistry } from '../terminal-source-range-registry'
 import { initializeMultiplexStream } from './terminal/terminal-multiplex-stream-initialization'
 import type { TerminalMultiplexConnection } from './terminal/terminal-multiplex-connection'
-import type { AlfredRuntimeService } from '../../alfred-runtime'
 import type { TerminalMultiplexStream } from './terminal/terminal-stream-types'
 
 // These assertions protect the permanent binary publication seam while its state machine
@@ -122,13 +122,19 @@ describe('terminal stream extraction characterization', () => {
       pendingOutputOverflowed: true,
       outputBatcher: { push: vi.fn(), flush: vi.fn() }
     } as unknown as TerminalMultiplexStream
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       readTerminal: vi.fn(async () => {
         readCount += 1
         if (readCount === 2) {
           stream.pendingOutputOverflowed = true
         }
-        return { tail: ['fallback'] }
+        return {
+          handle: 'terminal',
+          status: 'running' as const,
+          tail: ['fallback'],
+          truncated: false,
+          nextCursor: null
+        }
       }),
       serializeTerminalBuffer: vi.fn(async () => ({
         data: 'AUTHORITATIVE_INITIAL_MARKER',
@@ -139,9 +145,9 @@ describe('terminal stream extraction characterization', () => {
         truncatedByByteBudget: false
       })),
       getTerminalSize: vi.fn(() => ({ cols: 80, rows: 24 })),
-      getMobileDisplayMode: vi.fn(() => 'fit'),
+      getMobileDisplayMode: vi.fn(() => 'auto' as const),
       getLayout: vi.fn(() => null)
-    } as unknown as AlfredRuntimeService
+    })
     const state = {
       runtime,
       streams: new Map([[stream.streamId, stream]]),
@@ -180,7 +186,7 @@ describe('terminal stream extraction characterization', () => {
     const streams = new Map()
     const runtime = {
       attachRemoteTerminalSourceRangeConsumer: vi.fn(() => false)
-    } as unknown as AlfredRuntimeService
+    }
     const state = {
       runtime,
       connectionId: 'connection',

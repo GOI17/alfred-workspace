@@ -65,7 +65,7 @@ export function makeStore() {
       id: FOLDER_REPO_ID,
       path: '/tmp/folder-project',
       displayName: 'folder-project',
-      kind: 'folder',
+      kind: 'folder' as const,
       badgeColor: 'blue',
       addedAt: 2
     }

@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   AlfredRuntimeService,
@@ -217,7 +218,7 @@ describe('AlfredRuntimeService', () => {
           resolveSpawn = resolve
         })
     )
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       spawn,
       write: () => true,
@@ -312,7 +313,7 @@ describe('AlfredRuntimeService', () => {
         })
     )
     const kill = vi.fn(() => false)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       spawn,
       write: () => true,
@@ -394,7 +395,7 @@ describe('AlfredRuntimeService', () => {
     const folderWorkspace = makeFolderWorkspace({ folderPath })
     const projectGroup = makeFolderProjectGroup({ parentPath: folderPath })
     const runtime = new AlfredRuntimeService(
-      createFolderWorkspaceRuntimeStore(folderWorkspace, projectGroup) as never
+      createRuntimeStoreTestDouble(createFolderWorkspaceRuntimeStore(folderWorkspace, projectGroup))
     )
     runtime.setPtyController({
       spawn,
@@ -490,11 +491,13 @@ describe('AlfredRuntimeService', () => {
       'ssh:ssh-1'
     )
     const spawn = vi.fn().mockResolvedValue({ id: splitPtyId })
-    const runtime = new AlfredRuntimeService({
-      ...runtimeStore,
-      getRepos: () => [remoteRepo],
-      getRepo: (id: string) => (id === TEST_REPO_ID ? remoteRepo : undefined)
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...runtimeStore,
+        getRepos: () => [remoteRepo],
+        getRepo: (id: string) => (id === TEST_REPO_ID ? remoteRepo : undefined)
+      })
+    )
     runtime.setPtyController({
       spawn,
       write: () => true,

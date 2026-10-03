@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import type { AlfredRuntimeService } from '../alfred-runtime'
 import type { RpcRequest } from './core'
@@ -9,10 +10,10 @@ function makeRequest(params: unknown): RpcRequest {
 }
 
 function makeRuntime(overrides: Partial<AlfredRuntimeService>): AlfredRuntimeService {
-  return {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
     ...overrides
-  } as AlfredRuntimeService
+  })
 }
 
 describe('terminal agent prompt send RPC', () => {

@@ -171,7 +171,7 @@ describe('AlfredRuntimeService', () => {
         terminalWindowsShell: 'git-bash'
       })
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const activateWorktree = vi.fn()
     runtime.setNotifier({
       worktreesChanged: vi.fn(),

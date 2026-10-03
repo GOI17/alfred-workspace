@@ -5,10 +5,6 @@ import { AlfredRuntimeWithGetTerminalInteractiveWait } from './alfred-runtime-ge
 const PANE_KEY = 'tab:worker'
 const PTY_ID = 'pty-wsl'
 
-type ExactWorkerProviderSessionHost = {
-  getExactWorkerProviderSession: (handle: string, observedAfter: number) => unknown
-}
-
 /** Drives the shipping method, not the selector helper: the wiring is what regressed. */
 function selectThroughRuntime(statusConnectionId: string | null): unknown {
   const runtime = {
@@ -30,9 +26,11 @@ function selectThroughRuntime(statusConnectionId: string | null): unknown {
       }
     ]
   }
-  return (
-    AlfredRuntimeWithGetTerminalInteractiveWait.prototype as unknown as ExactWorkerProviderSessionHost
-  ).getExactWorkerProviderSession.call(runtime as never, 'term_wsl', 0)
+  return AlfredRuntimeWithGetTerminalInteractiveWait.prototype.getExactWorkerProviderSession.call(
+    runtime as never,
+    'term_wsl',
+    0
+  )
 }
 
 describe('exact worker provider session wiring', () => {

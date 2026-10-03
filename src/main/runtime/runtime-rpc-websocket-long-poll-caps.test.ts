@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from './runtime-service-test-double'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -206,10 +207,10 @@ describe('AlfredRuntimeRpcServer', () => {
 
   it('shares one socket close listener across concurrent WebSocket dispatches', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       configureNotificationDismissalStore: () => {},
       getRuntimeId: () => 'test-runtime'
-    } as unknown as AlfredRuntimeService
+    })
     const server = new AlfredRuntimeRpcServer({ runtime, userDataPath, enableWebSocket: false })
     server['deviceRegistry'] = new DeviceRegistry(userDataPath)
     const entry = server['deviceRegistry']!.addDevice('runtime-test', 'runtime')

@@ -1,3 +1,6 @@
+import { makeWorktreeMeta } from '../../../../../../shared/worktree/metadata-test-fixture'
+import type { WorktreeMeta } from '../../../../../../shared/worktree/meta-types'
+import { createRuntimeStoreTestDouble } from '../../../../runtime-store-test-double'
 import { resolve } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -234,7 +237,7 @@ const REPO_PATH = '/census/repo'
 
 /** Enough store for `worktree.ps` to resolve one worktree; the git listing is mocked above. */
 function censusStore() {
-  const metaById: Record<string, unknown> = {}
+  const metaById: Record<string, WorktreeMeta> = {}
   return {
     getRepo: (id: string) => (id === 'repo-census' ? censusStore().getRepos()[0] : undefined),
     getRepos: () => [
@@ -242,8 +245,8 @@ function censusStore() {
     ],
     getAllWorktreeMeta: () => metaById,
     getWorktreeMeta: (id: string) => metaById[id],
-    setWorktreeMeta: (id: string, meta: Record<string, unknown>) => {
-      metaById[id] = { ...(metaById[id] as object), ...meta }
+    setWorktreeMeta: (id: string, meta: Partial<WorktreeMeta>) => {
+      metaById[id] = makeWorktreeMeta({ ...metaById[id], ...meta })
       return metaById[id]
     },
     removeWorktreeMeta: () => {},
@@ -332,9 +335,13 @@ describe('agent status producer census', () => {
     ])
     // The hook row names its worktree by id, so learn the id the runtime minted before publishing.
     let rows: AgentStatusIpcPayload[] = []
-    const runtime = new AlfredRuntimeService(censusStore() as never, undefined, {
-      getAgentStatusSnapshot: () => rows
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(censusStore()),
+      undefined,
+      {
+        getAgentStatusSnapshot: () => rows
+      }
+    )
 
     const discovery = await runtime.getWorktreePs(10)
     const worktreeId = discovery.worktrees[0]?.worktreeId

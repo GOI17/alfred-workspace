@@ -92,9 +92,7 @@ describe('OpenCode plugin lifecycle delivery', () => {
   async function loadHooksWithSession(session: SessionClientFixture): Promise<PluginHooks> {
     const pluginPath = join(tempDir, 'alfred-opencode-status.mjs')
     writeFileSync(pluginPath, _internals.getOpenCodePluginSource())
-    const module = (await import(pathToFileURL(pluginPath).href)) as {
-      AlfredOpenCodeStatusPlugin: (ctx: unknown) => Promise<PluginHooks>
-    }
+    const module = await import(pathToFileURL(pluginPath).href)
     return module.AlfredOpenCodeStatusPlugin({ client: { session } })
   }
 
@@ -795,7 +793,7 @@ describe('OpenCode plugin lifecycle delivery', () => {
         token: new Headers(init?.headers).get('X-Alfred-Agent-Hook-Token')
       })
       return new Response(null, { status: 204 })
-    }) as typeof globalThis.fetch
+    })
     const handler = await loadHandler()
 
     await handler({ event: status('busy') })

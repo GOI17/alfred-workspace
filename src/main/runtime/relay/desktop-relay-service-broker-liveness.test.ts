@@ -1,5 +1,5 @@
+import { makeCloudAuthConfig } from '../../alfred-profiles/profile-cloud-auth-test-fixture'
 import { describe, expect, it, vi } from 'vitest'
-import type { AlfredCloudAuthConfig } from '../../alfred-profiles/profile-cloud-auth-config'
 import type { AlfredRuntimeRpcServer } from '../runtime-rpc'
 
 const fakes = vi.hoisted(() => ({
@@ -62,9 +62,10 @@ function service(): DesktopRelayService {
   } as unknown as AlfredRuntimeRpcServer
   return new DesktopRelayService({
     authConfig: {
+      ...makeCloudAuthConfig(),
       relayDirectorUrl: 'https://relay.example.test',
       relayTokenEndpoint: 'https://login.example.test/relay-token'
-    } as AlfredCloudAuthConfig,
+    },
     userDataPath: '/tmp/alfred-relay-liveness-test',
     appVersion: '1.4.188',
     runtimeRpc,

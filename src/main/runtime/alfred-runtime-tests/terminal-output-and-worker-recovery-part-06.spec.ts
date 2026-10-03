@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   AlfredRuntimeService,
@@ -83,14 +84,14 @@ describe('AlfredRuntimeService', () => {
       rows: 24
     })
     const runtime = new AlfredRuntimeService(
-      {
+      createRuntimeStoreTestDouble({
         ...runtimeStore,
         getRepos: () => [remoteRepo],
         getRepo: (id: string) => (id === TEST_REPO_ID ? remoteRepo : undefined),
         getWorkspaceSession,
         setWorkspaceSession,
         flushOrThrow: vi.fn()
-      } as never,
+      }),
       undefined,
       { canRecoverPersistentLocalPtys: () => true }
     )
@@ -220,7 +221,7 @@ describe('AlfredRuntimeService', () => {
     }
     const { runtimeStore, getSession } = makeRuntimeStoreWithWorkspaceSession(session)
     const runtime = new AlfredRuntimeService(
-      {
+      createRuntimeStoreTestDouble({
         ...runtimeStore,
         getProjects: () => [
           {
@@ -228,17 +229,17 @@ describe('AlfredRuntimeService', () => {
             displayName: 'repo',
             badgeColor: 'blue',
             sourceRepoIds: [TEST_REPO_ID],
-            localWindowsRuntimePreference: { kind: 'wsl', distro: 'Ubuntu' },
+            localWindowsRuntimePreference: { kind: 'wsl' as const, distro: 'Ubuntu' },
             createdAt: 0,
             updatedAt: 0
           }
         ],
         getSettings: () => ({
           ...store.getSettings(),
-          localWindowsRuntimeDefault: { kind: 'windows-host' }
+          localWindowsRuntimeDefault: { kind: 'windows-host' as const }
         }),
         flushOrThrow: vi.fn()
-      } as never,
+      }),
       undefined,
       { canRecoverPersistentLocalPtys: () => true }
     )
@@ -353,7 +354,9 @@ describe('AlfredRuntimeService', () => {
       }
     }
     const { runtimeStore, getSession } = makeRuntimeStoreWithWorkspaceSession(session)
-    const runtime = new AlfredRuntimeService({ ...runtimeStore, flushOrThrow: vi.fn() } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({ ...runtimeStore, flushOrThrow: vi.fn() })
+    )
     runtime.setPtyController({
       write: () => true,
       kill: () => true,
@@ -524,7 +527,9 @@ describe('AlfredRuntimeService', () => {
       }
     }
     const { runtimeStore, getSession } = makeRuntimeStoreWithWorkspaceSession(session)
-    const runtime = new AlfredRuntimeService({ ...runtimeStore, flushOrThrow: vi.fn() } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({ ...runtimeStore, flushOrThrow: vi.fn() })
+    )
     runtime.setPtyController({
       write: () => true,
       kill: () => true,

@@ -48,7 +48,7 @@ vi.mock('node:fs/promises', async () => {
   return {
     ...actual,
     default: actual,
-    readFile: (async (target: unknown, options: never) => {
+    readFile: async (target: unknown, options: never) => {
       const call = (): unknown =>
         (actual.readFile as (...args: never[]) => unknown)(target as never, options)
       if (typeof target !== 'string' || !target.endsWith('alfred-runtime.json')) {
@@ -69,7 +69,7 @@ vi.mock('node:fs/promises', async () => {
           }
         }
       }
-    }) as typeof actual.readFile
+    }
   }
 })
 

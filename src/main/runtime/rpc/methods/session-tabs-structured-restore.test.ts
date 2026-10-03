@@ -1,3 +1,5 @@
+import { getDefaultRuntimeClientSettings } from '../../runtime-client-settings-test-fixture'
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi, type Mock } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
@@ -11,12 +13,15 @@ function makeRequest(method: string, params?: unknown): RpcRequest {
 }
 
 function makeRuntime(experimentalStructuredNativeChat: boolean): AlfredRuntimeService {
-  return {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
-    getClientSettings: vi.fn(() => ({ experimentalStructuredNativeChat })),
+    getClientSettings: vi.fn(() => ({
+      ...getDefaultRuntimeClientSettings(),
+      experimentalStructuredNativeChat
+    })),
     restoreStructuredAgentSessionTabs: vi.fn(),
     listMobileSessionTabs: vi.fn().mockResolvedValue(visibleSnapshot())
-  } as unknown as AlfredRuntimeService
+  })
 }
 
 describe('structured session tab restoration follows one rule for every caller', () => {

@@ -74,7 +74,10 @@ async function startHookListener(): Promise<{
         paneKey: form.get('paneKey'),
         worktreeId: form.get('worktreeId'),
         hookEventName: form.get('hook_event_name'),
-        token: (req.headers['x-alfred-agent-hook-token'] as string | undefined) ?? null,
+        token:
+          (typeof req.headers['x-alfred-agent-hook-token'] === 'string'
+            ? req.headers['x-alfred-agent-hook-token']
+            : null) ?? null,
         contentType: (req.headers['content-type'] as string | undefined) ?? null
       })
       res.writeHead(200, { 'content-type': 'application/json' })

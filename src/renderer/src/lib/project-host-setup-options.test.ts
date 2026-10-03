@@ -142,7 +142,7 @@ describe('buildProjectHostSetupOptions', () => {
   it('omits runtime-owned SSH (per-workspace-env) setups even when their host is filtered out', () => {
     // The execution-host registry filters runtime-owned targets, so the setup's host is absent
     // here — guard on the hostId so the hidden target never becomes a selectable run-target.
-    const runtimeSshHostId = 'ssh:runtime-ssh-alfred-e37aa3a9' as ExecutionHostId
+    const runtimeSshHostId = 'ssh:runtime-ssh-alfred-e37aa3a9'
     const options = buildProjectHostSetupOptions({
       projectId: 'project-1',
       eligibleRepos: [repo('local-repo'), repo('vm-repo')],
@@ -163,7 +163,7 @@ describe('buildProjectHostSetupOptions', () => {
   })
 
   it('omits hidden host categories from setup-needed choices', () => {
-    const runtimeSshHostId = 'ssh:runtime-ssh-alfred-e37aa3a9' as ExecutionHostId
+    const runtimeSshHostId = 'ssh:runtime-ssh-alfred-e37aa3a9'
     const ephemeralHostId = 'runtime:90d880b2-de1b-44be-b7b8-8e15274e184e' as ExecutionHostId
 
     const options = buildProjectHostSetupOptions({

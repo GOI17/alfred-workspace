@@ -11,8 +11,26 @@ vi.mock('expo-notifications', () => ({
   dismissNotificationAsync: vi.fn()
 }))
 
-function presented(identifier: string, data: unknown): unknown {
-  return { request: { identifier, content: { data } } }
+function presented(identifier: string, data: Record<string, unknown>): Notifications.Notification {
+  return {
+    date: 1,
+    request: {
+      identifier,
+      trigger: { type: 'push' },
+      content: {
+        data,
+        title: null,
+        subtitle: null,
+        body: null,
+        sound: null,
+        categoryIdentifier: null,
+        launchImageName: null,
+        badge: null,
+        attachments: [],
+        threadIdentifier: null
+      }
+    }
+  }
 }
 
 beforeEach(() => {
@@ -32,7 +50,7 @@ describe('dismissPresentedPushNotification', () => {
       presented('other-host', { hostFingerprint: 'another-host', notificationId: 'agent:one' }),
       // Flat FCM shape for the same notification, presented on Android.
       presented('tray-3', { hostFingerprint: 'fp0123456789abcd', notificationId: 'agent:one' })
-    ] as never)
+    ])
 
     await dismissPresentedPushNotification('agent:one', 'fp0123456789abcd')
 

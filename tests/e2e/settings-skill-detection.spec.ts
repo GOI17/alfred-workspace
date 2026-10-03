@@ -45,7 +45,7 @@ async function installMockSkillDiscovery(
     global.__alfredSettingsSkillDiscoveryResult = initialResult
     electron.ipcMain.removeHandler('skills:discover')
     electron.ipcMain.handle('skills:discover', () => {
-      const latest = (globalThis as MockSkillDiscoveryGlobal).__alfredSettingsSkillDiscoveryResult
+      const latest = globalThis.__alfredSettingsSkillDiscoveryResult
       if (!latest) {
         throw new Error('Missing mocked skill discovery result')
       }
@@ -59,7 +59,7 @@ async function setMockSkillDiscovery(
   result: SkillDiscoveryResult
 ): Promise<void> {
   await app.evaluate((_, nextResult) => {
-    ;(globalThis as MockSkillDiscoveryGlobal).__alfredSettingsSkillDiscoveryResult = nextResult
+    globalThis.__alfredSettingsSkillDiscoveryResult = nextResult
   }, result)
 }
 

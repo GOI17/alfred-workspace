@@ -69,11 +69,7 @@ describe('terminal freeze report', () => {
     const { installTerminalFreezeReport, buildTerminalFreezeReport } =
       await import('./terminal-freeze-report')
     installTerminalFreezeReport()
-    const installed = (
-      globalThis.window as unknown as {
-        __alfredTerminalFreezeReport?: () => Promise<unknown>
-      }
-    ).__alfredTerminalFreezeReport
+    const installed = globalThis.window.__alfredTerminalFreezeReport
     expect(installed).toBe(buildTerminalFreezeReport)
   })
 })

@@ -1,3 +1,4 @@
+import { makeRepo as fixtureMakeRepo } from '../../../../shared/repo-test-fixture'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { GlobalSettings } from '../../../../shared/global-settings-types'
 import type { Project } from '../../../../shared/project-types'
@@ -18,7 +19,7 @@ const WSL_DEFAULT = {
 } as unknown as GlobalSettings
 
 function makeRepo(overrides: Partial<Repo> = {}): Repo {
-  return { id: 'repo-1', path: 'C:\\Users\\alice\\alfred', ...overrides } as Repo
+  return fixtureMakeRepo({ id: 'repo-1', path: 'C:\\Users\\alice\\alfred', ...overrides })
 }
 
 function makeProject(overrides: Partial<Project> = {}): Project {

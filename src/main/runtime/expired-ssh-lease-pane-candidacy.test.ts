@@ -46,6 +46,7 @@ function leaseFor(ptyId: string, marks: Partial<SshRemotePtyLease> = {}): SshRem
 }
 
 function readerWithLeases(leases: SshRemotePtyLease[]): LeaseReader {
+  // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: The real runtime owns these protected methods; the test exposes only its lease-pruning probes.
   return new AlfredRuntimeService({
     ...store,
     getSshRemotePtyLeases: () => leases
@@ -97,6 +98,7 @@ describe('recent expired SSH lease candidacy', () => {
   it('collects the same tabs the per-tab reader reports, in one sweep of the leases', () => {
     const leases = [leaseFor('pty-1', { supersededBy: 'pty-2' }), leaseFor('pty-2')]
     let sweeps = 0
+    // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: The real runtime owns these protected methods; the test exposes only its lease-pruning probes.
     const reader = new AlfredRuntimeService({
       ...store,
       getSshRemotePtyLeases: () => {

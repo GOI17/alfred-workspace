@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { getDefaultSettings } from '../../../../shared/constants'
 import { AlfredRuntimeService } from '../../alfred-runtime'
@@ -8,9 +9,16 @@ vi.mock('electron', () => ({
 }))
 
 function runtimeWithSharing(agentSkillSharingEnabled: unknown): AlfredRuntimeService {
-  return new AlfredRuntimeService({
-    getSettings: () => ({ ...getDefaultSettings('/tmp'), agentSkillSharingEnabled })
-  } as never)
+  return new AlfredRuntimeService(
+    createRuntimeStoreTestDouble({
+      getSettings: () => {
+        // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: Malformed persisted flags intentionally exercise fail-closed capability admission.
+        return { ...getDefaultSettings('/tmp'), agentSkillSharingEnabled } as ReturnType<
+          typeof getDefaultSettings
+        >
+      }
+    })
+  )
 }
 
 describe('agent skill publish capability cannot be granted over RPC', () => {

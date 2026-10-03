@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from './dispatcher'
 import type { RpcRequest } from './core'
@@ -19,10 +20,10 @@ import {
 // literally ("colors/garbage around what I type").
 
 function stubRuntime(overrides: Partial<AlfredRuntimeService> = {}): AlfredRuntimeService {
-  return {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
     ...overrides
-  } as AlfredRuntimeService
+  })
 }
 
 function makeRequest(method: string, params?: unknown): RpcRequest {

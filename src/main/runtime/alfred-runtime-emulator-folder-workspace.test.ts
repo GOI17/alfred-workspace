@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import type { EmulatorSessionInfo } from '../emulator/emulator-types'
 import type { FolderWorkspace } from '../../shared/folder-workspace-types'
@@ -45,17 +46,19 @@ describe('RuntimeEmulatorCommands folder workspace routing', () => {
         stopActiveForSwitch: vi.fn(async () => null)
       }
       const send = vi.fn()
-      const runtime = new AlfredRuntimeService({
-        getFolderWorkspaces: () => [makeFolderWorkspace()],
-        getAllWorktreeMeta: () => new Map(),
-        getRepo: () => null,
-        getRepos: () => [],
-        getSettings: () => ({
-          mobileEmulatorEnabled: true,
-          mobileEmulatorDefaultDeviceUdid: null,
-          androidSdkPath: null
+      const runtime = new AlfredRuntimeService(
+        createRuntimeStoreTestDouble({
+          getFolderWorkspaces: () => [makeFolderWorkspace()],
+          getAllWorktreeMeta: () => ({}),
+          getRepo: () => undefined,
+          getRepos: () => [],
+          getSettings: () => ({
+            mobileEmulatorEnabled: true,
+            mobileEmulatorDefaultDeviceUdid: null,
+            androidSdkPath: null
+          })
         })
-      } as never)
+      )
       runtime.setEmulatorBridge(bridge as never)
       Object.assign(runtime, {
         getAuthoritativeWindow: () => ({ webContents: { send } })
@@ -87,13 +90,15 @@ describe('RuntimeEmulatorCommands folder workspace routing', () => {
     async (selector) => {
       let folderWorkspaces = [makeFolderWorkspace()]
       const shutdownActiveManagedForWorktree = vi.fn(async () => EMULATOR_INFO.deviceUdid)
-      const runtime = new AlfredRuntimeService({
-        getFolderWorkspaces: () => folderWorkspaces,
-        getAllWorktreeMeta: () => new Map(),
-        getRepo: () => null,
-        getRepos: () => [],
-        getSettings: () => ({ androidSdkPath: null })
-      } as never)
+      const runtime = new AlfredRuntimeService(
+        createRuntimeStoreTestDouble({
+          getFolderWorkspaces: () => folderWorkspaces,
+          getAllWorktreeMeta: () => ({}),
+          getRepo: () => undefined,
+          getRepos: () => [],
+          getSettings: () => ({ androidSdkPath: null })
+        })
+      )
       runtime.setEmulatorBridge({ shutdownActiveManagedForWorktree } as never)
 
       folderWorkspaces = []
@@ -123,17 +128,19 @@ describe('RuntimeEmulatorCommands folder workspace routing', () => {
       shutdownActiveManagedForWorktree: vi.fn(async () => null),
       stopActiveForSwitch: vi.fn(async () => null)
     }
-    const runtime = new AlfredRuntimeService({
-      getFolderWorkspaces: () => folderWorkspaces,
-      getAllWorktreeMeta: () => new Map(),
-      getRepo: () => null,
-      getRepos: () => [],
-      getSettings: () => ({
-        mobileEmulatorEnabled: true,
-        mobileEmulatorDefaultDeviceUdid: null,
-        androidSdkPath: null
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        getFolderWorkspaces: () => folderWorkspaces,
+        getAllWorktreeMeta: () => ({}),
+        getRepo: () => undefined,
+        getRepos: () => [],
+        getSettings: () => ({
+          mobileEmulatorEnabled: true,
+          mobileEmulatorDefaultDeviceUdid: null,
+          androidSdkPath: null
+        })
       })
-    } as never)
+    )
     runtime.setEmulatorBridge(bridge as never)
     Object.assign(runtime, {
       getAuthoritativeWindow: () => ({ webContents: { send: vi.fn() } })

@@ -1,8 +1,9 @@
+import { makeWorktree as fixtureMakeWorktree } from '../../../../shared/worktree/worktree-test-fixture'
 import { describe, expect, it } from 'vitest'
-import type { BrowserWorkspace } from '../../../../shared/browser-workspace-types'
+
 import type { MemorySnapshot, WorktreeMemory } from '../../../../shared/process-stats-types'
 import type { TerminalTab } from '../../../../shared/terminal-tab-types'
-import type { Worktree } from '../../../../shared/worktree/types'
+
 import { mergeSnapshotAndSessions, UNATTRIBUTED_REPO_ID } from './mergeSnapshotAndSessions'
 import { requiresKillConfirmation } from './resource-session-kill-confirmation'
 import type { DaemonSession, MergeContext } from './resource-usage-merge-types'
@@ -67,11 +68,11 @@ describe('mergeSnapshotAndSessions', () => {
   })
 
   it('includes browser-only workspaces in their repo', () => {
-    const worktree = {
+    const worktree = fixtureMakeWorktree({
       id: 'alfred::/Users/me/browser-only',
       repoId: 'alfred',
       displayName: 'browser-only'
-    } as Worktree
+    })
     const browser = {
       id: 'browser-1',
       worktreeId: worktree.id,
@@ -83,7 +84,7 @@ describe('mergeSnapshotAndSessions', () => {
       canGoForward: false,
       loadError: null,
       createdAt: 1
-    } as BrowserWorkspace
+    }
     const out = mergeSnapshotAndSessions(
       null,
       [],

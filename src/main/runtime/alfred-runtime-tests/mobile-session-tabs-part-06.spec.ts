@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   AlfredRuntimeService,
@@ -202,7 +203,7 @@ describe('AlfredRuntimeService', () => {
       }
     })
     const { runtimeStore } = makeRuntimeStoreWithWorkspaceSession(session)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     runtime['hydrateHeadlessMobileSessionTabsFromWorkspaceSession'](TEST_WORKTREE_ID)
     const rehydrated = await runtime.listMobileSessionTabs(`id:${TEST_WORKTREE_ID}`)
@@ -218,7 +219,7 @@ describe('AlfredRuntimeService', () => {
   it('persists a headless terminal rename so it survives a cold rehydrate', async () => {
     const session = makeWorkspaceSessionWithHeadlessTerminal()
     const { runtimeStore, getSession } = makeRuntimeStoreWithWorkspaceSession(session)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       spawn: vi.fn(async () => ({ id: 'rename-pty' })),
       write: () => true,
@@ -255,7 +256,7 @@ describe('AlfredRuntimeService', () => {
   it('persists a headless pane layout (ratio/expand) so it survives a cold rehydrate', async () => {
     const session = makeWorkspaceSessionWithHeadlessTerminal()
     const { runtimeStore, getSession } = makeRuntimeStoreWithWorkspaceSession(session)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     await runtime.updateMobileSessionPaneLayout(`id:${TEST_WORKTREE_ID}`, {
       tabId: 'host-tab',
@@ -291,7 +292,7 @@ describe('AlfredRuntimeService', () => {
   it('persists headless tab color + pin and surfaces them through a cold rehydrate', async () => {
     const session = makeWorkspaceSessionWithHeadlessTerminal()
     const { runtimeStore, getSession } = makeRuntimeStoreWithWorkspaceSession(session)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     await runtime.setMobileSessionTabProps(`id:${TEST_WORKTREE_ID}`, {
       tabId: 'host-tab',
@@ -344,7 +345,7 @@ describe('AlfredRuntimeService', () => {
       }
     })
     const { runtimeStore, getSession } = makeRuntimeStoreWithWorkspaceSession(session)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setOffscreenBrowserBackend({ createTab: vi.fn(), closeTab: vi.fn() })
     runtime.setAgentBrowserBridge({
       tabList: vi.fn(() => ({
@@ -407,7 +408,7 @@ describe('AlfredRuntimeService', () => {
   it('persists headless tab viewMode and surfaces it through a cold rehydrate', async () => {
     const session = makeWorkspaceSessionWithHeadlessTerminal()
     const { runtimeStore, getSession } = makeRuntimeStoreWithWorkspaceSession(session)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     await runtime.setMobileSessionTabProps(`id:${TEST_WORKTREE_ID}`, {
       tabId: 'host-tab',
@@ -438,7 +439,7 @@ describe('AlfredRuntimeService', () => {
     // Why: serve's syncWindowGraph(0,...) sets authoritativeWindowId=0, but BrowserWindow.fromId(0) is null, so the renderer-authoritative gate must not fire.
     const session = makeWorkspaceSessionWithHeadlessTerminal()
     const { runtimeStore, getSession } = makeRuntimeStoreWithWorkspaceSession(session)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.syncWindowGraph(0, { tabs: [], leaves: [] })
 
     await runtime.setMobileSessionTabProps(`id:${TEST_WORKTREE_ID}`, {
@@ -599,10 +600,12 @@ describe('AlfredRuntimeService', () => {
   })
 
   it('keeps the graph ready when a mobile snapshot references a removed folder workspace', () => {
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getFolderWorkspaces: () => []
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getFolderWorkspaces: () => []
+      })
+    )
 
     expect(() =>
       runtime.syncWindowGraph(1, {
@@ -628,16 +631,35 @@ describe('AlfredRuntimeService', () => {
     const tabsByWorktree = Object.fromEntries(
       Array.from({ length: 100 }, (_, index) => [
         `${TEST_REPO_ID}::/tmp/worktree-${index}`,
-        [{ id: `tab-${index}`, ptyId: `${TEST_REPO_ID}::/tmp/worktree-${index}@@pty` }]
+        [
+          {
+            worktreeId: `${TEST_REPO_ID}::/tmp/worktree-${index}`,
+            title: 'Terminal',
+            customTitle: null,
+            color: null,
+            sortOrder: index,
+            createdAt: 1,
+            id: `tab-${index}`,
+            ptyId: `${TEST_REPO_ID}::/tmp/worktree-${index}@@pty`
+          }
+        ]
       ])
     )
-    const session = { tabsByWorktree, terminalLayoutsByTabId: {} }
+    const session = {
+      activeRepoId: null,
+      activeWorktreeId: null,
+      activeTabId: null,
+      tabsByWorktree,
+      terminalLayoutsByTabId: {}
+    }
     const getWorkspaceSession = vi.fn(() => session)
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getWorkspaceSession,
-      getWorkspaceSessionHostIds: () => ['local']
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getWorkspaceSession,
+        getWorkspaceSessionHostIds: () => ['local']
+      })
+    )
 
     runtime.syncWindowGraph(1, {
       tabs: [],
@@ -661,16 +683,35 @@ describe('AlfredRuntimeService', () => {
     const tabsByWorktree = Object.fromEntries(
       Array.from({ length: 100 }, (_, index) => [
         `${TEST_REPO_ID}::/tmp/runtime-worktree-${index}`,
-        [{ id: `runtime-tab-${index}`, ptyId: `serve-runtime-${index}` }]
+        [
+          {
+            worktreeId: `${TEST_REPO_ID}::/tmp/runtime-worktree-${index}`,
+            title: 'Terminal',
+            customTitle: null,
+            color: null,
+            sortOrder: index,
+            createdAt: 1,
+            id: `runtime-tab-${index}`,
+            ptyId: `serve-runtime-${index}`
+          }
+        ]
       ])
     )
-    const session = { tabsByWorktree, terminalLayoutsByTabId: {} }
+    const session = {
+      activeRepoId: null,
+      activeWorktreeId: null,
+      activeTabId: null,
+      tabsByWorktree,
+      terminalLayoutsByTabId: {}
+    }
     const getWorkspaceSession = vi.fn(() => session)
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getWorkspaceSession,
-      getWorkspaceSessionHostIds: () => ['local']
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getWorkspaceSession,
+        getWorkspaceSessionHostIds: () => ['local']
+      })
+    )
 
     runtime.syncWindowGraph(1, { tabs: [], leaves: [], mobileSessionTabs: [] })
 

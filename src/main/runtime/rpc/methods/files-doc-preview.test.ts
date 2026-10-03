@@ -1,18 +1,18 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
-import type { AlfredRuntimeService } from '../../alfred-runtime'
 import type { RpcRequest } from '../core'
 import { RpcDispatcher } from '../dispatcher'
 import { FILE_METHODS } from './files'
 
 describe('files.readDocPreview', () => {
   it('passes document-preview authority to the dedicated host method', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       readDocPreviewFile: vi.fn().mockResolvedValue({
         content: '<h1>safe</h1>',
         isBinary: false
       })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: FILE_METHODS })
     const request: RpcRequest = {
       id: 'req-1',

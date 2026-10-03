@@ -5,8 +5,7 @@ export function resolveDiagnosticBuildTokenEndpoint(): string | null {
   const endpoint =
     typeof ALFRED_DIAGNOSTICS_TOKEN_URL !== 'undefined'
       ? ALFRED_DIAGNOSTICS_TOKEN_URL
-      : ((globalThis as { ALFRED_DIAGNOSTICS_TOKEN_URL?: string | null })
-          .ALFRED_DIAGNOSTICS_TOKEN_URL ?? null)
+      : (globalThis.ALFRED_DIAGNOSTICS_TOKEN_URL ?? null)
   return typeof endpoint === 'string' && endpoint.length > 0 ? endpoint : null
 }
 
@@ -14,8 +13,7 @@ export function resolveDiagnosticBuildIdentity(): 'stable' | 'rc' | null {
   const ident =
     typeof ALFRED_BUILD_IDENTITY !== 'undefined'
       ? ALFRED_BUILD_IDENTITY
-      : ((globalThis as { ALFRED_BUILD_IDENTITY?: 'stable' | 'rc' | null }).ALFRED_BUILD_IDENTITY ??
-        null)
+      : (globalThis.ALFRED_BUILD_IDENTITY ?? null)
   return ident === 'stable' || ident === 'rc' ? ident : null
 }
 

@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { AlfredRuntimeService } from './alfred-runtime'
 
@@ -95,7 +96,7 @@ type MobileTab = {
 }
 
 function buildLoadedRuntime(): AlfredRuntimeService {
-  const runtime = new AlfredRuntimeService(makeStore() as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
   const tabs: GraphTab[] = []
   const leaves: GraphLeaf[] = []
   const mobileTabs: MobileTab[] = []

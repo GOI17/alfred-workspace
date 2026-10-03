@@ -19,7 +19,8 @@ export function isBrowserPaneUiRuntimeRpcParams(value: unknown): boolean {
     value !== null &&
     typeof value === 'object' &&
     !Array.isArray(value) &&
-    (value as Record<string, unknown>)[ALFRED_RUNTIME_RPC_FEATURE_INTERACTION_SOURCE_KEY] ===
+    ALFRED_RUNTIME_RPC_FEATURE_INTERACTION_SOURCE_KEY in value &&
+    value[ALFRED_RUNTIME_RPC_FEATURE_INTERACTION_SOURCE_KEY] ===
       ALFRED_RUNTIME_RPC_BROWSER_UI_SOURCE
   )
 }

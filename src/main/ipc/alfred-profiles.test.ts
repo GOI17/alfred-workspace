@@ -1,3 +1,4 @@
+import { getDefaultSettings } from '../../shared/constants'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const {
@@ -54,12 +55,12 @@ vi.mock('../alfred-profiles/profile-index-store', () => ({
   setActiveAlfredProfile: setActiveAlfredProfileMock
 }))
 
-function makeStoreMock(flushPendingOrThrowAsync = vi.fn()): {
-  flushPendingOrThrowAsync: typeof flushPendingOrThrowAsync
-  freezeWrites: ReturnType<typeof vi.fn>
-  getSettings: () => Record<string, never>
-} {
-  return { flushPendingOrThrowAsync, freezeWrites: vi.fn(), getSettings: () => ({}) }
+function makeStoreMock(flushPendingOrThrowAsync = vi.fn()) {
+  return {
+    flushPendingOrThrowAsync,
+    freezeWrites: vi.fn(),
+    getSettings: () => getDefaultSettings('/tmp')
+  }
 }
 
 vi.mock('../alfred-profiles/profile-project-transfer', () => ({
@@ -105,7 +106,7 @@ describe('registerAlfredProfileHandlers', () => {
     getAlfredProfileListStateMock.mockReturnValue(listState)
     createLocalAlfredProfileMock.mockReturnValue(createState)
 
-    registerAlfredProfileHandlers(makeStoreMock() as never)
+    registerAlfredProfileHandlers(makeStoreMock())
 
     await expect(Promise.resolve(handlers.get('alfredProfiles:list')?.(null))).resolves.toEqual({
       ...listState,
@@ -125,7 +126,7 @@ describe('registerAlfredProfileHandlers', () => {
         activeProfileId: 'local-default',
         profiles: []
       })
-      registerAlfredProfileHandlers(makeStoreMock() as never)
+      registerAlfredProfileHandlers(makeStoreMock())
 
       await expect(Promise.resolve(handlers.get('alfredProfiles:list')?.(null))).resolves.toEqual({
         activeProfileId: 'local-default',
@@ -152,7 +153,7 @@ describe('registerAlfredProfileHandlers', () => {
       activeProfileId: 'local-work',
       profiles: []
     })
-    registerAlfredProfileHandlers(makeStoreMock(flush) as never, { onBeforeRelaunch })
+    registerAlfredProfileHandlers(makeStoreMock(flush), { onBeforeRelaunch })
 
     const resultPromise = Promise.resolve(
       handlers.get('alfredProfiles:switch')?.(null, { profileId: 'local-work' })
@@ -186,7 +187,7 @@ describe('registerAlfredProfileHandlers', () => {
       activeProfileId: 'local-default',
       profiles: []
     })
-    registerAlfredProfileHandlers(makeStoreMock(flush) as never)
+    registerAlfredProfileHandlers(makeStoreMock(flush))
 
     await expect(
       Promise.resolve(handlers.get('alfredProfiles:switch')?.(null, { profileId: 'local-work' }))
@@ -203,7 +204,7 @@ describe('registerAlfredProfileHandlers', () => {
       activeProfileId: 'local-default',
       profiles: []
     })
-    registerAlfredProfileHandlers(makeStoreMock(flush) as never, { onBeforeRelaunch })
+    registerAlfredProfileHandlers(makeStoreMock(flush), { onBeforeRelaunch })
 
     const switchProfile = Promise.resolve(
       handlers.get('alfredProfiles:switch')?.(null, { profileId: 'local-work' })
@@ -222,7 +223,7 @@ describe('registerAlfredProfileHandlers', () => {
       activeProfileId: 'local-default',
       profiles: []
     })
-    registerAlfredProfileHandlers(makeStoreMock() as never)
+    registerAlfredProfileHandlers(makeStoreMock())
 
     await expect(
       Promise.resolve(handlers.get('alfredProfiles:switch')?.(null, { profileId: 'local-default' }))
@@ -233,7 +234,7 @@ describe('registerAlfredProfileHandlers', () => {
   })
 
   it('rejects invalid profile ids', async () => {
-    registerAlfredProfileHandlers(makeStoreMock() as never)
+    registerAlfredProfileHandlers(makeStoreMock())
 
     await expect(
       Promise.resolve(handlers.get('alfredProfiles:switch')?.(null, { profileId: ' ' }))
@@ -256,7 +257,7 @@ describe('registerAlfredProfileHandlers', () => {
       profiles: []
     })
     transferAlfredProfileProjectMock.mockReturnValue(result)
-    registerAlfredProfileHandlers(makeStoreMock(flush) as never)
+    registerAlfredProfileHandlers(makeStoreMock(flush))
 
     await expect(
       Promise.resolve(
@@ -298,7 +299,7 @@ describe('registerAlfredProfileHandlers', () => {
       profiles: []
     })
     transferAlfredProfileProjectMock.mockReturnValue(result)
-    registerAlfredProfileHandlers(makeStoreMock(flush) as never, { onBeforeRelaunch })
+    registerAlfredProfileHandlers(makeStoreMock(flush), { onBeforeRelaunch })
 
     await expect(
       Promise.resolve(
@@ -338,7 +339,7 @@ describe('registerAlfredProfileHandlers', () => {
       activeProfileId: 'work',
       profiles: []
     })
-    registerAlfredProfileHandlers(makeStoreMock() as never)
+    registerAlfredProfileHandlers(makeStoreMock())
 
     await expect(
       Promise.resolve(

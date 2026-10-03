@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
@@ -12,10 +13,10 @@ function makeRequest(method: string, params?: unknown): RpcRequest {
 
 describe('Linear agent access RPC methods', () => {
   it('defaults activity off for clients using the pre-activity issue request shape', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       linearIssueContext: vi.fn().mockResolvedValue({ ok: true })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: LINEAR_AGENT_ACCESS_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -41,7 +42,7 @@ describe('Linear agent access RPC methods', () => {
   })
 
   it('routes agent write methods to the runtime server', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       linearIssueSetState: vi.fn().mockResolvedValue({ ok: true }),
       linearIssueRelationWrite: vi.fn().mockResolvedValue({ ok: true }),
@@ -56,7 +57,7 @@ describe('Linear agent access RPC methods', () => {
       linearIssueAttachLink: vi.fn().mockResolvedValue({ ok: true }),
       linearSaveIssue: vi.fn().mockResolvedValue({ ok: true }),
       linearIssueCreate: vi.fn().mockResolvedValue({ ok: true })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: LINEAR_AGENT_ACCESS_METHODS })
 
     const setStateResponse = await dispatcher.dispatch(
@@ -242,10 +243,10 @@ describe('Linear agent access RPC methods', () => {
   })
 
   it('rejects malformed write ids before the runtime is called', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       linearIssueAddComment: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: LINEAR_AGENT_ACCESS_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -262,10 +263,10 @@ describe('Linear agent access RPC methods', () => {
   })
 
   it('rejects workspace all for direct write RPC calls', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       linearIssueSetState: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: LINEAR_AGENT_ACCESS_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -284,10 +285,10 @@ describe('Linear agent access RPC methods', () => {
   })
 
   it('rejects workspace all for non-list team discovery RPC calls', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       linearTeamMembersForAgents: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: LINEAR_AGENT_ACCESS_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -305,11 +306,11 @@ describe('Linear agent access RPC methods', () => {
   })
 
   it('rejects invalid due dates before the runtime is called', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       linearIssueUpdateTask: vi.fn(),
       linearIssueCreate: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: LINEAR_AGENT_ACCESS_METHODS })
 
     const updateResponse = await dispatcher.dispatch(

@@ -108,11 +108,7 @@ describe('loading Store write-risk characterization', () => {
     writeControl.releaseRename()
     await store.waitForPendingWrite()
 
-    const persisted = JSON.parse(
-      readFileSync(join(testState.dir, 'alfred-data.json'), 'utf-8')
-    ) as {
-      ui: { sidebarWidth: number }
-    }
+    const persisted = JSON.parse(readFileSync(join(testState.dir, 'alfred-data.json'), 'utf-8'))
     expect(persisted.ui.sidebarWidth).toBe(712)
   })
 
@@ -133,11 +129,7 @@ describe('loading Store write-risk characterization', () => {
     writeControl.failPrimaryOpen = false
     store.updateUI({ sidebarWidth: 713 })
     await store.flushPendingOrThrowAsync()
-    const persisted = JSON.parse(
-      readFileSync(join(testState.dir, 'alfred-data.json'), 'utf-8')
-    ) as {
-      sshPtyConsumerRecoveries: { clientInstanceId: string }[]
-    }
+    const persisted = JSON.parse(readFileSync(join(testState.dir, 'alfred-data.json'), 'utf-8'))
     expect(persisted.sshPtyConsumerRecoveries[0]?.clientInstanceId).toBe('client-1')
   })
 })

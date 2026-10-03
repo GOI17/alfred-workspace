@@ -90,7 +90,6 @@ src/terminal/terminal-webview-engine-error.test.ts
 src/terminal/terminal-webview-query-reply-routing.test.ts
 src/terminal/terminal-webview-wheel-scroll.test.ts
 src/terminal/use-buffered-terminal-drafts.test.tsx
-src/terminal/worker-terminal-takeover-report.test.ts
 src/test-support/rpc-recording/native-mounting-substitutes.test.ts
 src/test-support/rpc-recording/operation-module-loader.test.ts
 src/test-support/rpc-recording/screen-native-substitutes.test.ts

@@ -344,7 +344,7 @@ describe('fetchWorktrees', () => {
           connectionId: 'ssh-1'
         }
       ]
-    } as Partial<AppState>)
+    })
 
     const refresh = store.getState().fetchAllWorktrees()
     await Promise.all([localStarted, sshStarted])
@@ -393,7 +393,7 @@ describe('fetchWorktrees', () => {
           connectionId: 'ssh-1'
         }
       ]
-    } as Partial<AppState>)
+    })
 
     const detectedRequest = store.getState().fetchDetectedWorktrees('repo-ssh')
     const visibleRequest = store.getState().fetchWorktrees('repo-ssh')
@@ -445,7 +445,7 @@ describe('fetchWorktrees', () => {
           connectionId: 'ssh-1'
         }
       ]
-    } as Partial<AppState>)
+    })
 
     const visibleRequest = store.getState().fetchWorktrees('repo-ssh')
     const detectedRequest = store.getState().fetchDetectedWorktrees('repo-ssh')
@@ -522,7 +522,7 @@ describe('fetchWorktrees', () => {
           connectionId: 'ssh-1'
         }
       ]
-    } as Partial<AppState>)
+    })
     mockApi.worktrees.listDetected.mockImplementationOnce(async (args: ListDetectedWorktreesArgs) =>
       qualifyDetectedResult(args, makeDetectedResult(args.repoId, [worktree]))
     )
@@ -572,7 +572,7 @@ describe('fetchWorktrees', () => {
       detectedWorktreesByRepo: {
         'repo-ssh': makeDetectedResult('repo-ssh', [existing])
       }
-    } as Partial<AppState>)
+    })
     let request!: ListDetectedWorktreesArgs
     let resolveProvider!: (result: HostQualifiedDetectedWorktreeResult) => void
     mockApi.worktrees.listDetected.mockImplementationOnce(
@@ -651,7 +651,7 @@ describe('fetchWorktrees', () => {
           }
         ]
       ])
-    } as Partial<AppState>)
+    })
 
     await expect(store.getState().fetchWorktrees('repo-ssh')).resolves.toBe(false)
     expect(mockApi.worktrees.listDetected).not.toHaveBeenCalled()

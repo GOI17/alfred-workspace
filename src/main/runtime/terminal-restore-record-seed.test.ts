@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { AlfredRuntimeService } from './alfred-runtime'
 import { getDefaultWorkspaceSession } from '../../shared/constants'
@@ -40,7 +41,7 @@ function makeStore() {
 }
 
 function makeRuntimeWithLeaf(): AlfredRuntimeService {
-  const runtime = new AlfredRuntimeService(makeStore() as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
   runtime.setPtyController({
     spawn: vi.fn(async () => ({ id: 'never' })),
     write: () => true,

@@ -1,26 +1,10 @@
+import { makeJiraIssue as issue } from './jira-issue-test-fixture'
 import { describe, expect, it } from 'vitest'
-import type { JiraIssue, JiraSite } from './jira-types'
+import type { JiraSite } from './jira-types'
 import { getMatchingJiraSites, isResolvedJiraIssueMatch, parseJiraIssueUrl } from './jira-issue-url'
 
 function site(id: string, siteUrl: string): JiraSite {
   return { id, siteUrl, email: `${id}@example.com`, displayName: id, accountId: id }
-}
-
-function issue(overrides: Partial<JiraIssue> = {}): JiraIssue {
-  return {
-    id: '100',
-    key: 'ALFRED-123',
-    siteId: 'cloud',
-    title: 'Link Jira',
-    url: 'https://company.atlassian.net/browse/ALFRED-123',
-    project: { id: '10', key: 'ALFRED', name: 'Alfred' },
-    issueType: { id: '1', name: 'Task' },
-    status: { id: '1', name: 'Open', categoryKey: 'new', categoryName: 'To Do' },
-    labels: [],
-    updatedAt: '2026-07-27T00:00:00.000Z',
-    createdAt: '2026-07-27T00:00:00.000Z',
-    ...overrides
-  }
 }
 
 describe('parseJiraIssueUrl', () => {

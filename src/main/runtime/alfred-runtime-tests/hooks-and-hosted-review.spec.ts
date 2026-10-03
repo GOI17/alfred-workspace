@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   AlfredRuntimeService,
@@ -42,7 +43,7 @@ describe('AlfredRuntimeService', () => {
     }
 
     it('reports an error when the SSH filesystem provider is unavailable', async () => {
-      const runtime = new AlfredRuntimeService(remoteStore as never)
+      const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
 
       await expect(runtime.checkRepoHooks('id:repo-1')).resolves.toEqual({
         status: 'error',
@@ -55,7 +56,7 @@ describe('AlfredRuntimeService', () => {
     it('reports ok for a missing remote alfred.yaml and error for any other read failure', async () => {
       const readFile = vi.fn()
       registerSshFilesystemProvider('ssh-1', { readFile } as never)
-      const runtime = new AlfredRuntimeService(remoteStore as never)
+      const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
 
       try {
         readFile.mockRejectedValueOnce(Object.assign(new Error('missing'), { code: 'ENOENT' }))
@@ -75,7 +76,7 @@ describe('AlfredRuntimeService', () => {
     })
 
     it('reports ok for a local repo hook check', async () => {
-      const runtime = new AlfredRuntimeService(store as never)
+      const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
 
       await expect(runtime.checkRepoHooks('id:repo-1')).resolves.toMatchObject({ status: 'ok' })
     })
@@ -114,7 +115,7 @@ describe('AlfredRuntimeService', () => {
       deletePath: vi.fn().mockResolvedValue(undefined)
     }
     registerSshFilesystemProvider('ssh-1', fsProvider as never)
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
 
     try {
       await expect(runtime.readRepoIssueCommand('id:repo-1')).resolves.toMatchObject({
@@ -158,7 +159,7 @@ describe('AlfredRuntimeService', () => {
         }
       ]
     }
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
 
     await expect(runtime.getRepoSlug('id:repo-1')).resolves.toBeNull()
     await expect(runtime.getRepoIssue('id:repo-1', 12)).resolves.toEqual({
@@ -204,17 +205,17 @@ describe('AlfredRuntimeService', () => {
           displayName: 'repo',
           badgeColor: 'blue',
           sourceRepoIds: [TEST_REPO_ID],
-          localWindowsRuntimePreference: { kind: 'wsl', distro: 'Ubuntu' },
+          localWindowsRuntimePreference: { kind: 'wsl' as const, distro: 'Ubuntu' },
           createdAt: 0,
           updatedAt: 0
         }
       ],
       getSettings: () => ({
         ...store.getSettings(),
-        localWindowsRuntimeDefault: { kind: 'windows-host' }
+        localWindowsRuntimeDefault: { kind: 'windows-host' as const }
       })
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     getRepoSlugMock.mockResolvedValueOnce({ owner: 'acme', repo: 'alfred' })
     getRepoUpstreamMock.mockResolvedValueOnce({ owner: 'alfredlabs', repo: 'alfred' })
 
@@ -242,17 +243,17 @@ describe('AlfredRuntimeService', () => {
           displayName: 'repo',
           badgeColor: 'blue',
           sourceRepoIds: [TEST_REPO_ID],
-          localWindowsRuntimePreference: { kind: 'wsl', distro: 'Ubuntu' },
+          localWindowsRuntimePreference: { kind: 'wsl' as const, distro: 'Ubuntu' },
           createdAt: 0,
           updatedAt: 0
         }
       ],
       getSettings: () => ({
         ...store.getSettings(),
-        localWindowsRuntimeDefault: { kind: 'windows-host' }
+        localWindowsRuntimeDefault: { kind: 'windows-host' as const }
       })
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     const localGitOptions = { wslDistro: 'Ubuntu' }
     const issueFields = { labels: ['bug'], assignees: ['octo'] }
     const issueUpdates = { body: 'Updated body' }
@@ -352,11 +353,13 @@ describe('AlfredRuntimeService', () => {
       addedAt: 1,
       issueSourcePreference: 'origin' as const
     }
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getRepos: () => [originRepo],
-      getRepo: (id: string) => (id === originRepo.id ? originRepo : undefined)
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getRepos: () => [originRepo],
+        getRepo: (id: string) => (id === originRepo.id ? originRepo : undefined)
+      })
+    )
     const prRepo = { owner: 'acme', repo: 'alfred' }
 
     await runtime.getRepoWorkItem('id:repo-1', 42, 'pr')

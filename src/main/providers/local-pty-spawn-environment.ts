@@ -1,3 +1,4 @@
+import { definedProcessEnvironment } from '../../shared/defined-process-environment'
 import { mergeGitConfigEnvProtocol } from '../../shared/git-credential-prompt-env'
 import { removeAppImageRuntimeEnv } from '../pty/appimage-terminal-env'
 import { stripInheritedBuildModeEnv } from '../pty/build-mode-env'
@@ -17,7 +18,9 @@ export function buildLocalPtySpawnEnvironment(args: {
 }): Record<string, string> | Promise<Record<string, string>> {
   const { id, spawn, getOptions, plan } = args
   const spawnEnv: Record<string, string> = {
-    ...mergeGitConfigEnvProtocol(stripInheritedBuildModeEnv(process.env), spawn.env),
+    ...definedProcessEnvironment(
+      mergeGitConfigEnvProtocol(stripInheritedBuildModeEnv(process.env), spawn.env)
+    ),
     TERM: 'xterm-256color',
     COLORTERM: 'truecolor',
     TERM_PROGRAM: 'Alfred',
@@ -25,7 +28,7 @@ export function buildLocalPtySpawnEnvironment(args: {
     TERM_PROGRAM_VERSION: process.env.ALFRED_APP_VERSION ?? '0.0.0-dev',
     // Why: supports-hyperlinks rejects TERM_PROGRAM=Alfred, so tools drop OSC 8 links; force it since xterm.js parses them.
     FORCE_HYPERLINK: '1'
-  } as Record<string, string>
+  }
   // Why: Alfred can be launched from an Alfred terminal; pane identity belongs to the child PTY, not the parent shell.
   removeUnspecifiedPaneIdentityEnv(spawnEnv, spawn.env)
   removeAppImageRuntimeEnv(spawnEnv)

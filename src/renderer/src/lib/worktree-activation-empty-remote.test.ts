@@ -17,7 +17,7 @@ const ALFRED_WORKSPACES_PATH = path.join('workspace', '.alfred-workspaces')
 
 afterEach(() => {
   vi.clearAllMocks()
-  delete (globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__
+  delete globalThis.__ALFRED_WEB_CLIENT__
   vi.unstubAllGlobals()
   resetWebSessionTabsSnapshotFreshnessForTests()
   resetWebRuntimeWakeTerminalRespawnForTests()
@@ -69,7 +69,7 @@ describe('empty remote worktree activation', () => {
         snapshotVersion: 1
       }
     })
-    ;(globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__ = true
+    globalThis.__ALFRED_WEB_CLIENT__ = true
     vi.stubGlobal('window', {
       api: {
         runtimeEnvironments: {
@@ -128,7 +128,7 @@ describe('empty remote worktree activation', () => {
       ok: false,
       error: { code: 'terminal_create_failed', message: 'Host refused the terminal' }
     })
-    ;(globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__ = true
+    globalThis.__ALFRED_WEB_CLIENT__ = true
     vi.stubGlobal('window', {
       api: {
         runtimeEnvironments: {

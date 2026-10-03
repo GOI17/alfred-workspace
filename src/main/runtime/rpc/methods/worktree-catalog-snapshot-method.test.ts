@@ -1,18 +1,18 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
-import type { AlfredRuntimeService } from '../../alfred-runtime'
 import { RpcDispatcher } from '../dispatcher'
 import { WORKTREE_METHODS } from './worktree'
 import { WORKTREE_VISIBILITY_SOURCE_DEFAULTS_RUNTIME_CAPABILITY } from '../../../../shared/protocol-version'
 
 function makeRuntime() {
-  return {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
     getWorktreePs: vi.fn().mockResolvedValue({
       worktrees: [],
       totalCount: 0,
       truncated: false
     })
-  } as unknown as AlfredRuntimeService
+  })
 }
 
 describe('worktree.ps catalog snapshots', () => {

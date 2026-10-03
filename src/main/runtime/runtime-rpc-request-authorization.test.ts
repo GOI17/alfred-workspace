@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from './runtime-service-test-double'
 import { mkdtempSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { tmpdir } from 'node:os'
@@ -29,11 +30,11 @@ vi.mock('../git/worktree', () => {
 describe('AlfredRuntimeRpcServer', () => {
   it('rejects WebSocket requests whose request token differs from the authenticated channel token', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       configureNotificationDismissalStore: () => {},
       getRuntimeId: () => 'test-runtime',
       getStatus: vi.fn().mockResolvedValue({ graphStatus: 'ok' })
-    } as unknown as AlfredRuntimeService
+    })
     const server = new AlfredRuntimeRpcServer({ runtime, userDataPath, enableWebSocket: false })
     server['deviceRegistry'] = new DeviceRegistry(userDataPath)
     const channelDevice = server['deviceRegistry']!.addDevice('phone', 'mobile')
@@ -184,11 +185,11 @@ describe('AlfredRuntimeRpcServer', () => {
   it('rejects unpaired terminal creates before runtime dispatch', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
     const createMobileSessionTerminal = vi.fn()
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       configureNotificationDismissalStore: () => {},
       getRuntimeId: () => 'test-runtime',
       createMobileSessionTerminal
-    } as unknown as AlfredRuntimeService
+    })
     const server = new AlfredRuntimeRpcServer({ runtime, userDataPath, enableWebSocket: false })
     server['deviceRegistry'] = new DeviceRegistry(userDataPath)
     const replies: Record<string, unknown>[] = []
@@ -226,11 +227,11 @@ describe('AlfredRuntimeRpcServer', () => {
   it('allows runtime-scoped WebSocket tokens to use the full RPC surface', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
     const pushRuntimeGit = vi.fn().mockResolvedValue({ ok: true })
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       configureNotificationDismissalStore: () => {},
       getRuntimeId: () => 'test-runtime',
       pushRuntimeGit
-    } as unknown as AlfredRuntimeService
+    })
     const server = new AlfredRuntimeRpcServer({ runtime, userDataPath, enableWebSocket: false })
     server['deviceRegistry'] = new DeviceRegistry(userDataPath)
     const runtimeDevice = server['deviceRegistry']!.addDevice('cli', 'runtime')

@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   FLOATING_TERMINAL_WORKTREE_ID,
@@ -65,7 +66,7 @@ describe('AlfredRuntimeService', () => {
     }
     const spawn = vi.fn().mockResolvedValue({ id: 'pty-remote-windows-bare' })
     registerSshGitProvider('ssh-1', provider as never)
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
     runtime.setPtyController({
       spawn,
       write: () => true,
@@ -304,7 +305,7 @@ describe('AlfredRuntimeService', () => {
     const folderWorkspace = makeFolderWorkspace({ folderPath })
     const projectGroup = makeFolderProjectGroup({ parentPath: folderPath })
     const runtime = new AlfredRuntimeService(
-      createFolderWorkspaceRuntimeStore(folderWorkspace, projectGroup) as never
+      createRuntimeStoreTestDouble(createFolderWorkspaceRuntimeStore(folderWorkspace, projectGroup))
     )
     runtime.setPtyController({
       spawn,
@@ -391,7 +392,7 @@ describe('AlfredRuntimeService', () => {
     const folderWorkspace = makeFolderWorkspace({ folderPath: missingPath })
     const projectGroup = makeFolderProjectGroup({ parentPath: missingPath })
     const runtime = new AlfredRuntimeService(
-      createFolderWorkspaceRuntimeStore(folderWorkspace, projectGroup) as never
+      createRuntimeStoreTestDouble(createFolderWorkspaceRuntimeStore(folderWorkspace, projectGroup))
     )
     runtime.setPtyController({
       spawn,
@@ -413,7 +414,7 @@ describe('AlfredRuntimeService', () => {
       ...createFolderWorkspaceRuntimeStore(folderWorkspace),
       updateFolderWorkspace: vi.fn()
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     await expect(
       runtime.updateFolderWorkspace(TEST_FOLDER_WORKSPACE_ID, { folderPath: missingPath })

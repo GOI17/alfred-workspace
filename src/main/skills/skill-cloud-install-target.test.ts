@@ -1,11 +1,12 @@
+import { createRuntimeServiceTestDouble } from '../runtime/runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import type { AlfredRuntimeService } from '../runtime/alfred-runtime'
 import { classifySkillCloudInstallTarget } from './skill-cloud-install-target'
 
 function runtime(usesSsh: boolean): AlfredRuntimeService {
-  return {
+  return createRuntimeServiceTestDouble({
     skillInstallDestinationUsesSsh: vi.fn().mockResolvedValue(usesSsh)
-  } as unknown as AlfredRuntimeService
+  })
 }
 
 describe('classifySkillCloudInstallTarget', () => {

@@ -1,3 +1,4 @@
+import { makeWorktreeMeta as fixtureMakeWorktreeMeta } from '../../../../shared/worktree/metadata-test-fixture'
 /**
  * Guards the single-classification contract of `buildDetectedGitWorktrees`: every visible worktree
  * used to be run through `mergeWorktree` + `toDetectedWorktree` twice per catalog pass.
@@ -68,13 +69,13 @@ function gitWorktree(path: string): GitWorktreeInfo {
 
 /** Fully settled metadata: discovery backfill has nothing to write, so it hands the same object back. */
 function settledMeta(overrides: Partial<WorktreeMeta> = {}): WorktreeMeta {
-  return {
+  return fixtureMakeWorktreeMeta({
     ...ownershipMeta,
     instanceId: 'instance-settled',
     alfredCreatedAt: 1,
     lastActivityAt: 5,
     ...overrides
-  } as WorktreeMeta
+  })
 }
 
 function createStore(meta: Record<string, WorktreeMeta>, repos: Repo[] = [repo]) {
@@ -207,7 +208,7 @@ describe('buildDetectedGitWorktrees classification passes', () => {
 
   it.each([
     ['settled metadata', () => settledMeta()],
-    ['metadata needing discovery backfill', () => ({ alfredCreatedAt: 1 }) as WorktreeMeta],
+    ['metadata needing discovery backfill', () => fixtureMakeWorktreeMeta({ alfredCreatedAt: 1 })],
     ['no metadata at all', () => undefined]
   ])('emits a catalog deep-equal to the two-pass build for %s', (_label, makeMeta) => {
     const worktreeId = `${repo.id}::/workspace/one`

@@ -576,9 +576,7 @@ test('renders a paired HTML doc as a document browser tab while the host gains n
     })
     const guestFocus = await page.evaluate(() => {
       const active = document.activeElement
-      const guest = document.querySelector(
-        'webview[src^="alfred-preview://"]'
-      ) as HTMLElement | null
+      const guest = document.querySelector<Electron.WebviewTag>('webview[src^="alfred-preview://"]')
       const before = active?.tagName ?? null
       guest?.focus()
       return { before, after: document.activeElement?.tagName ?? null }

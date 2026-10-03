@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AppState } from '../types'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { FLOATING_TERMINAL_WORKTREE_ID } from '../../../../shared/constants'
 import { makeLineage } from './worktrees-slice-test-fixtures'
 import {
@@ -39,15 +40,44 @@ describe('purgeWorktreeTerminalState direct (design §4.4)', () => {
     store.setState({
       tabsByWorktree: {
         'repoA::/a/wt1': [
-          { id: 'tab-1', worktreeId: 'repoA::/a/wt1' },
-          { id: 'tab-2', worktreeId: 'repoA::/a/wt1' }
+          {
+            ptyId: null,
+            title: 'Terminal',
+            customTitle: null,
+            color: null,
+            sortOrder: 0,
+            createdAt: 1,
+            id: 'tab-1',
+            worktreeId: 'repoA::/a/wt1'
+          },
+          {
+            ptyId: null,
+            title: 'Terminal',
+            customTitle: null,
+            color: null,
+            sortOrder: 0,
+            createdAt: 1,
+            id: 'tab-2',
+            worktreeId: 'repoA::/a/wt1'
+          }
         ],
-        'repoA::/a/wt2': [{ id: 'tab-3', worktreeId: 'repoA::/a/wt2' }]
+        'repoA::/a/wt2': [
+          {
+            ptyId: null,
+            title: 'Terminal',
+            customTitle: null,
+            color: null,
+            sortOrder: 0,
+            createdAt: 1,
+            id: 'tab-3',
+            worktreeId: 'repoA::/a/wt2'
+          }
+        ]
       },
       terminalLayoutsByTabId: {
-        'tab-1': { panes: [] },
-        'tab-2': { panes: [] },
-        'tab-3': { panes: [] }
+        'tab-1': { root: null, activeLeafId: null, expandedLeafId: null },
+        'tab-2': { root: null, activeLeafId: null, expandedLeafId: null },
+        'tab-3': { root: null, activeLeafId: null, expandedLeafId: null }
       },
       ptyIdsByTabId: { 'tab-1': ['pty-1'], 'tab-2': ['pty-2'], 'tab-3': ['pty-3'] },
       expandedPaneByTabId: { 'tab-1': true, 'tab-2': false, 'tab-3': true },
@@ -108,18 +138,31 @@ describe('purgeWorktreeTerminalState direct (design §4.4)', () => {
       activeFileId: 'file-1',
       activeTabId: 'tab-1',
       activeTabType: 'editor' as const
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().purgeWorktreeTerminalState(['repoA::/a/wt1'])
 
     const s = store.getState()
     expect(s.tabsByWorktree).toEqual({
-      'repoA::/a/wt2': [{ id: 'tab-3', worktreeId: 'repoA::/a/wt2' }]
+      'repoA::/a/wt2': [
+        {
+          ptyId: null,
+          title: 'Terminal',
+          customTitle: null,
+          color: null,
+          sortOrder: 0,
+          createdAt: 1,
+          id: 'tab-3',
+          worktreeId: 'repoA::/a/wt2'
+        }
+      ]
     })
     expect(s.worktreeLineageById).toEqual({
       'repoA::/a/wt2': makeLineage({ worktreeId: 'repoA::/a/wt2' })
     })
-    expect(s.terminalLayoutsByTabId).toEqual({ 'tab-3': { panes: [] } })
+    expect(s.terminalLayoutsByTabId).toEqual({
+      'tab-3': { root: null, activeLeafId: null, expandedLeafId: null }
+    })
     expect(s.ptyIdsByTabId).toEqual({ 'tab-3': ['pty-3'] })
     expect(s.expandedPaneByTabId).toEqual({ 'tab-3': true })
     expect(s.canExpandPaneByTabId).toEqual({ 'tab-3': false })
@@ -151,10 +194,21 @@ describe('purgeWorktreeTerminalState direct (design §4.4)', () => {
 
   it('is a no-op when the id list is empty', () => {
     const store = createTestStore()
-    const before = {
-      'repoA::/a/wt1': [{ id: 'tab-1', worktreeId: 'repoA::/a/wt1' }]
+    const before: AppState['tabsByWorktree'] = {
+      'repoA::/a/wt1': [
+        {
+          ptyId: null,
+          title: 'Terminal',
+          customTitle: null,
+          color: null,
+          sortOrder: 0,
+          createdAt: 1,
+          id: 'tab-1',
+          worktreeId: 'repoA::/a/wt1'
+        }
+      ]
     }
-    store.setState({ tabsByWorktree: before } as unknown as Partial<AppState>)
+    store.setState({ tabsByWorktree: before })
 
     store.getState().purgeWorktreeTerminalState([])
 
@@ -177,13 +231,46 @@ describe('purgeWorktreeTerminalState direct (design §4.4)', () => {
 
     store.setState({
       tabsByWorktree: {
-        [staleId]: [{ id: 'tab-1', worktreeId: staleId }],
+        [staleId]: [
+          {
+            ptyId: null,
+            title: 'Terminal',
+            customTitle: null,
+            color: null,
+            sortOrder: 0,
+            createdAt: 1,
+            id: 'tab-1',
+            worktreeId: staleId
+          }
+        ],
         [FLOATING_TERMINAL_WORKTREE_ID]: [
-          { id: 'floating-terminal-tab', worktreeId: FLOATING_TERMINAL_WORKTREE_ID }
+          {
+            ptyId: null,
+            title: 'Terminal',
+            customTitle: null,
+            color: null,
+            sortOrder: 0,
+            createdAt: 1,
+            id: 'floating-terminal-tab',
+            worktreeId: FLOATING_TERMINAL_WORKTREE_ID
+          }
         ]
       },
       browserTabsByWorktree: {
-        [FLOATING_TERMINAL_WORKTREE_ID]: [{ id: 'floating-browser', url: 'https://alfred.test' }]
+        [FLOATING_TERMINAL_WORKTREE_ID]: [
+          {
+            worktreeId: FLOATING_TERMINAL_WORKTREE_ID,
+            title: 'Browser',
+            loading: false,
+            faviconUrl: null,
+            canGoBack: false,
+            canGoForward: false,
+            loadError: null,
+            createdAt: 1,
+            id: 'floating-browser',
+            url: 'https://alfred.test'
+          }
+        ]
       },
       openFiles: [
         floatingFile,
@@ -205,39 +292,86 @@ describe('purgeWorktreeTerminalState direct (design §4.4)', () => {
       unifiedTabsByWorktree: {
         [FLOATING_TERMINAL_WORKTREE_ID]: [
           {
+            entityId: 'floating-file',
+            groupId: 'floating-group',
+            contentType: 'editor',
+            label: 'File',
+            isPinned: false,
+            isPreview: false,
+            createdAt: 1,
+            sortOrder: 0,
+            customLabel: null,
+            color: null,
             id: 'floating-unified-tab',
-            type: 'editor',
-            worktreeId: FLOATING_TERMINAL_WORKTREE_ID,
-            fileId: 'floating-file'
+
+            worktreeId: FLOATING_TERMINAL_WORKTREE_ID
           }
         ],
-        [staleId]: [{ id: 'stale-unified-tab', worktreeId: staleId }]
+        [staleId]: [
+          {
+            entityId: 'floating-file',
+            groupId: 'floating-group',
+            contentType: 'editor',
+            label: 'File',
+            isPinned: false,
+            isPreview: false,
+            createdAt: 1,
+            sortOrder: 0,
+            customLabel: null,
+            color: null,
+            id: 'stale-unified-tab',
+            worktreeId: staleId
+          }
+        ]
       },
       groupsByWorktree: {
         [FLOATING_TERMINAL_WORKTREE_ID]: [
           {
+            tabOrder: [],
             id: 'floating-group',
             worktreeId: FLOATING_TERMINAL_WORKTREE_ID,
             activeTabId: 'floating-unified-tab'
           }
         ],
-        [staleId]: [{ id: 'stale-group', worktreeId: staleId, activeTabId: 'stale-unified-tab' }]
+        [staleId]: [
+          { tabOrder: [], id: 'stale-group', worktreeId: staleId, activeTabId: 'stale-unified-tab' }
+        ]
       },
       layoutByWorktree: {
         [FLOATING_TERMINAL_WORKTREE_ID]: { type: 'leaf', groupId: 'floating-group' },
         [staleId]: { type: 'leaf', groupId: 'stale-group' }
       }
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().purgeWorktreeTerminalState([staleId, FLOATING_TERMINAL_WORKTREE_ID])
 
     expect(store.getState().tabsByWorktree).toEqual({
       [FLOATING_TERMINAL_WORKTREE_ID]: [
-        { id: 'floating-terminal-tab', worktreeId: FLOATING_TERMINAL_WORKTREE_ID }
+        {
+          ptyId: null,
+          title: 'Terminal',
+          customTitle: null,
+          color: null,
+          sortOrder: 0,
+          createdAt: 1,
+          id: 'floating-terminal-tab',
+          worktreeId: FLOATING_TERMINAL_WORKTREE_ID
+        }
       ]
     })
     expect(store.getState().browserTabsByWorktree[FLOATING_TERMINAL_WORKTREE_ID]).toEqual([
-      { id: 'floating-browser', url: 'https://alfred.test' }
+      {
+        worktreeId: FLOATING_TERMINAL_WORKTREE_ID,
+        title: 'Browser',
+        loading: false,
+        faviconUrl: null,
+        canGoBack: false,
+        canGoForward: false,
+        loadError: null,
+        createdAt: 1,
+        id: 'floating-browser',
+        url: 'https://alfred.test'
+      }
     ])
     expect(store.getState().openFiles).toEqual([floatingFile])
     expect(store.getState().activeFileIdByWorktree).toEqual({
@@ -254,8 +388,21 @@ describe('purgeWorktreeTerminalState direct (design §4.4)', () => {
   it('is a no-op when only the floating workspace sentinel is passed', () => {
     const store = createTestStore()
     const tabsByWorktree = {}
-    const browserTabsByWorktree = {
-      [FLOATING_TERMINAL_WORKTREE_ID]: [{ id: 'floating-browser', url: 'https://alfred.test' }]
+    const browserTabsByWorktree: AppState['browserTabsByWorktree'] = {
+      [FLOATING_TERMINAL_WORKTREE_ID]: [
+        {
+          worktreeId: FLOATING_TERMINAL_WORKTREE_ID,
+          title: 'Browser',
+          loading: false,
+          faviconUrl: null,
+          canGoBack: false,
+          canGoForward: false,
+          loadError: null,
+          createdAt: 1,
+          id: 'floating-browser',
+          url: 'https://alfred.test'
+        }
+      ]
     }
     const openFiles = [
       {
@@ -269,26 +416,33 @@ describe('purgeWorktreeTerminalState direct (design §4.4)', () => {
         mode: 'edit' as const
       }
     ]
-    const unifiedTabsByWorktree = {
+    const unifiedTabsByWorktree: AppState['unifiedTabsByWorktree'] = {
       [FLOATING_TERMINAL_WORKTREE_ID]: [
         {
           id: 'floating-unified-tab',
-          type: 'editor',
-          worktreeId: FLOATING_TERMINAL_WORKTREE_ID,
-          fileId: 'floating-file'
+          contentType: 'editor',
+          entityId: 'floating-file',
+          groupId: 'floating-group',
+          label: 'File',
+          customLabel: null,
+          color: null,
+          sortOrder: 0,
+          createdAt: 1,
+          worktreeId: FLOATING_TERMINAL_WORKTREE_ID
         }
       ]
     }
-    const groupsByWorktree = {
+    const groupsByWorktree: AppState['groupsByWorktree'] = {
       [FLOATING_TERMINAL_WORKTREE_ID]: [
         {
+          tabOrder: ['floating-unified-tab'],
           id: 'floating-group',
           worktreeId: FLOATING_TERMINAL_WORKTREE_ID,
           activeTabId: 'floating-unified-tab'
         }
       ]
     }
-    const layoutByWorktree = {
+    const layoutByWorktree: AppState['layoutByWorktree'] = {
       [FLOATING_TERMINAL_WORKTREE_ID]: { type: 'leaf', groupId: 'floating-group' }
     }
 
@@ -300,7 +454,7 @@ describe('purgeWorktreeTerminalState direct (design §4.4)', () => {
       unifiedTabsByWorktree,
       groupsByWorktree,
       layoutByWorktree
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().purgeWorktreeTerminalState([FLOATING_TERMINAL_WORKTREE_ID])
 

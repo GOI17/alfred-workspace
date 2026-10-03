@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { settledWriteStub } from '../providers/settled-pty-write-stub'
 import { describe, expect, it, vi } from 'vitest'
 import { AlfredRuntimeService } from './alfred-runtime'
@@ -47,7 +48,7 @@ async function makeRuntimeWithLeafHandle(options: {
   handle: string
   write: ReturnType<typeof vi.fn>
 }> {
-  const runtime = new AlfredRuntimeService(makeStore() as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
   const write = vi.fn(() => true)
   runtime.setPtyController({
     spawn: vi.fn(async () => ({ id: 'never' })),

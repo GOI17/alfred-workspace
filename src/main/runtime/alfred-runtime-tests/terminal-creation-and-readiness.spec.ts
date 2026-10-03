@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { AlfredRuntimeService, electronMocks, makePaneKey } from '../alfred-runtime-test-mocks.spec'
 import {
@@ -351,13 +352,17 @@ describe('AlfredRuntimeService', () => {
       terminalPtyIncarnationsByPaneKey: { [paneKey]: incarnationId }
     })
     const { runtimeStore } = makeRuntimeStoreWithWorkspaceSession(session)
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
-      canRecoverPersistentLocalPtys: () => true,
-      attestAgentHookCompatibilityAuthority: ({ paneKey: candidate, launchTokenHash }) =>
-        candidate === paneKey && launchTokenHash === RESTORED_AUTHORITY_TOKEN_HASH
-          ? { paneKey: candidate, source: 'hydrated_commitment' }
-          : null
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(runtimeStore),
+      undefined,
+      {
+        canRecoverPersistentLocalPtys: () => true,
+        attestAgentHookCompatibilityAuthority: ({ paneKey: candidate, launchTokenHash }) =>
+          candidate === paneKey && launchTokenHash === RESTORED_AUTHORITY_TOKEN_HASH
+            ? { paneKey: candidate, source: 'hydrated_commitment' }
+            : null
+      }
+    )
     const controllerHandle = 'term_retained_coordinator'
     const listProcesses = vi
       .fn()
@@ -474,12 +479,16 @@ describe('AlfredRuntimeService', () => {
       terminalPtyIncarnationsByPaneKey: { [paneKey]: oldIncarnation }
     })
     const { runtimeStore } = makeRuntimeStoreWithWorkspaceSession(session)
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
-      attestAgentHookCompatibilityAuthority: ({ paneKey: candidate, launchTokenHash }) =>
-        candidate === paneKey && launchTokenHash === RESTORED_AUTHORITY_TOKEN_HASH
-          ? { paneKey: candidate, source: 'hydrated_commitment' }
-          : null
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(runtimeStore),
+      undefined,
+      {
+        attestAgentHookCompatibilityAuthority: ({ paneKey: candidate, launchTokenHash }) =>
+          candidate === paneKey && launchTokenHash === RESTORED_AUTHORITY_TOKEN_HASH
+            ? { paneKey: candidate, source: 'hydrated_commitment' }
+            : null
+      }
+    )
     const oldInventory = deferred<
       {
         id: string

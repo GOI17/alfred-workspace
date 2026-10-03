@@ -11,7 +11,6 @@ import {
   type EditorRequestCmdSaveDetail
 } from './editor/editor-autosave'
 import { handleTerminalWorkspaceKeyDown } from './terminal-workspace-keydown'
-import type { TerminalActivationController } from './use-terminal-activation-actions'
 
 const mocks = vi.hoisted(() => ({
   state: {} as Record<string, unknown>,
@@ -77,10 +76,10 @@ const controller = {
   handleNewFile: vi.fn(),
   handleNewSimulatorTab: vi.fn(),
   handleNewTab: vi.fn(),
-  keybindings: undefined,
+  keybindings: {},
   mobileEmulatorEnabled: false,
-  terminalShortcutPolicy: 'alfred-first'
-} as unknown as TerminalActivationController
+  terminalShortcutPolicy: 'alfred-first' as const
+}
 
 function pressCmdS(): (EditorRequestCmdSaveDetail | undefined)[] {
   const details: (EditorRequestCmdSaveDetail | undefined)[] = []

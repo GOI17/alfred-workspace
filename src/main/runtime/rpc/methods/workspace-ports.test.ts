@@ -1,7 +1,7 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
-import type { AlfredRuntimeService } from '../../alfred-runtime'
 import { WORKSPACE_PORT_METHODS } from './workspace-ports'
 import type { WorkspacePortScanResult } from '../../../../shared/workspace-ports'
 
@@ -16,10 +16,10 @@ describe('workspace port RPC methods', () => {
       scannedAt: 123,
       ports: []
     }
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       scanWorkspacePorts: vi.fn().mockResolvedValue(scan)
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: WORKSPACE_PORT_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -31,10 +31,10 @@ describe('workspace port RPC methods', () => {
   })
 
   it('kills a workspace-owned port on the runtime host', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       killWorkspacePort: vi.fn().mockResolvedValue({ ok: true })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: WORKSPACE_PORT_METHODS })
 
     const response = await dispatcher.dispatch(

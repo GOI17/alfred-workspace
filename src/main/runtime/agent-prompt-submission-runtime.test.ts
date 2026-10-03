@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   AGENT_PROMPT_BRACKETED_PASTE_END,
@@ -334,7 +335,7 @@ describe('agent prompt submission runtime', () => {
     vi.setSystemTime(1_000)
     let handle = ''
     const writes: string[] = []
-    const runtime = new AlfredRuntimeService(makeStore() as never, undefined, {
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()), undefined, {
       getAgentStatusSnapshot: () => [
         {
           paneKey: 'prompt-pane',
@@ -483,7 +484,7 @@ describe('agent prompt submission runtime', () => {
   }> {
     let handle = ''
     const writes: string[] = []
-    const runtime = new AlfredRuntimeService(makeStore() as never, undefined, {
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()), undefined, {
       getAgentStatusSnapshot: () => [
         {
           paneKey: 'prompt-pane',

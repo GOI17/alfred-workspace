@@ -1,3 +1,4 @@
+import { makeRepo as fixtureMakeRepo } from '../../../../shared/repo-test-fixture'
 import { describe, expect, it } from 'vitest'
 import { WORKTREE_PALETTE_QUERY_MAX_BYTES } from '@/lib/worktree-palette-query-bounds'
 import type { Repo } from '../../../../shared/repo-types'
@@ -23,7 +24,7 @@ function worktree(overrides: Partial<Worktree> & { id: string }): Worktree {
 }
 
 const repoMap = new Map<string, Repo>([
-  ['repo-a', { id: 'repo-a', displayName: 'alfred' } as Repo],
+  ['repo-a', fixtureMakeRepo({ id: 'repo-a', displayName: 'alfred' })],
   ['repo-b', { id: 'repo-b', displayName: 'atlas' } as Repo]
 ])
 

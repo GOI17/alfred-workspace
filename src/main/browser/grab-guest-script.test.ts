@@ -7,11 +7,11 @@ import { clampGrabPayload } from './browser-grab-payload'
 
 describe('buildGuestOverlayScript', () => {
   it.each([
-    ['arm', '07cffca05c4c9dab10bdcf301deab24e033edd07c6cd235bb364e1a139720a0a'],
-    ['awaitClick', 'b6b65b2b53c8719f1d10f93954cf867d99e43e14dbd1ca0a92e5067b168a126c'],
-    ['finalize', '91bd9836b0536c9579e0d4648d30679c0b4a5893d9a43110a70e67d6804fd291'],
-    ['extractHover', 'cf0ee3ac61669daefa7db9389233c1abfe9f0fb9e7257300c761987aac914b02'],
-    ['teardown', '732efde1022745f26dd4250d2891a663023eecafdf025fd66dde87781a985d81']
+    ['arm', 'b53d45079a7d926f799ade304207b180b08ddf51727ba3ee0ad0841b56b48cb7'],
+    ['awaitClick', '7998c145ed38bcc673d825f9404f88ceb6fdbd16593153f28527ead26bf8cce6'],
+    ['finalize', 'cf62d4e2229b0959b3455585cccc2182cbbbab9910f5a997cf6a1425bc065051'],
+    ['extractHover', '9664617b41da07c22caf4eba69b7060af435dfc9920e566992e4cfc925c84b36'],
+    ['teardown', '1f7aa449a0b7ba52aece1ba8ade4c522f2c90651edc13535290918a28ab6cf4d']
   ] as const)('preserves the serialized %s guest script', (action, expectedSha256) => {
     expect(createHash('sha256').update(buildGuestOverlayScript(action)).digest('hex')).toBe(
       expectedSha256
@@ -285,7 +285,12 @@ describe('awaitClick under a Zone.js-patched global Promise', () => {
       click: () => handlers.click?.(noopEvent),
       contextmenu: () => handlers.contextmenu?.(noopEvent),
       // cancelAwait is installed on __alfredGrab by the script itself at runtime.
-      cancel: () => (window.__alfredGrab.cancelAwait as (() => void) | undefined)?.()
+      cancel: () => {
+        if (typeof window.__alfredGrab.cancelAwait !== 'function') {
+          throw new Error('Missing cancel callback')
+        }
+        window.__alfredGrab.cancelAwait()
+      }
     }
   }
 

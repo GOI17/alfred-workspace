@@ -603,7 +603,7 @@ describe('launchWorkItemDirect', () => {
         addedAt: 0,
         connectionId: 'ssh-1'
       }
-    ] as AppState['repos']
+    ]
     mocks.store.settings = { defaultTuiAgent: 'cursor' } as AppState['settings']
     mocks.store.ensureRemoteDetectedAgents.mockResolvedValue(['cursor'])
     vi.mocked(pickTuiAgent).mockReturnValueOnce('cursor')

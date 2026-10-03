@@ -2,10 +2,7 @@ import type { Page } from '@stablyai/playwright-test'
 
 export async function installRendererTitleLog(page: Page): Promise<void> {
   await page.evaluate(() => {
-    const w = window as unknown as {
-      __alfredE2eTitleLog?: string[]
-      __alfredE2eTitleUnsubscribe?: () => void
-    }
+    const w = window
     const store = window.__store
     if (!store) {
       throw new Error('window.__store is not available')
@@ -39,7 +36,15 @@ export async function installRendererTitleLog(page: Page): Promise<void> {
 
 export async function getRendererTitleLog(page: Page): Promise<string[]> {
   return page.evaluate(() => {
-    const w = window as unknown as { __alfredE2eTitleLog?: string[] }
+    const w = window
     return w.__alfredE2eTitleLog ?? []
   })
+}
+
+declare global {
+  // oxlint-disable-next-line typescript/consistent-type-definitions -- Window declarations must merge with the DOM library.
+  interface Window {
+    __alfredE2eTitleLog?: string[]
+    __alfredE2eTitleUnsubscribe?: () => void
+  }
 }

@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   MOCK_GIT_WORKTREES,
@@ -54,13 +55,15 @@ describe('AlfredRuntimeService', () => {
       badgeColor: 'blue' as const,
       addedAt: 1
     }))
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getRepos: () => repos,
-      getRepo: (id: string) => repos.find((repo) => repo.id === id),
-      getAllWorktreeMeta: () => ({}),
-      getWorktreeMeta: () => undefined
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getRepos: () => repos,
+        getRepo: (id: string) => repos.find((repo) => repo.id === id),
+        getAllWorktreeMeta: () => ({}),
+        getWorktreeMeta: () => undefined
+      })
+    )
     vi.mocked(listWorktrees).mockImplementation(async (repoPath) => [
       {
         path: `${repoPath}/main`,
@@ -109,10 +112,12 @@ describe('AlfredRuntimeService', () => {
       listWorktrees: vi.fn().mockResolvedValue([makeWorktreeInfo('/remote/worktree')])
     }
     registerSshGitProvider('ssh-1', provider as never)
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getRepos: () => [localRepo, remoteRepo]
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getRepos: () => [localRepo, remoteRepo]
+      })
+    )
     vi.mocked(listWorktrees).mockResolvedValue([makeWorktreeInfo(TEST_WORKTREE_PATH)])
 
     try {
@@ -158,7 +163,7 @@ describe('AlfredRuntimeService', () => {
     }
     const provider = { listWorktrees: vi.fn().mockResolvedValue([makeWorktreeInfo(worktreePath)]) }
     registerSshGitProvider('ssh-1', provider as never)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     try {
       const result = await runtime.listDetectedManagedWorktrees(`id:${TEST_REPO_ID}`, 'ssh-1')
@@ -210,7 +215,7 @@ describe('AlfredRuntimeService', () => {
     vi.mocked(listWorktrees).mockResolvedValue(rows)
     const provider = { listWorktrees: vi.fn().mockResolvedValue(rows) }
     registerSshGitProvider('ssh-1', provider as never)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     try {
       const resolved = await (
@@ -246,11 +251,13 @@ describe('AlfredRuntimeService', () => {
       { ...store.getRepos()[0], id: 'repo-a', path: '/tmp/repo-a' },
       { ...store.getRepos()[0], id: 'repo-b', path: '/tmp/repo-b' }
     ]
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getRepos: () => repos,
-      getRepo: (id: string) => repos.find((repo) => repo.id === id)
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getRepos: () => repos,
+        getRepo: (id: string) => repos.find((repo) => repo.id === id)
+      })
+    )
     vi.mocked(listWorktrees).mockImplementation(async (repoPath) => [makeWorktreeInfo(repoPath)])
 
     await runtime.listDetectedManagedWorktrees('id:repo-a')
@@ -292,18 +299,20 @@ describe('AlfredRuntimeService', () => {
   it('persists changed worktree order once and emits targeted invalidations', () => {
     const firstId = `${TEST_REPO_ID}::/tmp/first`
     const secondId = `${TEST_REPO_ID}::/tmp/second`
-    const metaById: Record<string, Partial<WorktreeMeta>> = {
-      [firstId]: { sortOrder: 200 },
-      [secondId]: { sortOrder: 100 }
+    const metaById: Record<string, WorktreeMeta> = {
+      [firstId]: makeWorktreeMeta({ sortOrder: 200 }),
+      [secondId]: makeWorktreeMeta({ sortOrder: 100 })
     }
     const setWorktreeMeta = vi.fn((id: string, updates: Partial<WorktreeMeta>) => {
-      metaById[id] = { ...metaById[id], ...updates }
+      return (metaById[id] = makeWorktreeMeta({ ...metaById[id], ...updates }))
     })
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getWorktreeMeta: (id: string) => metaById[id],
-      setWorktreeMeta
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getWorktreeMeta: (id: string) => metaById[id],
+        setWorktreeMeta
+      })
+    )
     const events: { type: string; repoId?: string }[] = []
     const unsubscribe = runtime.onClientEvent((event) => events.push(event))
 
@@ -336,11 +345,13 @@ describe('AlfredRuntimeService', () => {
         { ...store.getRepos()[0], id: 'repo-a', path: '/tmp/repo-a' },
         { ...store.getRepos()[0], id: 'repo-b', path: '/tmp/repo-b' }
       ]
-      const runtime = new AlfredRuntimeService({
-        ...store,
-        getRepos: () => repos,
-        getRepo: (id: string) => repos.find((repo) => repo.id === id)
-      } as never)
+      const runtime = new AlfredRuntimeService(
+        createRuntimeStoreTestDouble({
+          ...store,
+          getRepos: () => repos,
+          getRepo: (id: string) => repos.find((repo) => repo.id === id)
+        })
+      )
       vi.mocked(listWorktrees).mockImplementation(async (repoPath) => [makeWorktreeInfo(repoPath)])
 
       await runtime.listDetectedManagedWorktrees('id:repo-a')
@@ -369,7 +380,7 @@ describe('AlfredRuntimeService', () => {
       .mockRejectedValueOnce(new Error('git unavailable'))
       .mockResolvedValueOnce([makeWorktreeInfo(TEST_WORKTREE_PATH)])
     registerSshGitProvider('ssh-1', provider as never)
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
 
     try {
       await expect(
@@ -393,7 +404,7 @@ describe('AlfredRuntimeService', () => {
     }
     const provider = { listWorktrees: vi.fn().mockResolvedValue(MOCK_GIT_WORKTREES) }
     registerSshGitProvider('ssh-1', provider as never)
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
 
     try {
       await expect(
@@ -421,7 +432,7 @@ describe('AlfredRuntimeService', () => {
     }
     const provider = { listWorktrees: vi.fn().mockResolvedValue(MOCK_GIT_WORKTREES) }
     registerSshGitProvider('ssh-1', provider as never)
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
 
     try {
       await runtime.listDetectedManagedWorktrees('id:local-repo')
@@ -451,7 +462,7 @@ describe('AlfredRuntimeService', () => {
     }
     const provider = { listWorktrees: vi.fn().mockResolvedValue([]) }
     registerSshGitProvider('ssh-empty', provider as never)
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
 
     try {
       await expect(runtime.listManagedWorktrees()).resolves.toMatchObject({ totalCount: 0 })
@@ -491,17 +502,28 @@ describe('AlfredRuntimeService', () => {
 
   it('worktree scan cache: separates local project runtime changes', async () => {
     vi.mocked(listWorktrees).mockClear()
-    let runtimeDefault: unknown = { kind: 'windows-host' }
+    let runtimeDefault: { kind: 'windows-host' } | { kind: 'wsl'; distro: string } = {
+      kind: 'windows-host' as const
+    }
     const runtimeStore = {
       ...store,
-      getProjects: () => [{ id: 'project-1', sourceRepoIds: [TEST_REPO_ID] }],
+      getProjects: () => [
+        {
+          id: 'project-1',
+          sourceRepoIds: [TEST_REPO_ID],
+          displayName: 'Project',
+          badgeColor: 'blue',
+          createdAt: 0,
+          updatedAt: 0
+        }
+      ],
       getSettings: () => ({ ...store.getSettings(), localWindowsRuntimeDefault: runtimeDefault })
     }
 
     await withPlatform('win32', async () => {
-      const runtime = new AlfredRuntimeService(runtimeStore as never)
+      const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
       await runtime.listDetectedManagedWorktrees(`id:${TEST_REPO_ID}`)
-      runtimeDefault = { kind: 'wsl', distro: 'Ubuntu' }
+      runtimeDefault = { kind: 'wsl' as const, distro: 'Ubuntu' }
       await runtime.listDetectedManagedWorktrees(`id:${TEST_REPO_ID}`)
     })
 
@@ -510,10 +532,21 @@ describe('AlfredRuntimeService', () => {
 
   it('worktree scan cache: ignores a late result from an older runtime key', async () => {
     vi.mocked(listWorktrees).mockClear()
-    let runtimeDefault: unknown = { kind: 'windows-host' }
+    let runtimeDefault: { kind: 'windows-host' } | { kind: 'wsl'; distro: string } = {
+      kind: 'windows-host' as const
+    }
     const runtimeStore = {
       ...store,
-      getProjects: () => [{ id: 'project-1', sourceRepoIds: [TEST_REPO_ID] }],
+      getProjects: () => [
+        {
+          id: 'project-1',
+          sourceRepoIds: [TEST_REPO_ID],
+          displayName: 'Project',
+          badgeColor: 'blue',
+          createdAt: 0,
+          updatedAt: 0
+        }
+      ],
       getSettings: () => ({ ...store.getSettings(), localWindowsRuntimeDefault: runtimeDefault })
     }
     const firstScan = deferred<ReturnType<typeof makeWorktreeInfo>[]>()
@@ -523,12 +556,12 @@ describe('AlfredRuntimeService', () => {
       .mockReturnValueOnce(secondScan.promise)
 
     await withPlatform('win32', async () => {
-      const runtime = new AlfredRuntimeService(runtimeStore as never)
+      const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
       const first = runtime.listDetectedManagedWorktrees(`id:${TEST_REPO_ID}`)
       await Promise.resolve()
       expect(listWorktrees).toHaveBeenCalledTimes(1)
 
-      runtimeDefault = { kind: 'wsl', distro: 'Ubuntu' }
+      runtimeDefault = { kind: 'wsl' as const, distro: 'Ubuntu' }
       const second = runtime.listDetectedManagedWorktrees(`id:${TEST_REPO_ID}`)
       await Promise.resolve()
       expect(listWorktrees).toHaveBeenCalledTimes(2)
@@ -586,7 +619,7 @@ describe('AlfredRuntimeService', () => {
       getAllWorktreeLineage: () => lineageById
     }
     vi.mocked(listWorktrees).mockResolvedValue(worktrees)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     await runtime.listDetectedManagedWorktrees(`id:${TEST_REPO_ID}`)
     const listed = await runtime.listManagedWorktrees(`id:${TEST_REPO_ID}`)
@@ -641,7 +674,7 @@ describe('AlfredRuntimeService', () => {
       getAllWorktreeLineage: () => lineageById,
       removeWorktreeLineage
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     await expect(runtime.showManagedWorktree(`id:${childId}`)).resolves.toMatchObject({
       id: childId,

@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { AlfredRuntimeService, electronMocks, ipcMain } from '../alfred-runtime-test-mocks.spec'
 import {
@@ -14,14 +15,16 @@ describe('AlfredRuntimeService', () => {
     try {
       const leafId = '88888888-8888-4888-8888-888888888888'
       const write = vi.fn((_ptyId: string, _data: string) => true)
-      const runtime = new AlfredRuntimeService({
-        ...store,
-        getSettings: () => ({
-          ...store.getSettings(),
-          disabledTuiAgents: [],
-          agentCmdOverrides: {}
+      const runtime = new AlfredRuntimeService(
+        createRuntimeStoreTestDouble({
+          ...store,
+          getSettings: () => ({
+            ...store.getSettings(),
+            disabledTuiAgents: [],
+            agentCmdOverrides: {}
+          })
         })
-      } as never)
+      )
       runtime.setPtyController({
         spawn: vi.fn(),
         write,

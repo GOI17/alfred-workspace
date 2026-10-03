@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from './dispatcher'
-import type { AlfredRuntimeService, RuntimeTerminalDataMeta } from '../alfred-runtime'
+import type { RuntimeTerminalDataMeta } from '../alfred-runtime'
 import { TERMINAL_METHODS } from './methods/terminal'
 import { createSubscriptionRegistryDouble } from './subscription-registry-test-double'
 import type { RuntimeTerminalWait } from '../../../shared/runtime-types'
@@ -416,9 +416,13 @@ describe('terminal multiplex RPC', () => {
         readTerminal: vi.fn(async () => {
           fitListener?.({ mode: 'desktop-fit', cols: 100, rows: 30 })
           driverListener?.({ kind: 'transition-during-snapshot' })
-          return { tail: [], truncated: false } as unknown as Awaited<
-            ReturnType<AlfredRuntimeService['readTerminal']>
-          >
+          return {
+            handle: 'terminal-1',
+            status: 'running' as const,
+            nextCursor: null,
+            tail: [],
+            truncated: false
+          }
         }),
         subscribeToFitOverrideChanges: vi.fn((_ptyId, listener) => {
           fitListener = listener

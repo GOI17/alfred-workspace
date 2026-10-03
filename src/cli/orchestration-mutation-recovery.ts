@@ -8,6 +8,8 @@ import { quotePowerShellNativeArgument } from '../shared/powershell-native-argum
 import { resolveWindowsShellStartupFamily } from '../shared/windows-terminal-shell'
 import type { AgentStartupShell } from '../shared/tui-agent-startup-shell'
 
+export function orchestrationMutationRecoveryError(error: RuntimeClientError): RuntimeClientError
+export function orchestrationMutationRecoveryError(error: unknown): unknown
 export function orchestrationMutationRecoveryError(error: unknown): unknown {
   if (!(error instanceof RuntimeClientError) || !isUnknownMutationOutcomeCode(error.code)) {
     return error

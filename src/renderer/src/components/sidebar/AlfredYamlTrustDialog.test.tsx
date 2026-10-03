@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   state: {
-    activeModal: 'confirm-alfred-yaml-hooks' as string | null,
+    activeModal: 'confirm-alfred-yaml-hooks',
     modalData: {} as Record<string, unknown>,
     closeModal: vi.fn(),
     markAlfredHookScriptConfirmed: vi.fn(),

@@ -76,9 +76,7 @@ describe('OpenCode plugin MessagePart throttling', () => {
   async function loadPluginEventHandler(): Promise<PluginEventHandler> {
     const pluginPath = join(tempDir, 'alfred-opencode-status.mjs')
     writeFileSync(pluginPath, _internals.getOpenCodePluginSource())
-    const module = (await import(pathToFileURL(pluginPath).href)) as {
-      AlfredOpenCodeStatusPlugin: (ctx: unknown) => Promise<{ event: PluginEventHandler }>
-    }
+    const module = await import(pathToFileURL(pluginPath).href)
     const client = {
       session: {
         // No parentID → root session, events flow through.

@@ -43,7 +43,7 @@ describe('activateAndRevealWorktree', () => {
             }
           : { ok: false, error: { code: 'test', message: 'stop after recording the request' } }
     )
-    ;(globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__ = true
+    globalThis.__ALFRED_WEB_CLIENT__ = true
     vi.stubGlobal('window', {
       api: { runtimeEnvironments: { call: callRuntimeEnvironment } }
     })
@@ -114,7 +114,7 @@ describe('activateAndRevealWorktree', () => {
       ok: false,
       error: { code: 'test', message: 'stop after recording the request' }
     })
-    ;(globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__ = true
+    globalThis.__ALFRED_WEB_CLIENT__ = true
     vi.stubGlobal('window', {
       api: { runtimeEnvironments: { call: callRuntimeEnvironment } }
     })
@@ -168,7 +168,7 @@ describe('activateAndRevealFolderWorkspace', () => {
             }
           : { ok: false, error: { code: 'test', message: 'stop after recording the request' } }
     )
-    ;(globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__ = true
+    globalThis.__ALFRED_WEB_CLIENT__ = true
     vi.stubGlobal('window', {
       api: { runtimeEnvironments: { call: callRuntimeEnvironment } }
     })
@@ -231,7 +231,7 @@ describe('activateAndRevealFolderWorkspace', () => {
 
 describe('ensureWorktreeHasInitialTerminal', () => {
   it('does not create a local fallback tab in the paired web runtime client', () => {
-    ;(globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__ = true
+    globalThis.__ALFRED_WEB_CLIENT__ = true
     useAppStore.setState((state) => ({
       settings: state.settings
         ? { ...state.settings, activeRuntimeEnvironmentId: 'web-runtime-1' }
@@ -257,7 +257,7 @@ describe('ensureWorktreeHasInitialTerminal', () => {
   })
 
   it('queues returned setup fallback on an existing web runtime tab', () => {
-    ;(globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__ = true
+    globalThis.__ALFRED_WEB_CLIENT__ = true
     useAppStore.setState((state) => ({
       settings: state.settings
         ? { ...state.settings, activeRuntimeEnvironmentId: 'web-runtime-1' }
@@ -314,7 +314,7 @@ describe('ensureWorktreeHasInitialTerminal', () => {
   })
 
   it('holds the issue command for the first mirrored web runtime tab when none exists yet', () => {
-    ;(globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__ = true
+    globalThis.__ALFRED_WEB_CLIENT__ = true
     useAppStore.setState((state) => ({
       settings: state.settings
         ? { ...state.settings, activeRuntimeEnvironmentId: 'web-runtime-1' }

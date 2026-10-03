@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   FLOATING_TERMINAL_WORKTREE_ID,
@@ -56,13 +57,15 @@ describe('AlfredRuntimeService', () => {
   })
 
   it('reports the configured Windows terminal shell on status', () => {
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getSettings: () => ({
-        ...store.getSettings(),
-        terminalWindowsShell: 'wsl.exe'
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getSettings: () => ({
+          ...store.getSettings(),
+          terminalWindowsShell: 'wsl.exe'
+        })
       })
-    } as never)
+    )
 
     expect(runtime.getStatus().terminalWindowsShell).toBe('wsl.exe')
   })
@@ -70,13 +73,15 @@ describe('AlfredRuntimeService', () => {
   it('reports floating workspace availability from settings on status', () => {
     expect(createRuntime().getStatus().floatingWorkspaceEnabled).toBe(true)
 
-    const disabledRuntime = new AlfredRuntimeService({
-      ...store,
-      getSettings: () => ({
-        ...store.getSettings(),
-        floatingTerminalEnabled: false
+    const disabledRuntime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getSettings: () => ({
+          ...store.getSettings(),
+          floatingTerminalEnabled: false
+        })
       })
-    } as never)
+    )
     expect(disabledRuntime.getStatus().floatingWorkspaceEnabled).toBe(false)
   })
 
@@ -108,7 +113,9 @@ describe('AlfredRuntimeService', () => {
         }
       })
     )
-    const runtime = new AlfredRuntimeService({ ...runtimeStore, getRepos } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({ ...runtimeStore, getRepos })
+    )
     const ptyController = {
       livePtyIds: new Set([floatingPtyId]),
       write: () => true,
@@ -185,7 +192,7 @@ describe('AlfredRuntimeService', () => {
     }
     runtimeStore.getRepos = () => [remoteRepo]
     runtimeStore.getRepo = (id: string) => (id === remoteRepo.id ? remoteRepo : undefined)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     const listProcesses = vi.fn(async () => [
       {
         id: remotePtyId,
@@ -244,10 +251,13 @@ describe('AlfredRuntimeService', () => {
     const { runtimeStore } = makeRuntimeStoreWithWorkspaceSession(
       makeWorkspaceSessionWithHeadlessTerminal()
     )
-    const runtime = new AlfredRuntimeService({
-      ...runtimeStore,
-      getRepos: () => undefined
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...runtimeStore,
+        // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: Deliberately invalid inventory tests that unavailable persistence does not imply an empty repository list.
+        getRepos: () => undefined as unknown as ReturnType<typeof store.getRepos>
+      })
+    )
 
     const tabs = await runtime.listMobileSessionTabs(`id:${TEST_WORKTREE_ID}`)
 

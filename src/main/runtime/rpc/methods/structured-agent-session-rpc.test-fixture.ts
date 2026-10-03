@@ -1,3 +1,5 @@
+import { getDefaultRuntimeClientSettings } from '../../runtime-client-settings-test-fixture'
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 // The `agentSession.*` dispatcher harness, shared by the suites that exercise the wire
 // boundary. `hostCalls` and `runtimeCalls` keep one identity for the process and are
 // repopulated per test, so a suite can read `hostCalls.close` without re-importing it.
@@ -11,7 +13,6 @@ import {
   StructuredAgentSessionStatusFeed,
   type StructuredAgentSessionStatusSubscriber
 } from '../../../native-chat/agent-session-wire/structured-agent-session-status-feed'
-import type { AlfredRuntimeService } from '../../alfred-runtime'
 import {
   AGENT_SESSION_PENDING_SEND_RESULT_RUNTIME_CAPABILITY,
   STRUCTURED_AGENT_SESSION_RUNTIME_CAPABILITY
@@ -245,7 +246,10 @@ export function dispatcher(runtimeOverrides: Record<string, unknown> = {}): RpcD
   })
   const runtime = {
     getRuntimeId: () => 'runtime-1',
-    getClientSettings: () => ({ experimentalStructuredNativeChat: true }),
+    getClientSettings: () => ({
+      ...getDefaultRuntimeClientSettings(),
+      experimentalStructuredNativeChat: true
+    }),
     registerSubscriptionCleanup: vi.fn(),
     cleanupSubscription: vi.fn(),
     cleanupSubscriptionsByPrefix: vi.fn(),
@@ -253,7 +257,7 @@ export function dispatcher(runtimeOverrides: Record<string, unknown> = {}): RpcD
     ...runtimeOverrides
   }
   return new RpcDispatcher({
-    runtime: runtime as unknown as AlfredRuntimeService,
+    runtime: createRuntimeServiceTestDouble(runtime),
     methods: STRUCTURED_AGENT_SESSION_METHODS
   })
 }

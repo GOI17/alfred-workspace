@@ -147,7 +147,7 @@ describe('Alfred cloud session store', () => {
 
     const saved = JSON.parse(
       readFileSync(store.getAlfredCloudSessionPath('profile-1', userDataPath), 'utf-8')
-    ) as { format: string }
+    )
     expect(saved.format).toBe('dev-plaintext-v1')
 
     const reloaded = await loadSessionStore()

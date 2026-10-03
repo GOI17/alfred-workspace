@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -27,7 +28,9 @@ vi.mock('../git/worktree', () => {
 describe('AlfredRuntimeRpcServer', () => {
   it('serves worktree.ps from the runtime summary builder', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
-    const runtime = new AlfredRuntimeService(makeStore({ isUnread: true }) as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(makeStore({ isUnread: true }))
+    )
     const server = new AlfredRuntimeRpcServer({ runtime, userDataPath })
 
     runtime.attachWindow(1)
@@ -92,7 +95,9 @@ describe('AlfredRuntimeRpcServer', () => {
 
   it('bounds worktree.list responses with limit metadata', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
-    const runtime = new AlfredRuntimeService(makeStore({ isUnread: true }) as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(makeStore({ isUnread: true }))
+    )
     const server = new AlfredRuntimeRpcServer({ runtime, userDataPath })
 
     await server.start()

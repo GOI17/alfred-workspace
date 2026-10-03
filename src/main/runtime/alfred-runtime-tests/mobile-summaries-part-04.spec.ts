@@ -58,7 +58,7 @@ describe('AlfredRuntimeService', () => {
       listWorktrees: vi.fn().mockResolvedValue([...activeWorktrees, pinnedWorktree, unreadWorktree])
     } as never)
     const now = Date.now()
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
+    const runtime = new AlfredRuntimeService(runtimeStore, undefined, {
       getAgentStatusSnapshot: () =>
         activeWorktrees.map((worktree, index) => ({
           paneKey: `active-tab:${String(index).padStart(8, '0')}-8888-4888-8888-888888888888`,

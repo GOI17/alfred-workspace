@@ -2,7 +2,9 @@ import type { Store } from '../persistence'
 
 const PROFILE_PERSISTENCE_TIMEOUT_MS = 20_000
 
-export async function flushActiveProfileBeforeFileMutation(store: Store): Promise<void> {
+export async function flushActiveProfileBeforeFileMutation(
+  store: Pick<Store, 'flushPendingOrThrowAsync'>
+): Promise<void> {
   const controller = new AbortController()
   let timeout: ReturnType<typeof setTimeout> | null = null
   const deadline = new Promise<never>((_resolve, reject) => {

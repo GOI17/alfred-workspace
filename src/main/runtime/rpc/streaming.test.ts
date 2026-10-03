@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
 import { RpcDispatcher } from './dispatcher'
@@ -7,13 +8,13 @@ import { TERMINAL_METHODS } from './methods/terminal'
 import { createSubscriptionRegistryDouble } from './subscription-registry-test-double'
 
 function stubRuntime(overrides: Partial<AlfredRuntimeService> = {}): AlfredRuntimeService {
-  return {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
     // Why: subscribe streams register as remote view subscribers for Phase-5
     // query-authority suppression (terminal-query-authority.md).
     registerRemoteTerminalViewSubscriber: () => () => {},
     ...overrides
-  } as AlfredRuntimeService
+  })
 }
 
 function makeRequest(method: string, params?: unknown): RpcRequest {
@@ -57,10 +58,12 @@ describe('RpcDispatcher streaming', () => {
           name: 'terminal.subscribe',
           params: z.object({ terminal: z.string() }),
           handler: async (params, { runtime }, emit) => {
-            const read = await (runtime as AlfredRuntimeService).readTerminal(params.terminal)
+            const read = await createRuntimeServiceTestDouble(runtime).readTerminal(params.terminal)
             emit({ type: 'scrollback', lines: read.tail, truncated: read.truncated })
 
-            const leaf = (runtime as AlfredRuntimeService).resolveLeafForHandle(params.terminal)
+            const leaf = createRuntimeServiceTestDouble(runtime).resolveLeafForHandle(
+              params.terminal
+            )
             if (!leaf?.ptyId) {
               emit({ type: 'end' })
             }
@@ -160,7 +163,7 @@ describe('RpcDispatcher streaming', () => {
             emit({ type: 'scrollback', lines: '' })
 
             await new Promise<void>((resolve) => {
-              ;(runtime as AlfredRuntimeService).registerSubscriptionCleanup('sub-1', () => {
+              createRuntimeServiceTestDouble(runtime).registerSubscriptionCleanup('sub-1', () => {
                 emit({ type: 'end' })
                 resolve()
               })
@@ -171,7 +174,7 @@ describe('RpcDispatcher streaming', () => {
           name: 'test.unsubscribe',
           params: z.object({ subscriptionId: z.string() }),
           handler: async (params, { runtime }) => {
-            ;(runtime as AlfredRuntimeService).cleanupSubscription(params.subscriptionId)
+            createRuntimeServiceTestDouble(runtime).cleanupSubscription(params.subscriptionId)
             return { unsubscribed: true }
           }
         })

@@ -5,8 +5,5 @@ export function routeDispatcherClientHostedBrowserRpc(
   method: string,
   params: unknown
 ) {
-  const candidate = runtime as AlfredRuntimeService & {
-    routeClientHostedBrowserRpc?: AlfredRuntimeService['routeClientHostedBrowserRpc']
-  }
-  return candidate.routeClientHostedBrowserRpc?.(method, params) ?? { handled: false as const }
+  return runtime.routeClientHostedBrowserRpc?.(method, params) ?? { handled: false as const }
 }

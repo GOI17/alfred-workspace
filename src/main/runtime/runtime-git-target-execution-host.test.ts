@@ -1,3 +1,5 @@
+import type { Repo } from '../../shared/repo-types'
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 // `resolveRuntimeGitTarget` read `store.getRepo(worktree.repoId)?.connectionId` and never looked at
 // `worktree.hostId`, so one arbitrarily chosen row decided the execution host for ~36 downstream
 // Git dispatches. `undefined` there meant "runtime host", "unresolved" and "genuinely local" at
@@ -31,7 +33,16 @@ type RuntimeInternals = {
   resolveWorktreeSelector: (selector: string) => Promise<unknown>
 }
 
-function makeRuntime(repos: readonly Record<string, unknown>[], hostId?: string) {
+function makeRuntime(
+  repoInputs: readonly (Pick<Repo, 'id' | 'path'> & Partial<Repo>)[],
+  hostId?: string
+) {
+  const repos: Repo[] = repoInputs.map((repo) => ({
+    displayName: 'repo',
+    badgeColor: 'blue',
+    addedAt: 1,
+    ...repo
+  }))
   const store = {
     getSettings: () => ({ disabledTuiAgents: [], workspaceDir: '/tmp/workspaces' }),
     getProjectHostSetups: () => [],
@@ -39,7 +50,7 @@ function makeRuntime(repos: readonly Record<string, unknown>[], hostId?: string)
     getRepos: () => repos,
     getRepo: (id: string) => repos.find((repo) => repo.id === id)
   }
-  const runtime = new AlfredRuntimeService(store as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
   vi.spyOn(runtime as unknown as RuntimeInternals, 'resolveWorktreeSelector').mockResolvedValue({
     id: WORKTREE_ID,
     repoId: 'repo-shared',

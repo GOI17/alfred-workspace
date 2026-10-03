@@ -108,7 +108,7 @@ async function makeRuntime() {
   initDataPath()
   const store = new Store()
   const { AlfredRuntimeService } = await import('./alfred-runtime')
-  const runtime = new AlfredRuntimeService(store as never)
+  const runtime = new AlfredRuntimeService(store)
   const published: AutomationsChangedPayload[] = []
   vi.spyOn(runtime, 'notifyAutomationsChanged').mockImplementation(
     (payload: AutomationsChangedPayload = {}) => {

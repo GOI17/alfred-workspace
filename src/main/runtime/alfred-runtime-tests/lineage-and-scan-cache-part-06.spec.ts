@@ -138,7 +138,7 @@ describe('AlfredRuntimeService', () => {
       getWorktreeLineage: () => undefined,
       setWorktreeLineage
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     computeWorktreePathMock.mockReturnValue(childPath)
     ensurePathWithinWorkspaceMock.mockReturnValue(childPath)
     vi.mocked(listWorktrees)
@@ -248,7 +248,7 @@ describe('AlfredRuntimeService', () => {
       getWorktreeLineage: () => undefined,
       setWorktreeLineage
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const workerHandle = runtime.preAllocateHandleForPty('pty-worker')
     runtime.setOrchestrationDb({
       getDispatchContext: vi.fn(() => ({
@@ -346,7 +346,7 @@ describe('AlfredRuntimeService', () => {
       getWorktreeLineage: () => undefined,
       setWorktreeLineage
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const parentHandle = runtime.preAllocateHandleForPty('pty-parent')
     runtime.setOrchestrationDb({
       getDispatchContext: vi.fn(() => undefined),

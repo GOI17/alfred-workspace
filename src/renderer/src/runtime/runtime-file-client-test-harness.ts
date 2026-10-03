@@ -63,7 +63,7 @@ export const runtimeCall: PreloadStub = vi.fn()
 /** Registers the stubbed window.api fs/runtime surface shared by the runtime file client suites. */
 export function installRuntimeFileClientEnvironment(): void {
   beforeEach(() => {
-    delete (globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__
+    delete globalThis.__ALFRED_WEB_CLIENT__
     clearRuntimeCompatibilityCacheForTests()
     clearLegacyQuickOpenInventoryCacheForTests()
     replaceRuntimeEnvironmentRevisions([])

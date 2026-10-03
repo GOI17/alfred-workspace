@@ -38,7 +38,7 @@ export async function createWorkerWorktree(args: {
   launchPreferences?: AgentLaunchPreferences
   effects: WorkerEffect[]
 }): Promise<{
-  worktree: Awaited<ReturnType<AlfredRuntimeService['showManagedWorktree']>>
+  worktree: { id: string; repoId: string }
   terminalHandle: string | undefined
   setupReceipt: WorkerSetupReceipt
 }> {
@@ -132,7 +132,7 @@ export async function createWorkerWorktree(args: {
     terminalId: setupTerminalHandle ?? setupTerminal?.id
   })
   return {
-    worktree: created.worktree as Awaited<ReturnType<AlfredRuntimeService['showManagedWorktree']>>,
+    worktree: created.worktree,
     terminalHandle,
     setupReceipt
   }

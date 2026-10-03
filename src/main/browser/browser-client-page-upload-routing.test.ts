@@ -88,10 +88,13 @@ function createHarness(
   const releaseNetworkRoute = vi.fn(async () => {})
   const executor = new BrowserClientPageCommandExecutor({
     alfredProfileId: 'alfred-profile-a',
+    storageScope: 'test',
     authorityConnectionIdentity: 'authority-a',
+    legacyAuthorityConnectionIdentity: 'authority-a',
     retainNetworkRoute: async () => ({
       key: 'execution-a',
       executionHostIdentity: 'execution-record-a',
+      legacyExecutionHostIdentity: 'execution-record-a',
       proxyEndpoint: { host: '127.0.0.1' as const, port: 43123 },
       release: releaseNetworkRoute
     }),
@@ -120,7 +123,7 @@ function createHarness(
     guestBinding: { bind: () => {}, release: () => {} },
     fileChannel: options.fileChannel,
     uploadStaging
-  } as never)
+  })
   return {
     executor,
     executeAutomation,

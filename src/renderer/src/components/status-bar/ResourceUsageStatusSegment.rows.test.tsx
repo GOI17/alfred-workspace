@@ -4,7 +4,7 @@ import React, { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ORPHAN_WORKTREE_ID } from '../../../../shared/constants'
-import type { BrowserWorkspace } from '../../../../shared/browser-workspace-types'
+
 import type { UnifiedSessionRow, UnifiedWorktreeRow } from './resource-usage-merge-types'
 
 vi.mock('@/store', () => {
@@ -150,7 +150,7 @@ describe('resource manager row presentation', () => {
             canGoForward: false,
             loadError: null,
             createdAt: 1
-          } as BrowserWorkspace
+          }
         ]
       })
     )

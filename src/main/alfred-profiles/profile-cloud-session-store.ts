@@ -205,7 +205,7 @@ export function readAlfredCloudSession(
         }
       }
       const decrypted = safeStorage.decryptString(Buffer.from(parsed.ciphertext, 'base64'))
-      const session = JSON.parse(decrypted) as AlfredCloudSession
+      const session: unknown = JSON.parse(decrypted)
       if (!isAlfredCloudSession(session)) {
         return { status: 'decrypt-failed', persistence: 'none', error: 'Invalid saved session.' }
       }

@@ -51,5 +51,5 @@ export async function installSshReplayReplyProbe(
 }
 
 export async function readSshReplayReplies(app: ElectronApplication): Promise<ReplayPayload[]> {
-  return app.evaluate(() => (globalThis as ReplayReplyScope).__alfredSshCodexReplayReplies ?? [])
+  return app.evaluate(() => globalThis.__alfredSshCodexReplayReplies ?? [])
 }

@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { describe, expect, it, vi } from 'vitest'
 import { spawnMock } from './pty-ipc-mock-registry'
 import { setupPtyIpcSuite } from './pty-ipc-test-harness'
@@ -135,36 +136,40 @@ describe('registerPtyHandlers', () => {
     }
 
     registerPtyHandlers(mainWindow as never, runtime as never)
-    const result = (await handlers.get('pty:spawn')!(mainWindowIpcEvent, {
-      cols: 80,
-      rows: 24,
-      cwd: '/repo',
-      command: 'claude --teammate-mode auto --resume claude-session',
-      tabId: 'tab-1',
-      leafId,
-      worktreeId: 'wt-1',
-      env: {
-        ALFRED_PANE_KEY: `tab-1:${leafId}`,
-        ALFRED_TAB_ID: 'tab-1',
-        ALFRED_WORKTREE_ID: 'wt-1',
-        CLAUDE_PROFILE: 'captured',
-        PATH: `/tmp/stale-agent-teams${delimiter}/usr/bin`,
-        TMUX: '/tmp/alfred-claude-agent-teams/team-stale,0,1',
-        ALFRED_AGENT_TEAMS_TEAM_ID: 'team-stale',
-        ALFRED_AGENT_TEAMS_TOKEN: 'stale-token',
-        TERM_PROGRAM: 'Alfred'
-      },
-      launchConfig: {
-        agentCommand: 'claude --teammate-mode auto',
-        agentArgs: '',
-        agentEnv: {
-          CLAUDE_PROFILE: 'captured',
-          ALFRED_AGENT_TEAMS_TEAM_ID: 'team-stale',
-          ALFRED_AGENT_TEAMS_TOKEN: 'stale-token'
-        }
-      },
-      launchAgent: 'claude'
-    })) as { launchConfig?: { agentEnv: Record<string, string> } }
+    const result = z
+      .object({ launchConfig: z.object({ agentEnv: z.record(z.string(), z.string()) }).optional() })
+      .parse(
+        await handlers.get('pty:spawn')!(mainWindowIpcEvent, {
+          cols: 80,
+          rows: 24,
+          cwd: '/repo',
+          command: 'claude --teammate-mode auto --resume claude-session',
+          tabId: 'tab-1',
+          leafId,
+          worktreeId: 'wt-1',
+          env: {
+            ALFRED_PANE_KEY: `tab-1:${leafId}`,
+            ALFRED_TAB_ID: 'tab-1',
+            ALFRED_WORKTREE_ID: 'wt-1',
+            CLAUDE_PROFILE: 'captured',
+            PATH: `/tmp/stale-agent-teams${delimiter}/usr/bin`,
+            TMUX: '/tmp/alfred-claude-agent-teams/team-stale,0,1',
+            ALFRED_AGENT_TEAMS_TEAM_ID: 'team-stale',
+            ALFRED_AGENT_TEAMS_TOKEN: 'stale-token',
+            TERM_PROGRAM: 'Alfred'
+          },
+          launchConfig: {
+            agentCommand: 'claude --teammate-mode auto',
+            agentArgs: '',
+            agentEnv: {
+              CLAUDE_PROFILE: 'captured',
+              ALFRED_AGENT_TEAMS_TEAM_ID: 'team-stale',
+              ALFRED_AGENT_TEAMS_TOKEN: 'stale-token'
+            }
+          },
+          launchAgent: 'claude'
+        })
+      )
 
     const spawnOptions = spawnMock.mock.calls.at(-1)?.[2] as { env: Record<string, string> }
     expect(runtime.prepareClaudeAgentTeamsLeaderForHandle).toHaveBeenCalledWith({
@@ -295,26 +300,28 @@ describe('registerPtyHandlers', () => {
     const leafId = '99999999-9999-4999-8999-999999999999'
     const paneKey = makePaneKey(tabId, leafId)
 
-    const result = (await handlers.get('pty:spawn')!(mainWindowIpcEvent, {
-      cols: 80,
-      rows: 24,
-      cwd: '/tmp/renderer-authority',
-      command: 'claude',
-      worktreeId,
-      tabId,
-      leafId,
-      env: {
-        ALFRED_PANE_KEY: paneKey,
-        ALFRED_TAB_ID: tabId,
-        ALFRED_WORKTREE_ID: worktreeId,
-        ALFRED_AGENT_LAUNCH_TOKEN: testCase.envLaunchToken
-      },
-      ...(testCase.launchToken ? { launchToken: testCase.launchToken } : {}),
-      ...(testCase.hasLaunchConfig
-        ? { launchConfig: { agentCommand: 'claude', agentArgs: '', agentEnv: {} } }
-        : {}),
-      ...(testCase.launchAgent ? { launchAgent: testCase.launchAgent } : {})
-    })) as { id: string; incarnationId: string }
+    const result = z.object({ id: z.string(), incarnationId: z.string() }).parse(
+      await handlers.get('pty:spawn')!(mainWindowIpcEvent, {
+        cols: 80,
+        rows: 24,
+        cwd: '/tmp/renderer-authority',
+        command: 'claude',
+        worktreeId,
+        tabId,
+        leafId,
+        env: {
+          ALFRED_PANE_KEY: paneKey,
+          ALFRED_TAB_ID: tabId,
+          ALFRED_WORKTREE_ID: worktreeId,
+          ALFRED_AGENT_LAUNCH_TOKEN: testCase.envLaunchToken
+        },
+        ...(testCase.launchToken ? { launchToken: testCase.launchToken } : {}),
+        ...(testCase.hasLaunchConfig
+          ? { launchConfig: { agentCommand: 'claude', agentArgs: '', agentEnv: {} } }
+          : {}),
+        ...(testCase.launchAgent ? { launchAgent: testCase.launchAgent } : {})
+      })
+    )
 
     const handle = runtime.preAllocateHandleForPty(result.id)
     const authority = runtime.getOrchestrationDispatchAuthority(handle)
@@ -457,24 +464,32 @@ describe('registerPtyHandlers', () => {
     const worktreeId = 'repo-1::/tmp/reattach'
 
     registerPtyHandlers(mainWindow as never, runtime as never)
-    const result = (await handlers.get('pty:spawn')!(mainWindowIpcEvent, {
-      cols: 80,
-      rows: 24,
-      connectionId: 'ssh-reattach-1',
-      worktreeId,
-      tabId,
-      leafId,
-      env: {
-        ALFRED_PANE_KEY: makePaneKey(tabId, leafId),
-        ALFRED_TAB_ID: tabId,
-        ALFRED_WORKTREE_ID: worktreeId
-      },
-      launchConfig: {
-        agentCommand: 'codex --model gpt-5',
-        agentArgs: '--model gpt-5',
-        agentEnv: { CODEX_PROFILE: 'captured' }
-      }
-    })) as { id: string; isReattach?: boolean; launchConfig?: unknown }
+    const result = z
+      .object({
+        id: z.string(),
+        isReattach: z.boolean().optional(),
+        launchConfig: z.unknown().optional()
+      })
+      .parse(
+        await handlers.get('pty:spawn')!(mainWindowIpcEvent, {
+          cols: 80,
+          rows: 24,
+          connectionId: 'ssh-reattach-1',
+          worktreeId,
+          tabId,
+          leafId,
+          env: {
+            ALFRED_PANE_KEY: makePaneKey(tabId, leafId),
+            ALFRED_TAB_ID: tabId,
+            ALFRED_WORKTREE_ID: worktreeId
+          },
+          launchConfig: {
+            agentCommand: 'codex --model gpt-5',
+            agentArgs: '--model gpt-5',
+            agentEnv: { CODEX_PROFILE: 'captured' }
+          }
+        })
+      )
 
     expect(result).toMatchObject({ id: 'ssh-reattach', isReattach: true })
     expect(result.launchConfig).toBeUndefined()

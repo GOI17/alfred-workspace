@@ -34,14 +34,14 @@ export function addRuntimeProject(mocks: RuntimeFixtureMocks, runtimeId: string)
     addedAt: 1,
     worktreeBaseRef: 'main',
     executionHostId: `runtime:${runtimeId}`
-  } as Repo
+  }
   const worktree = {
     id: RUNTIME_WORKSPACE_ID,
     repoId: RUNTIME_REPO_ID,
     displayName: 'main',
     path: '/repos/gpu-alfred',
     branch: 'main'
-  } as Worktree
+  }
   const setup: ProjectHostSetup = {
     id: 'setup-2',
     projectId: 'project-2',

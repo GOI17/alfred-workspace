@@ -1,10 +1,8 @@
+import { isJsonObject as isPlainObject } from '../../shared/json-object'
+export { isJsonObject as isPlainObject } from '../../shared/json-object'
 import { readFileSync } from 'node:fs'
 import { isDefinitiveAbsence } from '../../shared/definitive-filesystem-absence'
 import type { HooksConfig } from './installer-utils'
-
-export function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 export type HooksJsonSnapshot = {
   /** null when the file does not exist or could not be read. */

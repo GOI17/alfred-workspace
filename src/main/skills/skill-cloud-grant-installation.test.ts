@@ -1,6 +1,6 @@
+import { createRuntimeServiceTestDouble } from '../runtime/runtime-service-test-double'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { SkillCloudDownloadGrant } from '../../shared/skill-cloud-contract'
-import type { AlfredRuntimeService } from '../runtime/alfred-runtime'
 
 const mocks = vi.hoisted(() => ({
   getRuntimeEnvironmentStatus: vi.fn(),
@@ -63,7 +63,7 @@ describe('installSkillCloudGrant', () => {
 
     await expect(
       installSkillCloudGrant(
-        {} as AlfredRuntimeService,
+        createRuntimeServiceTestDouble({}),
         grant,
         {
           operationId: 'operation-1',
@@ -119,7 +119,7 @@ describe('installSkillCloudGrant', () => {
     mocks.installSkillBundleOnRemoteRuntime.mockResolvedValue(result)
 
     await expect(
-      installSkillBundleCloudGrant({} as AlfredRuntimeService, bundleGrant, {
+      installSkillBundleCloudGrant(createRuntimeServiceTestDouble({}), bundleGrant, {
         operationId: 'operation-1',
         environmentId: 'environment-1',
         selectedSkillIds: ['skill-1'],
@@ -148,11 +148,11 @@ it('reports selected manifest entries in manifest order, duplicates and all', as
     ...grant,
     version: { ...grant.version, manifest: { skills, bundleDigest: 'c'.repeat(64) } }
   } as unknown as SkillCloudDownloadGrant
-  const runtime = {
+  const runtime = createRuntimeServiceTestDouble({
     installSharedSkillBundleRequest: vi
       .fn()
       .mockRejectedValue(new Error('skill-install-filesystem-failed'))
-  } as unknown as AlfredRuntimeService
+  })
   const result = await installSkillBundleCloudGrant(runtime, bundleGrant, {
     operationId: 'op',
     // Repeated and unknown selections must be inert, exactly as with `includes`.
@@ -171,9 +171,9 @@ it('reports no skills when nothing was selected', async () => {
     ...grant,
     version: { ...grant.version, manifest: { skills, bundleDigest: 'c'.repeat(64) } }
   } as unknown as SkillCloudDownloadGrant
-  const runtime = {
+  const runtime = createRuntimeServiceTestDouble({
     installSharedSkillBundleRequest: vi.fn().mockRejectedValue(new Error('skill-install-cancelled'))
-  } as unknown as AlfredRuntimeService
+  })
   const result = await installSkillBundleCloudGrant(runtime, bundleGrant, {
     operationId: 'op',
     selectedSkillIds: [],
@@ -204,9 +204,9 @@ it.each(['skill-install-cancelled', 'skill-install-filesystem-failed'])(
       ...grant,
       version: { ...grant.version, manifest: { skills, bundleDigest: 'c'.repeat(64) } }
     } as unknown as SkillCloudDownloadGrant
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       installSharedSkillBundleRequest: vi.fn().mockRejectedValue(new Error(code))
-    } as unknown as AlfredRuntimeService
+    })
     const result = await installSkillBundleCloudGrant(runtime, bundleGrant, {
       operationId: 'op',
       selectedSkillIds,

@@ -52,7 +52,7 @@ function makeRemoteRepoStore(
   const metaById: Record<string, WorktreeMeta> = {
     [TEST_WORKTREE_ID]: makeWorktreeMeta({ hostId: executionHostId, ...metaOverrides })
   }
-  const removeWorktreeMeta = vi.fn((worktreeId: string, hostId?: string) => {
+  const removeWorktreeMeta = vi.fn((worktreeId: string, hostId?: string | null) => {
     if (!hostId || metaById[worktreeId]?.hostId === hostId) {
       delete metaById[worktreeId]
     }

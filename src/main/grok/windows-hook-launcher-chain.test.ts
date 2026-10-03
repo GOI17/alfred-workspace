@@ -55,9 +55,7 @@ function withWin32<T>(run: () => T): T {
 }
 
 function readInstalledConfig(home: string): InstalledConfig {
-  return JSON.parse(
-    readFileSync(join(home, '.grok', 'hooks', 'alfred-status.json'), 'utf8')
-  ) as InstalledConfig
+  return JSON.parse(readFileSync(join(home, '.grok', 'hooks', 'alfred-status.json'), 'utf8'))
 }
 
 function registeredCommands(config: InstalledConfig): string[] {

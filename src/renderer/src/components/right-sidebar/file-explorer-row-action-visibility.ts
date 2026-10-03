@@ -30,10 +30,7 @@ export function shouldShowRemoteDownloadAction(
   const hasDownloadCapability = node.isDirectory
     ? Boolean(connectionId && supportsFolderDownload)
     : Boolean(connectionId || runtimeDownloadContext)
-  return (
-    hasDownloadCapability &&
-    (globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__ !== true
-  )
+  return hasDownloadCapability && globalThis.__ALFRED_WEB_CLIENT__ !== true
 }
 
 export function shouldShowCopyFileAction(
@@ -46,6 +43,6 @@ export function shouldShowCopyFileAction(
   return (
     (!connectionId || !node.isDirectory) &&
     selectionSize === 1 &&
-    (globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__ !== true
+    globalThis.__ALFRED_WEB_CLIENT__ !== true
   )
 }

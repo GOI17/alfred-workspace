@@ -17,7 +17,7 @@ function createHost(overrides: Partial<RuntimeSkillCommandHost> = {}): RuntimeSk
     getSshProvider: () => ({ requestHostRpc: vi.fn() }) as never,
     skillTransactionRecovery: Promise.resolve(),
     ...overrides
-  } as RuntimeSkillCommandHost
+  }
 }
 
 describe('createSkillInstallAuthority', () => {

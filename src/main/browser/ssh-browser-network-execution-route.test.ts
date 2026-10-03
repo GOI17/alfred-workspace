@@ -15,6 +15,7 @@ const executionHost = {
 }
 
 function fakeConnection(client: unknown): SshConnection {
+  // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: The routing test supplies only the connection observations it exercises, without live SSH resources.
   return {
     getState: () => ({
       targetId: 'target-a',
@@ -22,7 +23,8 @@ function fakeConnection(client: unknown): SshConnection {
       error: null,
       reconnectAttempt: 0
     }),
-    getClient: () => client,
+    // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: This transport test supplies the SSH client's exercised forwarding method without opening a real connection.
+    getClient: () => client as unknown as ReturnType<SshConnection['getClient']>,
     usesSystemSshTransport: () => client === null,
     getTarget: () => ({
       id: 'target-a',
@@ -116,6 +118,7 @@ describe('SSH browser network execution route', () => {
     const firstForwardOut = vi.fn()
     const secondForwardOut = vi.fn()
     let client = { forwardOut: firstForwardOut }
+    // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: The route exercises only these connection-state and forwarding probes; no live SSH connection is created.
     const connection = {
       getState: () => ({
         targetId: 'target-a',
@@ -123,7 +126,8 @@ describe('SSH browser network execution route', () => {
         error: null,
         reconnectAttempt: 0
       }),
-      getClient: () => client,
+      // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: This transport test supplies the SSH client's exercised forwarding method without opening a real connection.
+      getClient: () => client as unknown as ReturnType<SshConnection['getClient']>,
       usesSystemSshTransport: () => false
     } as unknown as SshConnection
     const route = await resolveSshBrowserNetworkExecutionRoute(

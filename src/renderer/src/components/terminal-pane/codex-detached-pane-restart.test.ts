@@ -1,3 +1,4 @@
+import { makeWorktree as completeMakeWorktree } from '../../../../shared/worktree/worktree-test-fixture'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useAppStore } from '@/store'
 import { registerRuntimeTerminalTab } from '@/runtime/sync-runtime-graph'
@@ -29,8 +30,8 @@ function seedQueuedRestart(
   useAppStore.setState({
     settings: { activeRuntimeEnvironmentId: null } as never,
     worktreesByRepo: {
-      repo1: [{ id: 'wt1', path: '/Users/dev/code/alfred' }]
-    } as never,
+      repo1: [completeMakeWorktree({ id: 'wt1', path: '/Users/dev/code/alfred' })]
+    },
     tabsByWorktree: {
       wt1: [
         {

@@ -1,3 +1,5 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
+import { createRuntimeServiceTestDouble } from './runtime-service-test-double'
 import { mkdtempSync } from 'node:fs'
 import { rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -43,7 +45,7 @@ vi.mock('../git/worktree', () => {
 describe('AlfredRuntimeRpcServer', () => {
   it('mirrors laptop-created remote runtime terminals into phone session tabs over RPC', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
     const spawn = vi.fn().mockResolvedValue({ id: 'laptop-created-pty' })
     runtime.setPtyController({
       spawn,
@@ -154,7 +156,7 @@ describe('AlfredRuntimeRpcServer', () => {
   it('streams laptop-created runtime terminals to a paired phone WebSocket client', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
     const writes: string[] = []
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
     const spawn = vi.fn().mockResolvedValue({ id: 'paired-laptop-pty' })
     runtime.setPtyController({
       spawn,
@@ -296,7 +298,7 @@ describe('AlfredRuntimeRpcServer', () => {
 
   it('authorizes a mobile artifact tap after first-connect backfill even once the raw window scrolls', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
     runtime.setPtyController({
       spawn: vi.fn().mockResolvedValue({ id: 'pty-1' }),
       write: () => true,
@@ -403,15 +405,22 @@ describe('AlfredRuntimeRpcServer', () => {
     // Why: a remote-host runtime proxy only implements RPC-forwarded methods;
     // activation is a local-host concern, so the proxy legitimately lacks
     // activateRecentPtyPathCandidateTracking and onReady must not throw.
-    const runtimeProxy = {
+    const runtimeProxy = createRuntimeServiceTestDouble({
       configureNotificationDismissalStore: () => {},
       getRuntimeId: () => 'proxy-runtime-test',
       getStartedAt: () => 1,
-      getStatus: () => ({ graphStatus: 'unavailable' }),
+      getStatus: () => ({
+        runtimeId: 'proxy-runtime-test',
+        rendererGraphEpoch: 0,
+        graphStatus: 'unavailable',
+        authoritativeWindowId: null,
+        liveTabCount: 0,
+        liveLeafCount: 0
+      }),
       cleanupSubscriptionsForConnection: () => {},
       cancelMobileDictationForConnection: () => {},
       onClientDisconnected: () => {}
-    } as unknown as AlfredRuntimeService
+    })
     expect(
       (runtimeProxy as { activateRecentPtyPathCandidateTracking?: unknown })
         .activateRecentPtyPathCandidateTracking
@@ -454,7 +463,7 @@ describe('AlfredRuntimeRpcServer', () => {
   it('keeps active runtime multiplex streams responsive while a background stream is ACK-limited over WebSocket', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
     const writes: { terminal: string; text: string }[] = []
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
     const spawn = vi
       .fn()
       .mockResolvedValueOnce({ id: 'multiplex-background-pty' })

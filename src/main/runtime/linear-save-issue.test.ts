@@ -21,16 +21,6 @@ const issue = {
   labels: []
 }
 
-type SaveIssueInternals = {
-  resolveLinearAssignee(input: string, teamId: string, workspaceId: string): Promise<string>
-  resolveLinearAgentState(input: string, states: unknown[]): unknown
-  buildLinearSaveUpdate(
-    params: { labels?: string[] },
-    current: typeof issue,
-    workspaceId: string
-  ): Promise<{ labelIds?: string[] }>
-}
-
 afterEach(() => {
   vi.restoreAllMocks()
 })
@@ -104,7 +94,7 @@ describe('Linear save issue', () => {
   })
 
   it('accepts user UUIDs without listing every team member', async () => {
-    const runtime = new AlfredRuntimeService() as unknown as SaveIssueInternals
+    const runtime = new AlfredRuntimeService()
     const listMembers = vi.spyOn(linearTeams, 'getTeamMembersOrThrow')
     const userId = '11111111-1111-4111-8111-111111111111'
 
@@ -115,7 +105,7 @@ describe('Linear save issue', () => {
   })
 
   it('matches assignees by full name or email like Linear MCP', async () => {
-    const runtime = new AlfredRuntimeService() as unknown as SaveIssueInternals
+    const runtime = new AlfredRuntimeService()
     vi.spyOn(linearTeams, 'getTeamMembersOrThrow').mockResolvedValue([
       {
         id: 'user-1',
@@ -134,10 +124,22 @@ describe('Linear save issue', () => {
   })
 
   it('resolves workflow lifecycle types while preferring exact state names', () => {
-    const runtime = new AlfredRuntimeService() as unknown as SaveIssueInternals
+    const runtime = new AlfredRuntimeService()
     const states = [
-      { id: 'state-progress', name: 'In Progress', type: 'started' },
-      { id: 'state-started', name: 'Started', type: 'unstarted' }
+      {
+        id: 'state-progress',
+        name: 'In Progress',
+        type: 'started' as const,
+        color: '#000000',
+        position: 1
+      },
+      {
+        id: 'state-started',
+        name: 'Started',
+        type: 'unstarted' as const,
+        color: '#000000',
+        position: 1
+      }
     ]
 
     expect(runtime.resolveLinearAgentState('started', states)).toBe(states[1])
@@ -145,7 +147,7 @@ describe('Linear save issue', () => {
   })
 
   it('clears labels without listing the team label catalog', async () => {
-    const runtime = new AlfredRuntimeService() as unknown as SaveIssueInternals
+    const runtime = new AlfredRuntimeService()
     const listLabels = vi.spyOn(linearTeams, 'getTeamLabelsOrThrow')
 
     await expect(

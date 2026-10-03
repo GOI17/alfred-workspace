@@ -119,7 +119,7 @@ export function useAutomationsPageSetupState({
       const settingsForRepo = getSettingsForRepoRuntimeOwner({ repos, settings }, repoId)
       const promise = checkRuntimeHooks(settingsForRepo, repoId, hostId)
         .then((result) => ({
-          hooks: result.status === 'error' ? null : ((result.hooks as AlfredHooks | null) ?? null),
+          hooks: result.status === 'error' ? null : (result.hooks ?? null),
           ok: result.status !== 'error'
         }))
         .catch(() => ({ hooks: null, ok: false }))

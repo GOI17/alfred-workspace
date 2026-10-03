@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import type { AgentStatusIpcPayload } from '../../../shared/agent-status-types'
 import { AlfredRuntimeService, electronMocks } from '../alfred-runtime-test-mocks.spec'
@@ -36,7 +37,7 @@ describe('AlfredRuntimeService', () => {
         }
       })
     )
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       spawn,
       write: () => true,
@@ -107,7 +108,7 @@ describe('AlfredRuntimeService', () => {
         }
       })
     )
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       write: () => true,
       kill: () => true,
@@ -192,7 +193,7 @@ describe('AlfredRuntimeService', () => {
         }
       })
     )
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       write: () => true,
       kill: () => true,
@@ -260,7 +261,7 @@ describe('AlfredRuntimeService', () => {
         terminalLayoutsByTabId: {}
       })
     )
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       write: () => true,
       kill: () => true,
@@ -286,10 +287,14 @@ describe('AlfredRuntimeService', () => {
       makeWorkspaceSessionWithHeadlessTerminal()
     )
     let rows: AgentStatusIpcPayload[] = []
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
-      getAgentStatusSnapshot: () => rows,
-      getAgentProviderSessionRowsForPane: () => []
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(runtimeStore),
+      undefined,
+      {
+        getAgentStatusSnapshot: () => rows,
+        getAgentProviderSessionRowsForPane: () => []
+      }
+    )
     runtime.setPtyController({
       write: () => true,
       kill: () => true,
@@ -352,10 +357,14 @@ describe('AlfredRuntimeService', () => {
       terminalLayoutsByTabId
     })
     const getAgentStatusSnapshot = vi.fn(() => [])
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
-      getAgentStatusSnapshot,
-      getAgentProviderSessionRowsForPane: () => []
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(runtimeStore),
+      undefined,
+      {
+        getAgentStatusSnapshot,
+        getAgentProviderSessionRowsForPane: () => []
+      }
+    )
     runtime.setPtyController({
       write: () => true,
       kill: () => true,
@@ -394,7 +403,7 @@ describe('AlfredRuntimeService', () => {
       })
     )
     const kill = vi.fn(() => true)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       write: () => true,
       kill,
@@ -442,7 +451,9 @@ describe('AlfredRuntimeService', () => {
     })
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const closeTerminalTab = vi.fn(async () => {})
-    const runtime = new AlfredRuntimeService({ ...runtimeStore, flushOrThrow } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({ ...runtimeStore, flushOrThrow })
+    )
     runtime.setPtyController({
       write: () => true,
       kill,
@@ -496,7 +507,7 @@ describe('AlfredRuntimeService', () => {
       runtime.onPtyExit(closedPtyId, 0)
       return true
     })
-    runtime = new AlfredRuntimeService(runtimeStore as never)
+    runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setNotifier({ closeTerminal, closeTerminalTab } as never)
     runtime.setPtyController({
       write: () => true,
@@ -586,7 +597,7 @@ describe('AlfredRuntimeService', () => {
     const closeTerminalTab = vi.fn(async () => {
       throw new Error('terminal_tab_pinned')
     })
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       write: () => true,
       kill,
@@ -631,7 +642,7 @@ describe('AlfredRuntimeService', () => {
       makeWorkspaceSessionWithHeadlessTerminal()
     )
     const spawn = vi.fn().mockResolvedValue({ id: 'persisted-pty' })
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       spawn,
       write: () => true,

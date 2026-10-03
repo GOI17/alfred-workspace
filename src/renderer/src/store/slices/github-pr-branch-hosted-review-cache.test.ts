@@ -55,7 +55,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
           linkedReviewHintKey: 'github:12'
         }
       }
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().applyGitHubPRRefreshEvent({
       sequence: 1,
@@ -323,7 +323,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
           linkedReviewHintKey: 'github:12'
         }
       }
-    } as unknown as Partial<AppState>)
+    })
 
     for (let i = 0; i < 40; i += 1) {
       const inFlightSequence = i * 2 + 1
@@ -675,7 +675,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
           fetchedAt: 1
         }
       }
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().applyGitHubPRRefreshEvent({
       sequence: 1,

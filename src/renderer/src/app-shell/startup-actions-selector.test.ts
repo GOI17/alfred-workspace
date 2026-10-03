@@ -36,7 +36,7 @@ function makeActions(): StartupActions {
     setHydrationSucceeded: vi.fn(),
     pruneLastVisitedTimestamps: vi.fn(),
     seedActiveWorktreeLastVisitedIfMissing: vi.fn()
-  } as StartupActions
+  }
 }
 
 describe('startup action selector', () => {

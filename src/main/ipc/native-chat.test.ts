@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { appendFile, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -70,11 +71,15 @@ async function invokeReadSession(args: {
 
 describe('nativeChat:readSession handler', () => {
   it('preserves notFound so a just-created session stays in retry/loading', async () => {
-    const result = (await invokeReadSession({
-      agent: 'claude',
-      sessionId: 'missing-session',
-      transcriptPath: join(tmpdir(), 'alfred-native-chat-ipc-does-not-exist.jsonl')
-    })) as { error?: string; notFound?: true }
+    const result = z
+      .object({ error: z.string().optional(), notFound: z.literal(true).optional() })
+      .parse(
+        await invokeReadSession({
+          agent: 'claude',
+          sessionId: 'missing-session',
+          transcriptPath: join(tmpdir(), 'alfred-native-chat-ipc-does-not-exist.jsonl')
+        })
+      )
 
     expect(result.error).toBeDefined()
     expect(result.notFound).toBe(true)

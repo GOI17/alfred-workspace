@@ -4,7 +4,14 @@ import type { Repo } from '../../../shared/repo-types'
 import { resolveProjectCloneUrlPrefill } from './project-clone-url-prefill'
 
 function project(sourceRepoIds: string[]): Project {
-  return { id: 'project-alfred', sourceRepoIds } as unknown as Project
+  return {
+    id: 'project-alfred',
+    sourceRepoIds,
+    displayName: 'Alfred',
+    badgeColor: '#999999',
+    createdAt: 1,
+    updatedAt: 1
+  }
 }
 
 function repo(id: string, remoteUrl: string): Repo {

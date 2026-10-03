@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -62,13 +63,15 @@ function createRuntime(overrides: Partial<FolderWorkspace> = {}): AlfredRuntimeS
     updatedAt: 1,
     ...overrides
   }
-  return new AlfredRuntimeService({
-    getFolderWorkspaces: () => [folderWorkspace],
-    getProjectGroups: () => [],
-    getAllWorktreeMeta: () => ({}),
-    getWorktreeMeta: () => undefined,
-    getRepo: () => null,
-    getRepos: () => [],
-    getSettings: () => ({})
-  } as never)
+  return new AlfredRuntimeService(
+    createRuntimeStoreTestDouble({
+      getFolderWorkspaces: () => [folderWorkspace],
+      getProjectGroups: () => [],
+      getAllWorktreeMeta: () => ({}),
+      getWorktreeMeta: () => undefined,
+      getRepo: () => undefined,
+      getRepos: () => [],
+      getSettings: () => ({})
+    })
+  )
 }

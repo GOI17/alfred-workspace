@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 
 const installed = vi.hoisted(() => ({ deps: null as Record<string, unknown> | null }))
@@ -39,7 +40,9 @@ function gateSettingsGetter(): (() => ClaudeManagedAccountGateSettings) | undefi
 describe('structured Claude managed-account gate wiring', () => {
   it('hands the host a gate reader that resolves the live settings', async () => {
     installed.deps = null
-    const runtime = new AlfredRuntimeService({ getSettings: () => SETTINGS } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({ getSettings: () => SETTINGS })
+    )
 
     await runtime.ensureStructuredAgentSessionHost()
 

@@ -177,7 +177,7 @@ describe('removeWorktree state cleanup', () => {
     const orphanedSetup = {
       id: 'setup-runtime-ssh',
       hostId: 'ssh:runtime-ssh-alfred-1'
-    } as unknown as AppState['projectHostSetups'][number]
+    }
     const userSshSetup = {
       id: 'setup-user-ssh',
       hostId: 'ssh:my-server'

@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   HEADLESS_RUNTIME_WINDOW_ID,
@@ -66,7 +67,7 @@ describe('AlfredRuntimeService', () => {
         activeWorktreeIdsOnShutdown: []
       })
     )
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.syncWindowGraph(HEADLESS_RUNTIME_WINDOW_ID, { tabs: [], leaves: [] })
     runtime.registerPty('persisted-pty', TEST_WORKTREE_ID, null, {
       tabId: 'host-tab',
@@ -84,7 +85,7 @@ describe('AlfredRuntimeService', () => {
         activeWorktreeIdsOnShutdown: []
       })
     )
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.syncWindowGraph(HEADLESS_RUNTIME_WINDOW_ID, { tabs: [], leaves: [] })
     runtime.registerPty('persisted-pty', TEST_WORKTREE_ID, null, {
       tabId: 'host-tab',
@@ -128,7 +129,7 @@ describe('AlfredRuntimeService', () => {
         }
       })
     )
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.syncWindowGraph(HEADLESS_RUNTIME_WINDOW_ID, { tabs: [], leaves: [] })
     runtime.registerPty(remotePtyId, TEST_WORKTREE_ID, 'ssh-1', {
       tabId: 'host-tab',

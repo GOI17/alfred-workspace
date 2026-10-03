@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   AlfredRuntimeService,
@@ -35,7 +36,7 @@ describe('AlfredRuntimeService', () => {
       deletePath: vi.fn().mockResolvedValue(undefined)
     }
     registerSshFilesystemProvider('ssh-1', fsProvider as never)
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
 
     try {
       await expect(runtime.checkRepoHooks('id:repo-1')).resolves.toMatchObject({

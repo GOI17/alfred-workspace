@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { makeAgentStatusStoreWiring } from '../agent-status-store-wiring.test-fixture'
 import {
@@ -26,7 +27,7 @@ describe('AlfredRuntimeService', () => {
       tabsByWorktree: {}
     })
     const runtime = new AlfredRuntimeService(
-      runtimeStore as never,
+      createRuntimeStoreTestDouble(runtimeStore),
       undefined,
       makeAgentStatusStoreWiring().deps
     )
@@ -57,20 +58,24 @@ describe('AlfredRuntimeService', () => {
       tabsByWorktree: {}
     })
     const now = Date.now()
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
-      getAgentStatusSnapshot: () => [
-        {
-          paneKey: 'opaque-key-without-structure',
-          worktreeId: TEST_WORKTREE_ID,
-          state: 'working',
-          prompt: 'unattributable pane',
-          agentType: 'codex',
-          connectionId: null,
-          receivedAt: now,
-          stateStartedAt: now - 100
-        }
-      ]
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(runtimeStore),
+      undefined,
+      {
+        getAgentStatusSnapshot: () => [
+          {
+            paneKey: 'opaque-key-without-structure',
+            worktreeId: TEST_WORKTREE_ID,
+            state: 'working',
+            prompt: 'unattributable pane',
+            agentType: 'codex',
+            connectionId: null,
+            receivedAt: now,
+            stateStartedAt: now - 100
+          }
+        ]
+      }
+    )
 
     const { worktrees } = await runtime.getWorktreePs()
     const summary = worktrees.find((worktree) => worktree.worktreeId === TEST_WORKTREE_ID)
@@ -99,21 +104,25 @@ describe('AlfredRuntimeService', () => {
       }
     })
     const now = Date.now()
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
-      getAgentStatusSnapshot: () => [
-        {
-          paneKey: 'open-wsl-tab:99999999-9999-4999-8999-999999999997',
-          worktreeId: TEST_WORKTREE_ID,
-          tabId: 'open-wsl-tab',
-          state: 'working',
-          prompt: 'live in WSL',
-          agentType: 'codex',
-          connectionId: 'wsl:Ubuntu',
-          receivedAt: now,
-          stateStartedAt: now - 100
-        }
-      ]
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(runtimeStore),
+      undefined,
+      {
+        getAgentStatusSnapshot: () => [
+          {
+            paneKey: 'open-wsl-tab:99999999-9999-4999-8999-999999999997',
+            worktreeId: TEST_WORKTREE_ID,
+            tabId: 'open-wsl-tab',
+            state: 'working',
+            prompt: 'live in WSL',
+            agentType: 'codex',
+            connectionId: 'wsl:Ubuntu',
+            receivedAt: now,
+            stateStartedAt: now - 100
+          }
+        ]
+      }
+    )
 
     const { worktrees } = await runtime.getWorktreePs()
     const summary = worktrees.find((worktree) => worktree.worktreeId === TEST_WORKTREE_ID)
@@ -128,21 +137,25 @@ describe('AlfredRuntimeService', () => {
       tabsByWorktree: {}
     })
     const now = Date.now()
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
-      getAgentStatusSnapshot: () => [
-        {
-          paneKey: 'closed-wsl-tab:99999999-9999-4999-8999-999999999999',
-          worktreeId: TEST_WORKTREE_ID,
-          tabId: 'closed-wsl-tab',
-          state: 'done',
-          prompt: 'finished in WSL',
-          agentType: 'codex',
-          connectionId: 'wsl:Ubuntu',
-          receivedAt: now,
-          stateStartedAt: now - 60_000
-        }
-      ]
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(runtimeStore),
+      undefined,
+      {
+        getAgentStatusSnapshot: () => [
+          {
+            paneKey: 'closed-wsl-tab:99999999-9999-4999-8999-999999999999',
+            worktreeId: TEST_WORKTREE_ID,
+            tabId: 'closed-wsl-tab',
+            state: 'done',
+            prompt: 'finished in WSL',
+            agentType: 'codex',
+            connectionId: 'wsl:Ubuntu',
+            receivedAt: now,
+            stateStartedAt: now - 60_000
+          }
+        ]
+      }
+    )
 
     const { worktrees } = await runtime.getWorktreePs()
     const summary = worktrees.find((worktree) => worktree.worktreeId === TEST_WORKTREE_ID)
@@ -184,21 +197,25 @@ describe('AlfredRuntimeService', () => {
       listWorktrees: vi.fn().mockResolvedValue([remoteWorktree])
     } as never)
     const now = Date.now()
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
-      getAgentStatusSnapshot: () => [
-        {
-          paneKey: 'remote-tab:88888888-8888-4888-8888-888888888888',
-          worktreeId: remoteWorktreeId,
-          tabId: 'remote-tab',
-          state: 'working',
-          prompt: 'remote agent without local tab records',
-          agentType: 'codex',
-          connectionId: 'ssh-6072',
-          receivedAt: now,
-          stateStartedAt: now - 100
-        }
-      ]
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(runtimeStore),
+      undefined,
+      {
+        getAgentStatusSnapshot: () => [
+          {
+            paneKey: 'remote-tab:88888888-8888-4888-8888-888888888888',
+            worktreeId: remoteWorktreeId,
+            tabId: 'remote-tab',
+            state: 'working',
+            prompt: 'remote agent without local tab records',
+            agentType: 'codex',
+            connectionId: 'ssh-6072',
+            receivedAt: now,
+            stateStartedAt: now - 100
+          }
+        ]
+      }
+    )
 
     const { worktrees } = await runtime.getWorktreePs()
     const summary = worktrees.find((worktree) => worktree.worktreeId === remoteWorktreeId)
@@ -212,7 +229,7 @@ describe('AlfredRuntimeService', () => {
     const { runtimeStore } = makeRuntimeStoreWithWorkspaceSession(
       makeWorkspaceSessionWithHeadlessTerminal()
     )
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     const { worktrees } = await runtime.getWorktreePs()
     const active = worktrees.filter((w) => w.isActive)
@@ -258,20 +275,24 @@ describe('AlfredRuntimeService', () => {
     } as never)
 
     const now = Date.now()
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
-      getAgentStatusSnapshot: () =>
-        Array.from({ length: 100 }, (_, index) => ({
-          paneKey: `remote-tab:${String(index).padStart(8, '0')}-5555-4555-8555-555555555555`,
-          worktreeId: `${remoteRepo.id}::${remoteWorktree.path}/`,
-          tabId: 'remote-tab',
-          state: 'working',
-          prompt: 'remote agent without a PTY',
-          agentType: 'codex',
-          connectionId: 'ssh-1',
-          receivedAt: now,
-          stateStartedAt: now - 100
-        }))
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(runtimeStore),
+      undefined,
+      {
+        getAgentStatusSnapshot: () =>
+          Array.from({ length: 100 }, (_, index) => ({
+            paneKey: `remote-tab:${String(index).padStart(8, '0')}-5555-4555-8555-555555555555`,
+            worktreeId: `${remoteRepo.id}::${remoteWorktree.path}/`,
+            tabId: 'remote-tab',
+            state: 'working',
+            prompt: 'remote agent without a PTY',
+            agentType: 'codex',
+            connectionId: 'ssh-1',
+            receivedAt: now,
+            stateStartedAt: now - 100
+          }))
+      }
+    )
     const summaries = await runtime.getWorktreePs()
 
     // Why: equal keys prove polled worktree.ps rows can share the per-request index instead of repeating path scans.
@@ -351,20 +372,24 @@ describe('AlfredRuntimeService', () => {
       } as never)
 
       const now = Date.now()
-      const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
-        getAgentStatusSnapshot: () =>
-          Array.from({ length: 100 }, (_, index) => ({
-            paneKey: `relative-tab:${String(index).padStart(8, '0')}-5555-4555-8555-555555555555`,
-            worktreeId: `${remoteRepo.id}::${projectedPath}/`,
-            tabId: 'relative-tab',
-            state: 'working',
-            prompt: 'relative path agent',
-            agentType: 'codex',
-            connectionId: 'ssh-relative',
-            receivedAt: now,
-            stateStartedAt: now - 100
-          }))
-      })
+      const runtime = new AlfredRuntimeService(
+        createRuntimeStoreTestDouble(runtimeStore),
+        undefined,
+        {
+          getAgentStatusSnapshot: () =>
+            Array.from({ length: 100 }, (_, index) => ({
+              paneKey: `relative-tab:${String(index).padStart(8, '0')}-5555-4555-8555-555555555555`,
+              worktreeId: `${remoteRepo.id}::${projectedPath}/`,
+              tabId: 'relative-tab',
+              state: 'working',
+              prompt: 'relative path agent',
+              agentType: 'codex',
+              connectionId: 'ssh-relative',
+              receivedAt: now,
+              stateStartedAt: now - 100
+            }))
+        }
+      )
 
       const summaries = await runtime.getWorktreePs()
       const backslashSummary = summaries.worktrees.find(
@@ -424,20 +449,24 @@ describe('AlfredRuntimeService', () => {
       listWorktrees: vi.fn().mockResolvedValue(remoteWorktrees)
     } as never)
     const now = Date.now()
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
-      getAgentStatusSnapshot: () =>
-        remoteWorktrees.map((worktree, index) => ({
-          paneKey: `pair-aware-tab:${String(index).padStart(8, '0')}-9999-4999-8999-999999999999`,
-          worktreeId: `${remoteRepo.id}::${win32.resolve(worktree.path)}`,
-          tabId: 'pair-aware-tab',
-          state: 'working' as const,
-          prompt: `pair-aware agent ${index}`,
-          agentType: 'codex',
-          connectionId: 'ssh-pair-aware-scale',
-          receivedAt: now,
-          stateStartedAt: now - 100
-        }))
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(runtimeStore),
+      undefined,
+      {
+        getAgentStatusSnapshot: () =>
+          remoteWorktrees.map((worktree, index) => ({
+            paneKey: `pair-aware-tab:${String(index).padStart(8, '0')}-9999-4999-8999-999999999999`,
+            worktreeId: `${remoteRepo.id}::${win32.resolve(worktree.path)}`,
+            tabId: 'pair-aware-tab',
+            state: 'working' as const,
+            prompt: `pair-aware agent ${index}`,
+            agentType: 'codex',
+            connectionId: 'ssh-pair-aware-scale',
+            receivedAt: now,
+            stateStartedAt: now - 100
+          }))
+      }
+    )
 
     const summaries = await runtime.getWorktreePs()
 
@@ -482,20 +511,24 @@ describe('AlfredRuntimeService', () => {
       listWorktrees: vi.fn().mockResolvedValue(remoteWorktrees)
     } as never)
     const now = Date.now()
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
-      getAgentStatusSnapshot: () =>
-        Array.from({ length: 2_000 }, (_, index) => ({
-          paneKey: `malformed-tab:${String(index).padStart(8, '0')}-aaaa-4aaa-8aaa-aaaaaaaaaaaa`,
-          worktreeId: `${remoteRepo.id}::relative/./missing-${String(index).padStart(4, '0')}\\leaf`,
-          tabId: 'malformed-tab',
-          state: 'working' as const,
-          prompt: `missing agent ${index}`,
-          agentType: 'codex',
-          connectionId: 'ssh-malformed-scale',
-          receivedAt: now,
-          stateStartedAt: now - 100
-        }))
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(runtimeStore),
+      undefined,
+      {
+        getAgentStatusSnapshot: () =>
+          Array.from({ length: 2_000 }, (_, index) => ({
+            paneKey: `malformed-tab:${String(index).padStart(8, '0')}-aaaa-4aaa-8aaa-aaaaaaaaaaaa`,
+            worktreeId: `${remoteRepo.id}::relative/./missing-${String(index).padStart(4, '0')}\\leaf`,
+            tabId: 'malformed-tab',
+            state: 'working' as const,
+            prompt: `missing agent ${index}`,
+            agentType: 'codex',
+            connectionId: 'ssh-malformed-scale',
+            receivedAt: now,
+            stateStartedAt: now - 100
+          }))
+      }
+    )
 
     const summaries = await runtime.getWorktreePs()
 
@@ -533,20 +566,24 @@ describe('AlfredRuntimeService', () => {
       listWorktrees: vi.fn().mockResolvedValue([remoteWorktree])
     } as never)
     const now = Date.now()
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
-      getAgentStatusSnapshot: () =>
-        Array.from({ length: 2_000 }, (_, index) => ({
-          paneKey: `repeated-miss-tab:${String(index).padStart(8, '0')}-bbbb-4bbb-8bbb-bbbbbbbbbbbb`,
-          worktreeId: `${remoteRepo.id}::relative/./missing\\leaf`,
-          tabId: 'repeated-miss-tab',
-          state: 'working' as const,
-          prompt: `repeated missing agent ${index}`,
-          agentType: 'codex',
-          connectionId: 'ssh-repeated-miss',
-          receivedAt: now,
-          stateStartedAt: now - 100
-        }))
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(runtimeStore),
+      undefined,
+      {
+        getAgentStatusSnapshot: () =>
+          Array.from({ length: 2_000 }, (_, index) => ({
+            paneKey: `repeated-miss-tab:${String(index).padStart(8, '0')}-bbbb-4bbb-8bbb-bbbbbbbbbbbb`,
+            worktreeId: `${remoteRepo.id}::relative/./missing\\leaf`,
+            tabId: 'repeated-miss-tab',
+            state: 'working' as const,
+            prompt: `repeated missing agent ${index}`,
+            agentType: 'codex',
+            connectionId: 'ssh-repeated-miss',
+            receivedAt: now,
+            stateStartedAt: now - 100
+          }))
+      }
+    )
     const cwdSpy = vi.spyOn(process, 'cwd')
 
     try {
@@ -597,21 +634,25 @@ describe('AlfredRuntimeService', () => {
       listWorktrees: vi.fn().mockResolvedValue(remoteWorktrees)
     } as never)
     const now = Date.now()
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
-      getAgentStatusSnapshot: () => [
-        {
-          paneKey: 'truncated-tab:77777777-7777-4777-8777-777777777777',
-          worktreeId: `${remoteRepo.id}::${targetPath}/`,
-          tabId: 'truncated-tab',
-          state: 'working',
-          prompt: 'live beyond the default limit',
-          agentType: 'codex',
-          connectionId: 'ssh-truncated',
-          receivedAt: now,
-          stateStartedAt: now - 100
-        }
-      ]
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(runtimeStore),
+      undefined,
+      {
+        getAgentStatusSnapshot: () => [
+          {
+            paneKey: 'truncated-tab:77777777-7777-4777-8777-777777777777',
+            worktreeId: `${remoteRepo.id}::${targetPath}/`,
+            tabId: 'truncated-tab',
+            state: 'working',
+            prompt: 'live beyond the default limit',
+            agentType: 'codex',
+            connectionId: 'ssh-truncated',
+            receivedAt: now,
+            stateStartedAt: now - 100
+          }
+        ]
+      }
+    )
 
     const summaries = await runtime.getWorktreePs()
     const target = summaries.worktrees.find((worktree) => worktree.path === targetPath)

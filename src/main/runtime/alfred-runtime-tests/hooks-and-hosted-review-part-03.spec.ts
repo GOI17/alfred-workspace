@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { AlfredRuntimeService, gitRunner, setPlatform } from '../alfred-runtime-test-mocks.spec'
 import {
@@ -20,17 +21,17 @@ describe('AlfredRuntimeService', () => {
           displayName: 'repo',
           badgeColor: 'blue',
           sourceRepoIds: [TEST_REPO_ID],
-          localWindowsRuntimePreference: { kind: 'wsl', distro: 'Ubuntu' },
+          localWindowsRuntimePreference: { kind: 'wsl' as const, distro: 'Ubuntu' },
           createdAt: 0,
           updatedAt: 0
         }
       ],
       getSettings: () => ({
         ...store.getSettings(),
-        localWindowsRuntimeDefault: { kind: 'windows-host' }
+        localWindowsRuntimeDefault: { kind: 'windows-host' as const }
       })
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     const wslGitOptions = { cwd: TEST_REPO_PATH, wslDistro: 'Ubuntu' }
     let driftCounts = '1\t2\n'
     const asyncGitSpy = vi.spyOn(gitRunner, 'gitExecFileAsync').mockImplementation(async (args) => {

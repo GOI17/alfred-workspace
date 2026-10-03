@@ -273,7 +273,7 @@ async function waitForPositiveSave(file: OpenFile, content: string): Promise<voi
       timeout = null
     }
     if (onSaved) {
-      window.removeEventListener(ALFRED_EDITOR_FILE_SAVED_EVENT, onSaved as EventListener)
+      window.removeEventListener(ALFRED_EDITOR_FILE_SAVED_EVENT, onSaved)
       onSaved = null
     }
   }
@@ -290,7 +290,7 @@ async function waitForPositiveSave(file: OpenFile, content: string): Promise<voi
       cleanup()
       resolve()
     }
-    window.addEventListener(ALFRED_EDITOR_FILE_SAVED_EVENT, onSaved as EventListener)
+    window.addEventListener(ALFRED_EDITOR_FILE_SAVED_EVENT, onSaved)
   })
 
   try {

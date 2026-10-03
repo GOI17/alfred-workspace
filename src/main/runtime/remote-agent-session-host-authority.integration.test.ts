@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import '../daemon/mock-descendant-sweep'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -104,7 +105,7 @@ describe('remote agent-session host authority integration', () => {
         getWorktreeMeta: () => undefined,
         getProjects: () => []
       }
-      const runtime = new AlfredRuntimeService(store as never)
+      const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
       let nextRequestedSession = 0
       runtime.setPtyController({
         spawn: async (options) => {

@@ -1,3 +1,4 @@
+import { getDefaultSettings as fixtureGetDefaultSettings } from './constants'
 import { describe, expect, it } from 'vitest'
 
 import type { GlobalSettings } from './global-settings-types'
@@ -65,6 +66,7 @@ function detectedResult(worktrees: DetectedWorktree[]): DetectedWorktreeListResu
 
 function makeSettings(): GlobalSettings {
   return {
+    ...fixtureGetDefaultSettings('/tmp'),
     workspaceDir: '/alfred/workspaces',
     nestWorkspaces: true,
     workspaceDirHistory: [],
@@ -82,7 +84,7 @@ function makeSettings(): GlobalSettings {
     terminalFontFamily: 'monospace',
     terminalFontWeight: 400,
     terminalLineHeight: 1.2
-  } as unknown as GlobalSettings
+  }
 }
 
 function makeGitWorktree(overrides: Partial<Worktree> = {}): Worktree {

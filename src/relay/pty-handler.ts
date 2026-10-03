@@ -1,3 +1,4 @@
+import { definedProcessEnvironment } from '../shared/defined-process-environment'
 /* oxlint-disable max-lines */
 import type { IPty } from 'node-pty'
 import { killWithDescendantSweep } from '../main/pty-descendant-termination'
@@ -790,18 +791,20 @@ export class PtyHandler {
     },
     envToDelete: readonly string[] = []
   ): Record<string, string> {
-    const baseEnv = mergeGitConfigEnvProtocol(
-      {
-        ...stripInheritedBuildModeEnv(process.env),
-        TERM: 'xterm-256color',
-        COLORTERM: 'truecolor',
-        TERM_PROGRAM: 'Alfred',
-        TERM_PROGRAM_VERSION:
-          rendererEnv?.ALFRED_APP_VERSION || process.env.ALFRED_APP_VERSION || '0.0.0-dev',
-        FORCE_HYPERLINK: '1'
-      },
-      rendererEnv
-    ) as Record<string, string>
+    const baseEnv = definedProcessEnvironment(
+      mergeGitConfigEnvProtocol(
+        {
+          ...stripInheritedBuildModeEnv(process.env),
+          TERM: 'xterm-256color',
+          COLORTERM: 'truecolor',
+          TERM_PROGRAM: 'Alfred',
+          TERM_PROGRAM_VERSION:
+            rendererEnv?.ALFRED_APP_VERSION || process.env.ALFRED_APP_VERSION || '0.0.0-dev',
+          FORCE_HYPERLINK: '1'
+        },
+        rendererEnv
+      )
+    )
     const augmented: Record<string, string> = {}
     for (const augmenter of this.envAugmenters) {
       try {
@@ -812,7 +815,7 @@ export class PtyHandler {
         )
       }
     }
-    const result = mergeGitConfigEnvProtocol(baseEnv, augmented) as Record<string, string>
+    const result = definedProcessEnvironment(mergeGitConfigEnvProtocol(baseEnv, augmented))
     // Why: an older client may not ask a newly upgraded relay to delete inherited shim state.
     stripLegacyTerminalShimEnv(result, process.platform)
     // Why unconditionally here, not in injectRelayFishHistoryEnv: that runs only for a

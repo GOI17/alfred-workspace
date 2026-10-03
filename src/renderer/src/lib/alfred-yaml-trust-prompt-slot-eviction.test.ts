@@ -1,3 +1,4 @@
+import { makeRepo as completeMakeRepo } from '../../../shared/repo-test-fixture'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { StoreApi } from 'zustand/vanilla'
 import type { AppState } from '@/store/types'
@@ -20,9 +21,9 @@ function createStateBackedByRealModalSlot(): {
 } {
   const store = createUIStore()
   store.setState({
-    repos: [{ id: 'repo-1', displayName: 'Repo One' }],
+    repos: [completeMakeRepo({ id: 'repo-1', displayName: 'Repo One' })],
     trustedAlfredHooks: {}
-  } as unknown as Partial<AppState>)
+  })
   return { store, state: store.getState() }
 }
 

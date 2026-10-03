@@ -1,7 +1,7 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
-import type { AlfredRuntimeService } from '../../alfred-runtime'
 
 const {
   isPwshAvailable,
@@ -52,7 +52,7 @@ describe('host capability RPC methods', () => {
     isWslAvailableAsync.mockResolvedValue(true)
     listWslDistrosAsync.mockResolvedValue(['Ubuntu'])
     isGitBashAvailable.mockReturnValue(true)
-    const runtime = { getRuntimeId: () => 'test-runtime' } as unknown as AlfredRuntimeService
+    const runtime = createRuntimeServiceTestDouble({ getRuntimeId: () => 'test-runtime' })
     const dispatcher = new RpcDispatcher({ runtime, methods: HOST_CAPABILITY_METHODS })
 
     await expect(dispatcher.dispatch(makeRequest('host.pwsh.isAvailable'))).resolves.toMatchObject({
@@ -81,7 +81,7 @@ describe('host capability RPC methods', () => {
     isPwshAvailableAsync.mockResolvedValue(false)
     isWslAvailableAsync.mockResolvedValue(false)
     listWslDistrosAsync.mockResolvedValue([])
-    const runtime = { getRuntimeId: () => 'test-runtime' } as unknown as AlfredRuntimeService
+    const runtime = createRuntimeServiceTestDouble({ getRuntimeId: () => 'test-runtime' })
     const dispatcher = new RpcDispatcher({ runtime, methods: HOST_CAPABILITY_METHODS })
 
     await dispatcher.dispatch(makeRequest('host.wsl.isAvailable'))

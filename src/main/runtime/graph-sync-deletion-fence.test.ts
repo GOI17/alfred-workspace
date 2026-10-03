@@ -1,3 +1,6 @@
+import { makeWorktreeMeta } from '../../shared/worktree/metadata-test-fixture'
+import type { WorktreeMeta } from '../../shared/worktree/meta-types'
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 /**
  * Deletion fence: a renderer snapshot that raced a worktree delete must not
  * resurrect the removed occupant's browser/terminal rows in a same-id
@@ -82,7 +85,7 @@ describe('graph-sync deletion fence', () => {
   }
 
   function createFencedRuntime() {
-    let meta: { instanceId: string; hostId?: string } | undefined = { instanceId: 'old-instance' }
+    let meta: WorktreeMeta | undefined = makeWorktreeMeta({ instanceId: 'old-instance' })
     const store = {
       ...storeBase,
       getWorktreeMeta: () => meta,
@@ -90,7 +93,7 @@ describe('graph-sync deletion fence', () => {
         meta = undefined
       }
     }
-    const runtime = new AlfredRuntimeService(store as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
     const internals = runtime as unknown as FenceInternals
     const events: RuntimeMobileSessionTabsResult[] = []
     runtime.onMobileSessionTabsChanged((snapshot) => events.push(snapshot))
@@ -106,7 +109,7 @@ describe('graph-sync deletion fence', () => {
         ...(extra.unchanged ? { unchangedMobileSessionWorktrees: extra.unchanged } : {})
       } as never)
     const recreate = (instanceId: string): void => {
-      meta = { instanceId }
+      meta = makeWorktreeMeta({ instanceId })
     }
     const remove = (): void => internals.removeWorktreeMetadataAndHistory(store, WT)
     return { runtime, internals, events, sync, recreate, remove }

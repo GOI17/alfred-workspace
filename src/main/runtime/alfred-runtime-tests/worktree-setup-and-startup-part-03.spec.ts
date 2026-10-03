@@ -24,7 +24,7 @@ describe('AlfredRuntimeService', () => {
         setupScriptLaunchMode: 'split-horizontal' as const
       })
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const activateWorktree = vi.fn()
     const revealTerminalSession = vi.fn().mockResolvedValue({ tabId: 'tab-bg-setup-split' })
     const spawn = vi
@@ -107,7 +107,7 @@ describe('AlfredRuntimeService', () => {
         setupScriptLaunchMode: 'split-horizontal' as const
       })
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const revealTerminalSession = vi.fn().mockResolvedValue({ tabId: 'tab-active-setup-split' })
     const spawn = vi
       .fn()
@@ -193,7 +193,7 @@ describe('AlfredRuntimeService', () => {
         return metaById[worktreeId]
       }
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const spawn = vi.fn().mockResolvedValue({ id: 'pty-cli-setup-skip' })
     runtime.setPtyController({
       spawn,
@@ -256,7 +256,7 @@ describe('AlfredRuntimeService', () => {
         return metaById[worktreeId]
       }
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const spawn = vi
       .fn()
       .mockResolvedValueOnce({ id: 'pty-default-dev' })
@@ -354,7 +354,7 @@ describe('AlfredRuntimeService', () => {
         return metaById[worktreeId]
       }
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const spawn = vi.fn().mockResolvedValue({ id: 'pty-startup-draft' })
     const write = vi.fn().mockReturnValue(true)
     runtime.setPtyController({
@@ -434,7 +434,7 @@ describe('AlfredRuntimeService', () => {
         agentCmdOverrides: {}
       })
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const spawn = vi.fn().mockResolvedValue({ id: 'pty-opencode-draft-timeout' })
     const write = vi.fn().mockReturnValue(true)
     runtime.setPtyController({
@@ -496,7 +496,7 @@ describe('AlfredRuntimeService', () => {
         disabledTuiAgents: ['codex' as const]
       })
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const spawn = vi.fn().mockResolvedValue({ id: 'pty-disabled-startup' })
     runtime.setPtyController({
       spawn,
@@ -533,7 +533,7 @@ describe('AlfredRuntimeService', () => {
         return metaById[worktreeId]
       }
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const spawn = vi.fn().mockResolvedValue({ id: 'pty-cli-agent-startup' })
     runtime.setPtyController({
       spawn,

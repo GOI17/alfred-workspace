@@ -4,6 +4,7 @@ import type { RuntimeCommandSurfaceHost } from './alfred-runtime-core'
 
 class AlfredRuntimeService extends AlfredRuntimeWithResolveWaiter {}
 type AlfredRuntimeServiceExport = RuntimeCommandSurfaceHost<AlfredRuntimeService>
+// oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: The command surface installers below attach these methods to the exported constructor prototype.
 const AlfredRuntimeServiceExport = AlfredRuntimeService as unknown as {
   new (...args: ConstructorParameters<typeof AlfredRuntimeService>): AlfredRuntimeServiceExport
   readonly prototype: AlfredRuntimeServiceExport

@@ -1,3 +1,4 @@
+import { definedProcessEnvironment } from '../../../shared/defined-process-environment'
 import { delimiter } from 'node:path'
 import { dropInheritedAlfredFishHistory } from '../../fish-history-session'
 import { removeAppImageRuntimeEnv } from '../../pty/appimage-terminal-env'
@@ -136,13 +137,15 @@ function removeInheritedDevAgentHookEndpoint(
 
 export function createDaemonPtyEnvironment(opts: PtySubprocessOptions): Record<string, string> {
   const env: Record<string, string> = {
-    ...mergeGitConfigEnvProtocol(stripInheritedBuildModeEnv(process.env), opts.env),
+    ...definedProcessEnvironment(
+      mergeGitConfigEnvProtocol(stripInheritedBuildModeEnv(process.env), opts.env)
+    ),
     TERM: 'xterm-256color',
     COLORTERM: 'truecolor',
     TERM_PROGRAM: 'Alfred',
     TERM_PROGRAM_VERSION: process.env.ALFRED_APP_VERSION ?? '0.0.0-dev',
     FORCE_HYPERLINK: '1'
-  } as Record<string, string>
+  }
   stripLegacyTerminalShimEnv(env, process.platform)
   composeGuardedDaemonGitConfigEnv(env, opts.env, opts.launchAgent)
   deleteRequestedDaemonEnvKeys(env, opts.envToDelete)

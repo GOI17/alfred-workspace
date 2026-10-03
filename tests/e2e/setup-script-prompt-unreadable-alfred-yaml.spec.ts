@@ -44,9 +44,7 @@ function createRepoWithSharedSetupScript(repoPath: string, featureWorktreePath: 
 async function installUnreadableAlfredYamlFault(electronApp: ElectronApplication): Promise<void> {
   await electronApp.evaluate(({ ipcMain }) => {
     type InvokeHandler = (event: unknown, ...args: unknown[]) => unknown
-    const faultState = globalThis as typeof globalThis & {
-      __alfredE2eAlfredYamlUnreadable?: boolean
-    }
+    const faultState = globalThis
     const registry = (ipcMain as unknown as { _invokeHandlers?: Map<string, InvokeHandler> })
       ._invokeHandlers
     const productionHandler = registry?.get('hooks:check')
@@ -67,9 +65,7 @@ async function installUnreadableAlfredYamlFault(electronApp: ElectronApplication
 /** alfred.yaml becomes readable again — every later check runs the production handler. */
 async function healAlfredYamlRead(electronApp: ElectronApplication): Promise<void> {
   await electronApp.evaluate(() => {
-    ;(
-      globalThis as typeof globalThis & { __alfredE2eAlfredYamlUnreadable?: boolean }
-    ).__alfredE2eAlfredYamlUnreadable = false
+    globalThis.__alfredE2eAlfredYamlUnreadable = false
   })
 }
 

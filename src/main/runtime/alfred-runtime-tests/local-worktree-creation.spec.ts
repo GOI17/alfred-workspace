@@ -60,7 +60,7 @@ describe('AlfredRuntimeService', () => {
       listProcesses: vi.fn(async () => [{ id: `${deletedWorktreeId}@@pty-1` }]),
       shutdown: vi.fn(async () => undefined)
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
+    const runtime = new AlfredRuntimeService(runtimeStore, undefined, {
       getLocalProvider: () => localProvider as never
     })
     runtime.setPtyController({

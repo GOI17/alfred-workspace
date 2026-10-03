@@ -1,3 +1,4 @@
+import { isJsonObject } from '../../shared/json-object'
 import type { BrowserGrabCancelReason, BrowserGrabResult } from '../../shared/browser-grab-types'
 import { buildGuestOverlayScript } from './grab-guest-script'
 import { clampGrabPayload } from './browser-grab-payload'
@@ -22,10 +23,10 @@ type ActiveGrabOp = {
 const GRAB_OP_TIMEOUT_MS = 120_000
 
 function isGuestCancellationPayload(rawPayload: unknown): boolean {
-  if (!rawPayload || typeof rawPayload !== 'object') {
+  if (!isJsonObject(rawPayload)) {
     return false
   }
-  const payload = rawPayload as Record<string, unknown>
+  const payload = rawPayload
   if (payload.__alfredCancelled === true) {
     return true
   }
@@ -130,7 +131,7 @@ export class BrowserGrabSessionController {
       const awaitGuestClick = async (): Promise<void> => {
         try {
           const rawPayload = await guest.executeJavaScript(buildGuestOverlayScript('awaitClick'))
-          if (!rawPayload || typeof rawPayload !== 'object') {
+          if (!isJsonObject(rawPayload)) {
             settleOnce({ opId, kind: 'cancelled', reason: 'user' })
             return
           }
@@ -143,11 +144,8 @@ export class BrowserGrabSessionController {
           // Why: the guest wraps right-click results in { __alfredContextMenu, payload }
           // so the renderer can show the full action dropdown instead of auto-copying.
           const isContextMenu =
-            '__alfredContextMenu' in (rawPayload as Record<string, unknown>) &&
-            (rawPayload as Record<string, unknown>).__alfredContextMenu === true
-          const payloadSource = isContextMenu
-            ? (rawPayload as Record<string, unknown>).payload
-            : rawPayload
+            '__alfredContextMenu' in rawPayload && rawPayload.__alfredContextMenu === true
+          const payloadSource = isContextMenu ? rawPayload.payload : rawPayload
           const payload = clampGrabPayload(payloadSource)
           if (!payload) {
             settleOnce({ opId, kind: 'error', reason: 'Guest returned invalid payload structure' })

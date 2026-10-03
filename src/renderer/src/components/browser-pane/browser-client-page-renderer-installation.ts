@@ -50,10 +50,7 @@ export function installBrowserClientPageRenderer(
     subscribe?: RendererRequestSubscriber
   } = {}
 ): BrowserClientPageRendererInstallation | null {
-  if (
-    typeof window !== 'undefined' &&
-    (window as unknown as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__ === true
-  ) {
+  if (typeof window !== 'undefined' && window.__ALFRED_WEB_CLIENT__ === true) {
     return null
   }
   const subscribe =

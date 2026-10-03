@@ -1,6 +1,6 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { remoteRpcContentBudget } from '../../../../shared/remote-rpc-content-budget'
-import type { AlfredRuntimeService } from '../../alfred-runtime'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
 import { FILE_METHODS } from './files'
@@ -21,11 +21,11 @@ describe('file preview RPC transport budgets', () => {
       }
       const readFileExplorerPreview = vi.fn().mockResolvedValue(preview)
       const readTerminalArtifactPreview = vi.fn().mockResolvedValue(preview)
-      const runtime = {
+      const runtime = createRuntimeServiceTestDouble({
         getRuntimeId: () => 'test-runtime',
         readFileExplorerPreview,
         readTerminalArtifactPreview
-      } as unknown as AlfredRuntimeService
+      })
       const dispatcher = new RpcDispatcher({ runtime, methods: FILE_METHODS })
       const id = '\u0001'.repeat(8_192)
       const reply = vi.fn()

@@ -24,7 +24,7 @@ export function readAlfredPushPayload(data: unknown): AlfredPushPayload | null {
   if (!data || typeof data !== 'object') {
     return null
   }
-  const nested = (data as { alfred?: unknown }).alfred
+  const nested = 'alfred' in data ? data.alfred : undefined
   const record = (nested && typeof nested === 'object' ? nested : data) as Record<string, unknown>
   // The fingerprint is what makes this a gateway push; locally scheduled data never has one.
   const hostFingerprint = readString(record.hostFingerprint)

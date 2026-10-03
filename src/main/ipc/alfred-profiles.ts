@@ -1,3 +1,4 @@
+import { isJsonObject } from '../../shared/json-object'
 import { app, ipcMain } from 'electron'
 import type { Store } from '../persistence'
 import { relaunchApp, type AppRelaunchReason } from '../app-relaunch'
@@ -55,14 +56,10 @@ type RegisterAlfredProfileHandlersOptions = {
 }
 
 function profileIdFromArgs(args: unknown): string {
-  if (
-    !args ||
-    typeof args !== 'object' ||
-    typeof (args as SwitchAlfredProfileArgs).profileId !== 'string'
-  ) {
+  if (!isJsonObject(args) || typeof args.profileId !== 'string') {
     throw new Error('invalid_alfred_profile_id')
   }
-  const profileId = (args as SwitchAlfredProfileArgs).profileId.trim()
+  const profileId = args.profileId.trim()
   if (!profileId) {
     throw new Error('invalid_alfred_profile_id')
   }
@@ -70,13 +67,15 @@ function profileIdFromArgs(args: unknown): string {
 }
 
 function transferProjectArgsFromUnknown(args: unknown): TransferAlfredProfileProjectArgs {
-  if (!args || typeof args !== 'object') {
+  if (!isJsonObject(args)) {
     throw new Error('invalid_alfred_profile_project_transfer')
   }
-  const candidate = args as TransferAlfredProfileProjectArgs
-  const sourceProfileId = candidate.sourceProfileId?.trim()
-  const targetProfileId = candidate.targetProfileId?.trim()
-  const repoId = candidate.repoId?.trim()
+  const candidate = args
+  const sourceProfileId =
+    typeof candidate.sourceProfileId === 'string' ? candidate.sourceProfileId.trim() : ''
+  const targetProfileId =
+    typeof candidate.targetProfileId === 'string' ? candidate.targetProfileId.trim() : ''
+  const repoId = typeof candidate.repoId === 'string' ? candidate.repoId.trim() : ''
   const mode = candidate.mode
   if (!sourceProfileId || !targetProfileId || !repoId || (mode !== 'move' && mode !== 'copy')) {
     throw new Error('invalid_alfred_profile_project_transfer')
@@ -90,10 +89,10 @@ function transferProjectArgsFromUnknown(args: unknown): TransferAlfredProfilePro
 }
 
 function findProjectsByPathArgsFromUnknown(args: unknown): FindAlfredProfileProjectsByPathArgs {
-  if (!args || typeof args !== 'object') {
+  if (!isJsonObject(args)) {
     throw new Error('invalid_alfred_profile_project_path')
   }
-  const candidate = args as FindAlfredProfileProjectsByPathArgs
+  const candidate = args
   const path = typeof candidate.path === 'string' ? candidate.path.trim() : ''
   if (!path) {
     throw new Error('invalid_alfred_profile_project_path')
@@ -121,10 +120,10 @@ function findProjectsByPathArgsFromUnknown(args: unknown): FindAlfredProfileProj
 }
 
 function orgIdFromUnknown(args: unknown): string {
-  if (!args || typeof args !== 'object') {
+  if (!isJsonObject(args)) {
     throw new Error('invalid_alfred_profile_org_selection')
   }
-  const orgId = (args as SelectAlfredProfileOrgArgs).orgId?.trim()
+  const orgId = typeof args.orgId === 'string' ? args.orgId.trim() : ''
   if (!orgId) {
     throw new Error('invalid_alfred_profile_org_selection')
   }
@@ -134,10 +133,10 @@ function orgIdFromUnknown(args: unknown): string {
 function createCloudLinkedProfileArgsFromUnknown(
   args: unknown
 ): CreateCloudLinkedAlfredProfileArgs {
-  if (!args || typeof args !== 'object') {
+  if (!isJsonObject(args)) {
     return {}
   }
-  const candidate = args as CreateCloudLinkedAlfredProfileArgs
+  const candidate = args
   const orgId = typeof candidate.orgId === 'string' ? candidate.orgId.trim() : undefined
   const name = typeof candidate.name === 'string' ? candidate.name.trim() : undefined
   return {
@@ -170,7 +169,7 @@ function scheduleProfileRelaunch(reason: Extract<AppRelaunchReason, `profile-${s
 }
 
 export function registerAlfredProfileHandlers(
-  store: Store,
+  store: Pick<Store, 'getSettings' | 'freezeWrites' | 'flushPendingOrThrowAsync'>,
   options: RegisterAlfredProfileHandlersOptions = {}
 ): void {
   ipcMain.handle('alfredProfiles:list', (): AlfredProfileListResult => ({

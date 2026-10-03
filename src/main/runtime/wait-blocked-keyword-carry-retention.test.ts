@@ -11,6 +11,7 @@ type ScheduleHost = {
 }
 
 function createScheduleHost(): ScheduleHost {
+  // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: The test calls the protected scheduler with its explicit scheduling-state fixture.
   const prototype = AlfredRuntimeWithScheduleWaitBlockedCheck.prototype as unknown as ScheduleHost
   return {
     waitBlockedCheckStateByPtyId: new Map(),

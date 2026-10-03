@@ -121,7 +121,7 @@ describe('sendMobileNativeChatMessage', () => {
       sendRequest: vi
         .fn()
         .mockRejectedValue(new Error('Timed out while connecting to the remote Alfred runtime.'))
-    } as unknown as RpcClient
+    }
 
     await expect(
       sendMobileNativeChatMessageWithOutcome({ client, terminal: 'term', text: 'hello' })

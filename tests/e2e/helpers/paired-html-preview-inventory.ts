@@ -139,9 +139,7 @@ export async function readDocPreviewRenderedText(
   selector: string
 ): Promise<string | null> {
   return page.evaluate(async (targetSelector) => {
-    const guest = document.querySelector('webview[src^="alfred-preview://"]') as {
-      executeJavaScript?: (code: string) => Promise<unknown>
-    } | null
+    const guest = document.querySelector<Electron.WebviewTag>('webview[src^="alfred-preview://"]')
     if (!guest?.executeJavaScript) {
       return null
     }
@@ -170,9 +168,7 @@ export async function readDocPreviewElementCenter(
   selector: string
 ): Promise<{ x: number; y: number } | null> {
   return page.evaluate(async (targetSelector) => {
-    const guest = document.querySelector('webview[src^="alfred-preview://"]') as
-      | (HTMLElement & { executeJavaScript?: (code: string) => Promise<unknown> })
-      | null
+    const guest = document.querySelector<Electron.WebviewTag>('webview[src^="alfred-preview://"]')
     if (!guest?.executeJavaScript) {
       return null
     }
@@ -254,6 +250,9 @@ export async function readDocPreviewGuestRects(
 
 export async function readDocPreviewGuestUrl(page: Page): Promise<string | null> {
   return page.evaluate(
-    () => document.querySelector('webview[src^="alfred-preview://"]')?.getAttribute('src') ?? null
+    () =>
+      document
+        .querySelector<Electron.WebviewTag>('webview[src^="alfred-preview://"]')
+        ?.getAttribute('src') ?? null
   )
 }

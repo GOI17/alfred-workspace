@@ -1,7 +1,7 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
-import type { AlfredRuntimeService } from '../../alfred-runtime'
 import { GITLAB_METHODS } from './gitlab'
 
 function makeRequest(method: string, params?: unknown): RpcRequest {
@@ -10,7 +10,7 @@ function makeRequest(method: string, params?: unknown): RpcRequest {
 
 describe('gitlab RPC methods', () => {
   it('routes GitLab task queries and mutations to the runtime server', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       diagnoseGitLabAuth: vi.fn().mockResolvedValue({ glabAvailable: true }),
       getGitLabRateLimit: vi.fn().mockResolvedValue({ ok: true }),
@@ -33,7 +33,7 @@ describe('gitlab RPC methods', () => {
       updateGitLabRepoMRReviewers: vi.fn().mockResolvedValue({ ok: true, reviewers: [] }),
       getGitLabRepoWorkItemDetails: vi.fn().mockResolvedValue({ body: 'Details' }),
       getGitLabRepoWorkItemByPath: vi.fn().mockResolvedValue({ id: 'gitlab-issue-7' })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GITLAB_METHODS })
     const projectRef = { host: 'gitlab.example.com', path: 'group/project' }
 
@@ -282,10 +282,10 @@ describe('gitlab RPC methods', () => {
   })
 
   it('accepts the negotiated ready-for-review update field', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       updateGitLabRepoMR: vi.fn().mockResolvedValue({ ok: true })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GITLAB_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -306,10 +306,10 @@ describe('gitlab RPC methods', () => {
   })
 
   it('normalizes GitLab issue list arguments to match desktop preload behavior', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       listGitLabRepoIssues: vi.fn().mockResolvedValue({ items: [] })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GITLAB_METHODS })
 
     await dispatcher.dispatch(
@@ -355,10 +355,10 @@ describe('gitlab RPC methods', () => {
       ...Array.from({ length: 400 }, (_, index) => `line ${index}`),
       'ERROR: Job failed: exit code 1'
     ].join('\n')
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getGitLabRepoJobTrace: vi.fn().mockResolvedValue({ ok: true, trace: noisyTrace })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GITLAB_METHODS })
 
     const raw = await dispatcher.dispatch(

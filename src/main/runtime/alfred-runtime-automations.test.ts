@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { AlfredRuntimeService } from './alfred-runtime'
 import type { Automation } from '../../shared/automations-types'
@@ -9,7 +10,7 @@ const repo: Repo = {
   displayName: 'alfred',
   badgeColor: 'blue',
   addedAt: 1,
-  kind: 'git'
+  kind: 'git' as const
 }
 
 function makeStore(existingAutomations: Automation[] = []) {
@@ -37,7 +38,7 @@ function makeStore(existingAutomations: Automation[] = []) {
       branchPrefix: '',
       branchPrefixCustom: ''
     })),
-    getAllWorktreeMeta: vi.fn(() => new Map()),
+    getAllWorktreeMeta: vi.fn(() => ({})),
     getWorktreeMeta: vi.fn(),
     setWorktreeMeta: vi.fn(),
     removeWorktreeMeta: vi.fn(),
@@ -73,7 +74,7 @@ const existingAutomation = {
 describe('AlfredRuntimeService automation methods', () => {
   it('creates repo-scoped automations through the shared store', async () => {
     const store = makeStore()
-    const runtime = new AlfredRuntimeService(store as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
 
     const automation = await runtime.createAutomation({
       name: 'Daily review',
@@ -106,7 +107,7 @@ describe('AlfredRuntimeService automation methods', () => {
 
   it('rejects a run context that names a different repo path', async () => {
     const store = makeStore()
-    const runtime = new AlfredRuntimeService(store as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
 
     await expect(
       runtime.createAutomation({
@@ -133,12 +134,12 @@ describe('AlfredRuntimeService automation methods', () => {
 
   it('rejects a mismatched run context when the workspace is the machine selector', async () => {
     const store = makeStore()
-    const runtime = new AlfredRuntimeService(store as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
     vi.spyOn(runtime, 'showManagedWorktree').mockResolvedValue({
       id: 'repo-1::/tmp/alfred',
       repoId: 'repo-1',
       path: '/tmp/alfred'
-    } as never)
+    })
 
     await expect(
       runtime.createAutomation({
@@ -165,7 +166,7 @@ describe('AlfredRuntimeService automation methods', () => {
 
   it('rejects a run-context-only update that names a different repo path', async () => {
     const store = makeStore([existingAutomation])
-    const runtime = new AlfredRuntimeService(store as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
 
     await expect(
       runtime.updateAutomation('auto-1', {
@@ -184,7 +185,7 @@ describe('AlfredRuntimeService automation methods', () => {
 
   it('updates and deletes existing automations through the shared store', async () => {
     const store = makeStore([existingAutomation])
-    const runtime = new AlfredRuntimeService(store as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
 
     const updated = await runtime.updateAutomation('auto-1', { enabled: false })
     const removed = runtime.deleteAutomation('auto-1')
@@ -202,7 +203,7 @@ describe('AlfredRuntimeService automation methods', () => {
 
   it('preserves explicit nullable fields in sparse automation updates', async () => {
     const store = makeStore([existingAutomation])
-    const runtime = new AlfredRuntimeService(store as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
 
     await runtime.updateAutomation('auto-1', { baseBranch: null })
 
@@ -211,7 +212,7 @@ describe('AlfredRuntimeService automation methods', () => {
 
   it('passes setup decision updates through the shared store', async () => {
     const store = makeStore([existingAutomation])
-    const runtime = new AlfredRuntimeService(store as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
 
     await runtime.updateAutomation('auto-1', { setupDecision: 'run' })
 
@@ -230,7 +231,7 @@ describe('AlfredRuntimeService automation methods', () => {
       baseBranch: null
     } satisfies Automation
     const store = makeStore([existing])
-    const runtime = new AlfredRuntimeService(store as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
 
     await runtime.updateAutomation('auto-1', { reuseSession: true })
 
@@ -246,7 +247,7 @@ describe('AlfredRuntimeService automation methods', () => {
       reuseSession: true
     } satisfies Automation
     const store = makeStore([existing])
-    const runtime = new AlfredRuntimeService(store as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
 
     await runtime.updateAutomation('auto-1', {
       repo: 'repo-1',
@@ -267,7 +268,7 @@ describe('AlfredRuntimeService automation methods', () => {
 
   it('rejects session reuse for new-per-run automations', async () => {
     const store = makeStore()
-    const runtime = new AlfredRuntimeService(store as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
 
     await expect(
       runtime.createAutomation({
@@ -292,7 +293,7 @@ describe('AlfredRuntimeService automation methods', () => {
       baseBranch: null
     } satisfies Automation
     const store = makeStore([existing])
-    const runtime = new AlfredRuntimeService(store as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
 
     await expect(runtime.updateAutomation('auto-1', { repo: 'repo-2' })).rejects.toThrow(
       'Repo updates for existing-workspace automation require workspaceMode new_per_run.'

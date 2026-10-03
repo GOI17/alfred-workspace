@@ -73,7 +73,7 @@ describe('AlfredRuntimeService', () => {
         metaById[worktreeId] = { ...(metaById[worktreeId] ?? makeWorktreeMeta()), ...meta }
         return metaById[worktreeId]
       },
-      removeWorktreeMeta: (worktreeId: string, hostId?: string) => {
+      removeWorktreeMeta: (worktreeId: string, hostId?: string | null) => {
         if (!hostId || metaById[worktreeId]?.hostId === hostId) {
           delete metaById[worktreeId]
         }
@@ -137,14 +137,14 @@ describe('AlfredRuntimeService', () => {
           displayName: 'repo',
           badgeColor: 'blue',
           sourceRepoIds: [TEST_REPO_ID],
-          localWindowsRuntimePreference: { kind: 'wsl', distro: 'Ubuntu' },
+          localWindowsRuntimePreference: { kind: 'wsl' as const, distro: 'Ubuntu' },
           createdAt: 0,
           updatedAt: 0
         }
       ],
       getSettings: () => ({
         ...store.getSettings(),
-        localWindowsRuntimeDefault: { kind: 'windows-host' }
+        localWindowsRuntimeDefault: { kind: 'windows-host' as const }
       })
     }
     const runtime = createWorktreeRemovalRuntime(runtimeStore)
@@ -207,10 +207,10 @@ describe('AlfredRuntimeService', () => {
     const baseRepo = store.getRepos()[0]!
     // The second owner names its host only in the migrated spelling, so its removal must reach the
     // SSH host rather than joining the local one and running `git worktree remove` here.
-    const remoteRepo = { ...baseRepo, path: '/remote/repo', executionHostId: 'ssh:host-b' }
+    const remoteRepo = { ...baseRepo, path: '/remote/repo', executionHostId: 'ssh:host-b' as const }
     const runtimeStore = {
       ...store,
-      getRepos: () => [{ ...baseRepo, executionHostId: 'local' }, remoteRepo]
+      getRepos: () => [{ ...baseRepo, executionHostId: 'local' as const }, remoteRepo]
     }
     const runtime = createWorktreeRemovalRuntime(runtimeStore)
     vi.spyOn(runtime, 'acquireFileWatcherRemoval').mockResolvedValue({ finish: vi.fn() })
@@ -389,7 +389,7 @@ describe('AlfredRuntimeService', () => {
     const ptyProvider = { deleteWorktreeHistory } as never
     registerSshGitProvider(repo.connectionId, gitProvider as never)
     registerSshFilesystemProvider(repo.connectionId, fsProvider as never)
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
+    const runtime = new AlfredRuntimeService(runtimeStore, undefined, {
       getSshProvider: () => ptyProvider
     })
 
@@ -468,7 +468,7 @@ describe('AlfredRuntimeService', () => {
     }
     registerSshGitProvider(repo.connectionId, gitProvider as never)
     registerSshFilesystemProvider(repo.connectionId, fsProvider as never)
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
+    const runtime = new AlfredRuntimeService(runtimeStore, undefined, {
       getSshProvider: () => ptyProvider as never
     })
 

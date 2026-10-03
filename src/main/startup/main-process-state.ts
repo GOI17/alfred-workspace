@@ -46,7 +46,7 @@ import type { GpuCrashDiagnosticsRecorder } from '../crash-reporting/gpu-crash-d
 import { createWebContentsTimedFlag } from './web-contents-timed-flag'
 
 /** Mutable composition-root state shared by startup, window, serve, and quit phases. */
-export const mainProcessState = {
+const initialMainProcessState = {
   mainWindow: null as BrowserWindow | null,
   /** Whether a manual app.quit() (Cmd+Q) is in progress; lets the close handler skip the running-process confirmation and go straight to close. */
   isQuitting: false,
@@ -60,9 +60,9 @@ export const mainProcessState = {
   codexSessionMigration: null as ReturnType<typeof createCodexSessionMigrationScheduler> | null,
   claudeAccounts: null as ClaudeAccountService | null,
   claudeRuntimeAuth: null as ClaudeRuntimeAuthService | null,
-  runtime: null as AlfredRuntimeService | null,
+  runtime: null,
   rateLimits: null as RateLimitService | null,
-  runtimeRpc: null as AlfredRuntimeRpcServer | null,
+  runtimeRpc: null,
   serveReadinessPublisher: new ServeReadinessPublisher(),
   desktopRelayService: null as DesktopRelayService | null,
   desktopPushService: null as DesktopPushService | null,
@@ -125,7 +125,7 @@ export const mainProcessState = {
   devAgentHookEndpointNamespace: undefined as string | undefined,
   startupDiagnosticsEnabled: false,
   desktopActivationGate: null as ReturnType<typeof createServeDesktopActivationGate> | null,
-  activeAlfredProfile: null as ReturnType<typeof ensureActiveAlfredProfile> | null,
+  activeAlfredProfile: null,
   windowsShellPathHydration: null as ReturnType<typeof createWindowsShellPathHydration> | null,
   shellPathReady: Promise.resolve(),
   hangDetection: null as HangDetectionMarker | null,
@@ -136,6 +136,15 @@ export const mainProcessState = {
   emulatorBridge: null as EmulatorBridge | null,
   tray: null as Tray | null
 }
+
+export const mainProcessState: Omit<
+  typeof initialMainProcessState,
+  'runtime' | 'runtimeRpc' | 'activeAlfredProfile'
+> & {
+  runtime: AlfredRuntimeService | null
+  runtimeRpc: AlfredRuntimeRpcServer | null
+  activeAlfredProfile: ReturnType<typeof ensureActiveAlfredProfile> | null
+} = initialMainProcessState
 
 /** Environment passed to GPU fallback marker helpers. */
 export function gpuFallbackEnvironment(): GpuFallbackEnvironment {

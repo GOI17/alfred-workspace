@@ -244,7 +244,7 @@ describe('create project mismatch', () => {
       addedAt: 1,
       worktreeBaseRef: 'main',
       ...overrides
-    } as Repo
+    }
   }
   const desktopSelf = {
     authority: { kind: 'desktop' } as const,

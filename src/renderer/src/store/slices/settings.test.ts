@@ -67,7 +67,7 @@ function deferred<T>() {
 }
 
 beforeEach(() => {
-  delete (globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__
+  delete globalThis.__ALFRED_WEB_CLIENT__
   clearRuntimeCompatibilityCacheForTests()
   resetRuntimeCatalogListingForTests()
   vi.clearAllMocks()
@@ -448,7 +448,7 @@ describe('createSettingsSlice runtime switching', () => {
   })
 
   it('does not close host-owned mirrored resources when a paired web client switches servers', async () => {
-    ;(globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__ = true
+    globalThis.__ALFRED_WEB_CLIENT__ = true
     const store = createTestStore()
     store.setState({
       settings: { activeRuntimeEnvironmentId: 'env-1' } as AppState['settings'],

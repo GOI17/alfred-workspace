@@ -1,5 +1,5 @@
+export { makeRepo } from '../../../../shared/repo-test-fixture'
 import { vi } from 'vitest'
-import type { Repo } from '../../../../shared/repo-types'
 import type { Worktree } from '../../../../shared/worktree/types'
 
 export function makeFolderWorkspacePathStatusMockState(): Record<string, unknown> {
@@ -9,16 +9,6 @@ export function makeFolderWorkspacePathStatusMockState(): Record<string, unknown
     folderWorkspacePathStatuses: {},
     getFolderWorkspacePathStatusCacheKey: (request: unknown) => JSON.stringify(request),
     getFreshFolderWorkspacePathStatus: () => null
-  }
-}
-
-export function makeRepo(): Repo {
-  return {
-    id: 'repo-1',
-    path: '/tmp/lineage-order',
-    displayName: 'lineage-order',
-    badgeColor: '#999999',
-    addedAt: 1
   }
 }
 

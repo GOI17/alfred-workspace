@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 /**
  * A WSL shell prints `/home/neil/qa-repo`; the runtime stored the same directory as the UNC path
  * Windows sees (#16628). The CLI translates, proving the caller's distro from its own UNC cwd —
@@ -113,7 +114,7 @@ function scanReports(registrations: readonly Registration[]): void {
 
 function makeRuntime(registrations: readonly Registration[]): AlfredRuntimeService {
   scanReports(registrations)
-  return new AlfredRuntimeService(makeStore(registrations) as never)
+  return new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore(registrations)))
 }
 
 /**

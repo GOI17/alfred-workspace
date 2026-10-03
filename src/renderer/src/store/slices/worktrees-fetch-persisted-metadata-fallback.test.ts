@@ -537,7 +537,7 @@ describe('fetchWorktrees', () => {
       detectedWorktreesByRepo: {
         'repo-ssh': makeDetectedResult('repo-ssh', [existing])
       }
-    } as Partial<AppState>)
+    })
     const beforeWorktrees = store.getState().worktreesByRepo
     const beforeDetected = store.getState().detectedWorktreesByRepo
     const beforeBytes = JSON.stringify([beforeWorktrees, beforeDetected])

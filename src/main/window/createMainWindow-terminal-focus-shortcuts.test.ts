@@ -1,3 +1,5 @@
+import { getDefaultUIState, getDefaultSettings } from '../../shared/constants'
+import { createPersistenceStoreTestDouble } from '../persistence/persistence-store-test-double'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('electron', async () =>
@@ -572,10 +574,15 @@ describe('createMainWindow', () => {
       return browserWindowInstance
     })
 
-    createMainWindow({
-      getUI: () => ({}),
-      getSettings: () => ({ terminalShortcutPolicy: 'alfred-first' })
-    } as never)
+    createMainWindow(
+      createPersistenceStoreTestDouble({
+        getUI: getDefaultUIState,
+        getSettings: () => ({
+          ...getDefaultSettings('/tmp'),
+          terminalShortcutPolicy: 'alfred-first'
+        })
+      })
+    )
 
     const setFocusedListener = vi
       .mocked(ipcMain.on)
@@ -638,10 +645,13 @@ describe('createMainWindow', () => {
     })
 
     createMainWindow(
-      {
-        getUI: () => ({}),
-        getSettings: () => ({ terminalShortcutPolicy: 'alfred-first' })
-      } as never,
+      createPersistenceStoreTestDouble({
+        getUI: getDefaultUIState,
+        getSettings: () => ({
+          ...getDefaultSettings('/tmp'),
+          terminalShortcutPolicy: 'alfred-first'
+        })
+      }),
       {
         getKeybindings: () => ({ 'worktree.quickOpen': ['DoubleTap+Shift'] })
       }

@@ -48,6 +48,8 @@ export function readLaunchVersion(): string {
   return RELAY_VERSION
 }
 
+const handshakeListeners = new WeakMap<Socket, (chunk: Buffer) => void>()
+
 // ── Daemon side ─────────────────────────────────────────────────────
 
 export type DaemonHandshakeCallbacks = {
@@ -83,15 +85,14 @@ export function setupDaemonHandshake(sock: Socket, cb: DaemonHandshakeCallbacks)
     decoder.feed(chunk)
   }
   sock.on('data', onHandshakeData)
-  ;(sock as Socket & { __alfredOnHandshake?: typeof onHandshakeData }).__alfredOnHandshake =
-    onHandshakeData
+  handshakeListeners.set(sock, onHandshakeData)
 }
 
 export function detachHandshakeListener(sock: Socket): void {
-  const tagged = sock as Socket & { __alfredOnHandshake?: (chunk: Buffer) => void }
-  if (tagged.__alfredOnHandshake) {
-    sock.removeListener('data', tagged.__alfredOnHandshake)
-    delete tagged.__alfredOnHandshake
+  const listener = handshakeListeners.get(sock)
+  if (listener) {
+    sock.removeListener('data', listener)
+    handshakeListeners.delete(sock)
   }
 }
 

@@ -1,3 +1,5 @@
+import type { ExecutionHostId } from '../../shared/execution-host'
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { AlfredRuntimeService } from './alfred-runtime'
 import { getDefaultWorkspaceSession } from '../../shared/constants'
@@ -37,7 +39,7 @@ function makeStore() {
   const session: WorkspaceSessionState = getDefaultWorkspaceSession()
   return {
     getWorkspaceSession: vi.fn(() => session),
-    getWorkspaceSessionHostIds: vi.fn(() => ['local', 'ssh:box-1']),
+    getWorkspaceSessionHostIds: vi.fn((): ExecutionHostId[] => ['local', 'ssh:box-1']),
     getFolderWorkspaces: vi.fn((): FolderWorkspace[] => []),
     getProjectGroups: vi.fn(() => []),
     setWorkspaceSession: vi.fn(),
@@ -84,7 +86,7 @@ function makeRuntimeFolderWorkspace() {
 type GraphLeaf = { worktreeId: string; leafId: string; ptyId: string }
 
 function makeRuntime(leaves: GraphLeaf[], store = makeStore()): AlfredRuntimeService {
-  const runtime = new AlfredRuntimeService(store as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
   runtime.setPtyController({
     spawn: vi.fn(async () => ({ id: 'never' })),
     write: () => true,
@@ -213,7 +215,7 @@ describe('listTerminals scope declaration', () => {
       ...baseStore,
       getRepos: vi.fn(() => repos),
       getRepo: vi.fn((id: string) => repos.find((repo) => repo.id === id)),
-      getWorkspaceSessionHostIds: vi.fn(() => ['local'])
+      getWorkspaceSessionHostIds: vi.fn((): ExecutionHostId[] => ['local'])
     })
 
     const result = await runtime.listTerminals()
@@ -239,7 +241,7 @@ describe('listTerminals scope declaration', () => {
       ...baseStore,
       getRepos: vi.fn(() => repos),
       getRepo: vi.fn((id: string) => repos.find((repo) => repo.id === id)),
-      getWorkspaceSessionHostIds: vi.fn(() => ['local'])
+      getWorkspaceSessionHostIds: vi.fn((): ExecutionHostId[] => ['local'])
     })
 
     const result = await runtime.listTerminals(`id:${LOCAL_WORKTREE_ID}`)
@@ -255,7 +257,7 @@ describe('listTerminals scope declaration', () => {
       ...baseStore,
       getRepos: vi.fn(() => [REPOS[0]!]),
       getRepo: vi.fn((id: string) => (id === REPOS[0]!.id ? REPOS[0] : undefined)),
-      getWorkspaceSessionHostIds: vi.fn(() => ['local']),
+      getWorkspaceSessionHostIds: vi.fn((): ExecutionHostId[] => ['local']),
       getFolderWorkspaces: vi.fn(() => [folderWorkspace])
     })
     runtime.setPtyController({
@@ -282,7 +284,7 @@ describe('listTerminals scope declaration', () => {
       ...baseStore,
       getRepos: vi.fn(() => [REPOS[0]!]),
       getRepo: vi.fn((id: string) => (id === REPOS[0]!.id ? REPOS[0] : undefined)),
-      getWorkspaceSessionHostIds: vi.fn(() => ['local']),
+      getWorkspaceSessionHostIds: vi.fn((): ExecutionHostId[] => ['local']),
       getFolderWorkspaces: vi.fn(() => [folderWorkspace])
     })
     runtime.setPtyController({
@@ -307,7 +309,7 @@ describe('listTerminals scope declaration', () => {
       ...baseStore,
       getRepos: vi.fn(() => [REPOS[0]!]),
       getRepo: vi.fn((id: string) => (id === REPOS[0]!.id ? REPOS[0] : undefined)),
-      getWorkspaceSessionHostIds: vi.fn(() => ['local']),
+      getWorkspaceSessionHostIds: vi.fn((): ExecutionHostId[] => ['local']),
       getFolderWorkspaces: vi.fn(() => [folderWorkspace])
     })
 
@@ -324,7 +326,7 @@ describe('listTerminals scope declaration', () => {
       ...baseStore,
       getRepos: vi.fn(() => [REPOS[0]!]),
       getRepo: vi.fn((id: string) => (id === REPOS[0]!.id ? REPOS[0] : undefined)),
-      getWorkspaceSessionHostIds: vi.fn(() => ['local']),
+      getWorkspaceSessionHostIds: vi.fn((): ExecutionHostId[] => ['local']),
       getFolderWorkspaces: vi.fn(() => [folderWorkspace])
     })
 

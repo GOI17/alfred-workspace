@@ -6,18 +6,18 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getDefaultSettings } from '../../../../shared/constants'
 
-const mocks = vi.hoisted(() => ({
-  connect: vi.fn(),
-  fetchAuthStatus: vi.fn(),
-  openArtifactsPage: vi.fn(),
-  state: {
-    alfredProfileAuthStatus: {
-      configured: true,
-      state: 'connected'
-    } as Record<string, unknown> | null,
-    isWebClient: false
+const mocks = vi.hoisted(() => {
+  const state: { alfredProfileAuthStatus: Record<string, unknown> | null; isWebClient: boolean } = {
+    isWebClient: false,
+    alfredProfileAuthStatus: { configured: true, state: 'connected' }
   }
-}))
+  return {
+    connect: vi.fn(),
+    fetchAuthStatus: vi.fn(),
+    openArtifactsPage: vi.fn(),
+    state
+  }
+})
 
 vi.mock('@/i18n/i18n', () => ({
   translate: (_key: string, fallback: string) => fallback

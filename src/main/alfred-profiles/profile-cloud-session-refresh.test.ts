@@ -1,5 +1,5 @@
+import { makeCloudAuthConfig } from './profile-cloud-auth-test-fixture'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { AlfredCloudAuthConfig } from './profile-cloud-auth-config'
 import type * as ProfileCloudClient from './profile-cloud-client'
 import type { ActiveAlfredProfileState } from './profile-index-store'
 
@@ -40,7 +40,7 @@ import { AlfredCloudRequestError } from './profile-cloud-client'
 import { onAlfredCloudSessionInvalidated } from './profile-cloud-session-invalidation'
 import { forgetAmbiguousRefreshAttempt } from './profile-cloud-refresh-replay-guard'
 
-const config = {} as AlfredCloudAuthConfig
+const config = makeCloudAuthConfig()
 const active = {
   profile: {
     id: 'profile-1',

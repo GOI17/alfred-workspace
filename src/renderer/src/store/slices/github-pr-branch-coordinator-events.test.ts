@@ -580,7 +580,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
             linkedReviewHintKey: 'github:12'
           }
         }
-      } as unknown as Partial<AppState>)
+      })
 
       store.getState().applyGitHubPRRefreshEvent({
         sequence: 1,

@@ -70,10 +70,7 @@ maybeStartTerminalRenderDesyncSentinel()
 // import Alfred code, so it reports failed ctx.font assignments (the stuck-
 // rasterizer arm of the bold-collapse family) through this global. Crumbs are
 // coalesced upstream, so a rasterization storm cannot flood the report.
-type AtlasFontProbeMismatch = { desired?: string; actual?: string }
-;(globalThis as { __alfredAtlasFontProbe?: (mismatch: AtlasFontProbeMismatch) => void })[
-  '__alfredAtlasFontProbe'
-] = (mismatch) => {
+globalThis['__alfredAtlasFontProbe'] = (mismatch) => {
   recordTerminalWebglDiagnostic(ATLAS_FONT_PROBE_MISMATCH, {
     desired: mismatch?.desired ?? null,
     actual: mismatch?.actual ?? null

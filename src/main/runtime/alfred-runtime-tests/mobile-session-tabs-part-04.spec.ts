@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   AlfredRuntimeService,
@@ -36,7 +37,7 @@ describe('AlfredRuntimeService', () => {
     const folderWorkspace = makeFolderWorkspace({ folderPath })
     const projectGroup = makeFolderProjectGroup({ parentPath: folderPath })
     const runtime = new AlfredRuntimeService(
-      createFolderWorkspaceRuntimeStore(folderWorkspace, projectGroup) as never
+      createRuntimeStoreTestDouble(createFolderWorkspaceRuntimeStore(folderWorkspace, projectGroup))
     )
     runtime.setPtyController({
       spawn,
@@ -77,7 +78,7 @@ describe('AlfredRuntimeService', () => {
       getRepo: (id: string) => (id === TEST_REPO_ID ? remoteRepo : undefined)
     }
     const spawn = vi.fn().mockResolvedValue({ id: 'ssh:ssh-1@@remote-pty' })
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
     runtime.setPtyController({
       spawn,
       write: () => true,
@@ -102,7 +103,7 @@ describe('AlfredRuntimeService', () => {
     const { runtimeStore } = makeRuntimeStoreWithWorkspaceSession(
       makeWorkspaceSessionWithHeadlessTerminal()
     )
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       write: () => true,
       kill: () => true,
@@ -177,13 +178,15 @@ describe('AlfredRuntimeService', () => {
     const getWorkspaceSession = vi.fn((hostId?: string | null) =>
       hostId === 'ssh:ssh-1' ? sshSession : localSession
     )
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      flushOrThrow: vi.fn(),
-      getRepos: () => [remoteRepo],
-      getRepo: (id: string) => (id === TEST_REPO_ID ? remoteRepo : undefined),
-      getWorkspaceSession
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        flushOrThrow: vi.fn(),
+        getRepos: () => [remoteRepo],
+        getRepo: (id: string) => (id === TEST_REPO_ID ? remoteRepo : undefined),
+        getWorkspaceSession
+      })
+    )
     runtime.setPtyController({
       write: () => true,
       kill: () => true,
@@ -229,15 +232,17 @@ describe('AlfredRuntimeService', () => {
       sshSession = session
     })
     const kill = vi.fn(() => true)
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getRepos: () => [remoteRepo],
-      getRepo: (id: string) => (id === TEST_REPO_ID ? remoteRepo : undefined),
-      getWorkspaceSession: (hostId?: string | null) =>
-        hostId === 'ssh:ssh-1' ? sshSession : localSession,
-      setWorkspaceSession,
-      flushOrThrow: vi.fn()
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getRepos: () => [remoteRepo],
+        getRepo: (id: string) => (id === TEST_REPO_ID ? remoteRepo : undefined),
+        getWorkspaceSession: (hostId?: string | null) =>
+          hostId === 'ssh:ssh-1' ? sshSession : localSession,
+        setWorkspaceSession,
+        flushOrThrow: vi.fn()
+      })
+    )
     runtime.setPtyController({
       write: () => true,
       kill,
@@ -329,7 +334,7 @@ describe('AlfredRuntimeService', () => {
         [tabId]: makeHeadlessTerminalLayout({ [leafId]: undefined })
       }
     })
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       spawn: vi.fn().mockResolvedValueOnce({ id: ptyId }).mockResolvedValueOnce({ id: splitPtyId }),
       write: () => true,

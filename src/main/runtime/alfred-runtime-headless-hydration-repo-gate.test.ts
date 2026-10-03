@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { FLOATING_TERMINAL_WORKTREE_ID, getDefaultWorkspaceSession } from '../../shared/constants'
 import type { WorkspaceSessionState } from '../../shared/workspace-session-state-types'
@@ -30,9 +31,11 @@ function makeSession(worktreeId: string): WorkspaceSessionState {
 // pin the two ways that gate must not overreach.
 describe('headless mobile session hydration repo gate', () => {
   it('hydrates when the store cannot report repos at all', async () => {
-    const runtime = new AlfredRuntimeService({
-      getWorkspaceSession: () => makeSession(WORKTREE_ID)
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        getWorkspaceSession: () => makeSession(WORKTREE_ID)
+      })
+    )
 
     // No getRepos on the store: an unavailable inventory must not read as
     // "every repo is gone" and silently drop every persisted tab.
@@ -41,23 +44,45 @@ describe('headless mobile session hydration repo gate', () => {
   })
 
   it('still skips a key whose repo is absent from a known inventory', async () => {
-    const runtime = new AlfredRuntimeService({
-      getWorkspaceSession: () => makeSession('ghost-repo::/worktree'),
-      getRepos: () => [{ id: REPO_ID, path: '/repo', name: 'repo' }]
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        getWorkspaceSession: () => makeSession('ghost-repo::/worktree'),
+        getRepos: () => [
+          {
+            id: REPO_ID,
+            path: '/repo',
+            name: 'repo',
+            displayName: 'repo',
+            badgeColor: 'blue',
+            addedAt: 1
+          }
+        ]
+      })
+    )
 
     const result = await runtime.listMobileSessionTabs('id:ghost-repo::/worktree')
     expect(result.tabs).toEqual([])
   })
 
   it('does not read the repo inventory for an unparseable worktree id', async () => {
-    const getRepos = vi.fn(() => [{ id: REPO_ID, path: '/repo', name: 'repo' }])
-    const runtime = new AlfredRuntimeService({
-      getWorkspaceSession: () => makeSession(FLOATING_TERMINAL_WORKTREE_ID),
-      // A separator-less id is validated against getRepo (singular) first.
-      getRepo: () => null,
-      getRepos
-    } as never)
+    const getRepos = vi.fn(() => [
+      {
+        id: REPO_ID,
+        path: '/repo',
+        name: 'repo',
+        displayName: 'repo',
+        badgeColor: 'blue',
+        addedAt: 1
+      }
+    ])
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        getWorkspaceSession: () => makeSession(FLOATING_TERMINAL_WORKTREE_ID),
+        // A separator-less id is validated against getRepo (singular) first.
+        getRepo: () => undefined,
+        getRepos
+      })
+    )
 
     // Floating terminals carry no `repoId::path` identity, and this hydrate runs
     // on a hot poll path — it must not enumerate repos.

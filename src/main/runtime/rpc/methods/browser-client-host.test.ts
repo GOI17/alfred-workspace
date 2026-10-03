@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { BROWSER_CLIENT_HOST_RUNTIME_CAPABILITY } from '../../../../shared/protocol-version'
 import { getBrowserHostLeaseRegistry } from '../../browser-host-lease-registry-instance'
@@ -30,7 +31,7 @@ function request(
 }
 
 function runtime(cleanups = new Map<string, () => void>()): AlfredRuntimeService {
-  return {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'runtime-a',
     getStartedAt: () => 1,
     // Attach adopts client-hosted pages from the reported inventory before recovery runs.
@@ -38,7 +39,7 @@ function runtime(cleanups = new Map<string, () => void>()): AlfredRuntimeService
     markClientHostedPagesReconciled: () => {},
     notifyMobileSessionTabsChanged: () => {},
     registerSubscriptionCleanup: (id: string, cleanup: () => void) => cleanups.set(id, cleanup)
-  } as unknown as AlfredRuntimeService
+  })
 }
 
 describe('browser.clientHost.attach RPC', () => {

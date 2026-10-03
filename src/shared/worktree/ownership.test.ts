@@ -1,3 +1,4 @@
+import { getDefaultSettings as fixtureGetDefaultSettings } from '../constants'
 import { describe, expect, it } from 'vitest'
 import type { GlobalSettings } from '../global-settings-types'
 import type { Repo } from '../repo-types'
@@ -77,6 +78,8 @@ function makeMeta(overrides: Partial<WorktreeMeta> = {}): WorktreeMeta {
 
 function makeSettings(overrides: Partial<GlobalSettings> = {}): GlobalSettings {
   return {
+    ...fixtureGetDefaultSettings('/tmp'),
+    worktreeVisibilityDefaults: undefined,
     workspaceDir: '/alfred/workspaces',
     nestWorkspaces: true,
     workspaceDirHistory: [],
@@ -95,7 +98,7 @@ function makeSettings(overrides: Partial<GlobalSettings> = {}): GlobalSettings {
     terminalFontWeight: 400,
     terminalLineHeight: 1.2,
     ...overrides
-  } as GlobalSettings
+  }
 }
 
 describe('worktree ownership classification', () => {

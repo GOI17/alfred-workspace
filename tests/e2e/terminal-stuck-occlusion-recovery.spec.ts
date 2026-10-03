@@ -1,3 +1,4 @@
+import { z } from 'zod'
 /**
  * Repro + recovery for the stuck-occlusion freeze (field snapshot,
  * v1.4.124-rc.2.perf, 2026-07-06): macOS occlusion tracking wedges
@@ -125,16 +126,7 @@ test.describe('terminal stuck-occlusion recovery', () => {
     // The one-paste freeze report is prod-reachable and carries the episode's
     // history: the stale-visibility latch and gate transitions must be in the
     // renderer breadcrumbs, and main's per-pty table must be populated.
-    const report = await alfredPage.evaluate(() =>
-      (
-        window as Window & {
-          __alfredTerminalFreezeReport?: () => Promise<{
-            renderer: { breadcrumbs: { kind: string }[]; documentVisibilityProvenStale: boolean }
-            main: { diagnostics: { perPty: unknown[]; breadcrumbs: { kind: string }[] } }
-          }>
-        }
-      ).__alfredTerminalFreezeReport?.()
-    )
+    const report = await alfredPage.evaluate(() => window.__alfredTerminalFreezeReport?.())
     if (!report) {
       throw new Error('freeze report global missing from prod-path renderer')
     }
@@ -142,8 +134,16 @@ test.describe('terminal stuck-occlusion recovery', () => {
     const rendererKinds = report.renderer.breadcrumbs.map((crumb) => crumb.kind)
     expect(rendererKinds).toContain('stale-visibility-latch')
     expect(rendererKinds).toContain('renderer-gate-unmark')
-    expect(report.main.diagnostics.perPty.length).toBeGreaterThan(0)
-    const mainKinds = report.main.diagnostics.breadcrumbs.map((crumb) => crumb.kind)
+    const main = z
+      .object({
+        diagnostics: z.object({
+          perPty: z.array(z.unknown()),
+          breadcrumbs: z.array(z.object({ kind: z.string() }))
+        })
+      })
+      .parse(report.main)
+    expect(main.diagnostics.perPty.length).toBeGreaterThan(0)
+    const mainKinds = main.diagnostics.breadcrumbs.map((crumb) => crumb.kind)
     expect(mainKinds).toContain('gate-mark')
     expect(mainKinds).toContain('gate-unmark')
   })

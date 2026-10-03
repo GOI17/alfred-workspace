@@ -535,7 +535,7 @@ describe('AlfredRuntimeService', () => {
       getAllWorktreeMeta: () => metaById,
       getWorktreeMeta: (worktreeId: string) => metaById[worktreeId],
       setWorktreeMeta
-    } as never)
+    })
     runtime.setNotifier({
       worktreesChanged,
       reposChanged: vi.fn(),
@@ -590,7 +590,7 @@ describe('AlfredRuntimeService', () => {
           }
         }
       })
-    } as never)
+    })
     runtime.setNotifier({
       worktreesChanged: vi.fn(),
       reposChanged: vi.fn(),

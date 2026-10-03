@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 // Why: git.diff, git.branchDiff and git.commitDiff all return a GitDiffResult, so capping only the
 // first would leave the other two able to kill a remote socket.
 import { describe, expect, it, vi } from 'vitest'
@@ -57,7 +58,7 @@ const CASES: readonly { method: string; runtimeMethod: string; params: Record<st
 
 /** Stands in for alfred-runtime-git.ts, which enforces the budget it is handed as its last argument. */
 function stubRuntime(runtimeMethod: string): AlfredRuntimeService {
-  return {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
     [runtimeMethod]: vi.fn(async (...args: unknown[]) => {
       const maxContentBytes = args.at(-1)
@@ -66,7 +67,7 @@ function stubRuntime(runtimeMethod: string): AlfredRuntimeService {
         typeof maxContentBytes === 'number' ? maxContentBytes : undefined
       )
     })
-  } as unknown as AlfredRuntimeService
+  })
 }
 
 function budgetArgument(runtime: AlfredRuntimeService, runtimeMethod: string): unknown {
@@ -165,9 +166,11 @@ describe('remote git diff transport budget', () => {
       }),
       getRuntimeSettings: () => ({}) as GlobalSettings
     })
-    const runtime = Object.assign(commands, {
-      getRuntimeId: () => 'test-runtime'
-    }) as unknown as AlfredRuntimeService
+    const runtime = createRuntimeServiceTestDouble(
+      Object.assign(commands, {
+        getRuntimeId: () => 'test-runtime'
+      })
+    )
 
     const response = await dispatchRemote(runtime, 'git.diff', CASES[0]!.params, 'mobile')
 

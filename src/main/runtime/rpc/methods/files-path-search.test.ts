@@ -1,5 +1,5 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
-import type { AlfredRuntimeService } from '../../alfred-runtime'
 import type { RpcRequest } from '../core'
 import { RpcDispatcher } from '../dispatcher'
 import { FILE_METHODS } from './files'
@@ -7,7 +7,7 @@ import { remoteRpcContentBudget } from '../../../../shared/remote-rpc-content-bu
 
 describe('file path search RPC method', () => {
   it('returns a bounded server-side result for mobile autocomplete', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       searchMobileFilePaths: vi.fn().mockResolvedValue({
         worktree: 'wt-1',
@@ -16,7 +16,7 @@ describe('file path search RPC method', () => {
         totalCount: 1,
         truncated: false
       })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: FILE_METHODS })
     const request: RpcRequest = {
       id: 'req-1',
@@ -42,10 +42,10 @@ describe('file path search RPC method', () => {
       totalCount: 1,
       truncated: false
     })
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       searchQuickOpenFilePaths
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: FILE_METHODS })
     const controller = new AbortController()
 
@@ -87,10 +87,10 @@ describe('file path search RPC method', () => {
       totalCount: 32,
       truncated: false
     })
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       searchQuickOpenFilePaths
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: FILE_METHODS })
     const id = 'req-bounded-quick-open'
     const replies: string[] = []

@@ -35,6 +35,13 @@ type ImeEventLogEntry = {
   cursorY: number | null
 }
 
+declare global {
+  // oxlint-disable-next-line typescript/consistent-type-definitions -- Window declarations must merge with the DOM library.
+  interface Window {
+    __alfredImeEventLog?: ImeEventLogEntry[]
+  }
+}
+
 type TerminalPromptState = {
   model: string
   cursor: number
@@ -187,7 +194,7 @@ process.stdin.on('data', handleData)
 
 async function installImeEventProbe(page: Page): Promise<void> {
   await page.evaluate(() => {
-    const targetWindow = window as unknown as { __alfredImeEventLog?: ImeEventLogEntry[] }
+    const targetWindow = window
     targetWindow.__alfredImeEventLog = []
     const state = window.__store?.getState()
     const worktreeId = state?.activeWorktreeId
@@ -249,7 +256,7 @@ async function installImeEventProbe(page: Page): Promise<void> {
 
 async function readImeEventLog(page: Page): Promise<ImeEventLogEntry[]> {
   return page.evaluate(() => {
-    const targetWindow = window as unknown as { __alfredImeEventLog?: ImeEventLogEntry[] }
+    const targetWindow = window
     return targetWindow.__alfredImeEventLog ?? []
   })
 }

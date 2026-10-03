@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { AlfredRuntimeService } from '../alfred-runtime-test-mocks.spec'
 import type { WorkspaceSessionState } from '../alfred-runtime-test-mocks.spec'
@@ -52,7 +53,7 @@ describe('AlfredRuntimeService', () => {
       const closeTerminal = vi.fn()
       const closeTerminalTab = vi.fn(async () => {})
       const listProcesses = vi.fn(async () => processes)
-      const runtime = new AlfredRuntimeService(runtimeStore as never)
+      const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
       runtime.setPtyController({
         write: () => true,
         kill,
@@ -175,7 +176,7 @@ describe('AlfredRuntimeService', () => {
         })
       )
       const kill = vi.fn(() => true)
-      const runtime = new AlfredRuntimeService(runtimeStore as never)
+      const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
       runtime.setPtyController({
         write: () => true,
         kill,
@@ -335,7 +336,7 @@ describe('AlfredRuntimeService', () => {
       )
       const kill = vi.fn(() => true)
       const closeTerminal = vi.fn()
-      const runtime = new AlfredRuntimeService(runtimeStore as never)
+      const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
       runtime.setPtyController({
         write: () => true,
         kill,
@@ -458,7 +459,7 @@ describe('AlfredRuntimeService', () => {
       )
       const kill = vi.fn(() => true)
       const closeTerminal = vi.fn()
-      const runtime = new AlfredRuntimeService(runtimeStore as never)
+      const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
       runtime.setPtyController({
         write: () => true,
         kill,
@@ -505,7 +506,7 @@ describe('AlfredRuntimeService', () => {
         makeWorkspaceSessionWithHeadlessTerminal()
       )
       const kill = vi.fn(() => true)
-      const runtime = new AlfredRuntimeService(runtimeStore as never)
+      const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
       runtime.setPtyController({
         write: () => true,
         kill,
@@ -534,7 +535,7 @@ describe('AlfredRuntimeService', () => {
         { id: 'persisted-pty', cwd: TEST_WORKTREE_PATH, title: 'Shell' }
       ]
       const kill = vi.fn(() => true)
-      const runtime = new AlfredRuntimeService(runtimeStore as never)
+      const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
       runtime.setPtyController({
         write: () => true,
         kill,
@@ -562,7 +563,7 @@ describe('AlfredRuntimeService', () => {
         makeWorkspaceSessionWithHeadlessTerminal()
       )
       const kill = vi.fn(() => true)
-      const runtime = new AlfredRuntimeService(runtimeStore as never)
+      const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
       runtime.setPtyController({
         write: () => true,
         kill,
@@ -591,15 +592,17 @@ describe('AlfredRuntimeService', () => {
 
   it('builds mobile session agent launch commands on the runtime host', async () => {
     const spawn = vi.fn().mockResolvedValue({ id: 'pty-agent' })
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getSettings: () => ({
-        ...store.getSettings(),
-        disabledTuiAgents: [],
-        agentCmdOverrides: { 'command-code': 'command-code --profile mobile' },
-        agentDefaultEnv: { 'command-code': { COMMAND_CODE_PROFILE: 'mobile-env' } }
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getSettings: () => ({
+          ...store.getSettings(),
+          disabledTuiAgents: [],
+          agentCmdOverrides: { 'command-code': 'command-code --profile mobile' },
+          agentDefaultEnv: { 'command-code': { COMMAND_CODE_PROFILE: 'mobile-env' } }
+        })
       })
-    } as never)
+    )
     runtime.setPtyController({
       spawn,
       write: () => true,
@@ -626,15 +629,17 @@ describe('AlfredRuntimeService', () => {
 
   it('injects mobile quick-command prompts into the host-built agent startup command', async () => {
     const spawn = vi.fn().mockResolvedValue({ id: 'pty-agent-prompt' })
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getSettings: () => ({
-        ...store.getSettings(),
-        disabledTuiAgents: [],
-        agentCmdOverrides: { codex: 'codex' },
-        agentDefaultArgs: {}
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getSettings: () => ({
+          ...store.getSettings(),
+          disabledTuiAgents: [],
+          agentCmdOverrides: { codex: 'codex' },
+          agentDefaultArgs: {}
+        })
       })
-    } as never)
+    )
     runtime.setPtyController({
       spawn,
       write: () => true,

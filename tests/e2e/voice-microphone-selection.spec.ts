@@ -11,6 +11,13 @@ type FakeMicrophoneState = {
   dispatchDeviceChange: () => void
 }
 
+declare global {
+  // oxlint-disable-next-line typescript/consistent-type-definitions -- Window declarations must merge with the DOM library.
+  interface Window {
+    __alfredE2EFakeMicrophone?: FakeMicrophoneState
+  }
+}
+
 async function installFakeMicrophoneDevices(
   page: Parameters<typeof waitForSessionReady>[0],
   devices: FakeMicrophoneDevice[]
@@ -51,9 +58,7 @@ async function installFakeMicrophoneDevices(
       configurable: true,
       value: mediaDevices
     })
-    ;(
-      window as Window & { __alfredE2EFakeMicrophone?: FakeMicrophoneState }
-    ).__alfredE2EFakeMicrophone = state
+    window.__alfredE2EFakeMicrophone = state
   }, devices)
 }
 
@@ -153,8 +158,7 @@ test.describe('Voice microphone selection', () => {
     await alfredPage.keyboard.press('Escape')
 
     await alfredPage.evaluate(() => {
-      const state = (window as Window & { __alfredE2EFakeMicrophone?: FakeMicrophoneState })
-        .__alfredE2EFakeMicrophone
+      const state = window.__alfredE2EFakeMicrophone
       if (!state) {
         throw new Error('Fake microphone state is not available')
       }

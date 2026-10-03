@@ -176,8 +176,6 @@ export function AutomationEditorDialog({
           createTarget={createTarget}
           templateOpen={templateOpen}
           templates={getAutomationTemplates()}
-          segmentedGroupClassName={AUTOMATION_EDITOR_SEGMENTED_GROUP_CLASS}
-          segmentedItemClassName={AUTOMATION_EDITOR_SEGMENTED_ITEM_CLASS}
           onCreateTargetChange={onCreateTargetChange}
           onTemplateOpenChange={setTemplateOpen}
           onApplyTemplate={(template) => {

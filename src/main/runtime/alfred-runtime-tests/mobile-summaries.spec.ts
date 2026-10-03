@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { makeAgentStatusStoreWiring } from '../agent-status-store-wiring.test-fixture'
 import { AlfredRuntimeService, listWorktrees } from '../alfred-runtime-test-mocks.spec'
@@ -55,11 +56,13 @@ describe('AlfredRuntimeService', () => {
         builtIn: { claude: 'show' as const, gsd: 'hide' as const }
       }
     }
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getRepos: () => [repo],
-      getRepo: () => repo
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getRepos: () => [repo],
+        getRepo: () => repo
+      })
+    )
 
     const target = await (
       runtime as unknown as {
@@ -100,19 +103,21 @@ describe('AlfredRuntimeService', () => {
       externalWorktreeVisibility: 'hide' as const,
       externalWorktreeVisibilityLegacy: false
     }
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getRepos: () => [repo],
-      getRepo: () => repo,
-      getSettings: () => ({
-        ...store.getSettings(),
-        worktreeVisibilityDefaults: {
-          external: 'hide' as const,
-          customSources: [{ id: 'global', rootPath: globalRoot }],
-          sourcePreferences: { custom: { global: 'show' as const } }
-        }
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getRepos: () => [repo],
+        getRepo: () => repo,
+        getSettings: () => ({
+          ...store.getSettings(),
+          worktreeVisibilityDefaults: {
+            external: 'hide' as const,
+            customSources: [{ id: 'global', rootPath: globalRoot }],
+            sourcePreferences: { custom: { global: 'show' as const } }
+          }
+        })
       })
-    } as never)
+    )
 
     const summaries = await runtime.getWorktreePs()
     const target = await (
@@ -135,7 +140,7 @@ describe('AlfredRuntimeService', () => {
     const { runtimeStore } = makeRuntimeStoreWithWorkspaceSession(
       makeWorkspaceSessionWithHeadlessTerminal()
     )
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     runtime.registerPty('persisted-pty', TEST_WORKTREE_ID)
     runtime.onPtyData('persisted-pty', 'ready\n', 456)
@@ -160,7 +165,7 @@ describe('AlfredRuntimeService', () => {
         }))
       }
     })
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       write: vi.fn(() => true),
       kill: vi.fn(() => true),
@@ -195,7 +200,7 @@ describe('AlfredRuntimeService', () => {
         'host-tab': makeHeadlessTerminalLayout({ [HEADLESS_LEAF_ID]: migratedPtyId })
       }
     })
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       write: vi.fn(() => true),
       kill: vi.fn(() => true),
@@ -218,7 +223,7 @@ describe('AlfredRuntimeService', () => {
       activeWorktreeIdsOnShutdown: [TEST_WORKTREE_ID]
     })
     const { runtimeStore } = makeRuntimeStoreWithWorkspaceSession(session)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       write: vi.fn(() => true),
       kill: vi.fn(() => true),
@@ -240,7 +245,7 @@ describe('AlfredRuntimeService', () => {
   it('projects zero after sleep despite stale renderer leaves and persisted tabs', async () => {
     const session = makeWorkspaceSessionWithHeadlessTerminal()
     const { runtimeStore } = makeRuntimeStoreWithWorkspaceSession(session)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     const processLists = [
       [{ id: 'persisted-pty', cwd: TEST_WORKTREE_PATH, title: 'Shell' }],
       [],
@@ -321,7 +326,7 @@ describe('AlfredRuntimeService', () => {
         }
       })
     )
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     const { worktrees } = await runtime.getWorktreePs()
 
@@ -337,14 +342,22 @@ describe('AlfredRuntimeService', () => {
       getGitHubCache: () => ({
         pr: {
           [`${TEST_REPO_PATH}::feature/foo`]: {
-            data: { number: 7, state: 'open' },
+            data: {
+              number: 7,
+              state: 'open' as const,
+              title: 'Review',
+              url: 'https://example.com/pr',
+              checksStatus: 'neutral' as const,
+              updatedAt: '',
+              mergeable: 'UNKNOWN' as const
+            },
             fetchedAt: 1
           }
         },
         issue: {}
       })
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     const { worktrees } = await runtime.getWorktreePs()
     const summary = worktrees.find((w) => w.worktreeId === TEST_WORKTREE_ID)
@@ -358,7 +371,7 @@ describe('AlfredRuntimeService', () => {
     })
     const projectGroup = makeFolderProjectGroup({ name: 'Store' })
     const runtime = new AlfredRuntimeService(
-      createFolderWorkspaceRuntimeStore(folderWorkspace, projectGroup) as never
+      createRuntimeStoreTestDouble(createFolderWorkspaceRuntimeStore(folderWorkspace, projectGroup))
     )
 
     const { worktrees } = await runtime.getWorktreePs()
@@ -521,7 +534,9 @@ describe('AlfredRuntimeService', () => {
     const folderWorkspace = makeFolderWorkspace({ name: 'GG' })
     const projectGroup = makeFolderProjectGroup({ name: 'Store' })
     const runtime = new AlfredRuntimeService(
-      createFolderWorkspaceRuntimeStore(folderWorkspace, projectGroup) as never,
+      createRuntimeStoreTestDouble(
+        createFolderWorkspaceRuntimeStore(folderWorkspace, projectGroup)
+      ),
       undefined,
       {
         getAgentStatusSnapshot: () => [

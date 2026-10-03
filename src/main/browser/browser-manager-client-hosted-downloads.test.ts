@@ -171,7 +171,12 @@ describe('client-hosted downloads', () => {
       sendFileChannelRequest: async (method, params) => {
         if (method.endsWith('abort')) {
           aborts.push(params as { transferId: string })
-          return { ok: true, result: { released: true }, _meta: {} } as never
+          return {
+            id: 'test-request',
+            ok: true,
+            result: { released: true },
+            _meta: { runtimeId: 'runtime-test' }
+          }
         }
         const chunk = params as { transferId: string; final: boolean }
         writes.push(chunk)
@@ -179,12 +184,13 @@ describe('client-hosted downloads', () => {
           await firstWrite
         }
         return {
+          id: 'test-request',
           ok: true,
           result: chunk.final
             ? { accepted: true, workspaceRelativePath: '.alfred/browser-downloads/report.csv' }
             : { accepted: true },
-          _meta: {}
-        } as never
+          _meta: { runtimeId: 'runtime-test' }
+        }
       }
     })
     registerBrowserClientDownloadRouter(

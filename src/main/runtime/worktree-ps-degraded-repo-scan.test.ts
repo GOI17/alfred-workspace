@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const electronMocks = vi.hoisted(() => {
@@ -69,8 +70,8 @@ function makeLineage() {
       worktreeInstanceId: 'child-instance',
       parentWorktreeId: MAIN_WORKTREE_ID,
       parentWorktreeInstanceId: 'parent-instance',
-      origin: 'agent' as const,
-      capture: 'env-workspace' as const,
+      origin: 'cli' as const,
+      capture: { source: 'env-workspace' as const, confidence: 'inferred' as const },
       createdAt: 1
     }
   }
@@ -79,8 +80,8 @@ function makeLineage() {
 type StoreOptions = {
   connectionId?: string
   metaById?: Record<string, ReturnType<typeof makeMeta>>
-  removeWorktreeLineage?: ReturnType<typeof vi.fn>
-  removeWorkspaceLineage?: ReturnType<typeof vi.fn>
+  removeWorktreeLineage?: (worktreeId: string) => void
+  removeWorkspaceLineage?: (workspaceKey: string) => void
   /** Extra `getRepos()` rows appended after the primary one, for same-id-on-two-hosts coverage. */
   coHostedRepos?: { id: string; path: string; connectionId?: string }[]
 }
@@ -117,7 +118,15 @@ function makeStore(options: StoreOptions = {}) {
     },
     removeWorktreeMeta: () => {},
     getAllWorktreeLineage: () => lineageById,
-    getAllWorkspaceLineage: () => ({ [`worktree:${WORKTREE_ID}`]: { parentWorkspaceKey: null } }),
+    getAllWorkspaceLineage: () => ({
+      [`worktree:${WORKTREE_ID}`]: {
+        childWorkspaceKey: `worktree:${WORKTREE_ID}` as const,
+        parentWorkspaceKey: `worktree:${MAIN_WORKTREE_ID}` as const,
+        origin: 'cli' as const,
+        capture: { source: 'env-workspace' as const, confidence: 'inferred' as const },
+        createdAt: 1
+      }
+    }),
     removeWorktreeLineage: options.removeWorktreeLineage ?? vi.fn(),
     removeWorkspaceLineage: options.removeWorkspaceLineage ?? vi.fn(),
     getGitHubCache: () => undefined as never,
@@ -163,7 +172,9 @@ describe('worktree.ps on a degraded repo scan', () => {
     vi.useFakeTimers()
     try {
       getSshGitProviderMock.mockReturnValue({ listWorktrees: vi.fn(neverSettles) })
-      const runtime = new AlfredRuntimeService(makeStore({ connectionId: 'ssh-remote-1' }) as never)
+      const runtime = new AlfredRuntimeService(
+        createRuntimeStoreTestDouble(makeStore({ connectionId: 'ssh-remote-1' }))
+      )
 
       const result = await advancePastRepoScanBudget(runtime.getWorktreePs(10_000))
 
@@ -175,7 +186,9 @@ describe('worktree.ps on a degraded repo scan', () => {
 
   it('keeps persisted worktrees when a remote repo is unreachable', async () => {
     getSshGitProviderMock.mockReturnValue(undefined)
-    const runtime = new AlfredRuntimeService(makeStore({ connectionId: 'ssh-remote-1' }) as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(makeStore({ connectionId: 'ssh-remote-1' }))
+    )
 
     const result = await runtime.getWorktreePs(10_000)
 
@@ -186,7 +199,7 @@ describe('worktree.ps on a degraded repo scan', () => {
     vi.useFakeTimers()
     try {
       listWorktreesStrictMock.mockImplementation(neverSettles)
-      const runtime = new AlfredRuntimeService(makeStore() as never)
+      const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
 
       const result = await advancePastRepoScanBudget(runtime.getWorktreePs(10_000))
 
@@ -200,7 +213,7 @@ describe('worktree.ps on a degraded repo scan', () => {
   // selector resolution for local repos the way a stall does.
   it('treats a rejected scan as a real answer instead of restoring persisted worktrees', async () => {
     listWorktreesStrictMock.mockRejectedValue(new Error('git unavailable'))
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
 
     const result = await runtime.getWorktreePs(10_000)
 
@@ -209,7 +222,7 @@ describe('worktree.ps on a degraded repo scan', () => {
 
   it('still reports selector_not_found for a local worktree when the scan rejects', async () => {
     listWorktreesStrictMock.mockRejectedValue(new Error('git unavailable'))
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
 
     await expect(runtime.showManagedWorktree(`id:${WORKTREE_ID}`)).rejects.toThrow(
       'selector_not_found'
@@ -221,7 +234,7 @@ describe('worktree.ps on a degraded repo scan', () => {
     vi.useFakeTimers()
     try {
       listWorktreesStrictMock.mockResolvedValue([])
-      const runtime = new AlfredRuntimeService(makeStore() as never)
+      const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
 
       await runtime.getWorktreePs(10_000)
       await vi.advanceTimersByTimeAsync(2_000)
@@ -237,7 +250,7 @@ describe('worktree.ps on a degraded repo scan', () => {
     vi.useFakeTimers()
     try {
       listWorktreesStrictMock.mockRejectedValue(new Error('spawn git EAGAIN'))
-      const runtime = new AlfredRuntimeService(makeStore() as never)
+      const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
 
       await runtime.getWorktreePs(10_000)
       await vi.advanceTimersByTimeAsync(2_000)
@@ -258,7 +271,7 @@ describe('worktree.ps on a degraded repo scan', () => {
       })
       getSshGitProviderMock.mockReturnValue({ listWorktrees })
       const runtime = new AlfredRuntimeService(
-        makeStore({ connectionId: SSH_CONNECTION_ID }) as never
+        createRuntimeStoreTestDouble(makeStore({ connectionId: SSH_CONNECTION_ID }))
       )
 
       await runtime.getWorktreePs(10_000)
@@ -278,18 +291,20 @@ describe('worktree.ps on a degraded repo scan', () => {
       getSshGitProviderMock.mockReturnValue(makeHealthySshScan())
       listWorktreesStrictMock.mockImplementation(neverSettles)
       const runtime = new AlfredRuntimeService(
-        makeStore({
-          connectionId: SSH_CONNECTION_ID,
-          coHostedRepos: [{ id: REPO_ID, path: LOCAL_REPO_PATH }],
-          metaById: {
-            [WORKTREE_ID]: makeMeta({ hostId: SSH_HOST_ID }),
-            [MAIN_WORKTREE_ID]: makeMeta({
-              displayName: 'main',
-              instanceId: 'parent-instance',
-              hostId: SSH_HOST_ID
-            })
-          }
-        }) as never
+        createRuntimeStoreTestDouble(
+          makeStore({
+            connectionId: SSH_CONNECTION_ID,
+            coHostedRepos: [{ id: REPO_ID, path: LOCAL_REPO_PATH }],
+            metaById: {
+              [WORKTREE_ID]: makeMeta({ hostId: SSH_HOST_ID }),
+              [MAIN_WORKTREE_ID]: makeMeta({
+                displayName: 'main',
+                instanceId: 'parent-instance',
+                hostId: SSH_HOST_ID
+              })
+            }
+          })
+        )
       )
 
       const result = await advancePastRepoScanBudget(runtime.getWorktreePs(10_000))
@@ -308,14 +323,16 @@ describe('worktree.ps on a degraded repo scan', () => {
       getSshGitProviderMock.mockReturnValue(makeHealthySshScan())
       listWorktreesStrictMock.mockImplementation(neverSettles)
       const runtime = new AlfredRuntimeService(
-        makeStore({
-          connectionId: SSH_CONNECTION_ID,
-          coHostedRepos: [{ id: REPO_ID, path: LOCAL_REPO_PATH }],
-          metaById: {
-            [WORKTREE_ID]: makeMeta(),
-            [MAIN_WORKTREE_ID]: makeMeta({ displayName: 'main', instanceId: 'parent-instance' })
-          }
-        }) as never
+        createRuntimeStoreTestDouble(
+          makeStore({
+            connectionId: SSH_CONNECTION_ID,
+            coHostedRepos: [{ id: REPO_ID, path: LOCAL_REPO_PATH }],
+            metaById: {
+              [WORKTREE_ID]: makeMeta(),
+              [MAIN_WORKTREE_ID]: makeMeta({ displayName: 'main', instanceId: 'parent-instance' })
+            }
+          })
+        )
       )
 
       const result = await advancePastRepoScanBudget(runtime.getWorktreePs(10_000))
@@ -334,16 +351,18 @@ describe('worktree.ps on a degraded repo scan', () => {
     try {
       listWorktreesStrictMock.mockImplementation(neverSettles)
       const runtime = new AlfredRuntimeService(
-        makeStore({
-          metaById: {
-            [WORKTREE_ID]: makeMeta({ hostId: LOCAL_EXECUTION_HOST_ID }),
-            [MAIN_WORKTREE_ID]: makeMeta({
-              displayName: 'main',
-              instanceId: 'parent-instance',
-              hostId: LOCAL_EXECUTION_HOST_ID
-            })
-          }
-        }) as never
+        createRuntimeStoreTestDouble(
+          makeStore({
+            metaById: {
+              [WORKTREE_ID]: makeMeta({ hostId: LOCAL_EXECUTION_HOST_ID }),
+              [MAIN_WORKTREE_ID]: makeMeta({
+                displayName: 'main',
+                instanceId: 'parent-instance',
+                hostId: LOCAL_EXECUTION_HOST_ID
+              })
+            }
+          })
+        )
       )
 
       const result = await advancePastRepoScanBudget(runtime.getWorktreePs(10_000))
@@ -368,7 +387,7 @@ describe('worktree.ps on a degraded repo scan', () => {
     vi.useFakeTimers()
     try {
       listWorktreesStrictMock.mockImplementation(neverSettles)
-      const runtime = new AlfredRuntimeService(makeStore() as never)
+      const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
 
       await advancePastRepoScanBudget(runtime.getWorktreePs(10_000))
       await advancePastRepoScanBudget(runtime.getWorktreePs(10_000))
@@ -386,7 +405,7 @@ describe('worktree.ps on a degraded repo scan', () => {
       { path: REPO_PATH, head: 'abc', branch: 'main', isBare: false, isMainWorktree: true }
     ])
     const runtime = new AlfredRuntimeService(
-      makeStore({ removeWorktreeLineage, removeWorkspaceLineage }) as never
+      createRuntimeStoreTestDouble(makeStore({ removeWorktreeLineage, removeWorkspaceLineage }))
     )
 
     const result = await runtime.getWorktreePs(10_000)
@@ -403,7 +422,7 @@ describe('worktree.ps on a degraded repo scan', () => {
       const removeWorkspaceLineage = vi.fn()
       listWorktreesStrictMock.mockImplementation(neverSettles)
       const runtime = new AlfredRuntimeService(
-        makeStore({ removeWorktreeLineage, removeWorkspaceLineage }) as never
+        createRuntimeStoreTestDouble(makeStore({ removeWorktreeLineage, removeWorkspaceLineage }))
       )
 
       await advancePastRepoScanBudget(runtime.getWorktreePs(10_000))
@@ -420,7 +439,7 @@ describe('worktree.ps on a degraded repo scan', () => {
       { path: REPO_PATH, head: 'abc', branch: 'main', isBare: false, isMainWorktree: true }
     ])
     const store = makeStore()
-    const runtime = new AlfredRuntimeService(store as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
 
     await runtime.getWorktreePs(10_000)
 
@@ -432,12 +451,14 @@ describe('worktree.ps on a degraded repo scan', () => {
     try {
       listWorktreesStrictMock.mockImplementation(neverSettles)
       const runtime = new AlfredRuntimeService(
-        makeStore({
-          metaById: {
-            [WORKTREE_ID]: makeMeta(),
-            [SCRATCH_ID]: makeMeta({ displayName: 'scratch' })
-          }
-        }) as never
+        createRuntimeStoreTestDouble(
+          makeStore({
+            metaById: {
+              [WORKTREE_ID]: makeMeta(),
+              [SCRATCH_ID]: makeMeta({ displayName: 'scratch' })
+            }
+          })
+        )
       )
 
       const listed = await advancePastRepoScanBudget(runtime.listManagedWorktrees(`id:${REPO_ID}`))

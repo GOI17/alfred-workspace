@@ -190,6 +190,7 @@ describe('AgentBrowserBridge', () => {
     // Why: this reproduces the teardown race where the tab close path has
     // already removed the bridge session before agent-browser reports that
     // its CDP proxy disappeared.
+    // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: The test inspects the bridge session map to verify command-transport reuse.
     ;(bridge as unknown as { sessions: Map<string, unknown> }).sessions.delete('alfred-tab-tab-1')
     releaseSnapshot!()
 

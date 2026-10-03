@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   MOCK_GIT_WORKTREES,
@@ -182,14 +183,22 @@ describe('AlfredRuntimeService', () => {
       getGitHubCache: () => ({
         pr: {
           [`${TEST_REPO_ID}::feature/foo`]: {
-            data: { number: 42, state: 'merged' },
+            data: {
+              number: 42,
+              state: 'merged' as const,
+              title: 'Review',
+              url: 'https://example.com/pr',
+              checksStatus: 'neutral' as const,
+              updatedAt: '',
+              mergeable: 'UNKNOWN' as const
+            },
             fetchedAt: 1
           }
         },
         issue: {}
       })
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     const { worktrees } = await runtime.getWorktreePs()
     const summary = worktrees.find((w) => w.worktreeId === TEST_WORKTREE_ID)
@@ -208,7 +217,7 @@ describe('AlfredRuntimeService', () => {
       getAllWorktreeMeta: () => metaById,
       getWorktreeMeta: (worktreeId: string) => metaById[worktreeId]
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     const { worktrees } = await runtime.getWorktreePs()
 
@@ -281,7 +290,7 @@ describe('AlfredRuntimeService', () => {
         isMainWorktree: false
       }))
     )
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     const { worktrees } = await runtime.getWorktreePs()
 
@@ -340,12 +349,14 @@ describe('AlfredRuntimeService', () => {
         ...store.getSettings(),
         localWindowsRuntimeDefault: { kind: 'windows-host' as const }
       }))
-      const runtime = new AlfredRuntimeService({
-        ...store,
-        getRepos: () => repos,
-        getProjects,
-        getSettings
-      } as never)
+      const runtime = new AlfredRuntimeService(
+        createRuntimeStoreTestDouble({
+          ...store,
+          getRepos: () => repos,
+          getProjects,
+          getSettings
+        })
+      )
 
       const { worktrees } = await runtime.getWorktreePs()
 
@@ -378,7 +389,7 @@ describe('AlfredRuntimeService', () => {
   it('keeps each worktree poll paired with its platform generation', async () => {
     await withPlatform('win32', async () => {
       let runtimePreference: { kind: 'wsl'; distro: string } | { kind: 'windows-host' } = {
-        kind: 'wsl',
+        kind: 'wsl' as const,
         distro: 'Ubuntu'
       }
       const runtimeStore = {
@@ -403,10 +414,10 @@ describe('AlfredRuntimeService', () => {
       vi.mocked(listWorktrees)
         .mockImplementationOnce(() => staleScan.promise)
         .mockResolvedValueOnce(MOCK_GIT_WORKTREES)
-      const runtime = new AlfredRuntimeService(runtimeStore as never)
+      const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
       const stalePoll = runtime.getWorktreePs()
-      runtimePreference = { kind: 'windows-host' }
+      runtimePreference = { kind: 'windows-host' as const }
       runtime.notifyBranchRenamed(TEST_REPO_ID)
       const freshPoll = await runtime.getWorktreePs()
       staleScan.resolve(MOCK_GIT_WORKTREES)
@@ -429,7 +440,7 @@ describe('AlfredRuntimeService', () => {
       getRepos: () => [hiddenExternalRepo],
       getRepo: () => hiddenExternalRepo
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     await expect(runtime.getWorktreePs()).resolves.toMatchObject({
       worktrees: [],
@@ -471,11 +482,13 @@ describe('AlfredRuntimeService', () => {
         externalWorktreeVisibilityLegacy: false,
         worktreeVisibilitySourcePreferences: { builtIn: { claude, gsd: 'hide' as const } }
       }
-      return new AlfredRuntimeService({
-        ...store,
-        getRepos: () => [repo],
-        getRepo: () => repo
-      } as never)
+      return new AlfredRuntimeService(
+        createRuntimeStoreTestDouble({
+          ...store,
+          getRepos: () => [repo],
+          getRepo: () => repo
+        })
+      )
     }
 
     const hiddenSource = await makeRuntime('show', 'hide').getWorktreePs()

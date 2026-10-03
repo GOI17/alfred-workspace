@@ -1,5 +1,6 @@
+import { getDefaultSettings as completeGetDefaultSettings } from '../../../shared/constants'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { FeatureInteractionState } from '../../../shared/feature-interactions'
+
 import {
   PAIRING_LOCAL_UI_FIELDS,
   type PairingLocalUiField
@@ -97,7 +98,9 @@ describe('web UI preload API', () => {
             return Promise.resolve({
               id: `call-${runtimeCalls.length}`,
               ok: true,
-              result: { settings: { compactWorktreeCards: true } },
+              result: {
+                settings: { ...completeGetDefaultSettings('/tmp'), compactWorktreeCards: true }
+              },
               _meta: { runtimeId: 'runtime-1' }
             })
           }
@@ -137,7 +140,9 @@ describe('web UI preload API', () => {
             return Promise.resolve({
               id: `call-${runtimeCalls.length}`,
               ok: true,
-              result: { settings: { compactWorktreeCards: true } },
+              result: {
+                settings: { ...completeGetDefaultSettings('/tmp'), compactWorktreeCards: true }
+              },
               _meta: { runtimeId: 'runtime-1' }
             })
           }
@@ -226,9 +231,7 @@ describe('web UI preload API', () => {
     })
     await first
 
-    const stored = JSON.parse(globals.storage.getItem('alfred.web.ui.v1') ?? '{}') as {
-      featureInteractions?: FeatureInteractionState
-    }
+    const stored = JSON.parse(globals.storage.getItem('alfred.web.ui.v1') ?? '{}')
     expect(stored.featureInteractions?.tasks).toEqual({
       firstInteractedAt: 100,
       interactionCount: 2
@@ -272,9 +275,7 @@ describe('web UI preload API', () => {
     installWebPreloadApi()
 
     const ui = await globals.window.api.ui.get()
-    const stored = JSON.parse(globals.storage.getItem('alfred.web.ui.v1') ?? '{}') as {
-      featureInteractions?: FeatureInteractionState
-    }
+    const stored = JSON.parse(globals.storage.getItem('alfred.web.ui.v1') ?? '{}')
 
     expect(ui.featureInteractions?.tasks).toEqual({
       firstInteractedAt: 50,
@@ -560,9 +561,7 @@ describe('web UI preload API', () => {
     installWebPreloadApi()
 
     const ui = await globals.window.api.ui.get()
-    const stored = JSON.parse(globals.storage.getItem('alfred.web.ui.v1') ?? '{}') as {
-      contextualToursSeenIds?: string[]
-    }
+    const stored = JSON.parse(globals.storage.getItem('alfred.web.ui.v1') ?? '{}')
 
     expect(ui.contextualToursSeenIds).toEqual(['tasks', 'browser'])
     expect(stored.contextualToursSeenIds).toEqual(['tasks', 'browser'])
@@ -663,10 +662,7 @@ describe('web UI preload API', () => {
       featureInteractionTelemetryBuckets: { tasks: 'count_500_999' }
     } as never)
     const ui = await globals.window.api.ui.get()
-    const stored = JSON.parse(globals.storage.getItem('alfred.web.ui.v1') ?? '{}') as Record<
-      string,
-      unknown
-    >
+    const stored = JSON.parse(globals.storage.getItem('alfred.web.ui.v1') ?? '{}')
 
     expect('featureInteractionTelemetryBuckets' in (ui as Record<string, unknown>)).toBe(false)
     expect(stored.featureInteractionTelemetryBuckets).toBeUndefined()
@@ -704,9 +700,7 @@ describe('web UI preload API', () => {
     installWebPreloadApi()
 
     const ui = await globals.window.api.ui.recordFeatureInteraction('tasks')
-    const stored = JSON.parse(globals.storage.getItem('alfred.web.ui.v1') ?? '{}') as {
-      contextualToursSeenIds?: string[]
-    }
+    const stored = JSON.parse(globals.storage.getItem('alfred.web.ui.v1') ?? '{}')
 
     expect(ui.contextualToursSeenIds).toEqual(['tasks', 'browser'])
     expect(stored.contextualToursSeenIds).toEqual(['tasks', 'browser'])

@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 // SSH ownership has two spellings on a repo row: the legacy `connectionId` field and the unified
 // `executionHostId: 'ssh:*'`. This suite pins the scan and the terminal launch that follows it for
 // the second spelling — the seam #17909 identified but could not test end to end (#11163).
@@ -121,7 +122,7 @@ function makeRuntime(repoOverrides: Record<string, unknown>): {
   runtime: AlfredRuntimeService
   list: () => Promise<{ id: string; path: string; hostId?: string }[]>
 } {
-  const runtime = new AlfredRuntimeService(makeStore(repoOverrides) as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore(repoOverrides)))
   return {
     runtime,
     list: () => (runtime as unknown as RuntimeInternals).listResolvedWorktrees()

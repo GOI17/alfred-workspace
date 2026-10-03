@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 // createManagedWorktree used to pick remote-vs-local from the raw `connectionId` field, so a repo
 // stamped only `executionHostId: 'ssh:*'` ran `git worktree add` on the client against a remote
 // path — and the folder branch, which returns before that check, wrote agent trust locally for a
@@ -51,7 +52,7 @@ function makeRuntime(repo: Record<string, unknown>): {
     getSettings: () => ({ disabledTuiAgents: [], workspaceDir: '/tmp/workspaces' }),
     getProjectHostSetups: () => []
   }
-  const runtime = new AlfredRuntimeService(store as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
   const internals = runtime as unknown as RuntimeInternals
   vi.spyOn(internals, 'resolveRepoSelector').mockResolvedValue(repo)
   vi.spyOn(internals, 'resolveLineageForWorktreeCreate').mockResolvedValue(null)

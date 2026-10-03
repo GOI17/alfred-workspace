@@ -42,3 +42,22 @@ test('opens the runs dashboard and returns to automations', async ({ alfredPage 
   await expect(alfredPage.getByRole('heading', { name: 'Automations' })).toBeVisible()
   await expect(runsButton).toBeVisible()
 })
+
+test('switches automation creation between Alfred and Hermes', async ({ alfredPage }, testInfo) => {
+  await waitForSessionReady(alfredPage)
+  await alfredPage.evaluate(() => window.__store!.getState().openAutomationsPage())
+  await alfredPage.getByRole('button', { name: 'New Automation', exact: true }).click()
+  const dialog = alfredPage.getByRole('dialog')
+  const alfred = dialog.getByRole('radio', { name: 'Alfred', exact: true })
+  const hermes = dialog.getByRole('radio', { name: 'Hermes', exact: true })
+  await expect(alfred).toHaveAttribute('data-state', 'on')
+  await hermes.click()
+  await expect(hermes).toHaveAttribute('data-state', 'on')
+  await expect(dialog.getByRole('heading', { name: 'Create Hermes automation' })).toBeVisible()
+  await alfred.click()
+  await expect(alfred).toHaveAttribute('data-state', 'on')
+  await expect(
+    dialog.getByRole('heading', { name: 'Create automation', exact: true })
+  ).toBeVisible()
+  await alfredPage.screenshot({ path: testInfo.outputPath('alfred-automation-dialog.png') })
+})

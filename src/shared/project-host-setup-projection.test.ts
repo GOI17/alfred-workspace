@@ -513,6 +513,7 @@ describe('project host setup projection', () => {
         id: 'repo-1',
         path: '/Users/alice/alfred',
         displayName: 'alfred',
+        // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: This case deliberately simulates malformed persisted upstream data.
         upstream: { owner: 'alfredlabs', repo: 42 } as never
       })
     ])

@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   BROWSER_CLIENT_HOST_RUNTIME_CAPABILITY,
@@ -5,7 +6,6 @@ import {
 } from '../../../../shared/protocol-version'
 import type { RuntimeBrowserClientPlacement } from '../../../../shared/runtime-browser-placement'
 import { getBrowserHostLeaseRegistry } from '../../browser-host-lease-registry-instance'
-import type { AlfredRuntimeService } from '../../alfred-runtime'
 import { getRuntimeBrowserPageRegistry } from '../../runtime-browser-page-registry'
 import { RpcDispatcher } from '../dispatcher'
 import { BROWSER_CLIENT_HOST_METHODS } from './browser-client-host'
@@ -85,15 +85,15 @@ describe('browser.clientHost.pageMetadata RPC', () => {
 async function createHarness() {
   const cleanups = new Map<string, () => void>()
   const notifySessionTabs = vi.fn()
-  const runtime = {
+  const runtime = createRuntimeServiceTestDouble({
     getRuntimeId: () => 'runtime-a',
     getStartedAt: () => 1,
     // Attach adopts client-hosted pages from the reported inventory before recovery runs.
-    resolveBrowserExecutionHostKeyForWorkspace: async () => undefined,
+    resolveBrowserExecutionHostKeyForWorkspace: async () => ({ status: 'unavailable' }),
     markClientHostedPagesReconciled: () => {},
     registerSubscriptionCleanup: (id: string, cleanup: () => void) => cleanups.set(id, cleanup),
     notifyMobileSessionTabsChanged: notifySessionTabs
-  } as unknown as AlfredRuntimeService
+  })
   const dispatcher = new RpcDispatcher({ runtime, methods: BROWSER_CLIENT_HOST_METHODS })
   const replies: string[] = []
   const attached = dispatcher.dispatchStreaming(attachRequest(), (reply) => replies.push(reply), {

@@ -1,15 +1,15 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
-import type { AlfredRuntimeService } from '../../alfred-runtime'
 import type { RpcRequest } from '../core'
 import { RpcDispatcher } from '../dispatcher'
 import { WORKTREE_METHODS } from './worktree'
 
 describe('worktree GitHub PR suppression RPC', () => {
   it('forwards suppression writes to host-owned metadata persistence', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       updateManagedWorktreeMeta: vi.fn().mockResolvedValue({ id: 'wt-1' })
-    } as unknown as AlfredRuntimeService
+    })
     const request: RpcRequest = {
       id: 'req-1',
       authToken: 'tok',

@@ -62,7 +62,7 @@ function detected(
     ownership: 'alfred-managed',
     selectedCheckout: true,
     visible: true
-  } as DetectedWorktreeListResult['worktrees'][number]
+  }
 }
 
 describe('purgeStaleRuntimeHostState', () => {

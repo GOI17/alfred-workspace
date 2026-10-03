@@ -1,3 +1,6 @@
+import type { TuiAgent } from '../../../../shared/tui-agent'
+import { getDefaultRuntimeClientSettings } from '../../runtime-client-settings-test-fixture'
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AlfredRuntimeService } from '../../alfred-runtime'
 import { eraseRpcMethods, isStreamingMethod, type RpcContext } from '../core'
@@ -34,14 +37,15 @@ function prepareMethod() {
 
 function runtimeWithSettings(
   enabled = true,
-  disabledTuiAgents: string[] = []
+  disabledTuiAgents: TuiAgent[] = []
 ): AlfredRuntimeService {
-  return {
+  return createRuntimeServiceTestDouble({
     getClientSettings: vi.fn(() => ({
+      ...getDefaultRuntimeClientSettings(),
       agentStatusHooksEnabled: enabled,
       disabledTuiAgents
     }))
-  } as unknown as AlfredRuntimeService
+  })
 }
 
 describe('agent hook RPC methods', () => {
@@ -70,7 +74,7 @@ describe('agent hook RPC methods', () => {
     })
   })
 
-  it.each([
+  it.each<[boolean, TuiAgent[]]>([
     [false, []],
     [true, ['codex']]
   ])('does not install when hooks are disabled (%s, %j)', async (enabled, disabledTuiAgents) => {

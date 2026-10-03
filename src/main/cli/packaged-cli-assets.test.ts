@@ -284,14 +284,7 @@ node -e 'console.log(JSON.stringify({
           NODE_REPL_EXTERNAL_MODULE: 'external-loader'
         }
       })
-      const payload = JSON.parse(result.stdout) as {
-        argv: string[]
-        runAsNode: string
-        nodeOptions: string | null
-        alfredNodeOptions: string | null
-        nodeReplExternalModule: string | null
-        alfredNodeReplExternalModule: string | null
-      }
+      const payload = JSON.parse(result.stdout)
 
       expect(payload.argv).toEqual([cliPath, '--help', 'two words'])
       expect(payload.runAsNode).toBe('1')

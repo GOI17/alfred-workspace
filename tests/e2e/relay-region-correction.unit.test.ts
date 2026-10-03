@@ -9,7 +9,6 @@ import {
   readRelayDatabasePoolPressure
 } from '../../cloud/apps/relay/src/database'
 import { createRelayServer } from '../../cloud/apps/relay/src/relay-server'
-import type { RelayConfig } from '../../cloud/apps/relay/src/config'
 import type * as AdminTokenVerifier from '../../cloud/apps/relay/src/admin-token-verifier'
 import { RelayOriginPool } from '../../src/main/runtime/relay/relay-origin-pool'
 import { RELAY_HOST_CAPABILITY_HEADERS } from '../../src/main/runtime/relay/relay-control-protocol'
@@ -107,8 +106,9 @@ async function topology() {
         publicResolveConcurrency: 1,
         publicResolveWaitMs: 5_000,
         publicAssignmentRetryAfterSeconds: 5,
+        runtimeServiceAccount: '',
         regionCorrectionCohortPercent: 100
-      } as RelayConfig,
+      },
       database,
       { now: () => clock, random: () => 0.5, cellIncarnation: incarnations[index] }
     )

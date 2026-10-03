@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { createHash } from 'node:crypto'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -57,7 +58,7 @@ async function launchOpenCodePane(options: {
   attestAgentHookCompatibilityAuthority?: AlfredRuntimeServiceDeps['attestAgentHookCompatibilityAuthority']
 }): Promise<LaunchedOpenCodePane> {
   const spawn = vi.fn().mockResolvedValue({ id: options.ptyId, incarnationId: 'incarnation-1' })
-  const runtime = new AlfredRuntimeService(makeStore() as never, undefined, {
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()), undefined, {
     attestAgentHookCompatibilityAuthority:
       options.attestAgentHookCompatibilityAuthority ??
       ((candidate) => ({ paneKey: candidate.paneKey, source: 'current_hook' as const })),
@@ -77,8 +78,8 @@ async function launchOpenCodePane(options: {
     launchAgent: 'opencode'
   })
   const env = (spawn.mock.calls[0]?.[0] as { env?: Record<string, string> } | undefined)?.env ?? {}
-  const paneKey = env.ALFRED_PANE_KEY as string
-  const launchToken = env.ALFRED_AGENT_LAUNCH_TOKEN as string
+  const paneKey = env.ALFRED_PANE_KEY
+  const launchToken = env.ALFRED_AGENT_LAUNCH_TOKEN
   expect(paneKey).toBeTruthy()
   expect(launchToken).toBeTruthy()
   return {

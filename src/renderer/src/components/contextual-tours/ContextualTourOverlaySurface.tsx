@@ -64,9 +64,7 @@ function disposeContextualTourGlobalKeyGuard(): void {
   if (typeof window === 'undefined') {
     return
   }
-  const guardedWindow = window as Window & {
-    __alfredContextualTourGlobalKeyGuardInstalled?: boolean
-  }
+  const guardedWindow = window
   if (!guardedWindow.__alfredContextualTourGlobalKeyGuardInstalled) {
     return
   }
@@ -75,9 +73,7 @@ function disposeContextualTourGlobalKeyGuard(): void {
 }
 
 if (typeof window !== 'undefined') {
-  const guardedWindow = window as Window & {
-    __alfredContextualTourGlobalKeyGuardInstalled?: boolean
-  }
+  const guardedWindow = window
   if (!guardedWindow.__alfredContextualTourGlobalKeyGuardInstalled) {
     guardedWindow.__alfredContextualTourGlobalKeyGuardInstalled = true
     window.addEventListener('keydown', handleContextualTourGlobalKeyDown, true)

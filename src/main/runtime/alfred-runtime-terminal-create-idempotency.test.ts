@@ -15,7 +15,7 @@ function createRuntimeForDedupe(
   scope: { connectionId?: string | null } = {}
 ) {
   const handleByPtyId = new Map<string, string>()
-  const runtime = Object.create(AlfredRuntimeService.prototype) as AlfredRuntimeService
+  const runtime = Object.create(AlfredRuntimeService.prototype)
   Object.assign(runtime, {
     terminalCreateIdempotency: new RemoteRuntimeTerminalCreateIdempotency(),
     ptyController: { listProcesses },

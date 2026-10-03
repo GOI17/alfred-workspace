@@ -242,9 +242,7 @@ describe('GrokHookService', () => {
 
     const config = JSON.parse(
       readFileSync(join(homeDir, '.grok', 'hooks', 'alfred-status.json'), 'utf8')
-    ) as {
-      hooks: Record<string, { matcher?: string; hooks: { command: string }[] }[]>
-    }
+    )
     expect(Object.keys(config.hooks).sort()).toEqual(
       [
         'Notification',
@@ -333,7 +331,7 @@ describe('GrokHookService', () => {
 
         const config = JSON.parse(
           readFileSync(join(spaceHome, '.grok', 'hooks', 'alfred-status.json'), 'utf8')
-        ) as { hooks: Record<string, { hooks: { command: string }[] }[]> }
+        )
 
         for (const eventName of ['SessionStart', 'UserPromptSubmit', 'Stop']) {
           const command = config.hooks[eventName]?.[0]?.hooks?.[0]?.command

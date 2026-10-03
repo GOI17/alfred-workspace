@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../../../runtime/runtime-store-test-double'
 // `attachStablePaneOwner` is the last reader that synthesised a runtime exit from a reattach
 // refusal, and it published code 0 — which `alfred-runtime-on-pty-exit` records as a death
 // certificate. The refusal it acts on is a union: `pty.attach` answers absent both for a pid the
@@ -80,7 +81,7 @@ function paneStore(): { store: Store; read: () => WorkspaceSessionState } {
 }
 
 function runtimeOwning(store: Store): AlfredRuntimeService {
-  const runtime = new AlfredRuntimeService(store as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
   runtime.setPtyController({
     write: () => true,
     kill: () => true,

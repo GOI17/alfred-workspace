@@ -78,15 +78,14 @@ describe('repos:add with git worktrees', () => {
   const handlers = new Map<string, (event: unknown, args: unknown) => unknown>()
   const mockWindow = { isDestroyed: () => false, webContents: { send: vi.fn() } }
 
-  const trackedMainRepo = (): Repo =>
-    ({
-      id: 'main-repo-id',
-      path: MAIN_CHECKOUT,
-      displayName: 'alfred',
-      badgeColor: '#ef4444',
-      addedAt: 1,
-      kind: 'git'
-    }) as Repo
+  const trackedMainRepo = (): Repo => ({
+    id: 'main-repo-id',
+    path: MAIN_CHECKOUT,
+    displayName: 'alfred',
+    badgeColor: '#ef4444',
+    addedAt: 1,
+    kind: 'git'
+  })
 
   const callAdd = (args: { path: string; kind?: 'git' | 'folder' }): Promise<AddResult> => {
     const handler = handlers.get('repos:add')
@@ -157,7 +156,7 @@ describe('repos:add with git worktrees', () => {
 
   it('matches the tracked main checkout across path separator differences', async () => {
     mockStore.getRepos.mockReturnValue([
-      { ...trackedMainRepo(), path: 'C:\\Users\\dev\\projects\\alfred' } as Repo
+      { ...trackedMainRepo(), path: 'C:\\Users\\dev\\projects\\alfred' }
     ])
     getLinkedWorktreeMainRepoRootMock.mockReturnValue('C:/Users/dev/projects/alfred')
 

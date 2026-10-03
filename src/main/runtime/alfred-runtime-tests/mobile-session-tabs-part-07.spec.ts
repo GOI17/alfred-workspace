@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   AlfredRuntimeService,
@@ -194,7 +195,7 @@ describe('AlfredRuntimeService', () => {
         }
       })
     )
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.syncWindowGraph(1, {
       tabs: [],
       leaves: [],
@@ -247,12 +248,14 @@ describe('AlfredRuntimeService', () => {
     const getWorkspaceSession = vi.fn((hostId?: string | null) =>
       hostId === 'ssh:ssh-1' ? sshSession : localSession
     )
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getRepos: () => [remoteRepo],
-      getRepo: (id: string) => (id === TEST_REPO_ID ? remoteRepo : undefined),
-      getWorkspaceSession
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getRepos: () => [remoteRepo],
+        getRepo: (id: string) => (id === TEST_REPO_ID ? remoteRepo : undefined),
+        getWorkspaceSession
+      })
+    )
 
     runtime.syncWindowGraph(1, { tabs: [], leaves: [], mobileSessionTabs: [] })
     expect(getWorkspaceSession).toHaveBeenCalledTimes(2)
@@ -291,13 +294,15 @@ describe('AlfredRuntimeService', () => {
     })
     const localSession = getDefaultWorkspaceSession()
     const remoteRepo = { ...store.getRepo(TEST_REPO_ID)!, connectionId: 'ssh-1' }
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getRepos: () => [remoteRepo],
-      getRepo: (id: string) => (id === TEST_REPO_ID ? remoteRepo : undefined),
-      getWorkspaceSession: (hostId?: string | null) =>
-        hostId === 'ssh:ssh-1' ? sshSession : localSession
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getRepos: () => [remoteRepo],
+        getRepo: (id: string) => (id === TEST_REPO_ID ? remoteRepo : undefined),
+        getWorkspaceSession: (hostId?: string | null) =>
+          hostId === 'ssh:ssh-1' ? sshSession : localSession
+      })
+    )
     runtime.setPtyController({
       write: () => true,
       kill: () => true,
@@ -391,10 +396,12 @@ describe('AlfredRuntimeService', () => {
           updatedAt: leaseUpdatedAt
         }
       ])
-      const runtime = new AlfredRuntimeService({
-        ...runtimeStore,
-        getSshRemotePtyLeases
-      } as never)
+      const runtime = new AlfredRuntimeService(
+        createRuntimeStoreTestDouble({
+          ...runtimeStore,
+          getSshRemotePtyLeases
+        })
+      )
       electronMocks.BrowserWindow.fromId.mockReturnValue({
         isDestroyed: () => false,
         webContents: { send: vi.fn() }
@@ -511,7 +518,7 @@ describe('AlfredRuntimeService', () => {
         }
       })
     )
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       spawn,
       write: () => true,

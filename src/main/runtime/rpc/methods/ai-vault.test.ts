@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
@@ -69,23 +70,23 @@ function makeSession(): AiVaultSession {
 function makeDispatcher(): RpcDispatcher {
   // Why: the handler only needs getRuntimeId (envelope) + listAiVaultSessions,
   // which delegates to the shared cache module the IPC handler also uses.
-  const runtime = {
+  const runtime = createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
     ensureStructuredAgentSessionHost: vi.fn(async () => undefined),
     listAiVaultSessions: (args?: Parameters<typeof listAiVaultSessions>[0]) =>
       listAiVaultSessions(args),
     resolveAiVaultSessionTitles: (requests: unknown[], signal?: AbortSignal) =>
       resolveAiVaultSessionTitlesInWorker(requests, signal)
-  } as unknown as AlfredRuntimeService
+  })
   return new RpcDispatcher({ runtime, methods: AI_VAULT_METHODS })
 }
 
 function makeFailingDispatcher(error: Error): RpcDispatcher {
-  const runtime = {
+  const runtime = createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
     ensureStructuredAgentSessionHost: vi.fn(async () => undefined),
     listAiVaultSessions: vi.fn().mockRejectedValue(error)
-  } as unknown as AlfredRuntimeService
+  })
   return new RpcDispatcher({ runtime, methods: AI_VAULT_METHODS })
 }
 
@@ -195,11 +196,11 @@ describe('aiVault.prepareSessionResume', () => {
       }).success
     ).toBe(true)
     const prepareAiVaultSessionResume = vi.fn().mockResolvedValue({ useRealCodexHome: true })
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       ensureStructuredAgentSessionHost: vi.fn(async () => undefined),
       prepareAiVaultSessionResume
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: AI_VAULT_METHODS })
 
     const response = await dispatcher.dispatch(

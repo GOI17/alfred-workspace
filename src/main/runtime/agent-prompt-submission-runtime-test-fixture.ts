@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import type { TuiAgent } from '../../shared/tui-agent'
 import { AlfredRuntimeService } from './alfred-runtime'
 import { makeStore } from './runtime-rpc-worktree-store-fixtures'
@@ -9,7 +10,7 @@ export async function createAgentPromptSubmissionRuntime(
   onWrite: (runtime: AlfredRuntimeService, data: string, writeIndex: number) => void,
   launchAgent: TuiAgent = 'aider'
 ): Promise<{ runtime: AlfredRuntimeService; handle: string; writes: string[] }> {
-  const runtime = new AlfredRuntimeService(makeStore() as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
   const writes: string[] = []
   runtime.setPtyController({
     spawn: async () => ({ id: 'pty-prompt' }),

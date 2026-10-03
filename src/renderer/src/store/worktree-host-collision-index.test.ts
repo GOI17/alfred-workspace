@@ -1,3 +1,4 @@
+import { makeWorktree as fixtureMakeWorktree } from '../../../shared/worktree/worktree-test-fixture'
 /**
  * STA-4343: the same repo at the same path on two hosts is TWO workspaces.
  *
@@ -23,7 +24,7 @@ import { buildWorktreeByIdIndex } from './slices/worktree-by-id-index'
 
 const SHARED_ID = 'repo-1::/work/alfred'
 
-const baseWorktree: Worktree = {
+const baseWorktree: Worktree = fixtureMakeWorktree({
   id: SHARED_ID,
   repoId: 'repo-1',
   path: '/work/alfred',
@@ -38,7 +39,7 @@ const baseWorktree: Worktree = {
   comment: '',
   isUnread: false,
   isPinned: false
-} as Worktree
+})
 
 const localRow: Worktree = { ...baseWorktree, hostId: 'local', displayName: 'local alfred' }
 const sshRow: Worktree = { ...baseWorktree, hostId: 'ssh:build-box', displayName: 'ssh alfred' }

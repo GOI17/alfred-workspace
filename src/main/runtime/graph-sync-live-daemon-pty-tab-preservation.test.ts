@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 /**
  * shouldPreserveHeadlessMobileSessionTab excludes the daemon ptyId form
  * <worktreeId>@@<uuid> from its runtime-owned checks, so a host-created terminal
@@ -64,7 +65,7 @@ function createHarness() {
     },
     flushOrThrow: () => {}
   }
-  const runtime = new AlfredRuntimeService(store as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
   runtime.setNotifier({
     closeTerminal: vi.fn(),
     closeTerminalTab: vi.fn(),

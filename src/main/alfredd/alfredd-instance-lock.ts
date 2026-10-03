@@ -1,3 +1,4 @@
+import { isJsonObject } from '../../shared/json-object'
 /**
  * Single-instance ownership of alfredd's data root, taken BEFORE the profile is loaded.
  *
@@ -98,10 +99,10 @@ function isErrorCode(error: unknown, code: string): boolean {
 function parseLockRecord(content: string): AlfreddLockRecord | null {
   try {
     const parsed: unknown = JSON.parse(content)
-    if (!parsed || typeof parsed !== 'object') {
+    if (!isJsonObject(parsed)) {
       return null
     }
-    const record = parsed as Partial<AlfreddLockRecord>
+    const record = parsed
     if (typeof record.pid !== 'number' || typeof record.identity !== 'string') {
       return null
     }
@@ -138,7 +139,7 @@ function assertDataRootIsPrivate(dataRoot: string): void {
   } catch (error) {
     throw new AlfreddInstanceLockError(
       'alfredd_data_root_unusable',
-      `Cannot stat the alfredd data root ${dataRoot}: ${(error as Error).message}`
+      `Cannot stat the alfredd data root ${dataRoot}: ${error instanceof Error ? error.message : String(error)}`
     )
   }
   const uid = process.getuid?.()
@@ -163,7 +164,7 @@ function assertDataRootIsPrivate(dataRoot: string): void {
   } catch (error) {
     throw new AlfreddInstanceLockError(
       'alfredd_data_root_unusable',
-      `Cannot stat the alfredd data root ${dataRoot}: ${(error as Error).message}`
+      `Cannot stat the alfredd data root ${dataRoot}: ${error instanceof Error ? error.message : String(error)}`
     )
   }
   if ((mode & 0o077) !== 0) {
@@ -197,7 +198,7 @@ export function acquireAlfreddInstanceLock(
   } catch (error) {
     throw new AlfreddInstanceLockError(
       'alfredd_data_root_unusable',
-      `Cannot create the alfredd data root ${dataRoot}: ${(error as Error).message}`
+      `Cannot create the alfredd data root ${dataRoot}: ${error instanceof Error ? error.message : String(error)}`
     )
   }
   assertDataRootIsPrivate(dataRoot)
@@ -223,7 +224,7 @@ export function acquireAlfreddInstanceLock(
       }
       throw new AlfreddInstanceLockError(
         'alfredd_data_root_unusable',
-        `Cannot write the alfredd instance lock ${lockPath}: ${(error as Error).message}`
+        `Cannot write the alfredd instance lock ${lockPath}: ${error instanceof Error ? error.message : String(error)}`
       )
     }
   }

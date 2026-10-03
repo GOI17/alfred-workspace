@@ -94,9 +94,8 @@ export function useCombinedDiffSectionRevalidation({
         }
       }
     }
-    window.addEventListener(ALFRED_EDITOR_EXTERNAL_FILE_CHANGE_EVENT, handler as EventListener)
-    return () =>
-      window.removeEventListener(ALFRED_EDITOR_EXTERNAL_FILE_CHANGE_EVENT, handler as EventListener)
+    window.addEventListener(ALFRED_EDITOR_EXTERNAL_FILE_CHANGE_EVENT, handler)
+    return () => window.removeEventListener(ALFRED_EDITOR_EXTERNAL_FILE_CHANGE_EVENT, handler)
   }, [
     file.runtimeEnvironmentId,
     file.worktreeId,

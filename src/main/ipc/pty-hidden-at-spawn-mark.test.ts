@@ -218,7 +218,7 @@ describe('registerPtyHandlers', () => {
           terminalHiddenDeliveryGate: true,
           terminalModelQueryAuthority: true
         })
-      } as never)
+      })
 
       registerPtyHandlers(mainWindow as never, runtime as never)
       const result = (await handlers.get('pty:spawn')!(null, {

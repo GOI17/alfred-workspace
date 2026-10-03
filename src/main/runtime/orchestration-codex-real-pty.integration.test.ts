@@ -163,7 +163,7 @@ it.skipIf(!binary || process.platform === 'win32').each(trials)(
         ([key, value]) =>
           value !== undefined && !key.startsWith('ALFRED_') && !key.startsWith('CODEX_')
       )
-    ) as Record<string, string>
+    )
     const terminal = pty.spawn(
       binary!,
       ['--no-alt-screen', '--dangerously-bypass-hook-trust', 'Reply OK only'],

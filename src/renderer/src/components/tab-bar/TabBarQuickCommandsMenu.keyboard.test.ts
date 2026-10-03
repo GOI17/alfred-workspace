@@ -12,7 +12,7 @@ const appStoreMock = vi.hoisted(() => ({
     activeView: 'terminal' as 'terminal' | 'settings',
     keybindings: {} as Record<string, string[]>,
     settings: {
-      terminalShortcutPolicy: 'alfred-first' as 'alfred-first' | 'terminal-first'
+      terminalShortcutPolicy: 'alfred-first'
     }
   }
 }))

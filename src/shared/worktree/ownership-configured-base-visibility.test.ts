@@ -1,3 +1,4 @@
+import { getDefaultSettings } from '../constants'
 import { describe, expect, it } from 'vitest'
 import type { GlobalSettings } from '../global-settings-types'
 import type { Repo } from '../repo-types'
@@ -13,6 +14,7 @@ import {
 
 function makeRepo(overrides: Partial<Repo> = {}): Repo {
   return {
+    ...getDefaultSettings('/tmp'),
     id: 'repo-1',
     path: '/repos/OrbisCXM',
     displayName: 'OrbisCXM',
@@ -51,11 +53,12 @@ function makeWorktree(path: string): Worktree {
 
 function makeSettings(overrides: Partial<GlobalSettings> = {}): GlobalSettings {
   return {
+    ...getDefaultSettings('/tmp'),
     workspaceDir: '/alfred/workspaces',
     nestWorkspaces: true,
     workspaceDirHistory: [],
     ...overrides
-  } as GlobalSettings
+  }
 }
 
 function detect(repo: Repo, path: string, settings = makeSettings()) {

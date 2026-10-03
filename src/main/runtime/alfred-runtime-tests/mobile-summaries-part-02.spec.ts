@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { makeAgentStatusStoreWiring } from '../agent-status-store-wiring.test-fixture'
 import {
@@ -225,20 +226,24 @@ describe('AlfredRuntimeService', () => {
       getWorkspaceSession: () => session
     }
     const now = Date.now()
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
-      getAgentStatusSnapshot: () => [
-        {
-          paneKey: `host-tab:${HEADLESS_LEAF_ID}`,
-          worktreeId: TEST_WORKTREE_ID,
-          state: 'working',
-          prompt: 'continue after rename',
-          agentType: 'codex',
-          connectionId: null,
-          receivedAt: now,
-          stateStartedAt: now - 100
-        }
-      ]
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(runtimeStore),
+      undefined,
+      {
+        getAgentStatusSnapshot: () => [
+          {
+            paneKey: `host-tab:${HEADLESS_LEAF_ID}`,
+            worktreeId: TEST_WORKTREE_ID,
+            state: 'working',
+            prompt: 'continue after rename',
+            agentType: 'codex',
+            connectionId: null,
+            receivedAt: now,
+            stateStartedAt: now - 100
+          }
+        ]
+      }
+    )
 
     // No renderer graph on purpose: headless rename attribution must work from
     // the persisted session alone.
@@ -361,21 +366,25 @@ describe('AlfredRuntimeService', () => {
       tabsByWorktree: {}
     })
     const now = Date.now()
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
-      getAgentStatusSnapshot: () => [
-        {
-          paneKey: 'closed-tab:66666666-6666-4666-8666-666666666666',
-          worktreeId: TEST_WORKTREE_ID,
-          tabId: 'closed-tab',
-          state: 'done',
-          prompt: 'refactor the parser',
-          agentType: 'claude',
-          connectionId: null,
-          receivedAt: now,
-          stateStartedAt: now - 60_000
-        }
-      ]
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(runtimeStore),
+      undefined,
+      {
+        getAgentStatusSnapshot: () => [
+          {
+            paneKey: 'closed-tab:66666666-6666-4666-8666-666666666666',
+            worktreeId: TEST_WORKTREE_ID,
+            tabId: 'closed-tab',
+            state: 'done',
+            prompt: 'refactor the parser',
+            agentType: 'claude',
+            connectionId: null,
+            receivedAt: now,
+            stateStartedAt: now - 60_000
+          }
+        ]
+      }
+    )
 
     const { worktrees } = await runtime.getWorktreePs()
     const summary = worktrees.find((worktree) => worktree.worktreeId === TEST_WORKTREE_ID)
@@ -409,21 +418,25 @@ describe('AlfredRuntimeService', () => {
       }
     })
     const now = Date.now()
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
-      getAgentStatusSnapshot: () => [
-        {
-          paneKey: 'headless-tab:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
-          worktreeId: TEST_WORKTREE_ID,
-          tabId: 'headless-tab',
-          state: 'done',
-          prompt: 'finished while headless',
-          agentType: 'codex',
-          connectionId: null,
-          receivedAt: now,
-          stateStartedAt: now - 60_000
-        }
-      ]
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(runtimeStore),
+      undefined,
+      {
+        getAgentStatusSnapshot: () => [
+          {
+            paneKey: 'headless-tab:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+            worktreeId: TEST_WORKTREE_ID,
+            tabId: 'headless-tab',
+            state: 'done',
+            prompt: 'finished while headless',
+            agentType: 'codex',
+            connectionId: null,
+            receivedAt: now,
+            stateStartedAt: now - 60_000
+          }
+        ]
+      }
+    )
 
     const { worktrees } = await runtime.getWorktreePs()
     const summary = worktrees.find((worktree) => worktree.worktreeId === TEST_WORKTREE_ID)
@@ -454,30 +467,34 @@ describe('AlfredRuntimeService', () => {
       }
     })
     const now = Date.now()
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
-      getAgentStatusSnapshot: () => [
-        {
-          paneKey: 'closed-tab:7',
-          worktreeId: TEST_WORKTREE_ID,
-          state: 'done',
-          prompt: 'stale legacy pane',
-          agentType: 'codex',
-          connectionId: null,
-          receivedAt: now,
-          stateStartedAt: now - 60_000
-        },
-        {
-          paneKey: 'open-tab:9',
-          worktreeId: TEST_WORKTREE_ID,
-          state: 'working',
-          prompt: 'live legacy pane',
-          agentType: 'codex',
-          connectionId: null,
-          receivedAt: now,
-          stateStartedAt: now - 100
-        }
-      ]
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(runtimeStore),
+      undefined,
+      {
+        getAgentStatusSnapshot: () => [
+          {
+            paneKey: 'closed-tab:7',
+            worktreeId: TEST_WORKTREE_ID,
+            state: 'done',
+            prompt: 'stale legacy pane',
+            agentType: 'codex',
+            connectionId: null,
+            receivedAt: now,
+            stateStartedAt: now - 60_000
+          },
+          {
+            paneKey: 'open-tab:9',
+            worktreeId: TEST_WORKTREE_ID,
+            state: 'working',
+            prompt: 'live legacy pane',
+            agentType: 'codex',
+            connectionId: null,
+            receivedAt: now,
+            stateStartedAt: now - 100
+          }
+        ]
+      }
+    )
 
     const { worktrees } = await runtime.getWorktreePs()
     const summary = worktrees.find((worktree) => worktree.worktreeId === TEST_WORKTREE_ID)
@@ -496,21 +513,25 @@ describe('AlfredRuntimeService', () => {
     })
     const paneKey = 'daemon-tab:77777777-7777-4777-8777-777777777777'
     const now = Date.now()
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
-      getAgentStatusSnapshot: () => [
-        {
-          paneKey,
-          worktreeId: TEST_WORKTREE_ID,
-          tabId: 'daemon-tab',
-          state: 'working',
-          prompt: 'long-running daemon agent',
-          agentType: 'codex',
-          connectionId: null,
-          receivedAt: now,
-          stateStartedAt: now - 100
-        }
-      ]
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(runtimeStore),
+      undefined,
+      {
+        getAgentStatusSnapshot: () => [
+          {
+            paneKey,
+            worktreeId: TEST_WORKTREE_ID,
+            tabId: 'daemon-tab',
+            state: 'working',
+            prompt: 'long-running daemon agent',
+            agentType: 'codex',
+            connectionId: null,
+            receivedAt: now,
+            stateStartedAt: now - 100
+          }
+        ]
+      }
+    )
     // paneKey-only record: the tabId rescue must not be what keeps this row.
     runtime['recordPtyWorktree']('daemon-pty', TEST_WORKTREE_ID, {
       connected: true,
@@ -535,21 +556,25 @@ describe('AlfredRuntimeService', () => {
       tabsByWorktree: {}
     })
     const now = Date.now()
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, {
-      getAgentStatusSnapshot: () => [
-        {
-          paneKey: 'daemon-tab:88888888-8888-4888-8888-888888888887',
-          worktreeId: TEST_WORKTREE_ID,
-          tabId: 'daemon-tab',
-          state: 'working',
-          prompt: 'sibling pane agent',
-          agentType: 'codex',
-          connectionId: null,
-          receivedAt: now,
-          stateStartedAt: now - 100
-        }
-      ]
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(runtimeStore),
+      undefined,
+      {
+        getAgentStatusSnapshot: () => [
+          {
+            paneKey: 'daemon-tab:88888888-8888-4888-8888-888888888887',
+            worktreeId: TEST_WORKTREE_ID,
+            tabId: 'daemon-tab',
+            state: 'working',
+            prompt: 'sibling pane agent',
+            agentType: 'codex',
+            connectionId: null,
+            receivedAt: now,
+            stateStartedAt: now - 100
+          }
+        ]
+      }
+    )
     runtime['recordPtyWorktree']('daemon-pty-2', TEST_WORKTREE_ID, {
       connected: true,
       tabId: 'daemon-tab',
@@ -574,7 +599,7 @@ describe('AlfredRuntimeService', () => {
       tabsByWorktree: {}
     })
     const runtime = new AlfredRuntimeService(
-      runtimeStore as never,
+      createRuntimeStoreTestDouble(runtimeStore),
       undefined,
       makeAgentStatusStoreWiring().deps
     )
@@ -608,7 +633,11 @@ describe('AlfredRuntimeService', () => {
       tabsByWorktree: {}
     })
     const statusWiring = makeAgentStatusStoreWiring()
-    const runtime = new AlfredRuntimeService(runtimeStore as never, undefined, statusWiring.deps)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(runtimeStore),
+      undefined,
+      statusWiring.deps
+    )
     runtime['recordPtyWorktree']('race-pty', TEST_WORKTREE_ID, {
       connected: true,
       tabId: 'race-tab',

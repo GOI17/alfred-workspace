@@ -1,3 +1,6 @@
+import { createAppStateTestDouble } from '../store/app-state-test-double'
+import { makeRepo as completeMakeRepo } from '../../../shared/repo-test-fixture'
+import { getDefaultSettings as completeGetDefaultSettings } from '../../../shared/constants'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AppState } from '@/store/types'
 import type { PersistedTrustedAlfredHooks } from '../../../shared/alfred-yaml-hook-types'
@@ -44,14 +47,14 @@ function createTestState(overrides?: Partial<AppState>): {
 } {
   const pending: PendingPrompt[] = []
   const trust: PersistedTrustedAlfredHooks = {}
-  const state = {
+  const state = createAppStateTestDouble({
     trustedAlfredHooks: trust,
-    repos: [{ id: 'repo-1', displayName: 'Repo One' }],
-    openModal: (modal: string, data: Record<string, unknown>) => {
+    repos: [completeMakeRepo({ id: 'repo-1', displayName: 'Repo One' })],
+    openModal: (modal: string, data: Record<string, unknown> = {}) => {
       pending.push({ modal, data, resolve: data.onResolve as (d: 'run' | 'skip') => void })
     },
     ...overrides
-  } as unknown as AppState
+  })
   return { state, pending }
 }
 
@@ -207,15 +210,15 @@ describe('ensureHooksConfirmed', () => {
 
   it('checks SSH repo hooks through local IPC even when a runtime is focused', async () => {
     const { state, pending } = createTestState({
-      settings: { activeRuntimeEnvironmentId: 'env-1' },
+      settings: { ...completeGetDefaultSettings('/tmp'), activeRuntimeEnvironmentId: 'env-1' },
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo-1',
           displayName: 'Repo One',
           connectionId: 'ssh-1'
-        }
+        })
       ]
-    } as unknown as Partial<AppState>)
+    })
     hooksCheckMock.mockResolvedValue({
       hasHooks: true,
       hooks: { scripts: {} },
@@ -231,13 +234,17 @@ describe('ensureHooksConfirmed', () => {
 
   it('inspects the requested host when duplicate repo ids exist', async () => {
     const { state } = createTestState({
-      settings: { activeRuntimeEnvironmentId: 'env-1' },
+      settings: { ...completeGetDefaultSettings('/tmp'), activeRuntimeEnvironmentId: 'env-1' },
       trustedAlfredHooks: { 'repo-1': { all: { approvedAt: 1 } } },
       repos: [
-        { id: 'repo-1', displayName: 'Runtime', executionHostId: 'runtime:env-1' },
-        { id: 'repo-1', displayName: 'SSH', connectionId: 'ssh-1' }
+        completeMakeRepo({
+          id: 'repo-1',
+          displayName: 'Runtime',
+          executionHostId: 'runtime:env-1'
+        }),
+        completeMakeRepo({ id: 'repo-1', displayName: 'SSH', connectionId: 'ssh-1' })
       ]
-    } as unknown as Partial<AppState>)
+    })
     hooksCheckMock.mockResolvedValue({
       hasHooks: true,
       hooks: { scripts: {} },
@@ -253,15 +260,18 @@ describe('ensureHooksConfirmed', () => {
 
   it('checks runtime-owned repo hooks through the repo owner runtime', async () => {
     const { state, pending } = createTestState({
-      settings: { activeRuntimeEnvironmentId: 'focused-env' },
+      settings: {
+        ...completeGetDefaultSettings('/tmp'),
+        activeRuntimeEnvironmentId: 'focused-env'
+      },
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo-1',
           displayName: 'Repo One',
           executionHostId: 'runtime:owner-env'
-        }
+        })
       ]
-    } as unknown as Partial<AppState>)
+    })
     runtimeEnvironmentCallMock.mockResolvedValue({
       id: 'rpc-hooks',
       ok: true,
@@ -289,7 +299,7 @@ describe('ensureHooksConfirmed', () => {
   it('does not prompt for alfred.yaml when the repo uses local commands only', async () => {
     const { state, pending } = createTestState({
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo-1',
           path: '/repo-1',
           displayName: 'Repo One',
@@ -300,9 +310,9 @@ describe('ensureHooksConfirmed', () => {
             commandSourcePolicy: 'local-only',
             scripts: { setup: 'echo local', archive: '' }
           }
-        }
+        })
       ]
-    } as Partial<AppState>)
+    })
     hooksCheckMock.mockResolvedValue({
       hasHooks: true,
       hooks: { scripts: { setup: 'echo shared' } },
@@ -319,7 +329,7 @@ describe('ensureHooksConfirmed', () => {
   it('does not prompt for alfred.yaml when local commands are the implicit default', async () => {
     const { state, pending } = createTestState({
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo-1',
           path: '/repo-1',
           displayName: 'Repo One',
@@ -329,9 +339,9 @@ describe('ensureHooksConfirmed', () => {
             mode: 'auto',
             scripts: { setup: 'echo local', archive: '' }
           }
-        }
+        })
       ]
-    } as Partial<AppState>)
+    })
     hooksCheckMock.mockResolvedValue({
       hasHooks: true,
       hooks: { scripts: { setup: 'echo shared' } },
@@ -381,10 +391,10 @@ describe('ensureHooksConfirmed', () => {
   it('forwards the explicit host to issueCommand inspection when repo ids collide', async () => {
     const { state } = createTestState({
       repos: [
-        { id: 'repo-1', displayName: 'Local Row' },
-        { id: 'repo-1', displayName: 'SSH Row', connectionId: 'server' }
+        completeMakeRepo({ id: 'repo-1', displayName: 'Local Row' }),
+        completeMakeRepo({ id: 'repo-1', displayName: 'SSH Row', connectionId: 'server' })
       ]
-    } as unknown as Partial<AppState>)
+    })
     readIssueCommandMock.mockResolvedValue({
       source: 'local',
       sharedContent: null,
@@ -401,10 +411,10 @@ describe('ensureHooksConfirmed', () => {
   it('approves and returns the exact issue-command bytes from one host-qualified read', async () => {
     const { state, pending } = createTestState({
       repos: [
-        { id: 'repo-1', displayName: 'Local Row' },
-        { id: 'repo-1', displayName: 'SSH Row', connectionId: 'server' }
+        completeMakeRepo({ id: 'repo-1', displayName: 'Local Row' }),
+        completeMakeRepo({ id: 'repo-1', displayName: 'SSH Row', connectionId: 'server' })
       ]
-    } as unknown as Partial<AppState>)
+    })
     readIssueCommandMock
       .mockResolvedValueOnce({
         status: 'ok',
@@ -444,10 +454,14 @@ describe('ensureHooksConfirmed', () => {
     const { state, pending } = createTestState({
       trustedAlfredHooks: { 'repo-1': { all: { approvedAt: 1 } } },
       repos: [
-        { id: 'repo-1', displayName: 'Runtime', executionHostId: 'runtime:env-1' },
-        { id: 'repo-1', displayName: 'SSH', connectionId: 'server' }
+        completeMakeRepo({
+          id: 'repo-1',
+          displayName: 'Runtime',
+          executionHostId: 'runtime:env-1'
+        }),
+        completeMakeRepo({ id: 'repo-1', displayName: 'SSH', connectionId: 'server' })
       ]
-    } as unknown as Partial<AppState>)
+    })
     readIssueCommandMock.mockResolvedValue({
       status: 'ok',
       source: 'shared',

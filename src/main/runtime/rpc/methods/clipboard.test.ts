@@ -1,7 +1,7 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest, RpcResponse } from '../core'
-import type { AlfredRuntimeService } from '../../alfred-runtime'
 import {
   CLIPBOARD_IMAGE_MAX_BASE64_CHARS,
   CLIPBOARD_IMAGE_TOO_LARGE_ERROR
@@ -31,7 +31,7 @@ function makeRequest(method: string, params?: unknown): RpcRequest {
 }
 
 function makeDispatcher(): RpcDispatcher {
-  const runtime = { getRuntimeId: () => 'test-runtime' } as unknown as AlfredRuntimeService
+  const runtime = createRuntimeServiceTestDouble({ getRuntimeId: () => 'test-runtime' })
   return new RpcDispatcher({ runtime, methods: CLIPBOARD_METHODS })
 }
 

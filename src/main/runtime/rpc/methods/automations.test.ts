@@ -1,7 +1,7 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
-import type { AlfredRuntimeService } from '../../alfred-runtime'
 import { AUTOMATION_METHODS } from './automations'
 
 function makeRequest(method: string, params?: unknown): RpcRequest {
@@ -10,7 +10,7 @@ function makeRequest(method: string, params?: unknown): RpcRequest {
 
 describe('automation RPC methods', () => {
   it('routes automation CRUD and run operations to the runtime server', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       listAutomations: vi.fn().mockReturnValue([{ id: 'auto-1', name: 'Daily review' }]),
       listAutomationsForScope: vi.fn().mockReturnValue({
@@ -23,7 +23,7 @@ describe('automation RPC methods', () => {
       deleteAutomation: vi.fn().mockReturnValue({ removed: true, id: 'auto-1' }),
       runAutomationNow: vi.fn().mockResolvedValue({ id: 'run-1', automationId: 'auto-1' }),
       listAutomationRuns: vi.fn().mockReturnValue([{ id: 'run-1', automationId: 'auto-1' }])
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: AUTOMATION_METHODS })
 
     await dispatcher.dispatch(makeRequest('automation.list'))
@@ -106,13 +106,13 @@ describe('automation RPC methods', () => {
   })
 
   it('returns a cursor page when the caller requests a bounded run history', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       listAutomationRunsPage: vi.fn().mockReturnValue({
         runs: [{ id: 'run-100', automationId: 'auto-1' }],
         nextCursor: '100'
       })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: AUTOMATION_METHODS })
 
     await expect(
@@ -125,10 +125,10 @@ describe('automation RPC methods', () => {
   })
 
   it('rejects unknown providers and invalid schedules', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       createAutomation: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: AUTOMATION_METHODS })
 
     await expect(
@@ -159,10 +159,10 @@ describe('automation RPC methods', () => {
   })
 
   it('preserves null baseBranch update values through the RPC boundary', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       updateAutomation: vi.fn().mockResolvedValue({ id: 'auto-1', baseBranch: null })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: AUTOMATION_METHODS })
 
     await dispatcher.dispatch(

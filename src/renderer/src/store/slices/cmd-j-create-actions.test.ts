@@ -21,11 +21,10 @@ vi.mock('@/lib/focus-terminal-tab-surface', () => ({
 }))
 
 vi.mock('@/lib/web-client-location', () => ({
-  isWebClientLocation: () =>
-    Boolean((globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__)
+  isWebClientLocation: () => Boolean(globalThis.__ALFRED_WEB_CLIENT__)
 }))
 
-const pairedWebFlag = globalThis as { __ALFRED_WEB_CLIENT__?: boolean }
+const pairedWebFlag = globalThis
 
 function browserCapableRuntimeStatus(
   environmentId: string

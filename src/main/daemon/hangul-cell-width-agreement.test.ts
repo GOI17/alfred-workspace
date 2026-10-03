@@ -59,7 +59,7 @@ function openWithUnicode11AddonLoaded(): {
 } {
   const terminal = new Terminal({ cols: 40, rows: 10, allowProposedApi: true })
   terminal.loadAddon(new Unicode11Addon())
-  activateAlfredTerminalUnicodeProvider(terminal as never)
+  activateAlfredTerminalUnicodeProvider(terminal)
   const unicode = (
     terminal as unknown as {
       _core: { unicodeService: UnicodeServiceInternals }

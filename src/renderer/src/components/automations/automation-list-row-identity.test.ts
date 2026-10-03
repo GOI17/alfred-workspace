@@ -1,3 +1,4 @@
+import { makeRepo as fixtureMakeRepo } from '../../../../shared/repo-test-fixture'
 /**
  * One automation ID under two authorities, followed from the cached host rows
  * all the way into the search index.
@@ -16,7 +17,7 @@ import type {
   AutomationHostCatalogEntry
 } from './automation-host-catalog-types'
 import type { AutomationHostFilterResolution } from './automation-host-filter-resolution'
-import type { Repo } from '../../../../shared/repo-types'
+
 import type { Worktree } from '../../../../shared/worktree/types'
 import { resolveAutomationHostListRows } from './automation-host-list-rows'
 import {
@@ -28,7 +29,7 @@ import { REPO_ID } from './automations-page-fixtures'
 import { automationRepoForRow, automationWorktreeForRow } from './automation-list-row-identity'
 
 const repoMap = new Map([
-  [REPO_ID, { id: REPO_ID, displayName: 'alfred', path: '/src/alfred' } as Repo]
+  [REPO_ID, fixtureMakeRepo({ id: REPO_ID, displayName: 'alfred', path: '/src/alfred' })]
 ])
 
 const DESKTOP_SELF: AutomationHostCatalogEntry = {

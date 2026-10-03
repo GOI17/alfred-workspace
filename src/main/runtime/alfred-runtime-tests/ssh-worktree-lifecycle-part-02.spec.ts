@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { resetWorktreeTestSshHostHome } from '../../worktree-removal-test-ssh-host-home'
 
@@ -121,7 +122,7 @@ describe('AlfredRuntimeService', () => {
     registerSshGitProvider('ssh-1', provider as never)
     registerSshFilesystemProvider('ssh-1', fsProvider as never)
     getActiveMultiplexerMock.mockReturnValue({ request: muxRequestMock, notify: vi.fn() })
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
     runtime.setPtyController({
       spawn,
       write: () => true,
@@ -291,7 +292,7 @@ describe('AlfredRuntimeService', () => {
     registerSshGitProvider('ssh-1', provider as never)
     registerSshFilesystemProvider('ssh-1', fsProvider as never)
     getActiveMultiplexerMock.mockReturnValue({ request: muxRequestMock, notify: vi.fn() })
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
     runtime.setPtyController({
       spawn,
       write: () => true,
@@ -399,7 +400,7 @@ describe('AlfredRuntimeService', () => {
       shutdown: vi.fn().mockResolvedValue(undefined),
       deleteWorktreeHistory: vi.fn().mockResolvedValue(undefined)
     }
-    const runtime = new AlfredRuntimeService(remoteStore as never, undefined, {
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore), undefined, {
       getSshProvider: () => ptyProvider as never
     })
 
@@ -465,7 +466,7 @@ describe('AlfredRuntimeService', () => {
       listProcesses: vi.fn().mockResolvedValue([]),
       shutdown: vi.fn().mockResolvedValue(undefined)
     }
-    const runtime = new AlfredRuntimeService(remoteStore as never, undefined, {
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore), undefined, {
       getSshProvider: () => ptyProvider as never
     })
     const stopAndWait = vi.fn(async () => true)
@@ -524,7 +525,7 @@ describe('AlfredRuntimeService', () => {
       removeWorktree: vi.fn().mockResolvedValue(undefined)
     }
     registerSshGitProvider('ssh-1', gitProvider as never)
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
 
     try {
       await expect(
@@ -560,7 +561,7 @@ describe('AlfredRuntimeService', () => {
     }
     vi.mocked(parseAlfredYaml).mockReturnValue({ scripts: { setup: 'pnpm install' } })
     registerSshFilesystemProvider('ssh-1', fsProvider as never)
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
 
     try {
       await expect(runtime.getRepoHooks('id:repo-1')).resolves.toMatchObject({
@@ -597,13 +598,14 @@ describe('AlfredRuntimeService', () => {
           badgeColor: 'blue',
           addedAt: 1,
           hookSettings: {
+            mode: 'override' as const,
             commandSourcePolicy: 'run-both' as const,
-            scripts: { setup: 'echo local setup' }
+            scripts: { setup: 'echo local setup', archive: '' }
           }
         }
       ]
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     await expect(runtime.getRepoHooks('id:repo-1')).resolves.toMatchObject({
       hooks: { scripts: { setup: 'echo yaml setup\necho local setup' } },

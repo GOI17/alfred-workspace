@@ -48,14 +48,7 @@ async function dismissTransientAnnouncement(page: Page): Promise<void> {
 
 async function installPowerSaveBlockerProbe(electronApp: ElectronApplication): Promise<void> {
   await electronApp.evaluate(({ powerSaveBlocker }) => {
-    const root = globalThis as typeof globalThis & {
-      __alfredAwakePowerProbe?: {
-        starts: { type: string; id: number }[]
-        stops: { id: number }[]
-        originalStart: typeof powerSaveBlocker.start
-        originalStop: typeof powerSaveBlocker.stop
-      }
-    }
+    const root = globalThis
     if (root.__alfredAwakePowerProbe) {
       root.__alfredAwakePowerProbe.starts = []
       root.__alfredAwakePowerProbe.stops = []
@@ -71,16 +64,16 @@ async function installPowerSaveBlockerProbe(electronApp: ElectronApplication): P
       originalStop
     }
 
-    powerSaveBlocker.start = ((type) => {
+    powerSaveBlocker.start = (type) => {
       const id = originalStart(type)
       root.__alfredAwakePowerProbe?.starts.push({ type, id })
       return id
-    }) as typeof powerSaveBlocker.start
+    }
 
-    powerSaveBlocker.stop = ((id) => {
+    powerSaveBlocker.stop = (id) => {
       root.__alfredAwakePowerProbe?.stops.push({ id })
-      originalStop(id)
-    }) as typeof powerSaveBlocker.stop
+      return originalStop(id)
+    }
   })
 }
 
@@ -88,14 +81,7 @@ async function readPowerSaveBlockerProbe(
   electronApp: ElectronApplication
 ): Promise<AwakeProbeSnapshot> {
   return electronApp.evaluate(({ powerSaveBlocker }) => {
-    const probe = (
-      globalThis as typeof globalThis & {
-        __alfredAwakePowerProbe?: {
-          starts: { type: string; id: number }[]
-          stops: { id: number }[]
-        }
-      }
-    ).__alfredAwakePowerProbe
+    const probe = globalThis.__alfredAwakePowerProbe
     const starts = probe?.starts ?? []
     return {
       starts: starts.map((start) => ({ ...start })),

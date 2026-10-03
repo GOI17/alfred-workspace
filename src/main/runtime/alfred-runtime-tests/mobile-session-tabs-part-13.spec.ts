@@ -556,7 +556,7 @@ describe('AlfredRuntimeService', () => {
           disabledTuiAgents: [],
           agentCmdOverrides: {}
         })
-      } as never)
+      })
       runtime.setPtyController({
         spawn: vi.fn(),
         write,

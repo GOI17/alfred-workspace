@@ -50,7 +50,7 @@ describe('onboarding feature setup telemetry validation', () => {
         orchestration: true,
         selected_count: 2,
         command: 'npx skills add https://github.com/GOI17/alfred-workspace --global'
-      } as never).ok
+      }).ok
     ).toBe(false)
     expect(
       validate('onboarding_feature_setup_toggled', {

@@ -1,3 +1,5 @@
+import { getDefaultRuntimeClientSettings } from '../../runtime-client-settings-test-fixture'
+import { createRuntimeStoreTestDouble } from '../../runtime-store-test-double'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -132,20 +134,22 @@ describe('committed adopting create RPC replay', () => {
     let selectedHome = originalHome
     const selectAccountHome = vi.fn(() => selectedHome)
     const runtime = new AlfredRuntimeService(
-      {
+      createRuntimeStoreTestDouble({
         getSettings: () => ({
+          ...getDefaultRuntimeClientSettings(),
           experimentalStructuredNativeChat: true,
           agentDefaultEnv: { codex: {} }
         })
-      } as never,
+      }),
       undefined,
       { prepareCodexStructuredLaunch: selectAccountHome }
     )
     // The structured surface is settings-gated for every caller, not just mobile; this test
     // probes durable-identity replay, which only runs once the gate admits the call.
     vi.spyOn(runtime, 'getClientSettings').mockReturnValue({
+      ...getDefaultRuntimeClientSettings(),
       experimentalStructuredNativeChat: true
-    } as ReturnType<AlfredRuntimeService['getClientSettings']>)
+    })
     vi.spyOn(runtime, 'getStructuredAgentSessionCreateSupport').mockResolvedValue({
       supported: true
     })

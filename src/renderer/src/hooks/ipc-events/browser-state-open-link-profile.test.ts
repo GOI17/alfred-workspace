@@ -40,7 +40,7 @@ function captureOpenLinkHandler(): (event: {
         handler = callback
         return noopUnsubscribe
       }
-    } as Record<string, unknown>,
+    },
     {
       get: (target, property) =>
         property in target ? target[property as string] : () => noopUnsubscribe

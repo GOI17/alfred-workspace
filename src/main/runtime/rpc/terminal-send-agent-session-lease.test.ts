@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from './dispatcher'
 import { TERMINAL_METHODS } from './methods/terminal'
@@ -23,13 +24,13 @@ const REFUSAL: AgentSessionPtyWriteRefusal = {
 const rollback = vi.fn()
 
 function stubRuntime(overrides: Partial<AlfredRuntimeService> = {}): AlfredRuntimeService {
-  return {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
     resolveLiveLeafForHandle: vi.fn().mockReturnValue({ ptyId: 'pty-1' }),
     getDriver: vi.fn().mockReturnValue({ kind: 'idle' }),
     beginMobileInputFloor: vi.fn(() => ({ commit: async () => {}, rollback })),
     ...overrides
-  } as AlfredRuntimeService
+  })
 }
 
 function makeRequest(params: unknown): RpcRequest {

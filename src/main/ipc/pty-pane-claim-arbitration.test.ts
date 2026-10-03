@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime/runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { spawnMock } from './pty-ipc-mock-registry'
 import { setupPtyIpcSuite } from './pty-ipc-test-harness'
@@ -252,26 +253,28 @@ describe('registerPtyHandlers', () => {
   it('reports lower-owner commit before rejecting an early-exited runtime incarnation', async () => {
     const persistPtyBinding = vi.fn()
     const onPtySpawnCommitted = vi.fn()
-    const runtime = new AlfredRuntimeService({
-      getRepo: () => undefined,
-      getRepos: () => [],
-      addRepo: () => {},
-      updateRepo: () => undefined as never,
-      getAllWorktreeMeta: () => ({}),
-      getWorktreeMeta: () => undefined,
-      setWorktreeMeta: () => undefined as never,
-      removeWorktreeMeta: () => {},
-      getGitHubCache: () => ({ pr: {}, issue: {} }) as never,
-      getSettings: () => ({
-        workspaceDir: '/tmp/workspaces',
-        nestWorkspaces: false,
-        refreshLocalBaseRefOnWorktreeCreate: false,
-        branchPrefix: 'none',
-        branchPrefixCustom: '',
-        terminalMainSideEffectAuthority: true
-      }),
-      persistPtyBinding
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        getRepo: () => undefined,
+        getRepos: () => [],
+        addRepo: () => {},
+        updateRepo: () => undefined as never,
+        getAllWorktreeMeta: () => ({}),
+        getWorktreeMeta: () => undefined,
+        setWorktreeMeta: () => undefined as never,
+        removeWorktreeMeta: () => {},
+        getGitHubCache: () => ({ pr: {}, issue: {} }) as never,
+        getSettings: () => ({
+          workspaceDir: '/tmp/workspaces',
+          nestWorkspaces: false,
+          refreshLocalBaseRefOnWorktreeCreate: false,
+          branchPrefix: 'none',
+          branchPrefixCustom: '',
+          terminalMainSideEffectAuthority: true
+        }),
+        persistPtyBinding
+      })
+    )
     const provider = createAgentClaimProvider({
       spawn: vi.fn(async () => {
         runtime.onPtySpawned('pty-early-exit', 'incarnation-early-exit')
@@ -331,25 +334,27 @@ describe('registerPtyHandlers', () => {
     clearProviderPtyState('pty-early-exit')
   })
   it('does not retain a claimed owner when its PTY exits before controller admission', async () => {
-    const runtime = new AlfredRuntimeService({
-      getRepo: () => undefined,
-      getRepos: () => [],
-      addRepo: () => {},
-      updateRepo: () => undefined as never,
-      getAllWorktreeMeta: () => ({}),
-      getWorktreeMeta: () => undefined,
-      setWorktreeMeta: () => undefined as never,
-      removeWorktreeMeta: () => {},
-      getGitHubCache: () => ({ pr: {}, issue: {} }) as never,
-      getSettings: () => ({
-        workspaceDir: '/tmp/workspaces',
-        nestWorkspaces: false,
-        refreshLocalBaseRefOnWorktreeCreate: false,
-        branchPrefix: 'none',
-        branchPrefixCustom: '',
-        terminalMainSideEffectAuthority: true
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        getRepo: () => undefined,
+        getRepos: () => [],
+        addRepo: () => {},
+        updateRepo: () => undefined as never,
+        getAllWorktreeMeta: () => ({}),
+        getWorktreeMeta: () => undefined,
+        setWorktreeMeta: () => undefined as never,
+        removeWorktreeMeta: () => {},
+        getGitHubCache: () => ({ pr: {}, issue: {} }) as never,
+        getSettings: () => ({
+          workspaceDir: '/tmp/workspaces',
+          nestWorkspaces: false,
+          refreshLocalBaseRefOnWorktreeCreate: false,
+          branchPrefix: 'none',
+          branchPrefixCustom: '',
+          terminalMainSideEffectAuthority: true
+        })
       })
-    } as never)
+    )
     const sessions: {
       id: string
       incarnationId: string
@@ -505,7 +510,7 @@ describe('registerPtyHandlers', () => {
         ALFRED_TAB_ID: 'tab-race',
         ALFRED_WORKTREE_ID: 'repo-1::/tmp'
       }
-    }) as Promise<{ id: string }>
+    })
     await vi.waitFor(() => expect(providerSpawn).toHaveBeenCalledTimes(1))
     resolveSpawn({ id: 'pty-shared' })
     await expect(Promise.all([runtimeSpawn, rendererSpawn])).resolves.toEqual([

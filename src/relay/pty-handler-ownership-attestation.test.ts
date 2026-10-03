@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import './mock-descendant-sweep'
 // The host half of #9819: a client may only reap a relay PTY it can prove it created, so the relay
 // has to say who created each one. The attestation is read from the live consumer grant, never from
@@ -57,10 +58,12 @@ describe('PtyHandler publishes host-attested PTY ownership', () => {
     params: Record<string, unknown> = {}
   ): Promise<{ id: string }> {
     mockPtySpawn.mockReturnValue({ ...mockPtyInstance, onData: vi.fn(), onExit: vi.fn() })
-    return (await dispatcher.callRequest('pty.spawn', params, {
-      clientId,
-      isStale: () => false
-    } as never)) as { id: string }
+    return z.object({ id: z.string() }).parse(
+      await dispatcher.callRequest('pty.spawn', params, {
+        clientId,
+        isStale: () => false
+      })
+    )
   }
 
   async function listProcesses(): Promise<Summary[]> {
@@ -121,7 +124,7 @@ describe('PtyHandler publishes host-attested PTY ownership', () => {
           }
         ])
       },
-      { clientId: 7, isStale: () => false } as never
+      { clientId: 7, isStale: () => false }
     )
 
     const entry = (await listProcesses()).find((process) => process.id === revivedId)
@@ -191,10 +194,16 @@ describe('PtyHandler authorizes a fenced stop against its own attestation', () =
 
   async function spawnFrom(clientId: number): Promise<{ id: string }> {
     mockPtySpawn.mockReturnValue({ ...mockPtyInstance, onData: vi.fn(), onExit: vi.fn() })
-    return (await dispatcher.callRequest('pty.spawn', { env: { ALFRED_PANE_KEY: PANE_KEY } }, {
-      clientId,
-      isStale: () => false
-    } as never)) as { id: string }
+    return z.object({ id: z.string() }).parse(
+      await dispatcher.callRequest(
+        'pty.spawn',
+        { env: { ALFRED_PANE_KEY: PANE_KEY } },
+        {
+          clientId,
+          isStale: () => false
+        }
+      )
+    )
   }
 
   async function isStillHeld(id: string): Promise<boolean> {
@@ -209,10 +218,14 @@ describe('PtyHandler authorizes a fenced stop against its own attestation', () =
   }
 
   function stop(id: string, params: Record<string, unknown>, clientId: number): Promise<unknown> {
-    return dispatcher.callRequest('pty.shutdown', { id, immediate: false, ...params }, {
-      clientId,
-      isStale: () => false
-    } as never)
+    return dispatcher.callRequest(
+      'pty.shutdown',
+      { id, immediate: false, ...params },
+      {
+        clientId,
+        isStale: () => false
+      }
+    )
   }
 
   beforeEach(() => {
@@ -279,7 +292,7 @@ describe('PtyHandler authorizes a fenced stop against its own attestation', () =
           }
         ])
       },
-      { clientId: 7, isStale: () => false } as never
+      { clientId: 7, isStale: () => false }
     )
 
     await expect(stop(revivedId, { expectedOwnerClientInstanceId: 'client-A' }, 7)).rejects.toThrow(

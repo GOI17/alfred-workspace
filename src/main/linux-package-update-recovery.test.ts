@@ -64,11 +64,15 @@ async function writePackage(name: string, contents = PAYLOAD): Promise<string> {
 
 /** Captures a well-formed downloaded event unless a field is overridden. */
 function capture(overrides: Record<string, unknown> = {}): LinuxPackageArtifact | null {
-  const downloadedFile = (overrides.downloadedFile ??
-    path.join(downloadDir, 'alfred.deb')) as string
+  const downloadedFile = overrides.downloadedFile ?? path.join(downloadDir, 'alfred.deb')
   return recovery.captureLinuxPackageArtifact({
     version: VERSION,
-    files: [{ url: path.basename(downloadedFile), sha512: SHA512 }],
+    files: [
+      {
+        url: path.basename(typeof downloadedFile === 'string' ? downloadedFile : 'alfred.deb'),
+        sha512: SHA512
+      }
+    ],
     ...overrides,
     downloadedFile
   })

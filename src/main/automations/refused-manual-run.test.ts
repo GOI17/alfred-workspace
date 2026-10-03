@@ -102,7 +102,7 @@ async function createStore() {
   const service = new AutomationService(store, { tickMs: 60_000 })
   // Manual runs arrive over the shared runtime RPC surface for every transport.
   const { AlfredRuntimeService } = await import('../runtime/alfred-runtime')
-  const runtime = new AlfredRuntimeService(store as never)
+  const runtime = new AlfredRuntimeService(store)
   runtime.setAutomationService(service)
   return { store, service, runtime }
 }

@@ -1,3 +1,4 @@
+import { makeWorktree } from '../../../../../shared/worktree/worktree-test-fixture'
 // @vitest-environment happy-dom
 
 import { act, cleanup, renderHook } from '@testing-library/react'
@@ -17,7 +18,38 @@ vi.mock('sonner', () => ({
 function renderActions(overrides: Partial<ChecksPanelCheckAndReviewActionsInput> = {}) {
   const updateWorktreeMeta = vi.fn().mockResolvedValue({ ok: true })
   const openModal = vi.fn()
-  const model = {
+  const model: Input = {
+    repo: null,
+    settings: null,
+    branch: 'main',
+    checks: [],
+    pr: null,
+    prCacheKey: '',
+    linkedAzureDevOpsPR: null,
+    linkedBitbucketPR: null,
+    linkedGiteaPR: null,
+    linkedGitLabMR: null,
+    asyncResultKeyRef: { current: '' },
+    gitLabProjectRefRef: { current: null },
+    panelContextKeyRef: { current: '' },
+    panelContextKey: '',
+    stateRequestKey: '',
+    localExecutionScope: null,
+    repoConnectionId: null,
+    runtimeEnvironmentId: null,
+    isFixingChecksWithAI: false,
+    sourceControlAiActionsVisible: true,
+    isCurrentAsyncResult: () => true,
+    fetchHostedReviewForBranch: vi.fn(async () => null),
+    fetchPRCheckDetails: vi.fn(async () => null),
+    fetchPRChecks: vi.fn(async () => []),
+    fetchPRComments: vi.fn(async () => []),
+    fetchPRForBranch: vi.fn(async () => null),
+    setChecks: vi.fn(),
+    setChecksLoading: vi.fn(),
+    setComments: vi.fn(),
+    setCommentsLoading: vi.fn(),
+    setIsFixingChecksWithAI: vi.fn(),
     activeReview: {
       provider: 'github',
       number: 42,
@@ -28,7 +60,7 @@ function renderActions(overrides: Partial<ChecksPanelCheckAndReviewActionsInput>
       updatedAt: '2026-08-27T00:00:00Z',
       mergeable: 'UNKNOWN'
     },
-    activeWorktree: {
+    activeWorktree: makeWorktree({
       id: 'wt-1',
       repoId: 'repo-1',
       hostId: 'ssh:devbox',
@@ -36,14 +68,14 @@ function renderActions(overrides: Partial<ChecksPanelCheckAndReviewActionsInput>
       linkedIssue: null,
       linkedPR: null,
       comment: ''
-    },
+    }),
     activeWorktreeId: 'wt-1',
     linkedPR: null,
     suppressedGitHubPR: null,
     updateWorktreeMeta,
     openModal,
     ...overrides
-  } as unknown as ChecksPanelCheckAndReviewActionsInput
+  }
 
   return {
     ...renderHook(() => useChecksPanelCheckAndReviewActions(model)),
@@ -220,10 +252,10 @@ describe('useChecksPanelCheckAndReviewActions GitLab links', () => {
     hook.rerender({
       model: {
         ...input,
-        activeWorktree: { ...input.activeWorktree, linkedGitLabMR: 43 },
+        activeWorktree: makeWorktree({ ...input.activeWorktree, linkedGitLabMR: 43 }),
         linkedGitLabMR: 43,
         panelContextKey: 'context::gitlab::43'
-      } as Input
+      }
     })
     await act(async () => modal.afterSave({ updates: { linkedGitLabMR: 43 } }))
 

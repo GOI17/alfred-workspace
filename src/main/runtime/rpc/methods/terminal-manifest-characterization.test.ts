@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import type { AlfredRuntimeService } from '../../alfred-runtime'
 import { TERMINAL_METHODS } from './terminal'
@@ -62,7 +63,9 @@ async function invoke(name: string, params: unknown, runtime: Partial<AlfredRunt
   if (!method?.params || 'stream' in method) {
     throw new Error(`Missing unary terminal method: ${name}`)
   }
-  return method.handler(method.params.parse(params), { runtime: runtime as AlfredRuntimeService })
+  return method.handler(method.params.parse(params), {
+    runtime: createRuntimeServiceTestDouble(runtime)
+  })
 }
 
 describe('terminal RPC manifest characterization', () => {
@@ -132,30 +135,51 @@ describe('terminal RPC manifest characterization', () => {
   it('returns execution-host authority from lifecycle handlers without reinterpretation', async () => {
     const pane = {
       handle: 'term-pane',
-      executionHostId: 'ssh-host',
-      hostPlatform: 'win32'
+      tabId: 'tab-1',
+      leafId: 'leaf-1',
+      ptyId: 'pty-1',
+      executionHostId: 'ssh:host' as const,
+      hostPlatform: 'win32' as const
     }
     const recovered = {
       handle: 'term-recovered',
-      executionHostId: 'folder-host',
-      hostPlatform: 'linux'
+      tabId: 'tab-2',
+      leafId: 'leaf-2',
+      ptyId: 'pty-2',
+      executionHostId: 'local' as const,
+      hostPlatform: 'linux' as const
     }
     const shown = {
       handle: 'term-shown',
-      executionHostId: 'ssh-host',
-      hostPlatform: 'win32'
+      ptyId: 'pty-3',
+      worktreeId: 'wt-1',
+      worktreePath: '/tmp/work',
+      branch: 'main',
+      tabId: 'tab-3',
+      leafId: 'leaf-3',
+      title: null,
+      connected: true,
+      writable: true,
+      lastOutputAt: null,
+      preview: '',
+      paneRuntimeId: 3,
+      rendererGraphEpoch: 1,
+      executionHostId: 'ssh:host' as const,
+      hostPlatform: 'win32' as const
     }
     const split = {
       handle: 'term-split',
-      executionHostId: 'folder-host',
-      hostPlatform: 'linux'
+      tabId: 'tab-3',
+      paneRuntimeId: 3,
+      executionHostId: 'local' as const,
+      hostPlatform: 'linux' as const
     }
     const runtime = {
       resolveTerminalPane: vi.fn(() => pane),
       recoverTerminalPane: vi.fn(async () => recovered),
       showTerminal: vi.fn(async () => shown),
       splitTerminal: vi.fn(async () => split)
-    } as unknown as Partial<AlfredRuntimeService>
+    }
 
     await expect(invoke('terminal.resolvePane', { paneKey: 'pane' }, runtime)).resolves.toEqual({
       terminal: pane
@@ -174,8 +198,8 @@ describe('terminal RPC manifest characterization', () => {
   it('keeps remote and folder selectors opaque through terminal.create', async () => {
     const created = {
       handle: 'term-created',
-      executionHostId: 'ssh-host',
-      hostPlatform: 'win32'
+      executionHostId: 'ssh:host' as const,
+      hostPlatform: 'win32' as const
     }
     const createTerminal = vi.fn(async () => created)
     const runtime = {

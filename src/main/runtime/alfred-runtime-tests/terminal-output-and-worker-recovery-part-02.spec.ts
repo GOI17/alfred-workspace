@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   AlfredRuntimeService,
@@ -76,7 +77,9 @@ describe('AlfredRuntimeService', () => {
       ['pty-setup', 'inc-setup', 'term_setup', 'Setup'],
       ['pty-shell', 'inc-shell', 'term_shell', 'Shell']
     ] as const
-    const runtime = new AlfredRuntimeService({ ...runtimeStore, flushOrThrow: vi.fn() } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({ ...runtimeStore, flushOrThrow: vi.fn() })
+    )
     const listProcesses = vi.fn(async () =>
       processes.map(([id, incarnationId, terminalHandle, title]) => ({
         id,
@@ -247,13 +250,15 @@ describe('AlfredRuntimeService', () => {
     const { runtimeStore, getSession, setSession } = makeRuntimeStoreWithWorkspaceSession(session)
     const durableWrite = deferred<void>()
     const durableWriteStarted = deferred<void>()
-    const runtime = new AlfredRuntimeService({
-      ...runtimeStore,
-      flushPendingOrThrowAsync: vi.fn(() => {
-        durableWriteStarted.resolve()
-        return durableWrite.promise
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...runtimeStore,
+        flushPendingOrThrowAsync: vi.fn(() => {
+          durableWriteStarted.resolve()
+          return durableWrite.promise
+        })
       })
-    } as never)
+    )
     runtime.setPtyController({
       write: vi.fn(() => true),
       kill: vi.fn(() => true),
@@ -332,10 +337,12 @@ describe('AlfredRuntimeService', () => {
         wslDistro: null
       }
     ])
-    const runtime = new AlfredRuntimeService({
-      ...runtimeStore,
-      flushPendingOrThrowAsync
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...runtimeStore,
+        flushPendingOrThrowAsync
+      })
+    )
     runtime.setPtyController({
       write: vi.fn(() => true),
       kill: vi.fn(() => true),
@@ -448,7 +455,7 @@ describe('AlfredRuntimeService', () => {
     const { runtimeStore, getSession } = makeRuntimeStoreWithWorkspaceSession(session)
     const flushOrThrow = vi.fn()
     const runtime = new AlfredRuntimeService(
-      { ...runtimeStore, flushOrThrow } as never,
+      createRuntimeStoreTestDouble({ ...runtimeStore, flushOrThrow }),
       undefined,
       {
         canRecoverPersistentLocalPtys: () => true,

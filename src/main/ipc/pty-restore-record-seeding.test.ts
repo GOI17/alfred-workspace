@@ -1,3 +1,5 @@
+import { z } from 'zod'
+import { createRuntimeStoreTestDouble } from '../runtime/runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   clearAgentHookPaneStateMock,
@@ -178,25 +180,27 @@ describe('registerPtyHandlers', () => {
     const leafId = '55555555-5555-4555-8555-555555555555'
     const ptyId = `${worktreeId}@@session-restore-1`
     const session = getDefaultWorkspaceSession()
-    const runtime = new AlfredRuntimeService({
-      getWorkspaceSession: () => session,
-      setWorkspaceSession: () => {},
-      getRepos: () => [
-        {
-          id: 'repo-restore',
-          path: '/tmp/restore-records',
-          displayName: 'restore',
-          badgeColor: '#000000',
-          addedAt: 0
-        }
-      ],
-      getAllWorktreeMeta: () => ({}),
-      getWorktreeMeta: () => undefined,
-      setWorktreeMeta: () => undefined as never,
-      removeWorktreeMeta: () => {},
-      getSettings: () => ({ workspaceDir: '/tmp/workspaces' }),
-      getProjects: () => []
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        getWorkspaceSession: () => session,
+        setWorkspaceSession: () => {},
+        getRepos: () => [
+          {
+            id: 'repo-restore',
+            path: '/tmp/restore-records',
+            displayName: 'restore',
+            badgeColor: '#000000',
+            addedAt: 0
+          }
+        ],
+        getAllWorktreeMeta: () => ({}),
+        getWorktreeMeta: () => undefined,
+        setWorktreeMeta: () => undefined as never,
+        removeWorktreeMeta: () => {},
+        getSettings: () => ({ workspaceDir: '/tmp/workspaces' }),
+        getProjects: () => []
+      })
+    )
     runtime.attachWindow(1)
     // The restored window graph still knows the persisted ptyId binding.
     runtime.syncWindowGraph(1, {
@@ -347,19 +351,21 @@ describe('registerPtyHandlers', () => {
       badgeColor: '#000000',
       addedAt: 0
     }
-    const runtime = new AlfredRuntimeService({
-      getWorkspaceSession: () => session,
-      setWorkspaceSession: () => {},
-      getRepo: (repoId: string) => (repoId === repo.id ? repo : undefined),
-      getRepos: () => [repo],
-      getAllWorktreeMeta: () => ({}),
-      getWorktreeMeta: () => undefined,
-      setWorktreeMeta: () => undefined as never,
-      removeWorktreeMeta: () => {},
-      getSettings: () => ({ workspaceDir: '/tmp/workspaces' }),
-      getProjects: () => [],
-      persistPtyBinding: vi.fn()
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        getWorkspaceSession: () => session,
+        setWorkspaceSession: () => {},
+        getRepo: (repoId: string) => (repoId === repo.id ? repo : undefined),
+        getRepos: () => [repo],
+        getAllWorktreeMeta: () => ({}),
+        getWorktreeMeta: () => undefined,
+        setWorktreeMeta: () => undefined as never,
+        removeWorktreeMeta: () => {},
+        getSettings: () => ({ workspaceDir: '/tmp/workspaces' }),
+        getProjects: () => [],
+        persistPtyBinding: vi.fn()
+      })
+    )
     // Why: selector resolution shells out to git for real repos; prime the
     // resolved-worktree cache so this headless fixture resolves offline.
     //
@@ -556,22 +562,26 @@ describe('registerPtyHandlers', () => {
     const leafId = '11111111-1111-4111-8111-111111111111'
     const stablePaneKey = makePaneKey('tab-1', leafId)
 
-    const first = (await handlers.get('pty:spawn')!(null, {
-      cols: 80,
-      rows: 24,
-      worktreeId: 'wt-1',
-      tabId: 'tab-1',
-      leafId,
-      env: { ALFRED_PANE_KEY: stablePaneKey }
-    })) as { id: string }
-    const second = (await handlers.get('pty:spawn')!(null, {
-      cols: 80,
-      rows: 24,
-      worktreeId: 'wt-1',
-      tabId: 'tab-1',
-      leafId,
-      env: { ALFRED_PANE_KEY: stablePaneKey }
-    })) as { id: string }
+    const first = z.object({ id: z.string() }).parse(
+      await handlers.get('pty:spawn')!(null, {
+        cols: 80,
+        rows: 24,
+        worktreeId: 'wt-1',
+        tabId: 'tab-1',
+        leafId,
+        env: { ALFRED_PANE_KEY: stablePaneKey }
+      })
+    )
+    const second = z.object({ id: z.string() }).parse(
+      await handlers.get('pty:spawn')!(null, {
+        cols: 80,
+        rows: 24,
+        worktreeId: 'wt-1',
+        tabId: 'tab-1',
+        leafId,
+        env: { ALFRED_PANE_KEY: stablePaneKey }
+      })
+    )
 
     expect(getPtyIdForPaneKey(stablePaneKey)).toBe(second.id)
     clearAgentHookPaneStateMock.mockClear()
@@ -589,14 +599,16 @@ describe('registerPtyHandlers', () => {
     const leafId = '11111111-1111-4111-8111-111111111111'
     const stablePaneKey = makePaneKey('tab-1', leafId)
 
-    const current = (await handlers.get('pty:spawn')!(null, {
-      cols: 80,
-      rows: 24,
-      worktreeId: 'wt-1',
-      tabId: 'tab-1',
-      leafId,
-      env: { ALFRED_PANE_KEY: stablePaneKey }
-    })) as { id: string }
+    const current = z.object({ id: z.string() }).parse(
+      await handlers.get('pty:spawn')!(null, {
+        cols: 80,
+        rows: 24,
+        worktreeId: 'wt-1',
+        tabId: 'tab-1',
+        leafId,
+        env: { ALFRED_PANE_KEY: stablePaneKey }
+      })
+    )
 
     expect(getPtyIdForPaneKey(stablePaneKey)).toBe(current.id)
     clearPaneKeyAliasesForPtyMock.mockClear()

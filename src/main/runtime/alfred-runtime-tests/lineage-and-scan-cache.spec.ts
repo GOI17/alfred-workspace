@@ -69,7 +69,7 @@ describe('AlfredRuntimeService', () => {
       })
     }
     registerSshGitProvider('ssh-1', provider as never)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     const result = await runtime.searchRepoRefs('id:remote-repo', '', 2)
 
@@ -121,7 +121,7 @@ describe('AlfredRuntimeService', () => {
       })
     }
     registerSshGitProvider('ssh-large-limit', provider as never)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     const result = await runtime.searchRepoRefs(
       'id:remote-repo-large-limit',
@@ -177,7 +177,7 @@ describe('AlfredRuntimeService', () => {
       })
     }
     registerSshGitProvider('ssh-1', provider as never)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     const result = await runtime.searchRepoRefs('id:remote-repo', '', 1)
     const repeatedResult = await runtime.searchRepoRefs('id:remote-repo', '', 1)
@@ -250,7 +250,7 @@ describe('AlfredRuntimeService', () => {
       getWorktreeLineage: () => undefined,
       setWorktreeLineage
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     await runtime.updateManagedWorktreeMeta(`id:${childId}`, {
       lineage: { parentWorktree: `id:${parentId}` }
@@ -308,7 +308,7 @@ describe('AlfredRuntimeService', () => {
       getWorktreeLineage: () => undefined,
       setWorktreeLineage
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     await runtime.updateManagedWorktreeMeta(`id:${childId}`, {
       lineage: { parentWorktree: `id:${parentId}` }
@@ -363,7 +363,7 @@ describe('AlfredRuntimeService', () => {
       getWorktreeLineage: () => undefined,
       setWorktreeLineage: vi.fn((_worktreeId: string, lineage: WorktreeLineage) => lineage)
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     await expect(
       runtime.updateManagedWorktreeMeta(`id:${childId}`, {
@@ -422,7 +422,7 @@ describe('AlfredRuntimeService', () => {
       getWorktreeLineage: () => undefined,
       setWorktreeLineage
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     try {
       await expect(
@@ -495,7 +495,7 @@ describe('AlfredRuntimeService', () => {
         isMainWorktree: false
       }
     ])
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     try {
       await mkdir(childPath, { recursive: true })
@@ -553,7 +553,7 @@ describe('AlfredRuntimeService', () => {
         isMainWorktree: false
       }
     ])
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     await runtime.updateManagedWorktreeMeta(`id:${childId}`, {
       lineage: { parentWorktree: `id:${parentId}` }
@@ -638,7 +638,7 @@ describe('AlfredRuntimeService', () => {
       ...(repoPath === childRepoPath ? [makeWorktreeInfo(childPath)] : []),
       ...(repoPath === parentRepoPath ? [makeWorktreeInfo(parentPath)] : [])
     ])
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     await expect(
       runtime.updateManagedWorktreeMeta(`id:${childId}`, {
@@ -680,7 +680,7 @@ describe('AlfredRuntimeService', () => {
         isMainWorktree: false
       }
     ])
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     await runtime.updateManagedWorktreeMeta(`id:${childId}`, {
       lineage: { noParent: true }

@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import type { AlfredRuntimeService } from '../../alfred-runtime'
 import { RpcDispatcher } from '../dispatcher'
@@ -45,11 +46,11 @@ describe('session tab unsubscribe RPC methods', () => {
   it('unsubscribes one shared-control all-tabs stream by subscription id', async () => {
     const cleanupSubscription = vi.fn()
     const cleanupSubscriptionsByPrefix = vi.fn()
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       cleanupSubscription,
       cleanupSubscriptionsByPrefix
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     await dispatcher.dispatchStreaming(
@@ -64,10 +65,10 @@ describe('session tab unsubscribe RPC methods', () => {
 })
 
 function runtimeWithCleanup(
-  cleanupSubscription: ReturnType<typeof vi.fn>,
+  cleanupSubscription: AlfredRuntimeService['cleanupSubscription'],
   cleanupSubscriptionsByPrefix = vi.fn()
 ): AlfredRuntimeService {
-  return {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
     listMobileSessionTabs: vi.fn().mockResolvedValue({
       worktree: 'wt-1',
@@ -80,7 +81,7 @@ function runtimeWithCleanup(
     }),
     cleanupSubscription,
     cleanupSubscriptionsByPrefix
-  } as unknown as AlfredRuntimeService
+  })
 }
 
 function request(method: string, params: unknown) {

@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from './dispatcher'
 import type { RpcRequest } from './core'
@@ -19,7 +20,7 @@ const NEW_PTY_UNDER_PANE = 'pty-b'
 function stubStaleHandleRuntime(
   overrides: Partial<AlfredRuntimeService> = {}
 ): AlfredRuntimeService {
-  return {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
     // Unguarded path: returns the pane's current (replaced) PTY — the misroute.
     resolveLeafForHandle: vi.fn().mockReturnValue({ ptyId: NEW_PTY_UNDER_PANE }),
@@ -28,7 +29,7 @@ function stubStaleHandleRuntime(
       throw new Error('terminal_handle_stale')
     }),
     ...overrides
-  } as unknown as AlfredRuntimeService
+  })
 }
 
 function makeRequest(method: string, params?: unknown): RpcRequest {
@@ -40,7 +41,7 @@ async function expectStale(method: string, params: unknown, mutators: string[]):
   for (const name of mutators) {
     spies[name] = vi.fn()
   }
-  const runtime = stubStaleHandleRuntime(spies as Partial<AlfredRuntimeService>)
+  const runtime = stubStaleHandleRuntime(spies)
   const dispatcher = new RpcDispatcher({ runtime, methods: TERMINAL_METHODS })
 
   const response = await dispatcher.dispatch(makeRequest(method, params))
@@ -105,11 +106,11 @@ describe('terminal geometry family rejects stale handles instead of mutating the
 describe('terminal geometry family still mutates the live PTY for a fresh handle', () => {
   it('terminal.restoreFit reclaims the resolved PTY when the handle is live', async () => {
     const reclaimTerminalForDesktop = vi.fn().mockResolvedValue(true)
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       resolveLiveLeafForHandle: vi.fn().mockReturnValue({ ptyId: 'pty-a' }),
       reclaimTerminalForDesktop
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: TERMINAL_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -126,11 +127,11 @@ describe('terminal geometry family still mutates the live PTY for a fresh handle
 
   it('terminal.resizeForClient resizes the resolved PTY when the handle is live', async () => {
     const resizeForClient = vi.fn().mockResolvedValue({ cols: 80, rows: 24 })
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       resolveLiveLeafForHandle: vi.fn().mockReturnValue({ ptyId: 'pty-a' }),
       resizeForClient
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: TERMINAL_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -159,7 +160,7 @@ describe('terminal geometry family still mutates the live PTY for a fresh handle
     const applyMobileDisplayMode = vi.fn().mockResolvedValue(undefined)
     const updateMobileSubscriberViewport = vi.fn()
     const markMobileActor = vi.fn()
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       resolveLiveLeafForHandle: vi.fn().mockReturnValue({ ptyId: 'pty-a' }),
       setMobileDisplayMode,
@@ -167,7 +168,7 @@ describe('terminal geometry family still mutates the live PTY for a fresh handle
       updateMobileSubscriberViewport,
       markMobileActor,
       getLayout: vi.fn().mockReturnValue({ seq: 42 })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: TERMINAL_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -195,12 +196,12 @@ describe('terminal geometry family still mutates the live PTY for a fresh handle
 
   it('terminal.updateViewport updates the resolved PTY when the handle is live', async () => {
     const updateMobileViewport = vi.fn().mockResolvedValue({ updated: true, applied: true })
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       resolveLiveLeafForHandle: vi.fn().mockReturnValue({ ptyId: 'pty-a' }),
       updateMobileViewport,
       getLayout: vi.fn().mockReturnValue({ seq: 7 })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: TERMINAL_METHODS })
 
     const response = await dispatcher.dispatch(

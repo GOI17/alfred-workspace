@@ -11,12 +11,25 @@ describe('startLocalBuildFeed', () => {
     const artifactPath = join(directory, 'alfred-macos-arm64.zip')
     await writeFile(artifactPath, 'zip')
     const artifactFile = await open(artifactPath, 'r')
-    const candidate = {
+    const candidate: LocalBuildCandidate = {
+      compatibility: {
+        formatVersion: 1,
+        appId: 'org.alfredlabs.workspace',
+        buildId: 'test',
+        version: '1.2.3-local.1',
+        commit: 'abc',
+        stateSchemaVersion: 1,
+        readableStateSchemaVersions: [1],
+        daemonProtocolVersion: 28,
+        attachableDaemonProtocolVersions: [28],
+        platform: 'darwin',
+        architecture: 'arm64'
+      },
       version: '1.2.3-local.1',
       manifestContent: 'version: 1.2.3-local.1\n',
       artifacts: new Map([['alfred-macos-arm64.zip', { file: artifactFile, size: 3 }]]),
       close: () => artifactFile.close()
-    } as LocalBuildCandidate
+    }
     const feed = await startLocalBuildFeed(candidate)
     try {
       await expect(

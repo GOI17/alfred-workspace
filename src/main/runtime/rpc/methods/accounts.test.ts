@@ -1,7 +1,8 @@
+import { createEmptyRateLimitState } from '../../../../shared/rate-limit-state-factory'
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import type { AlfredRuntimeService } from '../../alfred-runtime'
 import { eraseRpcMethods, isStreamingMethod } from '../core'
 import { ACCOUNT_METHODS } from './accounts'
 
@@ -38,7 +39,7 @@ describe('account RPC methods', () => {
     }
   ])('allows local-socket $methodName calls', async (testCase) => {
     const add = vi.fn().mockResolvedValue({ accounts: [] })
-    const runtime = { [testCase.runtimeMethod]: add } as unknown as AlfredRuntimeService
+    const runtime = createRuntimeServiceTestDouble({ [testCase.runtimeMethod]: add })
     const addMethod = method(testCase.methodName)
     if (isStreamingMethod(addMethod)) {
       throw new Error(`${testCase.methodName} must be a request method`)
@@ -53,10 +54,10 @@ describe('account RPC methods', () => {
     ['accounts.addClaudeFromConfigDir', { configDir: join(tmpdir(), 'claude-login') }],
     ['accounts.addCodexFromHome', { sourceHome: join(tmpdir(), 'codex-login') }]
   ])('rejects paired-device calls to %s', async (methodName, params) => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       addClaudeAccountFromConfigDir: vi.fn(),
       addCodexAccountFromHome: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const addMethod = method(methodName)
     if (isStreamingMethod(addMethod)) {
       throw new Error(`${methodName} must be a request method`)
@@ -72,11 +73,15 @@ describe('account RPC methods', () => {
   })
 
   it('keeps explicit account-list refreshes on the forced refresh lane', async () => {
-    const snapshot = { claude: null, codex: null }
-    const runtime = {
+    const snapshot = {
+      claude: { accounts: [], activeAccountId: null },
+      codex: { accounts: [], activeAccountId: null },
+      rateLimits: createEmptyRateLimitState()
+    }
+    const runtime = createRuntimeServiceTestDouble({
       refreshAccountsForMobile: vi.fn().mockResolvedValue(undefined),
       getAccountsSnapshot: vi.fn(() => snapshot)
-    } as unknown as AlfredRuntimeService
+    })
     const list = method('accounts.list')
     if (isStreamingMethod(list)) {
       throw new Error('accounts.list must be a request method')
@@ -88,11 +93,15 @@ describe('account RPC methods', () => {
   })
 
   it('skips the forced provider refresh when the caller opts out', async () => {
-    const snapshot = { claude: null, codex: null }
-    const runtime = {
+    const snapshot = {
+      claude: { accounts: [], activeAccountId: null },
+      codex: { accounts: [], activeAccountId: null },
+      rateLimits: createEmptyRateLimitState()
+    }
+    const runtime = createRuntimeServiceTestDouble({
       refreshAccountsForMobile: vi.fn().mockResolvedValue(undefined),
       getAccountsSnapshot: vi.fn(() => snapshot)
-    } as unknown as AlfredRuntimeService
+    })
     const list = method('accounts.list')
     if (isStreamingMethod(list)) {
       throw new Error('accounts.list must be a request method')
@@ -115,10 +124,14 @@ describe('account RPC methods', () => {
     const result = {
       outcome: 'reset',
       scope: expectedScope,
-      snapshot: { claude: null, codex: null }
+      snapshot: {
+        claude: { accounts: [], activeAccountId: null },
+        codex: { accounts: [], activeAccountId: null },
+        rateLimits: createEmptyRateLimitState()
+      }
     }
     const consumeCodexRateLimitResetCredit = vi.fn().mockResolvedValue(result)
-    const runtime = { consumeCodexRateLimitResetCredit } as unknown as AlfredRuntimeService
+    const runtime = createRuntimeServiceTestDouble({ consumeCodexRateLimitResetCredit })
     const reset = method('accounts.consumeCodexResetCredit')
     if (isStreamingMethod(reset)) {
       throw new Error('accounts.consumeCodexResetCredit must be a request method')
@@ -158,7 +171,7 @@ describe('account RPC methods', () => {
     const selectCodexAccountForTarget = vi
       .fn()
       .mockResolvedValue({ accounts: [], activeAccountId: null })
-    const runtime = { selectCodexAccountForTarget } as unknown as AlfredRuntimeService
+    const runtime = createRuntimeServiceTestDouble({ selectCodexAccountForTarget })
     const select = method('accounts.selectCodexForTarget')
     if (isStreamingMethod(select)) {
       throw new Error('accounts.selectCodexForTarget must be a request method')
@@ -195,9 +208,13 @@ describe('account RPC methods', () => {
   })
 
   it('uses a stale-aware refresh when a connection replays the subscription', async () => {
-    const snapshot = { claude: null, codex: null }
+    const snapshot = {
+      claude: { accounts: [], activeAccountId: null },
+      codex: { accounts: [], activeAccountId: null },
+      rateLimits: createEmptyRateLimitState()
+    }
     let cleanup: (() => void) | undefined
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getAccountsSnapshot: vi.fn(() => snapshot),
       onAccountsChanged: vi.fn(() => vi.fn()),
       registerSubscriptionCleanup: vi.fn((_id: string, nextCleanup: () => void) => {
@@ -205,7 +222,7 @@ describe('account RPC methods', () => {
       }),
       refreshAccountsForMobile: vi.fn().mockResolvedValue(undefined),
       refreshAccountsForMobileSubscriber: vi.fn().mockResolvedValue(undefined)
-    } as unknown as AlfredRuntimeService
+    })
     const subscribe = method('accounts.subscribe')
     if (!isStreamingMethod(subscribe)) {
       throw new Error('accounts.subscribe must be a streaming method')

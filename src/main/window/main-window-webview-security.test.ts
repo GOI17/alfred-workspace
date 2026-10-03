@@ -46,12 +46,12 @@ import {
 import { buildDocPreviewUrl, DOC_PREVIEW_PARTITION } from '../../shared/doc-preview-scheme'
 
 function installOnFakeWindow(): {
-  handlers: Record<string, (...args: never[]) => void>
+  handlers: Record<string, (...args: unknown[]) => void>
   webContents: { on: ReturnType<typeof vi.fn> }
 } {
-  const handlers: Record<string, (...args: never[]) => void> = {}
+  const handlers: Record<string, (...args: unknown[]) => void> = {}
   const webContents = {
-    on: vi.fn((event: string, handler: (...args: never[]) => void) => {
+    on: vi.fn((event: string, handler: (...args: unknown[]) => void) => {
       handlers[event] = handler
     })
   }
@@ -202,7 +202,7 @@ describe('alfred-preview scheme admission', () => {
     handlers['will-attach-webview']?.(
       { preventDefault } as never,
       { partition: DOC_PREVIEW_PARTITION } as never,
-      { src: `alfred-preview://${'0'.repeat(32)}/index.html` } as never
+      { src: `alfred-preview://${'0'.repeat(32)}/index.html` }
     )
 
     expect(preventDefault).toHaveBeenCalledOnce()
@@ -217,7 +217,7 @@ describe('alfred-preview scheme admission', () => {
 
     handlers['will-attach-webview']?.(
       { preventDefault } as never,
-      { partition: 'persist:alfred-browser' } as never,
+      { partition: 'persist:alfred-browser' },
       { src: buildDocPreviewUrl(grant.id, 'index.html') } as never
     )
 

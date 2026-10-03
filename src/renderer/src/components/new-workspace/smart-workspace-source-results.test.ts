@@ -1,3 +1,4 @@
+import { makeJiraIssue } from '../../../../shared/jira-issue-test-fixture'
 import { describe, expect, it } from 'vitest'
 import {
   buildJiraIssueSearchJql,
@@ -384,12 +385,12 @@ describe('Branch source results', () => {
   })
 
   it('gives Jira intent exclusive ownership of Smart results', () => {
-    const jiraIssue = {
+    const jiraIssue = makeJiraIssue({
       id: 'jira-1',
       key: 'ALFRED-123',
       siteId: 'site-1',
       title: 'Link Jira'
-    } as never
+    })
     const rows = buildSmartWorkspaceSourceRows({
       mode: 'smart',
       value: 'https://company.atlassian.net/browse/ALFRED-123',
@@ -426,10 +427,10 @@ describe('Branch source results', () => {
   })
 
   it('keeps a resolved Jira row when ignored URL data exceeds the generic search limit', () => {
-    const jiraIssue = {
+    const jiraIssue = makeJiraIssue({
       key: 'ALFRED-123',
       siteId: 'site-1'
-    } as never
+    })
     expect(
       buildSmartWorkspaceSourceRows({
         mode: 'smart',
@@ -739,11 +740,11 @@ describe('Jira issue search', () => {
   })
 
   it('renders connected Jira search results in Jira mode', () => {
-    const jiraIssue = {
+    const jiraIssue = makeJiraIssue({
       key: 'ALFRED-123',
       siteId: 'site-1',
       title: 'Search Jira'
-    } as never
+    })
     const rows = buildSmartWorkspaceSourceRows({
       mode: 'jira',
       value: 'search',

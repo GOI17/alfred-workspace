@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -27,7 +28,7 @@ vi.mock('../git/worktree', () => {
 describe('AlfredRuntimeRpcServer', () => {
   it('serves terminal.list and terminal.show for live runtime terminals', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
     const writes: string[] = []
     runtime.setPtyController({
       write: (_ptyId, data) => {
@@ -165,7 +166,7 @@ describe('AlfredRuntimeRpcServer', () => {
 
   it('serves terminal.list with visual split-group and pane nesting', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
     const server = new AlfredRuntimeRpcServer({ runtime, userDataPath })
     const worktreeId = 'repo-1::/tmp/worktree-a'
     const leftLeaf = '11111111-1111-4111-8111-111111111111'

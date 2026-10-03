@@ -1,3 +1,4 @@
+// @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest'
 import {
   folderRelativePathToIncludeGlob,
@@ -29,23 +30,21 @@ describe('folderRelativePathToIncludeGlob', () => {
 
 describe('selectedExplorerFolderRelativePath', () => {
   it('reads the selected folder path from the explorer shell', () => {
-    const shell = {
-      getAttribute: (name: string) => (name === 'data-selected-folder-relative-path' ? 'src' : null)
-    } as Element
-    const child = {
-      closest: (selector: string) => (selector === '[data-alfred-explorer-shell]' ? shell : null)
-    } as Element
+    const shell = document.createElement('div')
+    shell.setAttribute('data-alfred-explorer-shell', '')
+    shell.setAttribute('data-selected-folder-relative-path', 'src')
+    const child = document.createElement('span')
+    shell.append(child)
 
     expect(selectedExplorerFolderRelativePath(child)).toBe('src')
   })
 
   it('treats the repository root empty path as a selected folder', () => {
-    const shell = {
-      getAttribute: (name: string) => (name === 'data-selected-folder-relative-path' ? '' : null)
-    } as Element
-    const child = {
-      closest: (selector: string) => (selector === '[data-alfred-explorer-shell]' ? shell : null)
-    } as Element
+    const shell = document.createElement('div')
+    shell.setAttribute('data-alfred-explorer-shell', '')
+    shell.setAttribute('data-selected-folder-relative-path', '')
+    const child = document.createElement('span')
+    shell.append(child)
 
     expect(selectedExplorerFolderRelativePath(child)).toBe('')
   })

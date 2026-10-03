@@ -1,3 +1,4 @@
+import { makeRepo as fixtureMakeRepo } from '../shared/repo-test-fixture'
 import { existsSync } from 'node:fs'
 import { mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -189,7 +190,7 @@ describe('collectWorktreeTrashSweepRoots', () => {
   const settings = { workspaceDir: '/home/dev/alfred/workspaces', nestWorkspaces: true }
 
   function repo(overrides: Partial<Repo>): Repo {
-    return { id: 'repo-1', path: '/home/dev/code/alfred', ...overrides } as unknown as Repo
+    return fixtureMakeRepo({ id: 'repo-1', path: '/home/dev/code/alfred', ...overrides })
   }
 
   it('collects one root per local git repo', () => {

@@ -77,8 +77,8 @@ function createHarness(
     clearInterval: (timer: ReturnType<typeof setInterval>) => clearInterval(timer),
     setTimeout: (...args: Parameters<typeof setTimeout>) => setTimeout(...args),
     clearTimeout: (timer: ReturnType<typeof setTimeout>) => clearTimeout(timer)
-  } as Record<string, unknown>
-  context.globalThis = options.globals ?? context
+  }
+  Object.assign(context, { globalThis: options.globals ?? context })
 
   const output = ts.transpileModule(getPiTitlebarExtensionSource(options.kind ?? 'pi'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 }

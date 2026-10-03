@@ -1,6 +1,6 @@
+import { createRuntimeServiceTestDouble } from '../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import type { RuntimeTerminalWait } from '../../../shared/runtime-types'
-import type { AlfredRuntimeService } from '../alfred-runtime'
 import type { RpcRequest } from './core'
 import { RpcDispatcher } from './dispatcher'
 import { TERMINAL_METHODS } from './methods/terminal'
@@ -29,7 +29,7 @@ describe('terminal.subscribe reconnect rebind (STA-4510)', () => {
     const dataListeners: ((data: string, meta?: { seq?: number; rawLength?: number }) => void)[] =
       []
 
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       subscribeToPtyExit: vi.fn(() => vi.fn()),
       registerRemoteTerminalViewSubscriber: () => () => {},
@@ -63,7 +63,7 @@ describe('terminal.subscribe reconnect rebind (STA-4510)', () => {
             })
           })
       )
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: TERMINAL_METHODS })
 
     // --- connection A: the original mobile socket -------------------------

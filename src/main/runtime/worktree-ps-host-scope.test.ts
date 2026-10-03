@@ -1,3 +1,6 @@
+import { makeWorktreeMeta } from '../../shared/worktree/metadata-test-fixture'
+import type { WorktreeMeta } from '../../shared/worktree/meta-types'
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const electronMocks = vi.hoisted(() => {
@@ -43,7 +46,7 @@ function gitWorktree(path: string, isMain = false) {
 
 /** Local rows sort ahead of the remote ones, mirroring the fleet order that starves the cap. */
 function makeStore() {
-  const metaById: Record<string, unknown> = {}
+  const metaById: Record<string, WorktreeMeta> = {}
   return {
     getRepo: (id: string) =>
       makeStore()
@@ -68,8 +71,8 @@ function makeStore() {
     ],
     getAllWorktreeMeta: () => metaById,
     getWorktreeMeta: (id: string) => metaById[id],
-    setWorktreeMeta: (id: string, meta: Record<string, unknown>) => {
-      metaById[id] = { ...(metaById[id] as object), ...meta }
+    setWorktreeMeta: (id: string, meta: Partial<WorktreeMeta>) => {
+      metaById[id] = makeWorktreeMeta({ ...metaById[id], ...meta })
       return metaById[id]
     },
     removeWorktreeMeta: () => {},
@@ -108,7 +111,7 @@ describe('worktree.ps host coverage', () => {
   })
 
   it('names every host the page covers', async () => {
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
 
     const result = await runtime.getWorktreePs(10_000)
 
@@ -117,7 +120,7 @@ describe('worktree.ps host coverage', () => {
   })
 
   it('keeps a remote row in the page when the cap cannot hold every local row', async () => {
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
 
     const result = await runtime.getWorktreePs(2)
 

@@ -81,12 +81,7 @@ function readPersistedPromotionBinding(
         path.join(userDataDir, 'profiles', DEFAULT_LOCAL_ALFRED_PROFILE_ID, 'alfred-data.json'),
         'utf8'
       )
-    ) as {
-      workspaceSession?: {
-        tabsByWorktree?: Record<string, { id?: string; ptyId?: string | null }[]>
-        terminalLayoutsByTabId?: Record<string, { ptyIdsByLeafId?: Record<string, string | null> }>
-      }
-    }
+    )
     const tab = persisted.workspaceSession?.tabsByWorktree?.[worktreeId]?.find(
       (candidate) => candidate.id === tabId
     )

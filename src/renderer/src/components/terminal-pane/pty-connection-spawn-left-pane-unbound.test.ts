@@ -193,7 +193,7 @@ describe('fresh spawn leaves a local pane unbound', () => {
       ]),
       directSshPaneRetryByTabId: { 'tab-1': pendingRetry },
       settleDirectSshPaneRetry
-    } as StoreState
+    }
 
     connectPanePty(createPane(1) as never, createManager(1) as never, createDeps() as never)
     await flushAsyncTicks(40)

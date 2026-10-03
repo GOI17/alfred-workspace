@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import type { RuntimeClientEvent } from '../../../../shared/runtime-client-events'
 import type { AlfredRuntimeService } from '../../alfred-runtime'
@@ -27,12 +28,12 @@ function makeRuntime(): {
     ) =>
       () => {}
   )
-  const runtime = {
+  const runtime = createRuntimeServiceTestDouble({
     onClientEvent,
     registerSubscriptionCleanup: (_id: string, cleanup: () => void) => {
       cleanups.push(cleanup)
     }
-  } as unknown as AlfredRuntimeService
+  })
   return { runtime, onClientEvent, cleanups }
 }
 

@@ -1,5 +1,5 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
-import type { AlfredRuntimeService } from '../../alfred-runtime'
 import type { RpcRequest } from '../core'
 import { RpcDispatcher } from '../dispatcher'
 import { CLIENT_UI_METHODS } from './client-ui'
@@ -14,10 +14,10 @@ const request = (params: unknown): RpcRequest => ({
 describe('native-chat settings RPC', () => {
   it('routes option deltas to the runtime-owned atomic update', async () => {
     const updateClientNativeChatSessionOptions = vi.fn()
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       updateClientNativeChatSessionOptions
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: CLIENT_UI_METHODS })
     const mutation = {
       type: 'apply-picks' as const,
@@ -36,10 +36,10 @@ describe('native-chat settings RPC', () => {
 
   it('rejects malformed option deltas', async () => {
     const updateClientNativeChatSessionOptions = vi.fn()
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       updateClientNativeChatSessionOptions
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: CLIENT_UI_METHODS })
 
     for (const mutation of [

@@ -31,11 +31,9 @@ export async function waitForRestoredTerminalInputReady(
             if (pane?.container?.dataset?.ptyId !== expectedPtyId) {
               continue
             }
-            const container = pane.container as HTMLElement & {
-              __alfredE2eTerminalInputReadinessInstanceId?: string
-            }
-            container.__alfredE2eTerminalInputReadinessInstanceId ??= crypto.randomUUID()
-            const paneInstanceId = container.__alfredE2eTerminalInputReadinessInstanceId
+            const container = pane.container
+            container.dataset.alfredE2eTerminalInputReadinessInstanceId ??= crypto.randomUUID()
+            const paneInstanceId = container.dataset.alfredE2eTerminalInputReadinessInstanceId
             const output = pane.serializeAddon?.serialize?.() ?? ''
             if (
               pendingAttempts.some(

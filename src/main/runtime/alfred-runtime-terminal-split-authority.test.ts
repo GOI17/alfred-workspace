@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { getDefaultWorkspaceSession } from '../../shared/constants'
 import type { RuntimeMobileSessionTabsSnapshot } from '../../shared/runtime-types'
@@ -129,7 +130,7 @@ function createHarness(
       )
     : vi.fn().mockRejectedValue(new Error(`Terminal tab ${TAB_ID} not found`))
   const rendererSplitTerminal = vi.fn()
-  const runtime = new AlfredRuntimeService(store as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
   Object.assign(runtime, {
     resolveTerminalWorkspaceLaunchScope: vi.fn(async () => ({
       id: WORKTREE_ID,

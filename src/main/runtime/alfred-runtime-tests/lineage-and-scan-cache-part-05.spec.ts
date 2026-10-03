@@ -25,7 +25,7 @@ describe('AlfredRuntimeService', () => {
       ...store,
       getAllWorktreeMeta: () => metaById,
       getWorktreeMeta: (worktreeId: string) => metaById[worktreeId]
-    } as never)
+    })
     const terminals = [
       {
         name: 'coordinator-a',

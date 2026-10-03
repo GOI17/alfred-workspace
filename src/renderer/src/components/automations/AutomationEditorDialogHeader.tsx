@@ -15,8 +15,6 @@ type AutomationEditorDialogHeaderProps = {
   createTarget: AutomationCreateTarget
   templateOpen: boolean
   templates: AutomationTemplate[]
-  segmentedGroupClassName: string
-  segmentedItemClassName: string
   onCreateTargetChange: (target: AutomationCreateTarget) => void
   onTemplateOpenChange: (open: boolean) => void
   onApplyTemplate: (template: AutomationTemplate) => void
@@ -81,8 +79,6 @@ export function AutomationEditorDialogHeader({
   createTarget,
   templateOpen,
   templates,
-  segmentedGroupClassName,
-  segmentedItemClassName,
   onCreateTargetChange,
   onTemplateOpenChange,
   onApplyTemplate
@@ -99,18 +95,19 @@ export function AutomationEditorDialogHeader({
             spacing={1}
             value={createTarget}
             onValueChange={(value) =>
-              value && onCreateTargetChange(value as AutomationCreateTarget)
+              (value === 'alfred' || value === 'hermes') && onCreateTargetChange(value)
             }
             size="sm"
-            className={segmentedGroupClassName}
+            variant="outline"
+            className="grid grid-cols-2"
           >
-            <ToggleGroupItem value="alfred" className={segmentedItemClassName}>
+            <ToggleGroupItem value="alfred">
               {translate(
                 'auto.components.automations.AutomationEditorDialogHeader.6f309eef8d',
                 'Alfred'
               )}
             </ToggleGroupItem>
-            <ToggleGroupItem value="hermes" className={segmentedItemClassName}>
+            <ToggleGroupItem value="hermes">
               {translate(
                 'auto.components.automations.AutomationEditorDialogHeader.7e35393632',
                 'Hermes'

@@ -378,7 +378,7 @@ for (const daemonSessionGone of [false, true]) {
             activeTabId: state.activeTabIdByWorktree[worktreeId] ?? null
           })
           const transitions: Transition[] = [snapshot(store.getState())]
-          const e2eWindow = window as typeof window & { __alfredRevealTransitions?: Transition[] }
+          const e2eWindow = window
           e2eWindow.__alfredRevealTransitions = transitions
           store.subscribe((state) => {
             const next = snapshot(state)
@@ -401,18 +401,7 @@ for (const daemonSessionGone of [false, true]) {
       await ensureTerminalVisible(second.page)
       // Give the reconciler's async verdict time to land; the tab must never have left.
       await second.page.waitForTimeout(3_000)
-      const transitions = await second.page.evaluate(
-        () =>
-          (
-            window as typeof window & {
-              __alfredRevealTransitions?: {
-                activeWorktreeId: string | null
-                tabPresent: boolean
-                leafPtyIds: string[]
-              }[]
-            }
-          ).__alfredRevealTransitions ?? []
-      )
+      const transitions = await second.page.evaluate(() => window.__alfredRevealTransitions ?? [])
       // Pre-fix this read: leaf binding cleared -> tab removed -> worktree deselected -> tab re-added by graph sync.
       expect(
         transitions.filter(
@@ -527,4 +516,16 @@ for (const daemonSessionGone of [false, true]) {
       await session.dispose()
     }
   })
+}
+
+declare global {
+  // oxlint-disable-next-line typescript/consistent-type-definitions -- Window declarations must merge with the DOM library.
+  interface Window {
+    __alfredRevealTransitions?: {
+      activeWorktreeId: string | null
+      tabPresent: boolean
+      leafPtyIds: string[]
+      activeTabId: string | null
+    }[]
+  }
 }

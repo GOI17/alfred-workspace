@@ -25,13 +25,11 @@ const TELEMETRY_ENABLED = true
 const BUILD_IDENTITY: 'stable' | 'rc' | null =
   typeof ALFRED_BUILD_IDENTITY !== 'undefined'
     ? ALFRED_BUILD_IDENTITY
-    : ((globalThis as { ALFRED_BUILD_IDENTITY?: 'stable' | 'rc' | null }).ALFRED_BUILD_IDENTITY ??
-      null)
+    : (globalThis.ALFRED_BUILD_IDENTITY ?? null)
 const WRITE_KEY: string | null =
   typeof ALFRED_POSTHOG_WRITE_KEY !== 'undefined'
     ? ALFRED_POSTHOG_WRITE_KEY
-    : ((globalThis as { ALFRED_POSTHOG_WRITE_KEY?: string | null }).ALFRED_POSTHOG_WRITE_KEY ??
-      null)
+    : (globalThis.ALFRED_POSTHOG_WRITE_KEY ?? null)
 const IS_OFFICIAL_BUILD: boolean =
   (BUILD_IDENTITY === 'stable' || BUILD_IDENTITY === 'rc') &&
   typeof WRITE_KEY === 'string' &&

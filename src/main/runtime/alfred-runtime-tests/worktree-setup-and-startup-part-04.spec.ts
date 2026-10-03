@@ -31,7 +31,7 @@ describe('AlfredRuntimeService', () => {
         return metaById[worktreeId]
       }
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const spawn = vi.fn().mockResolvedValue({ id: 'pty-cli-aider-startup' })
     const write = vi.fn().mockReturnValue(true)
     runtime.setPtyController({
@@ -104,7 +104,7 @@ describe('AlfredRuntimeService', () => {
           return metaById[worktreeId]
         }
       }
-      const runtime = new AlfredRuntimeService(runtimeStore as never)
+      const runtime = new AlfredRuntimeService(runtimeStore)
       const write = vi.fn().mockReturnValue(true)
       runtime.setPtyController({
         spawn: vi.fn().mockResolvedValue({ id: 'pty-cli-aider-shell' }),
@@ -174,7 +174,7 @@ describe('AlfredRuntimeService', () => {
         return metaById[worktreeId]
       }
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const spawn = vi.fn().mockResolvedValue({ id: 'pty-fallback-draft' })
     runtime.setPtyController({
       spawn,
@@ -245,7 +245,7 @@ describe('AlfredRuntimeService', () => {
         return metaById[worktreeId]
       }
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const spawn = vi
       .fn()
       .mockResolvedValueOnce({ id: 'pty-startup-split-main' })
@@ -467,7 +467,7 @@ describe('AlfredRuntimeService', () => {
         return metaById[worktreeId]
       }
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const spawn = vi.fn().mockResolvedValue({ id: 'pty-explicit-draft' })
     const write = vi.fn().mockReturnValue(true)
     runtime.setPtyController({
@@ -547,7 +547,7 @@ describe('AlfredRuntimeService', () => {
         return metaById[worktreeId]
       }
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const spawn = vi.fn().mockResolvedValue({ id: 'pty-blank-draft' })
     const activateWorktree = vi.fn()
     runtime.setPtyController({

@@ -52,6 +52,7 @@ function reconcile(
 ): RuntimeMobileSessionTabsSnapshot | undefined {
   const storeMobileSessionSnapshot = vi.fn()
   const runtime =
+    // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: The test invokes this protected prototype method against its focused session-state fixture.
     AlfredRuntimeWithReconcileHeadlessMobileSessionBrowserTabs.prototype as unknown as {
       reconcileHeadlessMobileSessionBrowserTabs(
         worktreeId: string,
@@ -128,6 +129,7 @@ it('does not republish when a client row merely sits before a renderer row', () 
 
 it('keeps the renderer publication epoch when selecting a client-hosted browser tab', () => {
   const storeMobileSessionSnapshot = vi.fn()
+  // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: The test invokes this protected prototype method against its focused session-state fixture.
   const runtime = AlfredRuntimeWithCloseStructuredAgentSessionTab.prototype as unknown as {
     markHeadlessBrowserSessionTabActive(
       worktreeId: string,

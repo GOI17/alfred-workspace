@@ -69,7 +69,7 @@ function addSshProject(): void {
     addedAt: 1,
     worktreeBaseRef: 'main',
     connectionId: SSH_TARGET_ID
-  } as Repo
+  }
   mocks.state.repos = [...(mocks.state.repos as Repo[]), repo]
   mocks.repoMap.set(SSH_REPO_ID, repo)
   // Without a ready setup on that host the project has no run context, and a
@@ -101,7 +101,7 @@ function addCollidingRuntimeProject(): void {
     addedAt: 1,
     worktreeBaseRef: 'main',
     executionHostId: `runtime:${RUNTIME_ID}`
-  } as Repo
+  }
   mocks.state.repos = [...(mocks.state.repos as Repo[]), repo]
   mocks.state.projectHostSetups = [
     ...(mocks.state.projectHostSetups as ProjectHostSetup[]),

@@ -168,8 +168,7 @@ export function buildCmdJQuickActionContext(args: {
   const isLoading =
     args.state.repos.length > 0 && Object.keys(args.state.worktreesByRepo).length === 0
   const runtimeMode =
-    (globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__ &&
-    args.state.settings?.activeRuntimeEnvironmentId?.trim()
+    globalThis.__ALFRED_WEB_CLIENT__ && args.state.settings?.activeRuntimeEnvironmentId?.trim()
       ? 'paired-web'
       : 'local-desktop'
   const managedBrowserCreationEnabled =

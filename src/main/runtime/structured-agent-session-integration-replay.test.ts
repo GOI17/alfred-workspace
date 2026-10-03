@@ -1,3 +1,5 @@
+import { getDefaultRuntimeClientSettings } from './runtime-client-settings-test-fixture'
+import { createRuntimeServiceTestDouble } from './runtime-service-test-double'
 // One structured Codex session driven end to end over `agentSession.*`.
 //
 // Nothing here is stubbed except the Codex child itself: the RPC dispatcher, the
@@ -25,7 +27,6 @@ import type { AgentJournalRenderItem } from '../../shared/agent-session-journal-
 import { attachFingerprintFields } from '../native-chat/agent-session-wire/structured-agent-session-attach'
 import { journalDirectoryFor } from '../native-chat/agent-session-journal/journal-paths'
 import { createTrackedJournalOpener } from '../native-chat/agent-session-journal/journal-store-test-open'
-import type { AlfredRuntimeService } from './alfred-runtime'
 import type { RpcRequest, RpcResponse } from './rpc/core'
 import { RpcDispatcher } from './rpc/dispatcher'
 import { STRUCTURED_AGENT_SESSION_METHODS } from './rpc/methods/structured-agent-session'
@@ -171,13 +172,13 @@ function envelope(method: string, fields: Record<string, unknown>, fence: number
 function attachParams(fence: number | null) {
   const params = {
     location: {
-      executionHostId: 'local',
+      executionHostId: 'local' as const,
       wslDistro: null,
       workspaceId: WORKSPACE,
       workspaceKind: 'git-worktree' as const
     },
     provider: 'codex' as const,
-    agent: 'codex',
+    agent: 'codex' as const,
     accountHome: { variable: 'CODEX_HOME' as const, path: '/home/dev/.codex' },
     runtimeKind: 'native' as const,
     providerHandle: { kind: 'codex' as const, threadId: THREAD }
@@ -251,17 +252,13 @@ beforeEach(async () => {
   configuredCodexProfile = 'configured'
   const runtime = {
     getRuntimeId: () => 'runtime-1',
-    getClientSettings: () => ({ experimentalStructuredNativeChat: true }),
+    getClientSettings: () => ({
+      ...getDefaultRuntimeClientSettings(),
+      experimentalStructuredNativeChat: true
+    }),
     getStructuredAgentSessionCreateSupport: async () => ({ supported: true }),
-    resolveStructuredAgentSessionCreateIntent: async () => {
-      const {
-        envelope: _envelope,
-        providerHandle: _providerHandle,
-        ...resolved
-      } = attachParams(null)
-      return resolved
-    },
-    publishStructuredAgentSessionTab: () => {},
+    resolveStructuredAgentSessionCreateIntent: async () => attachParams(null),
+    publishStructuredAgentSessionTab: async () => {},
     ensureStructuredAgentSessionHost: () =>
       ensureStructuredAgentSessionHost({
         stateDirectory: root,
@@ -292,7 +289,7 @@ beforeEach(async () => {
     })
   }
   dispatcher = new RpcDispatcher({
-    runtime: runtime as unknown as AlfredRuntimeService,
+    runtime: createRuntimeServiceTestDouble(runtime),
     methods: STRUCTURED_AGENT_SESSION_METHODS
   })
 })

@@ -1,3 +1,4 @@
+import { makeRepo as completeMakeRepo } from '../../../../shared/repo-test-fixture'
 import type * as React from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { makePaneKey } from '../../../../shared/stable-pane-id'
@@ -159,7 +160,7 @@ describe('connectPanePty', () => {
     mockStoreState = {
       ...mockStoreState,
       tabsByWorktree: { 'wt-1': [{ id: 'tab-1', ptyId: null }] },
-      repos: [{ id: 'repo1', connectionId: 'ssh-conn-1' }],
+      repos: [completeMakeRepo({ id: 'repo1', connectionId: 'ssh-conn-1' })],
       sshConnectionStates: new Map([['ssh-conn-1', { status: 'connected' }]])
     }
 
@@ -194,7 +195,7 @@ describe('connectPanePty', () => {
     mockStoreState = {
       ...mockStoreState,
       tabsByWorktree: { 'wt-1': [{ id: 'tab-1', ptyId: null }] },
-      repos: [{ id: 'repo1', connectionId: 'ssh-conn-1' }],
+      repos: [completeMakeRepo({ id: 'repo1', connectionId: 'ssh-conn-1' })],
       sshConnectionStates: new Map([['ssh-conn-1', { status: 'connected' }]])
     }
     vi.mocked(window.api.pty.getForegroundProcess).mockResolvedValue('droid')
@@ -240,7 +241,7 @@ describe('connectPanePty', () => {
     mockStoreState = {
       ...mockStoreState,
       tabsByWorktree: { 'wt-1': [{ id: 'tab-1', ptyId: null }] },
-      repos: [{ id: 'repo1', connectionId: null }]
+      repos: [completeMakeRepo({ id: 'repo1', connectionId: null })]
     }
 
     const pane = createPane(1)
@@ -312,7 +313,7 @@ describe('connectPanePty', () => {
     mockStoreState = {
       ...mockStoreState,
       tabsByWorktree: { 'wt-1': [{ id: 'tab-1', ptyId: null }] },
-      repos: [{ id: 'repo1', connectionId: null }]
+      repos: [completeMakeRepo({ id: 'repo1', connectionId: null })]
     }
 
     const pane = createPane(1)
@@ -367,12 +368,13 @@ describe('connectPanePty', () => {
     mockStoreState = {
       ...mockStoreState,
       tabsByWorktree: { 'wt-1': [{ id: 'tab-1', ptyId: null }] },
-      repos: [{ id: 'repo1', connectionId: null }]
+      repos: [completeMakeRepo({ id: 'repo1', connectionId: null })]
     }
 
     const binding = connectPanePty(
       createPane(1) as never,
       createManager(1) as never,
+      // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: This disposal test uses the shared mock transports; the deferred connect never reaches their omitted live-PTY methods.
       createDeps({
         startup: {
           command: 'codex',
@@ -381,7 +383,7 @@ describe('connectPanePty', () => {
           launchToken: 'launch-token-1',
           draftPrompt: 'https://github.com/GOI17/alfred-workspace/issues/42'
         }
-      }) as never
+      }) as unknown as Parameters<typeof connectPanePty>[2]
     )
 
     binding.dispose()
@@ -422,7 +424,7 @@ describe('connectPanePty', () => {
       mockStoreState = {
         ...mockStoreState,
         tabsByWorktree: { 'wt-1': [{ id: 'tab-1', ptyId: null }] },
-        repos: [{ id: 'repo1', connectionId: 'ssh-conn-1' }],
+        repos: [completeMakeRepo({ id: 'repo1', connectionId: 'ssh-conn-1' })],
         // Why: startup delivery assumes a live connection; a disconnected target routes through the deferred-connect gate instead of spawning synchronously.
         sshConnectionStates: new Map([['ssh-conn-1', { status: 'connected' }]])
       }
@@ -480,7 +482,7 @@ describe('connectPanePty', () => {
       mockStoreState = {
         ...mockStoreState,
         tabsByWorktree: { 'wt-1': [{ id: 'tab-1', ptyId: null }] },
-        repos: [{ id: 'repo1', connectionId: 'ssh-conn-1' }],
+        repos: [completeMakeRepo({ id: 'repo1', connectionId: 'ssh-conn-1' })],
         // Why: startup delivery assumes a live connection; a disconnected target routes through the deferred-connect gate instead of spawning synchronously.
         sshConnectionStates: new Map([['ssh-conn-1', { status: 'connected' }]])
       }
@@ -538,7 +540,7 @@ describe('connectPanePty', () => {
       mockStoreState = {
         ...mockStoreState,
         tabsByWorktree: { 'wt-1': [{ id: 'tab-1', ptyId: null }] },
-        repos: [{ id: 'repo1', connectionId: 'ssh-conn-1' }],
+        repos: [completeMakeRepo({ id: 'repo1', connectionId: 'ssh-conn-1' })],
         // Why: startup delivery assumes a live connection; a disconnected target routes through the deferred-connect gate instead of spawning synchronously.
         sshConnectionStates: new Map([['ssh-conn-1', { status: 'connected' }]])
       }
@@ -595,7 +597,7 @@ describe('connectPanePty', () => {
       mockStoreState = {
         ...mockStoreState,
         tabsByWorktree: { 'wt-1': [{ id: 'tab-1', ptyId: null }] },
-        repos: [{ id: 'repo1', connectionId: 'ssh-conn-1' }],
+        repos: [completeMakeRepo({ id: 'repo1', connectionId: 'ssh-conn-1' })],
         // Why: startup delivery assumes a live connection; a disconnected target routes through the deferred-connect gate instead of spawning synchronously.
         sshConnectionStates: new Map([['ssh-conn-1', { status: 'connected' }]])
       }

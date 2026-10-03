@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   MOCK_GIT_WORKTREES,
@@ -96,7 +97,7 @@ describe('AlfredRuntimeService', () => {
       }
     })
     const { runtimeStore, getSession } = makeRuntimeStoreWithWorkspaceSession(session)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.attachWindow(1)
     runtime.syncWindowGraph(1, { tabs: [], leaves: [] })
     const stopAndWait = vi.fn(async (ptyId: string) => {
@@ -145,7 +146,7 @@ describe('AlfredRuntimeService', () => {
   it('reports an unverified PTY instead of claiming workspace close stopped it', async () => {
     const session = makeWorkspaceSessionWithHeadlessTerminal()
     const { runtimeStore } = makeRuntimeStoreWithWorkspaceSession(session)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.attachWindow(1)
     runtime.syncWindowGraph(1, { tabs: [], leaves: [] })
     runtime.setPtyController({
@@ -198,7 +199,7 @@ describe('AlfredRuntimeService', () => {
     runtimeStore.getWorktreeMeta = () => ({ hostId: targetHostId }) as never
     runtimeStore.getAllWorktreeMeta = () =>
       ({ [TEST_WORKTREE_ID]: { hostId: targetHostId } }) as never
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.attachWindow(1)
     runtime.syncWindowGraph(1, { tabs: [], leaves: [] })
     const stopAndWait = vi.fn(async () => true)
@@ -229,7 +230,7 @@ describe('AlfredRuntimeService', () => {
     const repo = { ...store.getRepo(TEST_REPO_ID)!, connectionId: 'conn-1' }
     runtimeStore.getRepos = () => [repo]
     runtimeStore.getRepo = (id: string) => (id === TEST_REPO_ID ? repo : undefined)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.attachWindow(1)
     runtime.syncWindowGraph(1, { tabs: [], leaves: [] })
     runtime.setPtyController({
@@ -731,7 +732,7 @@ describe('AlfredRuntimeService', () => {
         'host-tab': makeHeadlessTerminalLayout({ [HEADLESS_LEAF_ID]: migratedPtyId })
       }
     })
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     const processLists = [
       [
         {

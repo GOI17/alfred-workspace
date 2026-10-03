@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from './runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import type { IPtyProvider } from '../providers/types'
 import type { Repo } from '../../shared/repo-types'
@@ -14,9 +15,9 @@ function createProvider(sessionIds: string[]): IPtyProvider {
 }
 
 function createRuntime(): AlfredRuntimeService {
-  return {
+  return createRuntimeServiceTestDouble({
     stopTerminalsForWorktree: vi.fn(async () => ({ stopped: 0 }))
-  } as unknown as AlfredRuntimeService
+  })
 }
 
 const localRepo: Repo = {

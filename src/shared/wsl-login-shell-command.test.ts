@@ -331,7 +331,7 @@ describe('in-guest wrapper root resolution', () => {
   it('resolves the published root ahead of the legacy path under a real shell', () => {
     const script = buildWslInteractiveLoginShellCommand()
     // Run only the root-resolution prologue, then report what it picked.
-    const prologue = script.split('_alfred_wsl_shell_name=')[0] as string
+    const prologue = script.split('_alfred_wsl_shell_name=')[0]
     const probe = [
       'ALFRED_SHELL_READY_ROOT=/mnt/c/ud/shell-wrappers/deadbeefdeadbeef/shell-ready',
       'ALFRED_USER_DATA_PATH=/mnt/c/ud',

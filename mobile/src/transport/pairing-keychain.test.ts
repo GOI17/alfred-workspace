@@ -89,7 +89,7 @@ describe('pairing keychain', () => {
     await writePairingKeychainItem(TOKEN_KEY, 'token')
 
     const rotated = secureStoreMock.setItemAsync.mock.calls.at(-1)!
-    expect(serviceOf(rotated[2] as Options)).toBe('alfred.pairing.v1')
+    expect(serviceOf(rotated[2])).toBe('alfred.pairing.v1')
     expect(rotated[1]).toBe('token')
     expect(generationRecord).toBe('1')
   })

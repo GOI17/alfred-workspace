@@ -1,5 +1,6 @@
+import { makeJiraIssue as fixtureMakeJiraIssue } from '../../../shared/jira-issue-test-fixture'
 import { describe, expect, it } from 'vitest'
-import type { JiraIssue, JiraSite } from '../../../shared/jira-types'
+import type { JiraSite } from '../../../shared/jira-types'
 import type { TaskSourceContext } from '../../../shared/task-source-context'
 import { bindTaskPageJiraItemSourceContext } from './task-page-jira-item-source-context'
 
@@ -27,11 +28,11 @@ const SITES: JiraSite[] = [
   }
 ]
 
-const ISSUE = {
+const ISSUE = fixtureMakeJiraIssue({
   key: 'ALFRED-123',
   siteId: 'site-b',
-  project: { key: 'ALFRED' }
-} as JiraIssue
+  project: { id: 'project-1', key: 'ALFRED', name: 'Alfred' }
+})
 
 describe('TaskPage Jira item source context', () => {
   it('binds an All-sites result to its originating Jira site and project', () => {

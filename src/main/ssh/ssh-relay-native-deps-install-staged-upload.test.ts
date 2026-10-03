@@ -194,12 +194,15 @@ describe('installNativeDeps staged uploads', () => {
     feed(['']) // clean stage root
 
     const error = await deployAndLaunchRelay(conn).catch((e: Error) => e)
-    expect((error as Error).message).toContain('could not download the Node.js headers')
-    expect((error as Error).message).toContain('no local headers matching its own version')
-    expect((error as Error).message).not.toContain('Alfred defect')
-    expect((error as Error).message).toContain('ECONNREFUSED')
+    if (!(error instanceof Error)) {
+      throw new Error('Expected deployment failure')
+    }
+    expect(error.message).toContain('could not download the Node.js headers')
+    expect(error.message).toContain('no local headers matching its own version')
+    expect(error.message).not.toContain('Alfred defect')
+    expect(error.message).toContain('ECONNREFUSED')
     // A full toolchain: the toolchain probe must not run, and this is not a "build tools" error.
-    expect((error as Error).message).not.toContain('build tools')
+    expect(error.message).not.toContain('build tools')
     const commands = vi.mocked(execCommand).mock.calls.map(([, command]) => command)
     expect(commands.some((command) => command.includes('command -v "$t"'))).toBe(false)
   })
@@ -212,9 +215,12 @@ describe('installNativeDeps staged uploads', () => {
     feed(['']) // clean stage root
 
     const error = await deployAndLaunchRelay(conn).catch((e: Error) => e)
-    expect((error as Error).message).toContain('/usr/local/include/node')
-    expect((error as Error).message).toContain('Alfred defect')
-    expect((error as Error).message).not.toContain('no local headers matching its own version')
+    if (!(error instanceof Error)) {
+      throw new Error('Expected deployment failure')
+    }
+    expect(error.message).toContain('/usr/local/include/node')
+    expect(error.message).toContain('Alfred defect')
+    expect(error.message).not.toContain('no local headers matching its own version')
   })
 
   it('promotes only after the first-install lock is acquired', async () => {

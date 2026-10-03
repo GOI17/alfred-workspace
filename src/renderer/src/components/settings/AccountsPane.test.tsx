@@ -134,9 +134,7 @@ describe('AccountsPane', () => {
   })
 
   it('omits the scope control on the web client, which cannot select Local desktop', () => {
-    const webGlobal = globalThis as { window?: { __ALFRED_WEB_CLIENT__?: boolean } }
-    const hadWindow = 'window' in webGlobal
-    webGlobal.window = { ...webGlobal.window, __ALFRED_WEB_CLIENT__: true }
+    vi.stubGlobal('window', { ...globalThis.window, __ALFRED_WEB_CLIENT__: true })
     try {
       const markup = renderPane({
         ...getDefaultSettings('/tmp'),
@@ -150,9 +148,7 @@ describe('AccountsPane', () => {
       // The server-scope copy itself still applies.
       expect(markup).toContain('Showing accounts managed by')
     } finally {
-      if (!hadWindow) {
-        delete webGlobal.window
-      }
+      vi.unstubAllGlobals()
     }
   })
 

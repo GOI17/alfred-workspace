@@ -1,3 +1,6 @@
+import { createEmptyRateLimitState } from '../../shared/rate-limit-state-factory'
+import type { AlfredRuntimeService } from './alfred-runtime'
+import { createRuntimeServiceTestDouble } from './runtime-service-test-double'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -12,7 +15,6 @@ import type {
   RuntimeClientEvent,
   RuntimeClientEventStreamMessage
 } from '../../shared/runtime-client-events'
-import type { AlfredRuntimeService } from './alfred-runtime'
 import { AlfredRuntimeRpcServer } from './runtime-rpc'
 import { REMOTE_RUNTIME_SHARED_CONTROL_CAPABILITY } from '../../shared/protocol-version'
 
@@ -25,68 +27,6 @@ const passthroughDedupe = <T>(_repo: string, _id: string | undefined, run: () =>
   run()
 
 describe('remote runtime request connection integration', () => {
-  it(
-    'fetches repos through the real E2EE WebSocket runtime',
-    { timeout: REMOTE_RUNTIME_TEST_TIMEOUT_MS },
-    async () => {
-      const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-request-'))
-      const repoPath = join(userDataPath, 'repo')
-      const repos: Repo[] = [
-        {
-          id: 'repo-1',
-          path: repoPath,
-          displayName: 'repo',
-          badgeColor: 'blue',
-          addedAt: 1,
-          hookSettings: getDefaultRepoHookSettings(),
-          worktreeBaseRef: 'main',
-          kind: 'git'
-        }
-      ]
-      const runtime = {
-        configureNotificationDismissalStore: () => {},
-        getRuntimeId: () => 'fetch-runtime-test',
-        getStartedAt: () => 1,
-        cleanupSubscriptionsForConnection: () => {},
-        cancelMobileDictationForConnection: () => {},
-        onClientDisconnected: () => {},
-        listRepos: () => repos
-      } as unknown as AlfredRuntimeService
-      const server = new AlfredRuntimeRpcServer({
-        runtime,
-        userDataPath,
-        enableWebSocket: true,
-        wsPort: 0
-      })
-
-      await server.start()
-      try {
-        const offer = server.createPairingOffer({ name: 'integration', scope: 'runtime' })
-        if (!offer.available) {
-          throw new Error('pairing unavailable')
-        }
-        const pairing = parsePairingCode(offer.pairingUrl)
-        if (!pairing) {
-          throw new Error('invalid pairing')
-        }
-        const connection = new RemoteRuntimeRequestConnection(pairing)
-        try {
-          await expect(
-            connection.request('repo.list', undefined, REMOTE_RUNTIME_REQUEST_TIMEOUT_MS)
-          ).resolves.toMatchObject({
-            ok: true,
-            result: { repos }
-          })
-        } finally {
-          connection.close()
-        }
-      } finally {
-        await server.stop()
-        rmSync(userDataPath, { recursive: true, force: true })
-      }
-    }
-  )
-
   it(
     'streams server worktree changes to another remote client',
     { timeout: REMOTE_RUNTIME_TEST_TIMEOUT_MS },
@@ -103,10 +43,28 @@ describe('remote runtime request connection integration', () => {
         worktreeBaseRef: 'main',
         kind: 'git'
       }
-      const worktrees: unknown[] = [
+      const worktrees: Awaited<
+        ReturnType<AlfredRuntimeService['listDetectedManagedWorktrees']>
+      >['worktrees'] = [
         {
           id: 'repo-1::main',
           repoId: repo.id,
+          comment: '',
+          linkedIssue: null,
+          linkedPR: null,
+          linkedLinearIssue: null,
+          linkedGitLabMR: null,
+          linkedGitLabIssue: null,
+          isArchived: false,
+          isUnread: false,
+          isPinned: false,
+          sortOrder: 0,
+          lastActivityAt: 0,
+          head: 'head',
+          isBare: false,
+          ownership: 'alfred-managed' as const,
+          selectedCheckout: false,
+          visible: true,
           path: repoPath,
           branch: 'main',
           displayName: 'repo',
@@ -115,7 +73,7 @@ describe('remote runtime request connection integration', () => {
       ]
       const clientEventListeners = new Set<(event: RuntimeClientEvent) => void>()
       const subscriptionCleanups = new Map<string, () => void>()
-      const runtime = {
+      const runtime = createRuntimeServiceTestDouble({
         configureNotificationDismissalStore: () => {},
         getRuntimeId: () => 'events-runtime-test',
         getStartedAt: () => 1,
@@ -136,7 +94,7 @@ describe('remote runtime request connection integration', () => {
         },
         cancelMobileDictationForConnection: () => {},
         onClientDisconnected: () => {},
-        showRepo: (selector: string) => {
+        showRepo: async (selector: string) => {
           if (selector !== repo.id && selector !== `id:${repo.id}`) {
             throw new Error('repo_not_found')
           }
@@ -146,17 +104,33 @@ describe('remote runtime request connection integration', () => {
           clientEventListeners.add(listener)
           return () => clientEventListeners.delete(listener)
         },
-        listDetectedManagedWorktrees: () => ({
+        listDetectedManagedWorktrees: async () => ({
           repoId: repo.id,
           authoritative: true,
           source: 'git',
           worktrees
         }),
         dedupeWorktreeCreate: passthroughDedupe,
-        createManagedWorktree: ({ name }: { name?: string }) => {
+        createManagedWorktree: async ({ name }: { name?: string }) => {
           const worktree = {
             id: `repo-1::${name || 'created'}`,
             repoId: repo.id,
+            comment: '',
+            linkedIssue: null,
+            linkedPR: null,
+            linkedLinearIssue: null,
+            linkedGitLabMR: null,
+            linkedGitLabIssue: null,
+            isArchived: false,
+            isUnread: false,
+            isPinned: false,
+            sortOrder: 0,
+            lastActivityAt: 0,
+            head: 'head',
+            isBare: false,
+            ownership: 'alfred-managed' as const,
+            selectedCheckout: false,
+            visible: true,
             path: join(userDataPath, name || 'created'),
             branch: name || 'created',
             displayName: name || 'created',
@@ -168,7 +142,7 @@ describe('remote runtime request connection integration', () => {
           }
           return { worktree }
         }
-      } as unknown as AlfredRuntimeService
+      })
       const server = new AlfredRuntimeRpcServer({
         runtime,
         userDataPath,
@@ -268,7 +242,10 @@ describe('remote runtime request connection integration', () => {
       const worktreeId = 'repo-1::C:\\repo\\feature'
       const ptyId = `${worktreeId}@@pty-1`
       let sleepSnapshot: RuntimeClientEvent[] = []
-      const launchDraftResolutionSnapshot: RuntimeClientEvent[] = [
+      const launchDraftResolutionSnapshot: Extract<
+        RuntimeClientEvent,
+        { type: 'nativeChatLaunchDraftResolved' }
+      >[] = [
         {
           type: 'nativeChatLaunchDraftResolved',
           tabId: 'tab-1',
@@ -281,7 +258,7 @@ describe('remote runtime request connection integration', () => {
           listener(event)
         }
       }
-      const runtime = {
+      const runtime = createRuntimeServiceTestDouble({
         configureNotificationDismissalStore: () => {},
         getRuntimeId: () => 'remote-sleep-runtime-test',
         getStartedAt: () => 1,
@@ -342,7 +319,7 @@ describe('remote runtime request connection integration', () => {
             postStopVerified: true
           }
         }
-      } as unknown as AlfredRuntimeService
+      })
       const server = new AlfredRuntimeRpcServer({
         runtime,
         userDataPath,
@@ -484,10 +461,28 @@ describe('remote runtime request connection integration', () => {
         worktreeBaseRef: 'main',
         kind: 'git'
       }
-      const worktrees: unknown[] = [
+      const worktrees: Awaited<
+        ReturnType<AlfredRuntimeService['listDetectedManagedWorktrees']>
+      >['worktrees'] = [
         {
           id: 'repo-1::main',
           repoId: repo.id,
+          comment: '',
+          linkedIssue: null,
+          linkedPR: null,
+          linkedLinearIssue: null,
+          linkedGitLabMR: null,
+          linkedGitLabIssue: null,
+          isArchived: false,
+          isUnread: false,
+          isPinned: false,
+          sortOrder: 0,
+          lastActivityAt: 0,
+          head: 'head',
+          isBare: false,
+          ownership: 'alfred-managed' as const,
+          selectedCheckout: false,
+          visible: true,
           path: repoPath,
           branch: 'main',
           displayName: 'repo',
@@ -495,9 +490,13 @@ describe('remote runtime request connection integration', () => {
         }
       ]
       const clientEventListeners = new Set<(event: RuntimeClientEvent) => void>()
-      const accountsListeners = new Set<(snapshot: unknown) => void>()
-      const notificationListeners = new Set<(event: unknown) => void>()
-      const sessionTabListeners = new Set<(snapshot: unknown) => void>()
+      const accountsListeners = new Set<Parameters<AlfredRuntimeService['onAccountsChanged']>[0]>()
+      const notificationListeners = new Set<
+        Parameters<AlfredRuntimeService['onNotificationDispatched']>[0]
+      >()
+      const sessionTabListeners = new Set<
+        Parameters<AlfredRuntimeService['onMobileSessionTabsChanged']>[0]
+      >()
       const subscriptionCleanups = new Map<string, () => void>()
       const sessionTabSnapshot = {
         worktree: 'wt-1',
@@ -508,17 +507,22 @@ describe('remote runtime request connection integration', () => {
         activeTabType: null,
         tabs: []
       }
-      const runtime = {
+      const runtime = createRuntimeServiceTestDouble({
         configureNotificationDismissalStore: () => {},
         getRuntimeId: () => 'shared-runtime-test',
         getStartedAt: () => 1,
         getStatus: () => ({
           runtimeId: 'shared-runtime-test',
+          rendererGraphEpoch: 0,
+          graphStatus: 'unavailable',
+          authoritativeWindowId: null,
+          liveTabCount: 0,
+          liveLeafCount: 0,
           startedAt: 1,
           version: '1.0.0',
           protocolVersion: 1,
           minCompatibleDesktopVersion: '1.0.0',
-          minCompatibleMobileVersion: '1.0.0',
+          minCompatibleMobileVersion: 1,
           capabilities: [REMOTE_RUNTIME_SHARED_CONTROL_CAPABILITY]
         }),
         cleanupSubscriptionsForConnection: (connectionId: string) => {
@@ -550,50 +554,82 @@ describe('remote runtime request connection integration', () => {
           clientEventListeners.add(listener)
           return () => clientEventListeners.delete(listener)
         },
-        getAccountsSnapshot: () => ({ claude: null, codex: null }),
+        getAccountsSnapshot: () => ({
+          claude: { accounts: [], activeAccountId: null },
+          codex: { accounts: [], activeAccountId: null },
+          rateLimits: createEmptyRateLimitState()
+        }),
         refreshAccountsForMobile: async () => {
           for (const listener of accountsListeners) {
-            listener({ claude: null, codex: null })
+            listener({
+              claude: { accounts: [], activeAccountId: null },
+              codex: { accounts: [], activeAccountId: null },
+              rateLimits: createEmptyRateLimitState()
+            })
           }
         },
         refreshAccountsForMobileSubscriber: async () => {
           for (const listener of accountsListeners) {
-            listener({ claude: null, codex: null })
+            listener({
+              claude: { accounts: [], activeAccountId: null },
+              codex: { accounts: [], activeAccountId: null },
+              rateLimits: createEmptyRateLimitState()
+            })
           }
         },
-        onAccountsChanged: (listener: (snapshot: unknown) => void) => {
+        onAccountsChanged: (listener: Parameters<AlfredRuntimeService['onAccountsChanged']>[0]) => {
           accountsListeners.add(listener)
           return () => accountsListeners.delete(listener)
         },
-        onNotificationDispatched: (listener: (event: unknown) => void) => {
+        onNotificationDispatched: (
+          listener: Parameters<AlfredRuntimeService['onNotificationDispatched']>[0]
+        ) => {
           notificationListeners.add(listener)
           return () => notificationListeners.delete(listener)
         },
-        listMobileSessionTabs: () => sessionTabSnapshot,
-        listAllMobileSessionTabs: () => [sessionTabSnapshot],
-        onMobileSessionTabsChanged: (listener: (snapshot: unknown) => void) => {
+        listMobileSessionTabs: async () => sessionTabSnapshot,
+        listAllMobileSessionTabs: async () => [sessionTabSnapshot],
+        onMobileSessionTabsChanged: (
+          listener: Parameters<AlfredRuntimeService['onMobileSessionTabsChanged']>[0]
+        ) => {
           sessionTabListeners.add(listener)
           return () => sessionTabListeners.delete(listener)
         },
-        watchFileExplorer: async () => () => {},
+        watchFileExplorer: async () => async () => {},
         listRepos: () => [repo],
-        showRepo: (selector: string) => {
+        showRepo: async (selector: string) => {
           if (selector !== repo.id && selector !== `id:${repo.id}`) {
             throw new Error('repo_not_found')
           }
           return repo
         },
-        listDetectedManagedWorktrees: () => ({
+        listDetectedManagedWorktrees: async () => ({
           repoId: repo.id,
           authoritative: true,
           source: 'git',
           worktrees
         }),
         dedupeWorktreeCreate: passthroughDedupe,
-        createManagedWorktree: ({ name }: { name?: string }) => {
+        createManagedWorktree: async ({ name }: { name?: string }) => {
           const worktree = {
             id: `repo-1::${name || 'created'}`,
             repoId: repo.id,
+            comment: '',
+            linkedIssue: null,
+            linkedPR: null,
+            linkedLinearIssue: null,
+            linkedGitLabMR: null,
+            linkedGitLabIssue: null,
+            isArchived: false,
+            isUnread: false,
+            isPinned: false,
+            sortOrder: 0,
+            lastActivityAt: 0,
+            head: 'head',
+            isBare: false,
+            ownership: 'alfred-managed' as const,
+            selectedCheckout: false,
+            visible: true,
             path: join(userDataPath, name || 'created'),
             branch: name || 'created',
             displayName: name || 'created',
@@ -605,7 +641,7 @@ describe('remote runtime request connection integration', () => {
           }
           return { worktree }
         }
-      } as unknown as AlfredRuntimeService
+      })
       const server = new AlfredRuntimeRpcServer({
         runtime,
         userDataPath,

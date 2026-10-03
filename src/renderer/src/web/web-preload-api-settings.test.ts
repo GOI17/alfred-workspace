@@ -25,10 +25,7 @@ describe('web settings preload API', () => {
     installWebPreloadApi()
 
     const settings = await globals.window.api.settings.get()
-    const stored = JSON.parse(globals.storage.getItem('alfred.web.settings.v1') ?? '{}') as {
-      autoRenameBranchFromWork?: boolean
-      autoRenameBranchFromWorkDefaultedOn?: boolean
-    }
+    const stored = JSON.parse(globals.storage.getItem('alfred.web.settings.v1') ?? '{}')
 
     expect(settings.autoRenameBranchFromWork).toBe(true)
     expect(settings.autoRenameBranchFromWorkDefaultedOn).toBe(true)
@@ -46,10 +43,7 @@ describe('web settings preload API', () => {
     installWebPreloadApi()
 
     const settings = await globals.window.api.settings.get()
-    const stored = JSON.parse(globals.storage.getItem('alfred.web.settings.v1') ?? '{}') as {
-      terminalCursorStyle?: string
-      terminalCursorStyleDefaultedToBlock?: boolean
-    }
+    const stored = JSON.parse(globals.storage.getItem('alfred.web.settings.v1') ?? '{}')
 
     expect(settings.terminalCursorStyle).toBe('block')
     expect(settings.terminalCursorStyleDefaultedToBlock).toBe(true)
@@ -114,10 +108,7 @@ describe('web settings preload API', () => {
     const { api, storage } = await installApi('Linux')
 
     const invalid = await api.settings.set({ terminalCursorStyle: 'beam' as never })
-    const invalidStored = JSON.parse(storage.getItem('alfred.web.settings.v1') ?? '{}') as {
-      terminalCursorStyle?: string
-      terminalCursorStyleDefaultedToBlock?: boolean
-    }
+    const invalidStored = JSON.parse(storage.getItem('alfred.web.settings.v1') ?? '{}')
     expect(invalid.terminalCursorStyle).toBe('block')
     expect(invalid.terminalCursorStyleDefaultedToBlock).toBe(true)
     expect(invalidStored.terminalCursorStyle).toBe('block')
@@ -142,10 +133,7 @@ describe('web settings preload API', () => {
     installWebPreloadApi()
 
     const settings = await globals.window.api.settings.get()
-    const stored = JSON.parse(globals.storage.getItem('alfred.web.settings.v1') ?? '{}') as {
-      terminalAllowOsc52Clipboard?: boolean
-      terminalAllowOsc52ClipboardDefaultedOnForAllUsers?: boolean
-    }
+    const stored = JSON.parse(globals.storage.getItem('alfred.web.settings.v1') ?? '{}')
 
     expect(settings.terminalAllowOsc52Clipboard).toBe(true)
     expect(settings.terminalAllowOsc52ClipboardDefaultedOnForAllUsers).toBe(true)
@@ -163,9 +151,7 @@ describe('web settings preload API', () => {
     installWebPreloadApi()
 
     await globals.window.api.settings.get()
-    const storedUi = JSON.parse(globals.storage.getItem('alfred.web.ui.v1') ?? '{}') as {
-      osc52ClipboardDefaultOnNoticePending?: boolean
-    }
+    const storedUi = JSON.parse(globals.storage.getItem('alfred.web.ui.v1') ?? '{}')
 
     expect(storedUi.osc52ClipboardDefaultOnNoticePending).toBe(true)
   })
@@ -177,9 +163,7 @@ describe('web settings preload API', () => {
     installWebPreloadApi()
 
     await globals.window.api.settings.get()
-    const storedUi = JSON.parse(globals.storage.getItem('alfred.web.ui.v1') ?? '{}') as {
-      osc52ClipboardDefaultOnNoticePending?: boolean
-    }
+    const storedUi = JSON.parse(globals.storage.getItem('alfred.web.ui.v1') ?? '{}')
 
     expect(storedUi.osc52ClipboardDefaultOnNoticePending).not.toBe(true)
   })
@@ -233,10 +217,7 @@ describe('web settings preload API', () => {
     installWebPreloadApi()
 
     const settings = await globals.window.api.settings.get()
-    const stored = JSON.parse(globals.storage.getItem('alfred.web.settings.v1') ?? '{}') as {
-      autoRenameBranchFromWork?: boolean
-      autoRenameBranchFromWorkDefaultedOn?: boolean
-    }
+    const stored = JSON.parse(globals.storage.getItem('alfred.web.settings.v1') ?? '{}')
 
     expect(settings.autoRenameBranchFromWork).toBe(false)
     expect(settings.autoRenameBranchFromWorkDefaultedOn).toBe(true)
@@ -248,10 +229,7 @@ describe('web settings preload API', () => {
     const { api, storage } = await installApi('Linux')
 
     const settings = await api.settings.set({ autoRenameBranchFromWork: false })
-    const stored = JSON.parse(storage.getItem('alfred.web.settings.v1') ?? '{}') as {
-      autoRenameBranchFromWork?: boolean
-      autoRenameBranchFromWorkDefaultedOn?: boolean
-    }
+    const stored = JSON.parse(storage.getItem('alfred.web.settings.v1') ?? '{}')
 
     expect(settings.autoRenameBranchFromWork).toBe(false)
     expect(settings.autoRenameBranchFromWorkDefaultedOn).toBe(true)
@@ -288,9 +266,7 @@ describe('web settings preload API', () => {
     installWebPreloadApi()
 
     const settings = await globals.window.api.settings.get()
-    const stored = JSON.parse(globals.storage.getItem('alfred.web.settings.v1') ?? '{}') as {
-      compactWorktreeCards?: boolean
-    }
+    const stored = JSON.parse(globals.storage.getItem('alfred.web.settings.v1') ?? '{}')
 
     expect(settings.compactWorktreeCards).toBe(true)
     expect(settings.activeRuntimeEnvironmentId).toBeNull()
@@ -582,9 +558,7 @@ describe('web settings preload API', () => {
     installWebPreloadApi()
 
     const settings = await globals.window.api.settings.get()
-    const stored = JSON.parse(globals.storage.getItem('alfred.web.settings.v1') ?? '{}') as {
-      experimentalNewWorktreeCardStyle?: boolean
-    }
+    const stored = JSON.parse(globals.storage.getItem('alfred.web.settings.v1') ?? '{}')
 
     expect(settings.experimentalNewWorktreeCardStyle).toBe(true)
     expect(stored.experimentalNewWorktreeCardStyle).toBe(true)
@@ -621,11 +595,7 @@ describe('web settings preload API', () => {
     installWebPreloadApi()
 
     const settings = await globals.window.api.settings.get()
-    const stored = JSON.parse(globals.storage.getItem('alfred.web.settings.v1') ?? '{}') as {
-      minimaxGroupId?: string
-      minimaxUsageModels?: string
-      minimaxEndpoint?: string
-    }
+    const stored = JSON.parse(globals.storage.getItem('alfred.web.settings.v1') ?? '{}')
 
     expect(settings.minimaxGroupId).toBe('group-42')
     expect(settings.minimaxUsageModels).toBe('general,abab6.5')
@@ -695,9 +665,7 @@ describe('web settings preload API', () => {
 
     const settings = await globals.window.api.settings.set({ compactWorktreeCards: true })
 
-    const stored = JSON.parse(globals.storage.getItem('alfred.web.settings.v1') ?? '{}') as {
-      compactWorktreeCards?: boolean
-    }
+    const stored = JSON.parse(globals.storage.getItem('alfred.web.settings.v1') ?? '{}')
 
     expect(settings.compactWorktreeCards).toBe(true)
     expect(settings.activeRuntimeEnvironmentId).toBeNull()
@@ -776,11 +744,7 @@ describe('web settings preload API', () => {
       minimaxEndpoint: 'cn'
     })
 
-    const stored = JSON.parse(globals.storage.getItem('alfred.web.settings.v1') ?? '{}') as {
-      minimaxGroupId?: string
-      minimaxUsageModels?: string
-      minimaxEndpoint?: string
-    }
+    const stored = JSON.parse(globals.storage.getItem('alfred.web.settings.v1') ?? '{}')
 
     expect(settings.minimaxGroupId).toBe('group-42')
     expect(settings.minimaxUsageModels).toBe('general,abab6.5')
@@ -893,9 +857,7 @@ describe('web settings preload API', () => {
       })
     ).rejects.toThrow('runtime unavailable')
 
-    const stored = JSON.parse(globals.storage.getItem('alfred.web.settings.v1') ?? '{}') as {
-      prBotAuthorOverrides?: string[]
-    }
+    const stored = JSON.parse(globals.storage.getItem('alfred.web.settings.v1') ?? '{}')
     expect(stored.prBotAuthorOverrides).toBeUndefined()
   })
 })

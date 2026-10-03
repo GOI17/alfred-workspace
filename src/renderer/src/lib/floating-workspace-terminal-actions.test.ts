@@ -540,7 +540,7 @@ describe('createFloatingWorkspaceMarkdownTab', () => {
     }
     createUntitledMarkdownFileWithTemplateSelectionMock.mockResolvedValue(fileInfo)
 
-    await createFloatingWorkspaceMarkdownTab(store as never, '/tmp/alfred/floating-workspace')
+    await createFloatingWorkspaceMarkdownTab(store, '/tmp/alfred/floating-workspace')
 
     expect(createUntitledMarkdownFileWithTemplateSelectionMock).toHaveBeenCalledWith(
       '/tmp/alfred/floating-workspace',
@@ -562,7 +562,7 @@ describe('createFloatingWorkspaceMarkdownTab', () => {
     }
     createUntitledMarkdownFileWithTemplateSelectionMock.mockResolvedValue(null)
 
-    await createFloatingWorkspaceMarkdownTab(store as never, '/tmp/alfred/floating-workspace')
+    await createFloatingWorkspaceMarkdownTab(store, '/tmp/alfred/floating-workspace')
 
     expect(createUntitledMarkdownFileWithTemplateSelectionMock).toHaveBeenCalledWith(
       '/tmp/alfred/floating-workspace',

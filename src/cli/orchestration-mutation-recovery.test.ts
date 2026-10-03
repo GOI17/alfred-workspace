@@ -15,7 +15,7 @@ describe('orchestration mutation recovery', () => {
         dispatchId: 'dispatch_1',
         originalCommand: ['alfred', 'orchestration', 'worker-start', '--task', 'task_1']
       })
-    ) as RuntimeClientError
+    )
 
     expect(result.data).toMatchObject({
       recovery: {
@@ -56,7 +56,7 @@ describe('orchestration mutation recovery', () => {
         orchestrationRequestId: 'request_2',
         originalCommand: ['alfred', 'orchestration', 'worker-start', '--task', 'task_2']
       })
-    ) as RuntimeClientError
+    )
 
     expect(result.data).toMatchObject({
       recovery: {
@@ -75,7 +75,7 @@ describe('orchestration mutation recovery', () => {
         orchestrationRequestId: 'request_4',
         originalCommand: ['alfred', 'orchestration', 'worker-start', '--task', 'task_4']
       })
-    ) as RuntimeClientError
+    )
 
     expect(result.data).toMatchObject({
       recovery: {
@@ -100,7 +100,7 @@ describe('orchestration mutation recovery', () => {
         orchestrationRequestId: 'request_5',
         originalCommand: ['alfred', 'orchestration', 'worker-start', '--task', 'task_5']
       })
-    ) as RuntimeClientError
+    )
 
     expect((result.data as { nextSteps?: string[] }).nextSteps?.[1]).toContain(
       'replay, join, or safely recover it without starting a separate duplicate'
@@ -125,7 +125,7 @@ describe('orchestration mutation recovery', () => {
           'literal $(do-not-run)'
         ]
       })
-    ) as RuntimeClientError
+    )
 
     expect((result.data as { nextSteps?: string[] }).nextSteps).toEqual([
       'Run alfred-dev orchestration worker-show --dispatch dispatch_3 --json before retrying.',
@@ -141,7 +141,7 @@ describe('orchestration mutation recovery', () => {
         originalCommand:
           'alfred-ide orchestration worker-stop --dispatch dispatch_4 --comment "quoted value"'
       })
-    ) as RuntimeClientError
+    )
 
     expect(
       (result.data as { recovery?: { retryCommand?: string[] } }).recovery?.retryCommand
@@ -193,7 +193,7 @@ describe('orchestration mutation recovery', () => {
           '--retry-request=request_reused'
         ]
       })
-    ) as RuntimeClientError
+    )
 
     expect(
       (result.data as { recovery?: { retryCommand?: string[] } }).recovery?.retryCommand

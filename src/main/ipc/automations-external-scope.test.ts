@@ -33,10 +33,11 @@ function sshTarget(overrides: Partial<SshTarget> = {}): SshTarget {
     id: 't1',
     label: 'build-box',
     host: 'build.example',
-    user: 'alfred',
+    username: 'alfred',
+    port: 22,
     generation: 3,
     ...overrides
-  } as SshTarget
+  }
 }
 
 function desktopSsh(targetId = 't1', targetGeneration = 3): AutomationOwnerRef {

@@ -171,7 +171,7 @@ describe('worktree remote runtime mutations', () => {
         }
       ],
       worktreesByRepo: { 'repo-ssh': [wt] }
-    } as Partial<AppState>)
+    })
 
     await store.getState().updateWorktreeMeta(wt.id, { comment: 'ssh note' })
 

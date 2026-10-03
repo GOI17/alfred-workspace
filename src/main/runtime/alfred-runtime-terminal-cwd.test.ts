@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { AlfredRuntimeService } from './alfred-runtime'
 
@@ -134,7 +135,7 @@ describe('AlfredRuntimeService terminal startup cwd', () => {
         terminalLayoutsByTabId: {}
       })
     }
-    const runtime = new AlfredRuntimeService(store as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
     stubLaunchScope(runtime)
     const spawn = vi.fn().mockResolvedValue({ id: 'pty-1' })
     runtime.setPtyController({

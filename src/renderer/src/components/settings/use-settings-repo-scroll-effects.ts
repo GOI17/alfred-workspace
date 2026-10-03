@@ -1,5 +1,4 @@
 import { useEffect } from 'react'
-import type { AlfredHooks } from '../../../../shared/alfred-yaml-hook-types'
 import { isFolderRepo } from '../../../../shared/repo-kind'
 import { getRepoExecutionHostId, parseExecutionHostId } from '../../../../shared/execution-host'
 import { checkRuntimeHooks } from '@/runtime/runtime-hooks-client'
@@ -49,7 +48,7 @@ export function useSettingsRepoScrollEffects(
     setRepoHooksMap((previous) => {
       const next = Object.fromEntries(
         Object.entries(previous).filter(([identity]) => repoHostIdentitySet.has(identity))
-      ) as Record<string, { hasHooks: boolean; hooks: AlfredHooks | null; mayNeedUpdate: boolean }>
+      )
       return Object.keys(next).length === Object.keys(previous).length ? previous : next
     })
   }, [repos, setRepoHooksMap])

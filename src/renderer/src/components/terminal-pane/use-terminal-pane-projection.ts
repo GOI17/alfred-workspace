@@ -72,13 +72,16 @@ export function useTerminalPaneProjection(controller: TerminalPaneMobileControll
   const hiddenStartupStyle: CSSProperties = shouldMeasureHiddenStartup
     ? { opacity: 0, pointerEvents: 'none' }
     : {}
-  const terminalContainerStyle: CSSProperties = {
+  const terminalContainerStyle: CSSProperties & {
+    '--alfred-terminal-divider-color': string
+    '--alfred-terminal-divider-color-strong': string
+  } = {
     display: terminalContentVisible ? 'flex' : 'none',
     overflow: 'hidden',
     ...hiddenStartupStyle,
-    ['--alfred-terminal-divider-color' as string]:
+    '--alfred-terminal-divider-color':
       effectiveAppearance?.dividerColor ?? DEFAULT_TERMINAL_DIVIDER_DARK,
-    ['--alfred-terminal-divider-color-strong' as string]: normalizeColor(
+    '--alfred-terminal-divider-color-strong': normalizeColor(
       effectiveAppearance?.dividerColor,
       DEFAULT_TERMINAL_DIVIDER_DARK
     )

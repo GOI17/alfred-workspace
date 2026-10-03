@@ -1,5 +1,6 @@
+import { makeRepo as fixtureMakeRepo } from '../../../../shared/repo-test-fixture'
 import { describe, expect, it } from 'vitest'
-import type { Repo } from '../../../../shared/repo-types'
+
 import { getAgentLabel } from './automation-draft-model'
 import {
   AUTOMATION_LIST_SEARCH_PROMPT_MAX_CODE_UNITS,
@@ -23,7 +24,7 @@ import {
   REPO_ID
 } from './automations-page-fixtures'
 
-const repo = { id: REPO_ID, displayName: 'alfred', path: '/src/alfred' } as Repo
+const repo = fixtureMakeRepo({ id: REPO_ID, displayName: 'alfred', path: '/src/alfred' })
 const repoMap = new Map([[REPO_ID, repo]])
 
 function fieldsFor(

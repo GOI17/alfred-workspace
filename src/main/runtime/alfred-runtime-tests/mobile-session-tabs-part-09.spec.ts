@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   AlfredRuntimeService,
@@ -50,12 +51,12 @@ describe('AlfredRuntimeService', () => {
       )
     }
 
-    function makeParkedRuntime(runtimeStore: unknown): {
+    function makeParkedRuntime(runtimeStore: Parameters<typeof createRuntimeStoreTestDouble>[0]): {
       runtime: AlfredRuntimeService
       spawn: ReturnType<typeof vi.fn>
     } {
       const spawn = vi.fn().mockResolvedValue({ id: 'persisted-pty' })
-      const runtime = new AlfredRuntimeService(runtimeStore as never)
+      const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
       runtime.setPtyController({
         spawn,
         write: () => true,
@@ -341,7 +342,7 @@ describe('AlfredRuntimeService', () => {
       getRepo: (id: string) => (id === TEST_REPO_ID ? remoteRepo : undefined)
     }
     const spawn = vi.fn().mockResolvedValue({ id: 'ssh:ssh-1@@relay-pty', isReattach: true })
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
     runtime.setPtyController({
       spawn,
       write: () => true,
@@ -417,7 +418,7 @@ describe('AlfredRuntimeService', () => {
         throw new Error('SSH session expired')
       })
       .mockResolvedValueOnce({ id: 'ssh:ssh-1@@fresh-pty' })
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
     runtime.setPtyController({
       spawn,
       write: () => true,
@@ -622,7 +623,7 @@ describe('AlfredRuntimeService', () => {
       getRepo: (id: string) => (id === TEST_REPO_ID ? remoteRepo : undefined)
     }
     const spawn = vi.fn().mockResolvedValue({ id: 'ssh:ssh-1@@fresh-pty' })
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
     runtime.setPtyController({
       spawn,
       write: () => true,
@@ -670,7 +671,7 @@ describe('AlfredRuntimeService', () => {
       })
     )
     const spawn = vi.fn().mockResolvedValue({ id: 'pty-b' })
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       spawn,
       write: () => true,

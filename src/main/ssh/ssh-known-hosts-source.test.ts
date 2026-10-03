@@ -403,9 +403,10 @@ describe('a known_hosts path containing a space', () => {
 
     // Exactly what parseKnownHostsFileList hands over for this value.
     const resolved = await resolveKnownHostsFiles({
+      ...parseSshGOutput(''),
       userKnownHostsFiles: spaced.split(' '),
       globalKnownHostsFiles: []
-    } as never)
+    })
 
     expect(resolved).toEqual([spaced])
   })
@@ -419,9 +420,10 @@ describe('a known_hosts path containing a space', () => {
     await writeFile(ordinary, '', 'utf-8')
 
     const resolved = await resolveKnownHostsFiles({
+      ...parseSshGOutput(''),
       userKnownHostsFiles: [...spaced.split(' '), ordinary],
       globalKnownHostsFiles: []
-    } as never)
+    })
 
     expect(resolved).toEqual([spaced, ordinary])
   })
@@ -432,18 +434,20 @@ describe('a known_hosts path containing a space', () => {
     await writeFile(real, '', 'utf-8')
 
     const resolved = await resolveKnownHostsFiles({
+      ...parseSshGOutput(''),
       userKnownHostsFiles: [real, '/tmp/alfred-does-not-exist-known-hosts'],
       globalKnownHostsFiles: []
-    } as never)
+    })
 
     expect(resolved).toEqual([real, '/tmp/alfred-does-not-exist-known-hosts'])
   })
 
   it('leaves a single unresolvable path alone rather than inventing one', async () => {
     const resolved = await resolveKnownHostsFiles({
+      ...parseSshGOutput(''),
       userKnownHostsFiles: ['/tmp/alfred-absent-known-hosts'],
       globalKnownHostsFiles: []
-    } as never)
+    })
 
     expect(resolved).toEqual(['/tmp/alfred-absent-known-hosts'])
   })

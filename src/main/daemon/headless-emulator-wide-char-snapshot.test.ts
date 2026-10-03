@@ -30,7 +30,7 @@ function replay(
 ): string {
   const t = new Terminal({ cols, rows, scrollback: 5000, allowProposedApi: true })
   t.loadAddon(new Unicode11Addon())
-  activateAlfredTerminalUnicodeProvider(t as never)
+  activateAlfredTerminalUnicodeProvider(t)
   const core = (t as unknown as { _core: { writeSync(d: string): void } })._core
   core.writeSync(`${snapshot.scrollbackAnsi ?? ''}${snapshot.snapshotAnsi}`)
   return textOf(t)

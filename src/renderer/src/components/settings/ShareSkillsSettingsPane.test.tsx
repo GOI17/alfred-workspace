@@ -12,10 +12,7 @@ const mocks = vi.hoisted(() => ({
   openSkillsPage: vi.fn(),
   updateSettings: vi.fn(),
   state: {
-    alfredProfileAuthStatus: { configured: true, state: 'connected' } as Record<
-      string,
-      unknown
-    > | null,
+    alfredProfileAuthStatus: { configured: true, state: 'connected' },
     isWebClient: false,
     settings: { showSkillsButton: false, agentSkillSharingEnabled: false }
   }

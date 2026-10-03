@@ -89,10 +89,11 @@ describe('OpenCode plugin background child completion', () => {
     if (!pluginFactory) {
       const pluginPath = join(tempDir, 'alfred-opencode-status.mjs')
       writeFileSync(pluginPath, _internals.getOpenCodePluginSource())
-      const module = (await import(pathToFileURL(pluginPath).href)) as {
-        AlfredOpenCodeStatusPlugin: PluginFactory
-      }
+      const module = await import(pathToFileURL(pluginPath).href)
       pluginFactory = module.AlfredOpenCodeStatusPlugin
+    }
+    if (!pluginFactory) {
+      throw new Error('Plugin factory missing')
     }
     return pluginFactory({ client: { session: { list } } })
   }

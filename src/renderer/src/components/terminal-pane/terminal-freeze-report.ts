@@ -47,13 +47,9 @@ export async function buildTerminalFreezeReport(): Promise<TerminalFreezeReport>
   }
 }
 
-type TerminalFreezeReportWindow = Window & {
-  __alfredTerminalFreezeReport?: () => Promise<TerminalFreezeReport>
-}
-
 export function installTerminalFreezeReport(): void {
   if (typeof window === 'undefined') {
     return
   }
-  ;(window as TerminalFreezeReportWindow).__alfredTerminalFreezeReport = buildTerminalFreezeReport
+  window.__alfredTerminalFreezeReport = buildTerminalFreezeReport
 }

@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
   toastError: vi.fn(),
   toastSuccess: vi.fn(),
   state: {
-    alfredProfileAuthStatus: { state: 'connected' } as { state: string } | null,
+    alfredProfileAuthStatus: { state: 'connected' },
     connectCurrentAlfredProfile: vi.fn()
   }
 }))

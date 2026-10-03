@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
@@ -37,7 +38,7 @@ describe('legacy terminal subscription stream IDs', () => {
       waitForTerminal: vi.fn(() => new Promise<RuntimeTerminalWait>(() => {}))
     } as unknown as Partial<AlfredRuntimeService>
     const dispatcher = new RpcDispatcher({
-      runtime: runtime as AlfredRuntimeService,
+      runtime: createRuntimeServiceTestDouble(runtime),
       methods: TERMINAL_METHODS
     })
 

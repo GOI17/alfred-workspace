@@ -143,9 +143,7 @@ describe('web runtime environment identity', () => {
   it('ignores malformed persisted compatibility ids when resolving selectors', async () => {
     const globals = installBrowserGlobals('Linux')
     writeStoredRuntimeEnvironment(globals.storage, 'web-server-a')
-    const stored = JSON.parse(
-      globals.storage.getItem('alfred.web.runtimeEnvironment.v1') ?? '{}'
-    ) as Record<string, unknown>
+    const stored = JSON.parse(globals.storage.getItem('alfred.web.runtimeEnvironment.v1') ?? '{}')
     stored.compatibleEnvironmentIds = { old: 'web-server-old' }
     globals.storage.setItem('alfred.web.runtimeEnvironment.v1', JSON.stringify(stored))
     const { installWebPreloadApi } = await import('./web-preload-api')
@@ -159,9 +157,7 @@ describe('web runtime environment identity', () => {
   it('ignores malformed persisted paired device identity', async () => {
     const globals = installBrowserGlobals('Linux')
     writeStoredRuntimeEnvironment(globals.storage)
-    const stored = JSON.parse(
-      globals.storage.getItem('alfred.web.runtimeEnvironment.v1') ?? '{}'
-    ) as Record<string, unknown>
+    const stored = JSON.parse(globals.storage.getItem('alfred.web.runtimeEnvironment.v1') ?? '{}')
     stored.pairedDeviceId = { invalid: true }
     globals.storage.setItem('alfred.web.runtimeEnvironment.v1', JSON.stringify(stored))
     const { installWebPreloadApi } = await import('./web-preload-api')

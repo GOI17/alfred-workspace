@@ -68,7 +68,7 @@ describe('AlfredRuntimeService', () => {
         isMainWorktree: false
       }
     ])
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     const listed = await runtime.listManagedWorktrees('id:repo-1')
     const parent = listed.worktrees.find((worktree) => worktree.id === parentId)
@@ -119,7 +119,7 @@ describe('AlfredRuntimeService', () => {
       getWorktreeLineage: () => undefined,
       setWorktreeLineage
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     computeWorktreePathMock.mockReturnValue(childPath)
     ensurePathWithinWorkspaceMock.mockReturnValue(childPath)
     vi.mocked(listWorktrees)
@@ -198,7 +198,7 @@ describe('AlfredRuntimeService', () => {
       getWorktreeLineage: () => undefined,
       setWorktreeLineage
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const workerHandle = runtime.preAllocateHandleForPty('pty-worker')
     const coordinatorHandle = runtime.preAllocateHandleForPty('pty-coordinator')
     runtime.setOrchestrationDb({

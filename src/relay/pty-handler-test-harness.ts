@@ -17,6 +17,7 @@ export function createTestPtyHandler(dispatcher: MockDispatcher): PtyHandler {
 }
 
 export type TestRequestContext = {
+  clientId?: number
   isStale: () => boolean
   signal?: AbortSignal
 }

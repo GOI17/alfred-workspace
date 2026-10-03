@@ -57,7 +57,21 @@ export function sanitizeTrustedAlfredHooks(trust: unknown): PersistedTrustedAlfr
     if (!isSafePersistedRecordKey(repoId) || !isPlainPersistedRecord(entry)) {
       continue
     }
-    next[repoId] = entry as PersistedTrustedAlfredHooks[string]
+    const repo: PersistedTrustedAlfredHooks[string] = {}
+    if (isPlainPersistedRecord(entry.all) && typeof entry.all.approvedAt === 'number') {
+      repo.all = { approvedAt: entry.all.approvedAt }
+    }
+    for (const kind of ['setup', 'archive', 'issueCommand', 'vmRecipe'] as const) {
+      const hook = entry[kind]
+      if (
+        isPlainPersistedRecord(hook) &&
+        typeof hook.contentHash === 'string' &&
+        typeof hook.approvedAt === 'number'
+      ) {
+        repo[kind] = { contentHash: hook.contentHash, approvedAt: hook.approvedAt }
+      }
+    }
+    next[repoId] = repo
   }
   return next
 }

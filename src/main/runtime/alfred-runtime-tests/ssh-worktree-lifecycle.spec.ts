@@ -112,7 +112,7 @@ describe('AlfredRuntimeService', () => {
     }
     registerSshGitProvider('ssh-1', provider as never)
     getActiveMultiplexerMock.mockReturnValue({ request: muxRequestMock, notify: vi.fn() })
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(remoteStore)
 
     const result = await runtime.createManagedWorktree({
       repoSelector: TEST_REPO_ID,
@@ -219,7 +219,7 @@ describe('AlfredRuntimeService', () => {
     }
     registerSshGitProvider('ssh-1', provider as never)
     getActiveMultiplexerMock.mockReturnValue({ request: muxRequestMock, notify: vi.fn() })
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(remoteStore)
 
     try {
       const result = await runtime.createManagedWorktree({
@@ -275,7 +275,7 @@ describe('AlfredRuntimeService', () => {
     computeWorktreePathMock.mockReturnValue(created.path)
     ensurePathWithinWorkspaceMock.mockImplementation((pathValue: string) => pathValue)
     vi.mocked(listWorktrees).mockResolvedValueOnce([created])
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     const result = await runtime.createManagedWorktree({
       repoSelector: TEST_REPO_ID,
@@ -323,7 +323,7 @@ describe('AlfredRuntimeService', () => {
     computeWorktreePathMock.mockReturnValue(created.path)
     ensurePathWithinWorkspaceMock.mockImplementation((pathValue: string) => pathValue)
     vi.mocked(listWorktrees).mockResolvedValueOnce([created])
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     const result = await runtime.createManagedWorktree({
       repoSelector: TEST_REPO_ID,
@@ -426,7 +426,7 @@ describe('AlfredRuntimeService', () => {
     const activateWorktree = vi.fn()
     registerSshGitProvider('ssh-1', provider as never)
     getActiveMultiplexerMock.mockReturnValue({ request: muxRequestMock, notify: vi.fn() })
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(remoteStore)
     runtime.setPtyController({
       spawn,
       write: () => true,
@@ -538,7 +538,7 @@ describe('AlfredRuntimeService', () => {
     const spawn = vi.fn().mockResolvedValue({ id: 'pty-remote-windows-agent' })
     registerSshGitProvider('ssh-1', provider as never)
     getActiveMultiplexerMock.mockReturnValue({ request: muxRequestMock, notify: vi.fn() })
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(remoteStore)
     runtime.setPtyController({
       spawn,
       write: () => true,

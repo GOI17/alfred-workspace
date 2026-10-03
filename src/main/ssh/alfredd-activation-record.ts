@@ -1,3 +1,4 @@
+import { isJsonObject } from '../../shared/json-object'
 /**
  * Which installed alfredd is the live one, and which one a rollback goes back to.
  *
@@ -73,10 +74,10 @@ export function parseAlfreddActivationRecord(raw: string | null): AlfreddActivat
       reason: `activation record is not JSON: ${error instanceof Error ? error.message : String(error)}`
     }
   }
-  if (typeof parsed !== 'object' || parsed === null) {
+  if (!isJsonObject(parsed)) {
     return { state: 'unreadable', reason: 'activation record is not an object' }
   }
-  const record = parsed as Partial<AlfreddActivationRecord>
+  const record = parsed
   if (record.schemaVersion !== ALFREDD_ACTIVATION_SCHEMA_VERSION) {
     return {
       state: 'unreadable',
@@ -98,10 +99,10 @@ export function parseAlfreddActivationRecord(raw: string | null): AlfreddActivat
 }
 
 function parseSnapshot(value: unknown): AlfreddStateSnapshot | null {
-  if (typeof value !== 'object' || value === null) {
+  if (!isJsonObject(value)) {
     return null
   }
-  const snapshot = value as Partial<AlfreddStateSnapshot>
+  const snapshot = value
   if (typeof snapshot.dirName !== 'string' || typeof snapshot.takenBeforeVersion !== 'string') {
     return null
   }

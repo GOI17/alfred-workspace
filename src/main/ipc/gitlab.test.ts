@@ -1,3 +1,5 @@
+import { createPersistenceStoreTestDouble } from '../persistence/persistence-store-test-double'
+import { z } from 'zod'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Store } from '../persistence'
 import type { Repo } from '../../shared/repo-types'
@@ -127,11 +129,8 @@ function repo(overrides: Partial<Repo> = {}): Repo {
   }
 }
 
-function storeWithRepos(
-  repos: Repo[],
-  projects: ReturnType<Store['getProjects']> = []
-): Pick<Store, 'getRepos' | 'getRepo' | 'getProjects' | 'getSettings'> {
-  return {
+function storeWithRepos(repos: Repo[], projects: ReturnType<Store['getProjects']> = []): Store {
+  return createPersistenceStoreTestDouble({
     getRepos: () => repos,
     getRepo: (id: string) => repos.find((candidate) => candidate.id === id),
     getProjects: () => projects,
@@ -139,7 +138,7 @@ function storeWithRepos(
       ({
         localWindowsRuntimeDefault: { kind: 'windows-host' }
       }) as ReturnType<Store['getSettings']>
-  }
+  })
 }
 
 describe('GitLab IPC handlers', () => {
@@ -185,7 +184,7 @@ describe('GitLab IPC handlers', () => {
       executionHostId: toSshExecutionHostId('builder')
     })
     listWorkItemsMock.mockResolvedValueOnce({ items: [] })
-    registerGitLabHandlers(storeWithRepos([repo(), remoteRepo]) as Store)
+    registerGitLabHandlers(storeWithRepos([repo(), remoteRepo]))
 
     const handler = ipcHandlers.get('gitlab:listWorkItems')
     await expect(
@@ -216,7 +215,7 @@ describe('GitLab IPC handlers', () => {
   it('forwards the typed search query into listMRs and listWorkItems', async () => {
     listMergeRequestsMock.mockResolvedValueOnce({ items: [] })
     listWorkItemsMock.mockResolvedValueOnce({ items: [] })
-    registerGitLabHandlers(storeWithRepos([repo()]) as Store)
+    registerGitLabHandlers(storeWithRepos([repo()]))
 
     await ipcHandlers.get('gitlab:listMRs')?.(null, {
       repoPath: '/local/alfred',
@@ -257,7 +256,7 @@ describe('GitLab IPC handlers', () => {
 
   it('drops blank or whitespace-only search queries to undefined', async () => {
     listMergeRequestsMock.mockResolvedValueOnce({ items: [] })
-    registerGitLabHandlers(storeWithRepos([repo()]) as Store)
+    registerGitLabHandlers(storeWithRepos([repo()]))
 
     await ipcHandlers.get('gitlab:listMRs')?.(null, {
       repoPath: '/local/alfred',
@@ -276,9 +275,7 @@ describe('GitLab IPC handlers', () => {
   })
 
   it('rejects source context for a different host', async () => {
-    registerGitLabHandlers(
-      storeWithRepos([repo({ id: 'repo-local', path: '/local/alfred' })]) as Store
-    )
+    registerGitLabHandlers(storeWithRepos([repo({ id: 'repo-local', path: '/local/alfred' })]))
 
     const handler = ipcHandlers.get('gitlab:listWorkItems')
     await expect(
@@ -308,7 +305,7 @@ describe('GitLab IPC handlers', () => {
       number: 42,
       title: 'Remote issue'
     })
-    registerGitLabHandlers(storeWithRepos([repo(), remoteRepo]) as Store)
+    registerGitLabHandlers(storeWithRepos([repo(), remoteRepo]))
 
     const handler = ipcHandlers.get('gitlab:workItemByPath')
     await expect(
@@ -364,7 +361,7 @@ describe('GitLab IPC handlers', () => {
     getProjectSlugMock.mockResolvedValue({ host: 'gitlab.com', path: 'GOI17/alfred-workspace' })
     getMergeRequestForBranchMock.mockResolvedValue(null)
     getMergeRequestMock.mockResolvedValue(null)
-    registerGitLabHandlers(storeWithRepos([repo()], projects) as Store)
+    registerGitLabHandlers(storeWithRepos([repo()], projects))
     const localGitOptions = { wslDistro: 'Ubuntu' }
 
     await ipcHandlers.get('gitlab:projectSlug')?.(null, { repoPath: '/local/alfred' })
@@ -522,7 +519,7 @@ describe('GitLab IPC handlers', () => {
     getJobTraceMock.mockResolvedValue({ ok: true, trace: 'trace' })
     retryJobMock.mockResolvedValue({ ok: true })
     getWorkItemByProjectRefMock.mockResolvedValue({ type: 'mr', number: 8 })
-    registerGitLabHandlers(storeWithRepos([repo()], projects) as Store)
+    registerGitLabHandlers(storeWithRepos([repo()], projects))
     const localGitOptions = { wslDistro: 'Ubuntu' }
 
     await ipcHandlers.get('gitlab:workItemDetails')?.(null, {
@@ -688,17 +685,21 @@ describe('GitLab IPC handlers', () => {
       '\u001b[0;31mERROR: Job failed: exit code 1\u001b[0m'
     ].join('\n')
     getJobTraceMock.mockResolvedValue({ ok: true, trace: noisyTrace })
-    registerGitLabHandlers(storeWithRepos([repo()]) as Store)
+    registerGitLabHandlers(storeWithRepos([repo()]))
 
-    const raw = (await ipcHandlers.get('gitlab:jobTrace')?.(null, {
-      repoPath: '/local/alfred',
-      jobId: 99
-    })) as { ok: true; trace: string }
-    const excerpt = (await ipcHandlers.get('gitlab:jobTrace')?.(null, {
-      repoPath: '/local/alfred',
-      jobId: 99,
-      logExcerpt: true
-    })) as { ok: true; trace: string }
+    const raw = z.object({ ok: z.literal(true), trace: z.string() }).parse(
+      await ipcHandlers.get('gitlab:jobTrace')?.(null, {
+        repoPath: '/local/alfred',
+        jobId: 99
+      })
+    )
+    const excerpt = z.object({ ok: z.literal(true), trace: z.string() }).parse(
+      await ipcHandlers.get('gitlab:jobTrace')?.(null, {
+        repoPath: '/local/alfred',
+        jobId: 99,
+        logExcerpt: true
+      })
+    )
 
     expect(raw.trace).toBe(noisyTrace)
     expect(excerpt.trace).toContain('ERROR: Job failed: exit code 1')

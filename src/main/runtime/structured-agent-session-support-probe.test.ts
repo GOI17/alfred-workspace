@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AlfredRuntimeService } from './alfred-runtime'
 import {
@@ -68,7 +69,9 @@ type SupportResult = {
 }
 
 function createRuntime(location: TestLocation): AlfredRuntimeService {
-  const runtime = new AlfredRuntimeService({ getSettings: () => ({}) } as never)
+  const runtime = new AlfredRuntimeService(
+    createRuntimeStoreTestDouble({ getSettings: () => ({}) })
+  )
   const internal = runtime as unknown as {
     resolveStructuredAgentSessionLocation: () => Promise<unknown>
   }

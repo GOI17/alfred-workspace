@@ -1,3 +1,5 @@
+import { getDefaultRuntimeClientSettings } from '../../runtime-client-settings-test-fixture'
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 // The create route's pre-commit boundary: a failure before `attach` must reach the client as a
 // refusal it can classify, and a failure at or after `attach` must not.
 
@@ -7,7 +9,6 @@ import { setStructuredAgentSessionHost } from '../../../native-chat/agent-sessio
 import { computeAgentSessionPayloadFingerprint } from '../../../../shared/agent-session-mutation-envelope'
 import { isDefinitiveAgentSessionCreateRefusal } from '../../../../shared/agent-session-definitive-refusal'
 import { STRUCTURED_AGENT_SESSION_RUNTIME_CAPABILITY } from '../../../../shared/protocol-version'
-import type { AlfredRuntimeService } from '../../alfred-runtime'
 import type { RpcResponse } from '../core'
 import { RpcDispatcher } from '../dispatcher'
 import { STRUCTURED_AGENT_SESSION_METHODS } from './structured-agent-session'
@@ -63,7 +64,7 @@ const resolvedIntent = {
   agent: 'codex',
   accountHome: { variable: 'CODEX_HOME', path: '/host/.codex' },
   runtimeKind: 'native'
-}
+} as const
 
 async function create(
   runtimeOverrides: Record<string, unknown> = {},
@@ -73,21 +74,26 @@ async function create(
     getRuntimeId: () => 'runtime-1',
     // The structured surface is settings-gated for every caller; these fixtures probe the
     // pre-commit boundary, which only runs once the gate admits the call.
-    getClientSettings: () => ({ experimentalStructuredNativeChat: true }),
+    getClientSettings: () => ({
+      ...getDefaultRuntimeClientSettings(),
+      experimentalStructuredNativeChat: true
+    }),
     registerSubscriptionCleanup: vi.fn(),
     cleanupSubscription: vi.fn(),
     cleanupSubscriptionsByPrefix: vi.fn(),
     ensureStructuredAgentSessionHost: vi.fn(async () => undefined),
-    resolveStructuredAgentSessionCreateIntent: vi.fn(async (input: { envelope: unknown }) => ({
-      envelope: input.envelope,
-      ...resolvedIntent
-    })),
+    resolveStructuredAgentSessionCreateIntent: vi.fn(
+      async (input: { envelope: { sessionId: string; clientOperationId: string } }) => ({
+        envelope: { expectedRuntimeFence: null, payloadFingerprint: '', ...input.envelope },
+        ...resolvedIntent
+      })
+    ),
     publishStructuredAgentSessionTab: vi.fn(async () => undefined),
     ...runtimeOverrides
   }
   const replies: RpcResponse[] = []
   await new RpcDispatcher({
-    runtime: runtime as unknown as AlfredRuntimeService,
+    runtime: createRuntimeServiceTestDouble(runtime),
     methods: STRUCTURED_AGENT_SESSION_METHODS
   }).dispatchStreaming(
     { id: 'request-1', authToken: 'token', method: 'agentSession.create', params },
@@ -212,7 +218,7 @@ describe('the boundary the envelope stops at', () => {
   it('keeps hiding the surface from a client that never advertised it', async () => {
     const replies: RpcResponse[] = []
     await new RpcDispatcher({
-      runtime: { getRuntimeId: () => 'runtime-1' } as unknown as AlfredRuntimeService,
+      runtime: createRuntimeServiceTestDouble({ getRuntimeId: () => 'runtime-1' }),
       methods: STRUCTURED_AGENT_SESSION_METHODS
     }).dispatchStreaming(
       {

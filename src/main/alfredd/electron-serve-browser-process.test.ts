@@ -190,9 +190,7 @@ describe('ElectronServeBrowserProcess start-up', () => {
     const userDataPath = (spawnSpec().args ?? [])
       .find((arg) => arg.startsWith('--user-data-dir='))!
       .slice('--user-data-dir='.length)
-    const metadata = JSON.parse(
-      await readFile(join(userDataPath, 'alfred-runtime.json'), 'utf8')
-    ) as { pid: number }
+    const metadata = JSON.parse(await readFile(join(userDataPath, 'alfred-runtime.json'), 'utf8'))
 
     await processHandle.stop()
 

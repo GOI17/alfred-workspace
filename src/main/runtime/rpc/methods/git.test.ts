@@ -1,7 +1,7 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
-import type { AlfredRuntimeService } from '../../alfred-runtime'
 import { GIT_METHODS } from './git'
 
 function makeRequest(method: string, params?: unknown): RpcRequest {
@@ -10,7 +10,7 @@ function makeRequest(method: string, params?: unknown): RpcRequest {
 
 describe('git RPC methods', () => {
   it('returns status for a selected worktree', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getRuntimeGitStatus: vi.fn().mockResolvedValue({
         entries: [],
@@ -20,7 +20,7 @@ describe('git RPC methods', () => {
         didHitLimit: true,
         statusLength: 1_001
       })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     const response = await dispatcher.dispatch(makeRequest('git.status', { worktree: 'id:wt-1' }))
@@ -35,14 +35,14 @@ describe('git RPC methods', () => {
   })
 
   it('forwards includeIgnored for status requests', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getRuntimeGitStatus: vi.fn().mockResolvedValue({
         entries: [],
         conflictOperation: 'unknown',
         ignoredPaths: ['dist/']
       })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -60,10 +60,10 @@ describe('git RPC methods', () => {
   })
 
   it('forwards a false line-stats request through the parsed RPC options', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getRuntimeGitStatus: vi.fn().mockResolvedValue({ entries: [], conflictOperation: 'unknown' })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     await dispatcher.dispatch(
@@ -77,13 +77,13 @@ describe('git RPC methods', () => {
   })
 
   it('forwards upstream-negative-cache bypass for status requests', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getRuntimeGitStatus: vi.fn().mockResolvedValue({
         entries: [],
         conflictOperation: 'unknown'
       })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -105,13 +105,13 @@ describe('git RPC methods', () => {
 
   it('forwards line-stat reuse and request cancellation for status requests', async () => {
     const controller = new AbortController()
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getRuntimeGitStatus: vi.fn().mockResolvedValue({
         entries: [],
         conflictOperation: 'unknown'
       })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     await dispatcher.dispatch(
@@ -127,10 +127,10 @@ describe('git RPC methods', () => {
   })
 
   it('returns ignored paths for selected explorer rows', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       checkRuntimeGitIgnoredPaths: vi.fn().mockResolvedValue(['dist/bundle.js'])
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -151,13 +151,13 @@ describe('git RPC methods', () => {
   })
 
   it('returns submodule status for a selected worktree area', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getRuntimeGitSubmoduleStatus: vi.fn().mockResolvedValue({
         entries: [{ path: 'lib.ts', status: 'modified', area: 'unstaged' }],
         conflictOperation: 'unknown'
       })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -180,7 +180,7 @@ describe('git RPC methods', () => {
   })
 
   it('returns a worktree file diff', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getRuntimeGitDiff: vi.fn().mockResolvedValue({
         kind: 'text',
@@ -189,7 +189,7 @@ describe('git RPC methods', () => {
         originalIsBinary: false,
         modifiedIsBinary: false
       })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -223,10 +223,10 @@ describe('git RPC methods', () => {
       hasMore: false,
       limit: 50
     }
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getRuntimeGitHistory: vi.fn().mockResolvedValue(history)
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -245,13 +245,13 @@ describe('git RPC methods', () => {
   })
 
   it('routes common mutations to the runtime', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       stageRuntimeGitPath: vi.fn().mockResolvedValue({ ok: true }),
       bulkUnstageRuntimeGitPaths: vi.fn().mockResolvedValue({ ok: true }),
       discardRuntimeGitPath: vi.fn().mockResolvedValue({ ok: true }),
       bulkDiscardRuntimeGitPaths: vi.fn().mockResolvedValue({ ok: true })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     await dispatcher.dispatch(
@@ -274,10 +274,10 @@ describe('git RPC methods', () => {
   })
 
   it('rejects empty bulk mutation paths before calling the runtime', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       bulkDiscardRuntimeGitPaths: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -292,7 +292,7 @@ describe('git RPC methods', () => {
   })
 
   it('routes remote operations to the runtime', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       commitRuntimeGit: vi.fn().mockResolvedValue({ success: true }),
       generateRuntimeCommitMessage: vi
@@ -309,7 +309,7 @@ describe('git RPC methods', () => {
       pushRuntimeGit: vi.fn().mockResolvedValue({ ok: true }),
       getRuntimeGitRemoteFileUrl: vi.fn().mockResolvedValue('https://example.com/file#L3'),
       getRuntimeGitRemoteCommitUrl: vi.fn().mockResolvedValue('https://example.com/commit/abc')
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
     const commitOid = '0123456789abcdef0123456789abcdef01234567'
 
@@ -370,10 +370,10 @@ describe('git RPC methods', () => {
   })
 
   it('rejects remote commit URL requests without a full git object id', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getRuntimeGitRemoteCommitUrl: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -388,10 +388,10 @@ describe('git RPC methods', () => {
   })
 
   it('forwards force-with-lease push mode to the runtime', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       pushRuntimeGit: vi.fn().mockResolvedValue({ ok: true })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     await dispatcher.dispatch(
@@ -405,10 +405,10 @@ describe('git RPC methods', () => {
   })
 
   it('forwards rebase-from-base to the runtime', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       rebaseRuntimeGitFromBase: vi.fn().mockResolvedValue({ ok: true })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     await dispatcher.dispatch(
@@ -422,10 +422,10 @@ describe('git RPC methods', () => {
   })
 
   it('forwards fetch push target to the runtime', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       fetchRuntimeGit: vi.fn().mockResolvedValue({ ok: true })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
     const pushTarget = { remoteName: 'fork', branchName: 'feature' }
 
@@ -440,7 +440,7 @@ describe('git RPC methods', () => {
   })
 
   it('forwards fork sync requests to the runtime', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       syncRuntimeGitForkDefaultBranch: vi.fn().mockResolvedValue({
         status: 'up-to-date',
@@ -450,7 +450,7 @@ describe('git RPC methods', () => {
         ahead: 0,
         behind: 0
       })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -471,10 +471,10 @@ describe('git RPC methods', () => {
   })
 
   it('rejects blank fork sync expected upstream fields before calling the runtime', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       syncRuntimeGitForkDefaultBranch: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -492,10 +492,10 @@ describe('git RPC methods', () => {
   })
 
   it('rejects missing fork sync expected upstream before calling the runtime', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       syncRuntimeGitForkDefaultBranch: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -512,10 +512,10 @@ describe('git RPC methods', () => {
   })
 
   it('forwards fast-forward push target to the runtime', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       fastForwardRuntimeGit: vi.fn().mockResolvedValue({ ok: true })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
     const pushTarget = { remoteName: 'fork', branchName: 'feature' }
 
@@ -548,10 +548,10 @@ describe('git RPC methods', () => {
       customAgentCommand: ''
     }
     const agentCmdOverrides = { codex: 'codex --profile work' }
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       generateRuntimeCommitMessage: vi.fn().mockResolvedValue({ success: true, message: 'test' })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     await dispatcher.dispatch(
@@ -577,10 +577,10 @@ describe('git RPC methods', () => {
       thinkingLevel: 'high',
       customPrompt: 'Use Conventional Commits.'
     }
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       generateRuntimeCommitMessage: vi.fn().mockResolvedValue({ success: true, message: 'test' })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     await dispatcher.dispatch(
@@ -602,12 +602,12 @@ describe('git RPC methods', () => {
       thinkingLevel: 'high',
       commandInputTemplate: '{basePrompt}\n\nUse release-note style.'
     }
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       generateRuntimePullRequestFields: vi
         .fn()
         .mockResolvedValue({ success: true, fields: { title: 'Test', body: '', draft: false } })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     await dispatcher.dispatch(
@@ -638,10 +638,10 @@ describe('git RPC methods', () => {
   })
 
   it('rejects malformed commit-message settings before calling the runtime', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       generateRuntimeCommitMessage: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -662,10 +662,10 @@ describe('git RPC methods', () => {
   })
 
   it('rejects branch diff revisions that are not full object ids', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getRuntimeGitBranchDiff: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -684,10 +684,10 @@ describe('git RPC methods', () => {
   })
 
   it('rejects branch compare refs that look like git options', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getRuntimeGitBranchCompare: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -702,10 +702,10 @@ describe('git RPC methods', () => {
   })
 
   it('forwards valid branch-compare admission and defaults future tiers', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getRuntimeGitBranchCompare: vi.fn().mockResolvedValue({ summary: {}, entries: [] })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     const accepted = await dispatcher.dispatch(
@@ -740,10 +740,10 @@ describe('git RPC methods', () => {
   })
 
   it('rejects git history limits above the runtime cap', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getRuntimeGitHistory: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -758,10 +758,10 @@ describe('git RPC methods', () => {
   })
 
   it('checks out a branch', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       checkoutRuntimeGitBranch: vi.fn().mockResolvedValue({ ok: true, branch: 'feature/x' })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -773,10 +773,10 @@ describe('git RPC methods', () => {
   })
 
   it('rejects a checkout branch that starts with a dash', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       checkoutRuntimeGitBranch: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -788,12 +788,12 @@ describe('git RPC methods', () => {
   })
 
   it('lists local branches', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       listRuntimeGitLocalBranches: vi
         .fn()
         .mockResolvedValue({ current: 'main', branches: ['main', 'feature/x'] })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     const response = await dispatcher.dispatch(

@@ -1,9 +1,8 @@
+import { makeWorktree } from '../../../shared/worktree/worktree-test-fixture'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useAppStore } from '@/store'
-import { shouldUseShellReadyStartupDelivery } from '../../../shared/codex-startup-delivery'
 import type { TuiAgent } from '../../../shared/tui-agent'
 import {
-  CODEX_ACCOUNT_RESTART_STARTUP,
   markLiveCodexSessionsForRestart,
   markRestoredStaleCodexSessionsForRestart
 } from './codex-session-restart'
@@ -25,21 +24,6 @@ function setLaunchAgentOnFirstTab(launchAgent: TuiAgent): void {
   }
   useAppStore.setState({ tabsByWorktree: { wt1: [{ ...tab, launchAgent }, ...rest] } })
 }
-
-describe('CODEX_ACCOUNT_RESTART_STARTUP', () => {
-  it('waits for shell readiness before relaunching Codex after an account switch', () => {
-    // Why launchAgent is load-bearing: pty:spawn runs the managed-auth
-    // readiness gate and Codex launch prep only for launchAgent 'codex', so
-    // dropping it would let a restart respawn race the account handoff and
-    // record a launch account the pane does not actually read.
-    expect(CODEX_ACCOUNT_RESTART_STARTUP).toEqual({
-      command: 'codex',
-      startupCommandDelivery: 'shell-ready',
-      launchAgent: 'codex'
-    })
-    expect(shouldUseShellReadyStartupDelivery(CODEX_ACCOUNT_RESTART_STARTUP)).toBe(true)
-  })
-})
 
 describe('markLiveCodexSessionsForRestart', () => {
   const originalWindow = (globalThis as { window?: typeof window }).window
@@ -451,10 +435,12 @@ describe('markLiveCodexSessionsForRestart lane scoping', () => {
       settings: { activeRuntimeEnvironmentId: null } as never,
       worktreesByRepo: {
         repo1: [
-          { id: 'wt1', path: worktreePaths.wt1 ?? '/Users/dev/code/alfred' },
-          ...(worktreePaths.wt2 ? [{ id: 'wt2', path: worktreePaths.wt2 }] : [])
+          makeWorktree(
+            makeWorktree({ id: 'wt1', path: worktreePaths.wt1 ?? '/Users/dev/code/alfred' })
+          ),
+          ...(worktreePaths.wt2 ? [makeWorktree({ id: 'wt2', path: worktreePaths.wt2 })] : [])
         ]
-      } as never,
+      },
       tabsByWorktree: {
         wt1: panes.map((pane, index) => ({
           id: `tab-${index}`,

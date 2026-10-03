@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   BROWSER_CLIENT_HOST_RUNTIME_CAPABILITY,
@@ -37,11 +38,11 @@ function request(lease?: BrowserHostLease, overrides: Record<string, unknown> = 
 }
 
 function runtime(cleanups = new Map<string, () => void>()): AlfredRuntimeService {
-  return {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'runtime-a',
     getStartedAt: () => 1,
     registerSubscriptionCleanup: (id: string, cleanup: () => void) => cleanups.set(id, cleanup)
-  } as unknown as AlfredRuntimeService
+  })
 }
 
 function attachLease(hostRuntime: AlfredRuntimeService): BrowserHostLease {

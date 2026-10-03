@@ -1,5 +1,8 @@
+import { makePR } from '../../../../shared/github/pr-test-fixture'
+import { makeRepo as completeMakeRepo } from '../../../../shared/repo-test-fixture'
+import { makeWorktree as completeMakeWorktree } from '../../../../shared/worktree/worktree-test-fixture'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { AppState } from '../types'
+
 import { makeWorktree } from './worktrees-slice-test-fixtures'
 import {
   createTestStore,
@@ -34,7 +37,7 @@ describe('worktree remote runtime mutations', () => {
 
   it('waits for branch confirmation before linking a terminal PR URL for a known push target', async () => {
     const store = createTestStore()
-    const fetchPRForBranch = vi.fn().mockResolvedValue({ number: 42 })
+    const fetchPRForBranch = vi.fn().mockResolvedValue(makePR({ number: 42 }))
     const wt = makeWorktree({
       id: 'repo1::/path/wt1',
       repoId: 'repo1',
@@ -48,17 +51,17 @@ describe('worktree remote runtime mutations', () => {
     })
     store.setState({
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo1',
           path: '/repos/alfred',
           displayName: 'alfred',
           badgeColor: '#000',
           addedAt: 0
-        }
+        })
       ],
       worktreesByRepo: { repo1: [wt] },
       fetchPRForBranch
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().observeTerminalGitHubPullRequestLink(wt.id, {
       url: 'https://github.com/acme/alfred/pull/42',
@@ -91,7 +94,7 @@ describe('worktree remote runtime mutations', () => {
 
   it('ignores a terminal URL matching current GitHub PR suppression', () => {
     const store = createTestStore()
-    const fetchPRForBranch = vi.fn().mockResolvedValue({ number: 42 })
+    const fetchPRForBranch = vi.fn().mockResolvedValue(makePR({ number: 42 }))
     const wt = makeWorktree({
       id: 'repo1::/path/wt1',
       repoId: 'repo1',
@@ -102,17 +105,17 @@ describe('worktree remote runtime mutations', () => {
     })
     store.setState({
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo1',
           path: '/repos/alfred',
           displayName: 'alfred',
           badgeColor: '#000',
           addedAt: 0
-        }
+        })
       ],
       worktreesByRepo: { repo1: [wt] },
       fetchPRForBranch
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().observeTerminalGitHubPullRequestLink(wt.id, {
       url: 'https://github.com/acme/alfred/pull/42',
@@ -141,17 +144,17 @@ describe('worktree remote runtime mutations', () => {
     })
     store.setState({
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo1',
           path: '/repos/alfred',
           displayName: 'alfred',
           badgeColor: '#000',
           addedAt: 0
-        }
+        })
       ],
       worktreesByRepo: { repo1: [wt] },
       fetchPRForBranch
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().observeTerminalGitHubPullRequestLink(wt.id, {
       url: 'https://github.com/acme/alfred/pull/43',
@@ -171,10 +174,10 @@ describe('worktree remote runtime mutations', () => {
 
   it('rechecks GitHub PR suppression after branch confirmation resolves', async () => {
     const store = createTestStore()
-    let resolveLookup: (value: { number: number } | null) => void = () => {}
+    let resolveLookup: (value: ReturnType<typeof makePR> | null) => void = () => {}
     const fetchPRForBranch = vi.fn(
       () =>
-        new Promise<{ number: number } | null>((resolve) => {
+        new Promise<ReturnType<typeof makePR> | null>((resolve) => {
           resolveLookup = resolve
         })
     )
@@ -191,17 +194,17 @@ describe('worktree remote runtime mutations', () => {
     })
     store.setState({
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo1',
           path: '/repos/alfred',
           displayName: 'alfred',
           badgeColor: '#000',
           addedAt: 0
-        }
+        })
       ],
       worktreesByRepo: { repo1: [wt] },
       fetchPRForBranch
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().observeTerminalGitHubPullRequestLink(wt.id, {
       url: 'https://github.com/acme/alfred/pull/42',
@@ -210,11 +213,11 @@ describe('worktree remote runtime mutations', () => {
     })
     store.setState({
       worktreesByRepo: {
-        repo1: [{ ...wt, linkedPR: null, suppressedGitHubPR: 42 }]
+        repo1: [completeMakeWorktree({ ...wt, linkedPR: null, suppressedGitHubPR: 42 })]
       }
-    } as Partial<AppState>)
+    })
 
-    resolveLookup({ number: 42 })
+    resolveLookup(makePR({ number: 42 }))
     for (let i = 0; i < 6; i++) {
       await Promise.resolve()
     }
@@ -224,7 +227,7 @@ describe('worktree remote runtime mutations', () => {
 
   it('waits for branch confirmation before linking a same-repo terminal PR URL', async () => {
     const store = createTestStore()
-    const fetchPRForBranch = vi.fn().mockResolvedValue({ number: 42 })
+    const fetchPRForBranch = vi.fn().mockResolvedValue(makePR({ number: 42 }))
     const wt = makeWorktree({
       id: 'repo1::/path/wt1',
       repoId: 'repo1',
@@ -237,17 +240,17 @@ describe('worktree remote runtime mutations', () => {
     })
     store.setState({
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo1',
           path: '/repos/alfred',
           displayName: 'alfred',
           badgeColor: '#000',
           addedAt: 0
-        }
+        })
       ],
       worktreesByRepo: { repo1: [wt] },
       fetchPRForBranch
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().observeTerminalGitHubPullRequestLink(wt.id, {
       url: 'https://github.com/acme/alfred/pull/42',
@@ -278,10 +281,10 @@ describe('worktree remote runtime mutations', () => {
 
   it('does not persist a terminal PR URL when the linked PR changes before branch confirmation resolves', async () => {
     const store = createTestStore()
-    let resolveLookup: (value: { number: number } | null) => void = () => {}
+    let resolveLookup: (value: ReturnType<typeof makePR> | null) => void = () => {}
     const fetchPRForBranch = vi.fn(
       () =>
-        new Promise<{ number: number } | null>((resolve) => {
+        new Promise<ReturnType<typeof makePR> | null>((resolve) => {
           resolveLookup = resolve
         })
     )
@@ -297,17 +300,17 @@ describe('worktree remote runtime mutations', () => {
     })
     store.setState({
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo1',
           path: '/repos/alfred',
           displayName: 'alfred',
           badgeColor: '#000',
           addedAt: 0
-        }
+        })
       ],
       worktreesByRepo: { repo1: [wt] },
       fetchPRForBranch
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().observeTerminalGitHubPullRequestLink(wt.id, {
       url: 'https://github.com/acme/alfred/pull/42',
@@ -317,10 +320,10 @@ describe('worktree remote runtime mutations', () => {
     expect(mockApi.worktrees.updateMeta).not.toHaveBeenCalled()
 
     store.setState({
-      worktreesByRepo: { repo1: [{ ...wt, linkedPR: 7 }] }
-    } as Partial<AppState>)
+      worktreesByRepo: { repo1: [completeMakeWorktree({ ...wt, linkedPR: 7 })] }
+    })
 
-    resolveLookup({ number: 42 })
+    resolveLookup(makePR({ number: 42 }))
     for (let i = 0; i < 6; i++) {
       await Promise.resolve()
     }
@@ -331,7 +334,7 @@ describe('worktree remote runtime mutations', () => {
 
   it('does not persist a terminal PR URL when the linked PR changes while push target lookup resolves', async () => {
     const store = createTestStore()
-    const fetchPRForBranch = vi.fn().mockResolvedValue({ number: 42 })
+    const fetchPRForBranch = vi.fn().mockResolvedValue(makePR({ number: 42 }))
     let resolvePushTarget: (value: {
       baseBranch: string
       pushTarget: { remoteName: string; branchName: string }
@@ -353,17 +356,17 @@ describe('worktree remote runtime mutations', () => {
     })
     store.setState({
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo1',
           path: '/repos/alfred',
           displayName: 'alfred',
           badgeColor: '#000',
           addedAt: 0
-        }
+        })
       ],
       worktreesByRepo: { repo1: [wt] },
       fetchPRForBranch
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().observeTerminalGitHubPullRequestLink(wt.id, {
       url: 'https://github.com/acme/alfred/pull/42',
@@ -381,8 +384,8 @@ describe('worktree remote runtime mutations', () => {
     })
 
     store.setState({
-      worktreesByRepo: { repo1: [{ ...wt, linkedPR: 7 }] }
-    } as Partial<AppState>)
+      worktreesByRepo: { repo1: [completeMakeWorktree({ ...wt, linkedPR: 7 })] }
+    })
 
     resolvePushTarget({
       baseBranch: 'main',
@@ -412,17 +415,17 @@ describe('worktree remote runtime mutations', () => {
     })
     store.setState({
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo1',
           path: '/repos/alfred',
           displayName: 'alfred',
           badgeColor: '#000',
           addedAt: 0
-        }
+        })
       ],
       worktreesByRepo: { repo1: [wt] },
       fetchPRForBranch
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().observeTerminalGitHubPullRequestLink(wt.id, {
       url: 'https://github.com/acme/alfred/pull/1',
@@ -443,7 +446,7 @@ describe('worktree remote runtime mutations', () => {
 
   it('uses branch confirmation before linking a differently named terminal PR URL', async () => {
     const store = createTestStore()
-    const fetchPRForBranch = vi.fn().mockResolvedValue({ number: 42 })
+    const fetchPRForBranch = vi.fn().mockResolvedValue(makePR({ number: 42 }))
     const wt = makeWorktree({
       id: 'repo1::/path/wt1',
       repoId: 'repo1',
@@ -453,17 +456,17 @@ describe('worktree remote runtime mutations', () => {
     mockApi.worktrees.resolvePrBase.mockResolvedValueOnce({ baseBranch: 'main' })
     store.setState({
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo1',
           path: '/repos/alfred',
           displayName: 'alfred',
           badgeColor: '#000',
           addedAt: 0
-        }
+        })
       ],
       worktreesByRepo: { repo1: [wt] },
       fetchPRForBranch
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().observeTerminalGitHubPullRequestLink(wt.id, {
       url: 'https://github.com/acme/docs/pull/42',

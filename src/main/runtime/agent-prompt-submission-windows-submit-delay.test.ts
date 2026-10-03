@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   buildAgentPromptPasteBytes,
@@ -46,7 +47,7 @@ async function createPromptRuntime(): Promise<{
   writes: string[]
   submitTimes: number[]
 }> {
-  const runtime = new AlfredRuntimeService(makeStore() as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
   const writes: string[] = []
   const submitTimes: number[] = []
   const startedAt = Date.now()
@@ -309,7 +310,7 @@ describe('agent prompt render gate on a ConPTY host', () => {
     submitTimes: number[]
   }> {
     const markerDelayMs = agentOutput.markerDelayMs ?? 100
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
     const writes: string[] = []
     const submitTimes: number[] = []
     const startedAt = Date.now()

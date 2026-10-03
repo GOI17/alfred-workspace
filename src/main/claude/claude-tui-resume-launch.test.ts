@@ -1,3 +1,4 @@
+import { agentSessionRecordFixture } from '../../shared/agent-session-record.test-fixture'
 import { chmodSync, mkdtempSync, mkdirSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { delimiter, join } from 'node:path'
@@ -10,6 +11,7 @@ import { createClaudeTuiResumeLaunchBuilder } from './claude-tui-resume-launch'
 
 function record(overrides: Partial<AgentSessionRecord> = {}): AgentSessionRecord {
   return {
+    ...agentSessionRecordFixture(),
     sessionId: 'alfred-session-1',
     provider: 'claude',
     location: {
@@ -29,7 +31,7 @@ function record(overrides: Partial<AgentSessionRecord> = {}): AgentSessionRecord
       }
     ],
     ...overrides
-  } as AgentSessionRecord
+  }
 }
 
 function makeExecutable(path: string): void {

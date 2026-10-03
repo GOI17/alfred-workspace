@@ -86,7 +86,7 @@ describe('AlfredRuntimeService', () => {
     }
     registerSshGitProvider('ssh-1', provider as never)
     getActiveMultiplexerMock.mockReturnValue({ request: muxRequestMock, notify: vi.fn() })
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(remoteStore)
     const spawn = vi.fn().mockResolvedValue({ id: 'pty-remote-startup-draft' })
     runtime.setPtyController({
       spawn,
@@ -195,7 +195,7 @@ describe('AlfredRuntimeService', () => {
     }
     registerSshGitProvider('ssh-1', gitProvider as never)
     registerSshFilesystemProvider('ssh-1', fsProvider as never)
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(remoteStore)
     const spawn = vi.fn().mockResolvedValue({ id: 'pty-remote-codex-draft' })
     runtime.setPtyController({
       spawn,
@@ -308,7 +308,7 @@ describe('AlfredRuntimeService', () => {
     }
     registerSshGitProvider('ssh-1', gitProvider as never)
     registerSshFilesystemProvider('ssh-1', fsProvider as never)
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(remoteStore)
     const spawn = vi.fn().mockResolvedValue({ id: 'pty-remote-codex-command' })
     runtime.setPtyController({
       spawn,

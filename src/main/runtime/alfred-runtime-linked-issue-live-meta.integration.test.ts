@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -127,7 +128,7 @@ describe('runtime commit-message generation linked-issue freshness', () => {
         isMainWorktree: true
       }
     ])
-    const runtime = new AlfredRuntimeService(store as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
 
     // Why: the first generation warms the resolved-worktree cache with the
     // unlinked projection, so a stale read would still answer `unlinked` below.

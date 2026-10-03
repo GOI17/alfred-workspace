@@ -108,11 +108,7 @@ export function useTerminalPaneGlobalListeners(controller: TerminalPaneCloseCont
   })
 
   useEffect(() => {
-    if (
-      !(globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__ ||
-      !isVisible ||
-      !isActive
-    ) {
+    if (!globalThis.__ALFRED_WEB_CLIENT__ || !isVisible || !isActive) {
       return
     }
     const cleanupCallbacks: (() => void)[] = []

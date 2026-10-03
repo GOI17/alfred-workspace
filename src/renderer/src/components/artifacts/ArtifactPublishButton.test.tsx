@@ -16,7 +16,7 @@ const mocks = vi.hoisted(() => ({
   publish: vi.fn(),
   openPopover: null as ((open: boolean) => void) | null,
   state: {
-    alfredProfileAuthStatus: { configured: true, state: 'connected' } as Record<string, unknown>,
+    alfredProfileAuthStatus: { configured: true, state: 'connected' },
     settings: { artifactSharingEnabled: true }
   }
 }))

@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -66,7 +67,7 @@ describe('paired runtime navigation isolation', () => {
     const focusTerminal = vi.fn((nextTabId: string) => {
       hostSelections.tabId = nextTabId
     })
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
     if (!options.headless) {
       runtime.setNotifier({
         worktreesChanged: vi.fn(),
@@ -760,7 +761,7 @@ describe('paired runtime navigation isolation', () => {
       }
     })
 
-    const first = new AlfredRuntimeService(makeStoreWithSelections() as never)
+    const first = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStoreWithSelections()))
     first.attachWindow(1)
     first.markGraphReady(1)
     seedSessionTabs(first)
@@ -771,7 +772,9 @@ describe('paired runtime navigation isolation', () => {
     })
     expect(persisted.state['device-a']?.[SESSION_WORKTREE_ID]?.activeTabId).toBe('client-a-tab')
 
-    const restarted = new AlfredRuntimeService(makeStoreWithSelections() as never)
+    const restarted = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(makeStoreWithSelections())
+    )
     restarted.attachWindow(1)
     restarted.markGraphReady(1)
     seedSessionTabs(restarted)

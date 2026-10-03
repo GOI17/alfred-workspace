@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   MOCK_GIT_WORKTREES,
@@ -38,7 +39,7 @@ describe('AlfredRuntimeService', () => {
         'host-tab': makeHeadlessTerminalLayout({ [HEADLESS_LEAF_ID]: 'pty-foreign' })
       }
     })
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     const stopAndWait = vi.fn(async () => true)
     runtime.setPtyController({
       write: () => true,
@@ -98,7 +99,7 @@ describe('AlfredRuntimeService', () => {
         'host-tab': makeHeadlessTerminalLayout({ [HEADLESS_LEAF_ID]: 'opaque-foreign-pty' })
       }
     })
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     const stopAndWait = vi.fn(async () => true)
     runtime.setPtyController({
       write: () => true,

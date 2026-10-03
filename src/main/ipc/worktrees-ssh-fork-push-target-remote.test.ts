@@ -1,9 +1,9 @@
+import { createSshGitProviderTestDouble } from '../providers/ssh-git-provider-test-double'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { validateGitExecArgs } from '../../relay/git-exec-validator'
 import { getSshGitProviderMock, getActiveMultiplexerMock } from './worktrees-test-module-mocks'
 import { handlers, setupWorktreeHandlers, store } from './worktrees-test-harness'
 import { materializeWorktreePushTargetRemoteSsh } from './worktree-remote'
-import type { SshGitProvider } from '../providers/ssh-git-provider'
 
 vi.mock('electron', async () =>
   (await import('./worktrees-test-module-mocks')).electronModuleMock()
@@ -199,7 +199,7 @@ describe('registerWorktreeHandlers', () => {
     }
 
     const result = await materializeWorktreePushTargetRemoteSsh(
-      { exec, fetchRemoteTrackingRef, markRemoteAlfredCreated } as unknown as SshGitProvider,
+      createSshGitProviderTestDouble({ exec, fetchRemoteTrackingRef, markRemoteAlfredCreated }),
       '/remote/repo',
       target
     )

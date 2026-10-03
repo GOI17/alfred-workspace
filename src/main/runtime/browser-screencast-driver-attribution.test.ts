@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from './runtime-service-test-double'
 /**
  * `browser.screencast` is the one stream a phone, a paired desktop client, the web client and the
  * CLI all open against the same host page. Stamping every subscriber as the mobile driver put the
@@ -5,7 +6,6 @@
  * no phone had ever touched.
  */
 import { describe, expect, it, vi } from 'vitest'
-import type { AlfredRuntimeService } from './alfred-runtime'
 import { RpcDispatcher } from './rpc/dispatcher'
 import { BROWSER_SCREENCAST_METHODS } from './rpc/methods/browser-screencast'
 import {
@@ -108,11 +108,11 @@ describe('browser.screencast RPC wiring', () => {
     'forwards the caller pairing scope %s to the runtime',
     async (clientKind, expected) => {
       const browserScreencast = vi.fn(async () => {})
-      const runtime = {
+      const runtime = createRuntimeServiceTestDouble({
         getRuntimeId: () => 'test-runtime',
         browserScreencast,
         cleanupSubscription: vi.fn()
-      } as unknown as AlfredRuntimeService
+      })
       const dispatcher = new RpcDispatcher({ runtime, methods: BROWSER_SCREENCAST_METHODS })
 
       await dispatcher.dispatchStreaming(

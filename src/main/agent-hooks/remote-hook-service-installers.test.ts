@@ -229,10 +229,7 @@ describe('remote hook service installers', () => {
 
     expect(status.state).toBe('installed')
     expect(status.configPath).toBe('/home/me/.codex/hooks.json')
-    const hooks = JSON.parse(fs.files.get('/home/me/.codex/hooks.json')!) as {
-      hooks: Record<string, { hooks: { command: string }[] }[]>
-      _managed?: unknown
-    }
+    const hooks = JSON.parse(fs.files.get('/home/me/.codex/hooks.json')!)
     expect(hooks._managed).toEqual({ 'external-manager': { Stop: [0] } })
     for (const eventName of [
       'SessionStart',
@@ -330,9 +327,7 @@ describe('remote hook service installers', () => {
     await new GrokHookService().installRemote(grok.sftp, '/home/me')
     await new DevinHookService().installRemote(devin.sftp, '/home/me')
 
-    const geminiConfig = JSON.parse(gemini.fs.files.get('/home/me/.gemini/settings.json')!) as {
-      hooks: Record<string, { hooks: { command: string }[] }[]>
-    }
+    const geminiConfig = JSON.parse(gemini.fs.files.get('/home/me/.gemini/settings.json')!)
     for (const eventName of ['BeforeAgent', 'AfterAgent', 'AfterTool', 'BeforeTool']) {
       const command = geminiConfig.hooks[eventName]?.[0]?.hooks?.[0]?.command
       expect(command).toContain('/home/me/.alfred/agent-hooks/gemini-hook.sh')
@@ -342,12 +337,7 @@ describe('remote hook service installers', () => {
 
     const antigravityConfig = JSON.parse(
       antigravity.fs.files.get('/home/me/.gemini/config/hooks.json')!
-    ) as {
-      'alfred-status': Record<
-        string,
-        { matcher?: string; command?: string; hooks?: { command: string }[] }[]
-      >
-    }
+    )
     for (const eventName of ['PreInvocation', 'PostInvocation', 'Stop']) {
       const command = antigravityConfig['alfred-status'][eventName]?.[0]?.command
       expect(command).toContain('/home/me/.alfred/agent-hooks/antigravity-hook.sh')
@@ -373,10 +363,7 @@ describe('remote hook service installers', () => {
     expect(ampPlugin).toContain("amp.on('tool.call'")
     expect(ampPlugin).toContain('return { action: "allow" }')
 
-    const cursorConfig = JSON.parse(cursor.fs.files.get('/home/me/.cursor/hooks.json')!) as {
-      version: number
-      hooks: Record<string, { command?: string; hooks?: unknown[] }[]>
-    }
+    const cursorConfig = JSON.parse(cursor.fs.files.get('/home/me/.cursor/hooks.json')!)
     expect(cursorConfig.version).toBe(1)
     for (const eventName of CURSOR_EVENTS) {
       const definition = cursorConfig.hooks[eventName]?.[0]
@@ -390,9 +377,7 @@ describe('remote hook service installers', () => {
 
     const commandCodeConfig = JSON.parse(
       commandCode.fs.files.get('/home/me/.commandcode/settings.json')!
-    ) as {
-      hooks: Record<string, { matcher?: string; hooks?: { command: string }[] }[]>
-    }
+    )
     for (const eventName of ['PreToolUse', 'PostToolUse', 'Stop']) {
       const definition = commandCodeConfig.hooks[eventName]?.[0]
       const command = definition?.hooks?.[0]?.command
@@ -403,11 +388,7 @@ describe('remote hook service installers', () => {
     expect(commandCodeConfig.hooks.PostToolUse?.[0]?.matcher).toBe('.*')
     expect(commandCodeConfig.hooks.Stop?.[0]?.matcher).toBeUndefined()
 
-    const grokConfig = JSON.parse(
-      grok.fs.files.get('/home/me/.grok/hooks/alfred-status.json')!
-    ) as {
-      hooks: Record<string, { matcher?: string; hooks?: { command: string }[] }[]>
-    }
+    const grokConfig = JSON.parse(grok.fs.files.get('/home/me/.grok/hooks/alfred-status.json')!)
     for (const eventName of [
       'SessionStart',
       'UserPromptSubmit',
@@ -577,9 +558,7 @@ describe('remote hook service installers', () => {
 
     await new AntigravityHookService().installRemote(sftp, '/home/me')
 
-    const config = JSON.parse(fs.files.get('/home/me/.gemini/config/hooks.json')!) as {
-      'alfred-status': Record<string, { hooks?: { command: string }[] }[]>
-    }
+    const config = JSON.parse(fs.files.get('/home/me/.gemini/config/hooks.json')!)
     const preToolCommands = config['alfred-status'].PreToolUse.flatMap((definition) =>
       (definition.hooks ?? []).map((hook) => hook.command)
     )
@@ -628,9 +607,7 @@ describe('remote hook service installers', () => {
 
     await new GeminiHookService().installRemote(sftp, '/home/me')
 
-    const config = JSON.parse(fs.files.get('/home/me/.gemini/settings.json')!) as {
-      hooks: Record<string, { hooks?: { command: string }[] }[]>
-    }
+    const config = JSON.parse(fs.files.get('/home/me/.gemini/settings.json')!)
     const preToolCommands = config.hooks.PreToolUse.flatMap((definition) =>
       (definition.hooks ?? []).map((hook) => hook.command)
     )
@@ -658,11 +635,7 @@ describe('remote hook service installers', () => {
 
     expect(status.state).toBe('installed')
     expect(status.configPath).toBe('/home/me/.copilot/hooks/alfred.json')
-    const config = JSON.parse(fs.files.get('/home/me/.copilot/hooks/alfred.json')!) as {
-      version: number
-      disableAllHooks?: boolean
-      hooks: Record<string, { bash?: string; timeoutSec?: number }[]>
-    }
+    const config = JSON.parse(fs.files.get('/home/me/.copilot/hooks/alfred.json')!)
     expect(config.version).toBe(1)
     for (const eventName of [
       'SessionStart',
@@ -803,9 +776,7 @@ describe('remote hook service installers', () => {
 
     expect(status.state).toBe('installed')
     expect(status.configPath).toBe('/home/me/.factory/settings.json')
-    const config = JSON.parse(fs.files.get('/home/me/.factory/settings.json')!) as {
-      hooks: Record<string, { matcher?: string; hooks?: { command: string }[] }[]>
-    }
+    const config = JSON.parse(fs.files.get('/home/me/.factory/settings.json')!)
     for (const eventName of [
       'SessionStart',
       'UserPromptSubmit',

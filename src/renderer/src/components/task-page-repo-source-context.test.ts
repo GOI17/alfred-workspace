@@ -1,6 +1,6 @@
+import { makeRepo as fixtureMakeRepo } from '../../../shared/repo-test-fixture'
 import { describe, expect, it } from 'vitest'
 import { buildGitLabProviderIdentity, getTaskPageRepoCacheInput } from './task-page-source-context'
-import type { Repo } from '../../../shared/repo-types'
 
 describe('buildGitLabProviderIdentity', () => {
   it('splits namespace and project and builds the web URL', () => {
@@ -36,11 +36,11 @@ describe('buildGitLabProviderIdentity', () => {
 
 describe('getTaskPageRepoCacheInput', () => {
   it('copies repo identity fields used by the GitHub work-item cache', () => {
-    const repo = {
+    const repo = fixtureMakeRepo({
       id: 'repo-1',
       path: '/tmp/alfred',
       executionHostId: 'local'
-    } as Repo
+    })
     const input = getTaskPageRepoCacheInput(repo)
     expect(input.id).toBe('repo-1')
     expect(input.path).toBe('/tmp/alfred')

@@ -1,3 +1,4 @@
+import { agentSessionRecordFixture } from '../../shared/agent-session-record.test-fixture'
 import { spawnSync } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
@@ -225,10 +226,16 @@ describe.skipIf(!claudeAuthenticated)('real Claude TUI resume proof', () => {
       expect(started.session_id).toBe(providerSessionId)
       await adapter.closeAll()
 
-      const record = {
+      const record: AgentSessionRecord = {
+        ...agentSessionRecordFixture(),
         sessionId: 'alfred-real-claude-resume',
         provider: 'claude',
-        location: { workspaceId: 'workspace-real' },
+        location: {
+          executionHostId: 'local',
+          wslDistro: null,
+          workspaceKind: 'folder',
+          workspaceId: 'workspace-real'
+        },
         accountHome: { variable: 'CLAUDE_CONFIG_DIR', path: claudeConfigDir },
         providerHandleChain: [
           {
@@ -239,7 +246,7 @@ describe.skipIf(!claudeAuthenticated)('real Claude TUI resume proof', () => {
             observedAt: 1
           }
         ]
-      } as AgentSessionRecord
+      }
       const launch = await createClaudeTuiResumeLaunchBuilder({
         resolveWorkspacePath: async () => process.cwd(),
         resolveCommand: () => command,

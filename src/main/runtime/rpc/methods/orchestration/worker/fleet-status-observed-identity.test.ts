@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../../../runtime-service-test-double'
 import { describe, expect, it } from 'vitest'
 import type { AgentStatusOrchestrationContext } from '../../../../../../shared/agent-status-types'
 import { AgentHookServer } from '../../../../../agent-hooks/server'
@@ -76,12 +77,12 @@ function createWorld(): ObservedWorld {
         connectionId: null,
         payload: { state, prompt: `turn ${state}`, agentType: 'claude' }
       }),
-    runtime: {
+    runtime: createRuntimeServiceTestDouble({
       getOrchestrationFleetAgentStatusSnapshot: () =>
         AlfredRuntimeWithGetOrchestrationDispatchAuthority.prototype.getOrchestrationFleetAgentStatusSnapshot.call(
           host as never
         )
-    } as unknown as AlfredRuntimeService
+    })
   }
 }
 

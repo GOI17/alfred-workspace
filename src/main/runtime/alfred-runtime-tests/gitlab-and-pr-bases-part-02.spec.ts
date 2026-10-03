@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   ORIGIN_HEAD_COMPONENT,
@@ -36,7 +37,7 @@ describe('AlfredRuntimeService', () => {
       getSettings: () => settings,
       updateSettings
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     getGitLabWorkItemByProjectRefMock.mockResolvedValueOnce({
       id: 'gitlab-issue-7',
@@ -95,17 +96,17 @@ describe('AlfredRuntimeService', () => {
           displayName: 'repo',
           badgeColor: 'blue',
           sourceRepoIds: [TEST_REPO_ID],
-          localWindowsRuntimePreference: { kind: 'wsl', distro: 'Ubuntu' },
+          localWindowsRuntimePreference: { kind: 'wsl' as const, distro: 'Ubuntu' },
           createdAt: 0,
           updatedAt: 0
         }
       ],
       getSettings: () => ({
         ...store.getSettings(),
-        localWindowsRuntimeDefault: { kind: 'windows-host' }
+        localWindowsRuntimeDefault: { kind: 'windows-host' as const }
       })
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     const gitSpy = vi.spyOn(gitRunner, 'gitExecFileAsync').mockImplementation(async (args) => {
       if (args[0] === 'symbolic-ref') {
         return { stdout: 'refs/remotes/origin/main\n', stderr: '' }
@@ -215,7 +216,7 @@ describe('AlfredRuntimeService', () => {
       fetchRemoteTrackingRef: vi.fn().mockResolvedValue(undefined)
     }
     registerSshGitProvider('ssh-1', provider as never)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     const result = await runtime.resolveManagedPrBase({
       repoSelector: 'id:repo-1',
@@ -261,7 +262,7 @@ describe('AlfredRuntimeService', () => {
       host: 'gitlab.example',
       path: 'group/repo'
     })
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     const gitSpy = vi.spyOn(gitRunner, 'gitExecFileAsync').mockImplementation(async (args) => {
       if (args[0] === 'remote' && args[1] === 'get-url') {
         return { stdout: `${ORIGIN_REMOTE_URL}\n`, stderr: '' }
@@ -336,7 +337,7 @@ describe('AlfredRuntimeService', () => {
       host: 'gitlab.example',
       path: 'group/repo'
     })
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     // Why: simulate a concurrent `git fetch origin` clobbering FETCH_HEAD with the
     // default-branch tip. The resolved base must come from the durable Alfred MR ref.
     const gitSpy = vi.spyOn(gitRunner, 'gitExecFileAsync').mockImplementation(async (args) => {
@@ -401,7 +402,7 @@ describe('AlfredRuntimeService', () => {
       host: 'gitlab.example',
       path: 'group/repo'
     })
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     const gitSpy = vi.spyOn(gitRunner, 'gitExecFileAsync').mockImplementation(async (args) => {
       if (args[0] === 'remote' && args[1] === 'get-url') {
         return { stdout: `${ORIGIN_REMOTE_URL}\n`, stderr: '' }
@@ -468,7 +469,7 @@ describe('AlfredRuntimeService', () => {
       host: 'gitlab.example',
       path: 'group/repo'
     })
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     const gitSpy = vi.spyOn(gitRunner, 'gitExecFileAsync').mockImplementation(async (args) => {
       if (args[0] === 'remote' && args[1] === 'get-url') {
         return { stdout: `${ORIGIN_REMOTE_URL}\n`, stderr: '' }
@@ -533,17 +534,17 @@ describe('AlfredRuntimeService', () => {
           displayName: 'repo',
           badgeColor: 'blue',
           sourceRepoIds: [TEST_REPO_ID],
-          localWindowsRuntimePreference: { kind: 'wsl', distro: 'Ubuntu' },
+          localWindowsRuntimePreference: { kind: 'wsl' as const, distro: 'Ubuntu' },
           createdAt: 0,
           updatedAt: 0
         }
       ],
       getSettings: () => ({
         ...store.getSettings(),
-        localWindowsRuntimeDefault: { kind: 'windows-host' }
+        localWindowsRuntimeDefault: { kind: 'windows-host' as const }
       })
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     const gitSpy = vi.spyOn(gitRunner, 'gitExecFileAsync').mockImplementation(async (args) => {
       if (args[0] === 'remote' && args[1] === 'get-url') {
         return { stdout: `${ORIGIN_REMOTE_URL}\n`, stderr: '' }

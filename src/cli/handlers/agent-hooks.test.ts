@@ -66,7 +66,7 @@ vi.mock('../../main/codex/managed-home-shell-preflight', () => ({
 import { main } from '../index'
 
 function readDataFile(userDataPath: string): PersistedState {
-  return JSON.parse(readFileSync(join(userDataPath, 'alfred-data.json'), 'utf-8')) as PersistedState
+  return JSON.parse(readFileSync(join(userDataPath, 'alfred-data.json'), 'utf-8'))
 }
 
 function writeDataFile(userDataPath: string, state: PersistedState): void {

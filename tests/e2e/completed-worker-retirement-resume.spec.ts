@@ -371,10 +371,7 @@ for (const closeMode of ['terminal-close-cli', 'worker-release'] as const) {
           throw new Error('Renderer store unavailable')
         }
         type Transition = { tabPresent: boolean; recoveryPresent: boolean }
-        const e2eWindow = window as typeof window & {
-          __alfredRetiredWorkerTransitions?: Transition[]
-          __alfredRetiredWorkerUnsubscribe?: () => void
-        }
+        const e2eWindow = window
         const transitions: Transition[] = [
           {
             tabPresent: Boolean(
@@ -435,9 +432,7 @@ for (const closeMode of ['terminal-close-cli', 'worker-release'] as const) {
     await expect
       .poll(() =>
         alfredPage.evaluate(() => {
-          type Transition = { tabPresent: boolean; recoveryPresent: boolean }
-          return (window as typeof window & { __alfredRetiredWorkerTransitions?: Transition[] })
-            .__alfredRetiredWorkerTransitions
+          return window.__alfredRetiredWorkerTransitions
         })
       )
       .toEqual(
@@ -447,7 +442,7 @@ for (const closeMode of ['terminal-close-cli', 'worker-release'] as const) {
         ])
       )
     await alfredPage.evaluate(() => {
-      const e2eWindow = window as typeof window & { __alfredRetiredWorkerUnsubscribe?: () => void }
+      const e2eWindow = window
       e2eWindow.__alfredRetiredWorkerUnsubscribe?.()
       delete e2eWindow.__alfredRetiredWorkerUnsubscribe
     })
@@ -553,4 +548,12 @@ for (const closeMode of ['terminal-close-cli', 'worker-release'] as const) {
     expect(coordinatorAfter ? terminalIdentity(coordinatorAfter) : null).toEqual(coordinatorBefore)
     expect(coordinatorAfter?.worktreeId).toBe(coordinatorWorktreeId)
   })
+}
+
+declare global {
+  // oxlint-disable-next-line typescript/consistent-type-definitions -- Window declarations must merge with the DOM library.
+  interface Window {
+    __alfredRetiredWorkerTransitions?: { tabPresent: boolean; recoveryPresent: boolean }[]
+    __alfredRetiredWorkerUnsubscribe?: () => void
+  }
 }

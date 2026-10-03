@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   AlfredRuntimeService,
@@ -309,17 +310,17 @@ describe('AlfredRuntimeService', () => {
           displayName: 'repo',
           badgeColor: 'blue',
           sourceRepoIds: [TEST_REPO_ID],
-          localWindowsRuntimePreference: { kind: 'wsl', distro: 'Ubuntu' },
+          localWindowsRuntimePreference: { kind: 'wsl' as const, distro: 'Ubuntu' },
           createdAt: 0,
           updatedAt: 0
         }
       ],
       getSettings: () => ({
         ...store.getSettings(),
-        localWindowsRuntimeDefault: { kind: 'windows-host' }
+        localWindowsRuntimeDefault: { kind: 'windows-host' as const }
       })
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     const createdWorktree = {
       path: '/tmp/workspaces/runtime-wsl',
       head: 'def',
@@ -540,7 +541,7 @@ describe('AlfredRuntimeService', () => {
       listProcesses: vi.fn(async () => [{ id: `${TEST_WORKTREE_ID}@@1` }]),
       shutdown: vi.fn(async () => {})
     }
-    const runtime = new AlfredRuntimeService(orphanStore as never, undefined, {
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(orphanStore), undefined, {
       getLocalProvider: () => localProvider as never
     })
     const stopAndWait = vi.fn().mockResolvedValue(true)
@@ -586,7 +587,7 @@ describe('AlfredRuntimeService', () => {
       listProcesses: vi.fn(async () => [{ id: `${TEST_WORKTREE_ID}@@1` }]),
       shutdown: vi.fn(async () => {})
     }
-    const runtime = new AlfredRuntimeService(orphanStore as never, undefined, {
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(orphanStore), undefined, {
       getLocalProvider: () => localProvider as never
     })
     const stopAndWait = vi.fn().mockResolvedValue(true)
@@ -638,7 +639,7 @@ describe('AlfredRuntimeService', () => {
       listProcesses: vi.fn(async () => []),
       shutdown: vi.fn(async () => {})
     }
-    const runtime = new AlfredRuntimeService(orphanStore as never, undefined, {
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(orphanStore), undefined, {
       getLocalProvider: () => localProvider as never
     })
     const stopAndWait = vi.fn().mockResolvedValue(true)

@@ -1,4 +1,5 @@
-import { expect, vi } from 'vitest'
+import { makeWorktreeMeta } from '../../shared/worktree/metadata-test-fixture'
+import { expect, vi, type Mock } from 'vitest'
 import { createHash } from 'node:crypto'
 import { HeadlessEmulator } from '../daemon/headless-emulator'
 import { AlfredRuntimeService } from './alfred-runtime'
@@ -311,24 +312,6 @@ function makeRpcRequest(method: string, params?: unknown): RpcRequest {
   return { id: 'req-1', authToken: 'tok', method, params }
 }
 
-function makeWorktreeMeta(overrides: Partial<WorktreeMeta> = {}): WorktreeMeta {
-  return {
-    displayName: '',
-    comment: '',
-    linkedIssue: null,
-    linkedPR: null,
-    linkedLinearIssue: null,
-    linkedGitLabMR: null,
-    linkedGitLabIssue: null,
-    isArchived: false,
-    isUnread: false,
-    isPinned: false,
-    sortOrder: 0,
-    lastActivityAt: 0,
-    ...overrides
-  }
-}
-
 function makeWorktreeInfo(
   path: string,
   head = 'head'
@@ -556,14 +539,19 @@ function makeRuntimeStoreWithWorkspaceSession(
   // one partition only — a loose stub lets a hardcoded host id pass unnoticed.
   ownerHostId = 'local'
 ): {
-  runtimeStore: typeof store & {
-    getWorkspaceSession: (hostId?: string) => WorkspaceSessionState
-    setWorkspaceSession: ReturnType<typeof vi.fn>
-    flushOrThrow: ReturnType<typeof vi.fn>
-    persistPtyBinding: ReturnType<typeof vi.fn>
+  runtimeStore: Omit<
+    typeof store,
+    'getWorkspaceSession' | 'setWorkspaceSession' | 'flushOrThrow' | 'persistPtyBinding'
+  > & {
+    getWorkspaceSession(hostId?: string): WorkspaceSessionState
+    setWorkspaceSession: Mock<(next: WorkspaceSessionState) => void>
+    flushOrThrow: Mock<() => void>
+    persistPtyBinding: Mock<
+      (args: { worktreeId: string; tabId: string; leafId: string; ptyId: string }) => boolean
+    >
   }
-  getSession: () => WorkspaceSessionState
-  setSession: (next: WorkspaceSessionState) => void
+  getSession(): WorkspaceSessionState
+  setSession(next: WorkspaceSessionState): void
 } {
   let session = initialSession
   const setSession = (next: WorkspaceSessionState): void => {

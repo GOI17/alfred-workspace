@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { AlfredRuntimeService } from '../alfred-runtime-test-mocks.spec'
 import {
@@ -20,7 +21,7 @@ describe('AlfredRuntimeService', () => {
       })
     )
     const spawn = vi.fn().mockResolvedValue({ id: 'unexpected-pty' })
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       spawn,
       write: () => true,
@@ -65,7 +66,7 @@ describe('AlfredRuntimeService', () => {
       })
     )
     const kill = vi.fn(() => true)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       write: () => true,
       kill,
@@ -114,7 +115,7 @@ describe('AlfredRuntimeService', () => {
     const { runtimeStore, getSession } = makeRuntimeStoreWithWorkspaceSession(
       makeWorkspaceSessionWithHeadlessTerminal()
     )
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       write: () => true,
       kill: () => true,
@@ -154,7 +155,7 @@ describe('AlfredRuntimeService', () => {
     )
     const kill = vi.fn(() => true)
     const closeTerminal = vi.fn()
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       write: () => true,
       kill,
@@ -221,7 +222,7 @@ describe('AlfredRuntimeService', () => {
     )
     const kill = vi.fn(() => true)
     const closeTerminal = vi.fn()
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       write: () => true,
       kill,
@@ -287,7 +288,7 @@ describe('AlfredRuntimeService', () => {
     )
     const kill = vi.fn(() => true)
     const closeTerminal = vi.fn()
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       write: () => true,
       kill,
@@ -311,7 +312,7 @@ describe('AlfredRuntimeService', () => {
     )
     const kill = vi.fn(() => true)
     const closeTerminal = vi.fn()
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     const forgetTabs = vi.spyOn(runtime['clientSessionTabSelections'], 'forgetTabs')
     runtime.setPtyController({
       write: () => true,
@@ -370,7 +371,7 @@ describe('AlfredRuntimeService', () => {
     )
     const kill = vi.fn(() => true)
     const closeTerminal = vi.fn()
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     const forgetTabs = vi.spyOn(runtime['clientSessionTabSelections'], 'forgetTabs')
     runtime.setPtyController({
       write: () => true,
@@ -433,7 +434,7 @@ describe('AlfredRuntimeService', () => {
     )
     const kill = vi.fn(() => true)
     const closeTerminal = vi.fn()
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       write: () => true,
       kill,
@@ -478,7 +479,7 @@ describe('AlfredRuntimeService', () => {
     )
     const kill = vi.fn(() => true)
     const closeTerminal = vi.fn()
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setPtyController({
       write: () => true,
       kill,

@@ -825,7 +825,7 @@ describe('NewWorkspaceComposerCard folder task source mode', () => {
           destroy: './scripts/alfred-vm/vercel.cleanup.sh',
           destroyDisabled: false
         }
-      ] as never,
+      ],
       onEphemeralVmRecipeChange: (recipeId) => recipeChanges.push(recipeId)
     })
 
@@ -865,7 +865,7 @@ describe('NewWorkspaceComposerCard folder task source mode', () => {
           create: './scripts/alfred-vm/vercel.start.sh',
           destroyDisabled: true
         }
-      ] as never,
+      ],
       selectedEphemeralVmRecipeId: 'vercel',
       onEphemeralVmRecipeChange: (recipeId) => recipeChanges.push(recipeId)
     })

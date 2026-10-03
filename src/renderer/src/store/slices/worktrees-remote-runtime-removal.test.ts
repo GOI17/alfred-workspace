@@ -108,7 +108,7 @@ describe('worktree remote runtime mutations', () => {
       settings: { activeRuntimeEnvironmentId: 'env-1' } as never,
       trustedAlfredHooks: { repo1: { all: { approvedAt: 1 } } },
       worktreesByRepo: { repo1: [wt] }
-    } as Partial<AppState>)
+    })
 
     await store.getState().removeWorktree({ id: wt.id, executionHostId: 'runtime:env-1' })
 
@@ -473,7 +473,7 @@ describe('worktree remote runtime mutations', () => {
       settings: { activeRuntimeEnvironmentId: 'env-1' } as never,
       trustedAlfredHooks: { 'repo-shared': { all: { approvedAt: 1 } } },
       worktreesByRepo: { 'repo-shared': [original] }
-    } as Partial<AppState>)
+    })
 
     const result = await store.getState().removeWorktree({ id: worktreeId, executionHostId: null })
 
@@ -594,7 +594,7 @@ describe('worktree remote runtime mutations', () => {
         }
       ],
       worktreesByRepo: { 'repo-ssh': [wt] }
-    } as Partial<AppState>)
+    })
 
     const result = await store.getState().removeWorktree({ id: wt.id, executionHostId: null })
 

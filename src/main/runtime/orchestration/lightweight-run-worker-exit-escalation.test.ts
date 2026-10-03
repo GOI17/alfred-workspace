@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { AlfredRuntimeService } from '../alfred-runtime'
 import { LEGACY_RUN_ID, OrchestrationDb } from './db'
@@ -49,7 +50,7 @@ function makeRuntimeWithTwoPanes(): {
   workerHandle: string
   coordinatorHandle: string
 } {
-  const runtime = new AlfredRuntimeService(makeStore() as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
   runtime.setPtyController({
     spawn: vi.fn(async () => ({ id: 'never' })),
     write: vi.fn(() => true),

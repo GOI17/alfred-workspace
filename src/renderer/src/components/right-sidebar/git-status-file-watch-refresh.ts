@@ -129,16 +129,13 @@ export function useGitStatusFileWatchRefresh({
         scheduleRefresh()
       }
     }
-    window.addEventListener(ALFRED_WORKTREE_FILE_CHANGE_EVENT, handleFsChanged as EventListener)
+    window.addEventListener(ALFRED_WORKTREE_FILE_CHANGE_EVENT, handleFsChanged)
 
     return () => {
       if (refreshTimer) {
         clearTimeout(refreshTimer)
       }
-      window.removeEventListener(
-        ALFRED_WORKTREE_FILE_CHANGE_EVENT,
-        handleFsChanged as EventListener
-      )
+      window.removeEventListener(ALFRED_WORKTREE_FILE_CHANGE_EVENT, handleFsChanged)
     }
   }, [activeRuntimeEnvironmentId, shouldSubscribe, worktreePath])
 }

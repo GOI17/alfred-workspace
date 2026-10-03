@@ -1,3 +1,4 @@
+import { isJsonObject } from '../../shared/json-object'
 // ─── Relay Protocol ─────────────────────────────────────────────────
 // 13-byte framing header matching VS Code's PersistentProtocol wire format.
 // See design-ssh-support.md § JSON-RPC Protocol Specification.
@@ -76,18 +77,21 @@ export function isGitResponseStreamMarker(value: unknown): value is GitResponseS
   if (typeof value !== 'object' || value === null || !('__alfredGitResponseStream' in value)) {
     return false
   }
-  const marker = (value as { __alfredGitResponseStream?: unknown }).__alfredGitResponseStream
-  if (typeof marker !== 'object' || marker === null) {
+  const marker = value.__alfredGitResponseStream
+  if (!isJsonObject(marker)) {
     return false
   }
-  const fields = marker as Record<string, unknown>
+  const fields = marker
   return (
+    typeof fields.streamId === 'number' &&
     Number.isInteger(fields.streamId) &&
-    (fields.streamId as number) > 0 &&
+    fields.streamId > 0 &&
+    typeof fields.totalBytes === 'number' &&
     Number.isInteger(fields.totalBytes) &&
-    (fields.totalBytes as number) >= 0 &&
+    fields.totalBytes >= 0 &&
+    typeof fields.chunkCount === 'number' &&
     Number.isInteger(fields.chunkCount) &&
-    (fields.chunkCount as number) >= 0
+    fields.chunkCount >= 0
   )
 }
 

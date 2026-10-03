@@ -111,9 +111,8 @@ export function useEditorPanelExternalContentEvents({
         invalidateDiffContent(invalidatedDiffFileIds)
       }
     }
-    window.addEventListener(ALFRED_EDITOR_EXTERNAL_FILE_CHANGE_EVENT, handler as EventListener)
-    return () =>
-      window.removeEventListener(ALFRED_EDITOR_EXTERNAL_FILE_CHANGE_EVENT, handler as EventListener)
+    window.addEventListener(ALFRED_EDITOR_EXTERNAL_FILE_CHANGE_EVENT, handler)
+    return () => window.removeEventListener(ALFRED_EDITOR_EXTERNAL_FILE_CHANGE_EVENT, handler)
   }, [
     activeContentFileIdRef,
     editorViewModeRef,
@@ -153,9 +152,8 @@ export function useEditorPanelExternalContentEvents({
         return { ...prev, [file.id]: { ...existing, modifiedContent: detail.content } }
       })
     }
-    window.addEventListener(ALFRED_EDITOR_FILE_SAVED_EVENT, handler as EventListener)
-    return () =>
-      window.removeEventListener(ALFRED_EDITOR_FILE_SAVED_EVENT, handler as EventListener)
+    window.addEventListener(ALFRED_EDITOR_FILE_SAVED_EVENT, handler)
+    return () => window.removeEventListener(ALFRED_EDITOR_FILE_SAVED_EVENT, handler)
   }, [openFilesRef, setDiffContents, setFileContents])
 }
 

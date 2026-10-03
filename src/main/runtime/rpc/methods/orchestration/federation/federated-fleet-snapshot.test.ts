@@ -1,6 +1,6 @@
+import { createRuntimeServiceTestDouble } from '../../../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { ORCHESTRATION_FEDERATION_FLEET_SNAPSHOT_RUNTIME_CAPABILITY } from '../../../../../../shared/protocol-version'
-import type { AlfredRuntimeService } from '../../../../alfred-runtime'
 import type { OrchestrationDb } from '../../../../orchestration/db'
 import { OrchestrationError } from '../../../../orchestration/orchestration-error'
 import type { FederatedDispatchRow } from '../../../../orchestration/types'
@@ -29,7 +29,7 @@ describe('federated fleet snapshots', () => {
       ...observationFenceMethods()
     } as unknown as OrchestrationDb
     const fleetBatchSizes: number[] = []
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       resolveOrchestrationWorkerServer: () => ({
         environmentId: 'environment-repointed',
         name: 'repointed',
@@ -52,7 +52,7 @@ describe('federated fleet snapshots', () => {
           }
         }
       )
-    } as unknown as AlfredRuntimeService
+    })
 
     const result = await readFederatedFleetSnapshots({ runtime, db, dispatchIds })
 
@@ -69,7 +69,7 @@ describe('federated fleet snapshots', () => {
       ...observationFenceMethods()
     } as unknown as OrchestrationDb
     const methods: string[] = []
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       resolveOrchestrationWorkerServer: () => ({
         environmentId: dispatch.environment_id,
         name: dispatch.environment_name,
@@ -88,7 +88,7 @@ describe('federated fleet snapshots', () => {
           ]
         }
       })
-    } as unknown as AlfredRuntimeService
+    })
 
     const result = await readFederatedFleetSnapshots({
       runtime,
@@ -124,7 +124,7 @@ describe('federated fleet snapshots', () => {
     } as unknown as OrchestrationDb
     let now = 1_000
     const dateNow = vi.spyOn(Date, 'now').mockImplementation(() => now)
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       resolveOrchestrationWorkerServer: (environmentId: string) => ({
         environmentId,
         name: 'repointed',
@@ -143,7 +143,7 @@ describe('federated fleet snapshots', () => {
           }
         }
       )
-    } as unknown as AlfredRuntimeService
+    })
 
     try {
       const result = await readFederatedFleetSnapshots({ runtime, db, dispatchIds })
@@ -187,7 +187,7 @@ describe('federated fleet snapshots', () => {
         }
       }
     )
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       resolveOrchestrationWorkerServer: () => ({
         environmentId: 'environment-repointed',
         name: 'repointed',
@@ -195,7 +195,7 @@ describe('federated fleet snapshots', () => {
         pairingRevision: 42
       }),
       callOrchestrationWorkerServer
-    } as unknown as AlfredRuntimeService
+    })
 
     const result = await readFederatedFleetSnapshots({
       runtime,
@@ -287,7 +287,7 @@ describe('federated fleet snapshots', () => {
         new Map(ids.map((id) => [id, { dispatch_id: id }])),
       projectFederatedDispatchObservation
     } as unknown as OrchestrationDb
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       resolveOrchestrationWorkerServer: () => ({
         environmentId: dispatch.environment_id,
         name: dispatch.environment_name,
@@ -307,7 +307,7 @@ describe('federated fleet snapshots', () => {
               ]
             }
       )
-    } as unknown as AlfredRuntimeService
+    })
 
     const result = await readFederatedFleetSnapshots({
       runtime,
@@ -328,7 +328,7 @@ describe('federated fleet snapshots', () => {
       updateFederatedDispatchRuntimeEpoch,
       ...observationFenceMethods()
     } as unknown as OrchestrationDb
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       resolveOrchestrationWorkerServer: () => ({
         environmentId: dispatch.environment_id,
         name: dispatch.environment_name,
@@ -338,7 +338,7 @@ describe('federated fleet snapshots', () => {
       callOrchestrationWorkerServer: vi.fn(async () => {
         throw new OrchestrationError('method_not_found', 'fleet snapshot unavailable')
       })
-    } as unknown as AlfredRuntimeService
+    })
 
     const result = await readFederatedFleetSnapshots({
       runtime,
@@ -379,7 +379,7 @@ describe('federated fleet snapshots', () => {
         updateFederatedDispatchRuntimeEpoch: vi.fn(),
         ...observationFenceMethods()
       } as unknown as OrchestrationDb
-      const runtime = {
+      const runtime = createRuntimeServiceTestDouble({
         resolveOrchestrationWorkerServer: () => ({
           environmentId: dispatch.environment_id,
           name: dispatch.environment_name,
@@ -389,7 +389,7 @@ describe('federated fleet snapshots', () => {
         callOrchestrationWorkerServer: vi.fn(async () => {
           throw scenario.fail()
         })
-      } as unknown as AlfredRuntimeService
+      })
 
       const federated = await readFederatedFleetSnapshots({
         runtime,

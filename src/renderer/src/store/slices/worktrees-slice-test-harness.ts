@@ -1,3 +1,4 @@
+import { createAppStateTestDouble } from '../app-state-test-double'
 import { vi, type Mock } from 'vitest'
 import { create } from 'zustand'
 import type { AppState } from '../types'
@@ -127,76 +128,75 @@ export function resetRemoteRuntimeMocks() {
 }
 
 export function createTestStore() {
-  return create<AppState>()(
-    (...a) =>
-      ({
-        // Why: this test isolates the worktree slice, so it provides only the state surface createWorktreeSlice touches.
-        ...createWorktreeSlice(...a),
-        trustedAlfredHooks: {},
-        sshConnectionStates: new Map([
-          [
-            TEST_SSH_AUTHORITY.targetId,
-            {
-              targetId: TEST_SSH_AUTHORITY.targetId,
-              status: 'connected',
-              error: null,
-              reconnectAttempt: 0,
-              providerEpoch: TEST_SSH_AUTHORITY.providerEpoch,
-              connectionGeneration: TEST_SSH_AUTHORITY.connectionGeneration
-            }
-          ]
-        ]),
-        repos: [],
-        projectHostSetups: [],
-        deleteProjectHostSetup: vi.fn().mockResolvedValue(null),
-        updateFolderWorkspace: vi.fn().mockResolvedValue(true),
-        updateSettings: vi.fn().mockResolvedValue(undefined),
-        openModal: vi.fn(),
-        shutdownWorktreeTerminals: vi.fn().mockResolvedValue(undefined),
-        shutdownWorktreeBrowsers: vi.fn().mockResolvedValue(undefined),
-        ptyIdsByTabId: {},
-        tabsByWorktree: {},
-        tabBarOrderByWorktree: {},
-        pendingReconnectTabByWorktree: {},
-        activeTabIdByWorktree: {},
-        unifiedTabsByWorktree: {},
-        groupsByWorktree: {},
-        activeGroupIdByWorktree: {},
-        layoutByWorktree: {},
-        openFiles: [],
-        editorDrafts: {},
-        markdownViewMode: {},
-        markdownRichModeSizeOverride: {},
-        editorViewMode: {},
-        showDotfilesByWorktree: {},
-        expandedDirs: {},
-        gitStatusByWorktree: {},
-        gitStatusHeadByWorktree: {},
-        gitIgnoredPathsByWorktree: {},
-        gitConflictOperationByWorktree: {},
-        trackedConflictPathsByWorktree: {},
-        gitBranchChangesByWorktree: {},
-        gitBranchCompareSummaryByWorktree: {},
-        gitBranchCompareRequestKeyByWorktree: {},
-        gitBranchCompareRequestStatusHeadByWorktree: {},
-        activeFileIdByWorktree: {},
-        activeBrowserTabIdByWorktree: {},
-        browserTabsByWorktree: {},
-        recentlyClosedBrowserTabsByWorktree: {},
-        activeTabTypeByWorktree: {},
-        rightSidebarTab: 'explorer' as const,
-        rightSidebarTabByWorktree: {},
-        activeWorktreeId: null,
-        activeTabId: null,
-        activeFileId: null,
-        activeBrowserTabId: null,
-        activeTabType: 'terminal' as const,
-        reconcileWorktreeTabModel: vi.fn(() => ({
-          activeRenderableTabId: null,
-          renderableTabCount: 0
-        })),
-        refreshGitHubForWorktreeIfStale: vi.fn()
-      }) as unknown as AppState
+  return create<AppState>()((...a) =>
+    createAppStateTestDouble({
+      // Why: this test isolates the worktree slice, so it provides only the state surface createWorktreeSlice touches.
+      ...createWorktreeSlice(...a),
+      trustedAlfredHooks: {},
+      sshConnectionStates: new Map([
+        [
+          TEST_SSH_AUTHORITY.targetId,
+          {
+            targetId: TEST_SSH_AUTHORITY.targetId,
+            status: 'connected',
+            error: null,
+            reconnectAttempt: 0,
+            providerEpoch: TEST_SSH_AUTHORITY.providerEpoch,
+            connectionGeneration: TEST_SSH_AUTHORITY.connectionGeneration
+          }
+        ]
+      ]),
+      repos: [],
+      projectHostSetups: [],
+      deleteProjectHostSetup: vi.fn().mockResolvedValue(null),
+      updateFolderWorkspace: vi.fn().mockResolvedValue(true),
+      updateSettings: vi.fn().mockResolvedValue(undefined),
+      openModal: vi.fn(),
+      shutdownWorktreeTerminals: vi.fn().mockResolvedValue(undefined),
+      shutdownWorktreeBrowsers: vi.fn().mockResolvedValue(undefined),
+      ptyIdsByTabId: {},
+      tabsByWorktree: {},
+      tabBarOrderByWorktree: {},
+      pendingReconnectTabByWorktree: {},
+      activeTabIdByWorktree: {},
+      unifiedTabsByWorktree: {},
+      groupsByWorktree: {},
+      activeGroupIdByWorktree: {},
+      layoutByWorktree: {},
+      openFiles: [],
+      editorDrafts: {},
+      markdownViewMode: {},
+      markdownRichModeSizeOverride: {},
+      editorViewMode: {},
+      showDotfilesByWorktree: {},
+      expandedDirs: {},
+      gitStatusByWorktree: {},
+      gitStatusHeadByWorktree: {},
+      gitIgnoredPathsByWorktree: {},
+      gitConflictOperationByWorktree: {},
+      trackedConflictPathsByWorktree: {},
+      gitBranchChangesByWorktree: {},
+      gitBranchCompareSummaryByWorktree: {},
+      gitBranchCompareRequestKeyByWorktree: {},
+      gitBranchCompareRequestStatusHeadByWorktree: {},
+      activeFileIdByWorktree: {},
+      activeBrowserTabIdByWorktree: {},
+      browserTabsByWorktree: {},
+      recentlyClosedBrowserTabsByWorktree: {},
+      activeTabTypeByWorktree: {},
+      rightSidebarTab: 'explorer' as const,
+      rightSidebarTabByWorktree: {},
+      activeWorktreeId: null,
+      activeTabId: null,
+      activeFileId: null,
+      activeBrowserTabId: null,
+      activeTabType: 'terminal' as const,
+      reconcileWorktreeTabModel: vi.fn(() => ({
+        activeRenderableTabId: null,
+        renderableTabCount: 0
+      })),
+      refreshGitHubForWorktreeIfStale: vi.fn()
+    })
   )
 }
 

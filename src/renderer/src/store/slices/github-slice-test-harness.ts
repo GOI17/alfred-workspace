@@ -1,9 +1,10 @@
+export { makePR } from '../../../../shared/github/pr-test-fixture'
 import { vi, type Mock } from 'vitest'
 import { create } from 'zustand'
 import { createGitHubSlice } from './github'
 import { createHostedReviewSlice } from './hosted-review'
 import type { AppState } from '../types'
-import type { PRInfo } from '../../../../shared/github/pull-request-types'
+
 import type { Worktree } from '../../../../shared/worktree/types'
 import {
   createCompatibleRuntimeStatusResponseIfNeeded,
@@ -123,20 +124,6 @@ export function createTestStore() {
         ...createHostedReviewSlice(...a)
       }) as AppState
   )
-}
-
-export function makePR(overrides: Partial<PRInfo> = {}): PRInfo {
-  return {
-    number: 12,
-    title: 'Test PR',
-    state: 'open',
-    url: 'https://example.com/pr/12',
-    checksStatus: 'pending',
-    updatedAt: '2026-03-28T00:00:00Z',
-    mergeable: 'UNKNOWN',
-    headSha: 'head-oid',
-    ...overrides
-  }
 }
 
 export function makePRRefreshWorktree(overrides: Partial<Worktree> = {}): Worktree {

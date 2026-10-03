@@ -47,7 +47,7 @@ describe('AlfredRuntimeService', () => {
     }
     registerSshGitProvider('ssh-1', provider as never)
     getGlabKnownHostsMock.mockResolvedValue(['gitlab.com', 'git.internal'])
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     const result = await runtime.resolveManagedMrBase({
       repoSelector: 'id:repo-1',
@@ -111,7 +111,7 @@ describe('AlfredRuntimeService', () => {
       host: 'gitlab.example',
       path: 'group/repo'
     })
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     const result = await runtime.resolveManagedMrBase({
       repoSelector: 'id:repo-1',
@@ -163,7 +163,7 @@ describe('AlfredRuntimeService', () => {
       host: 'gitlab.example',
       path: 'group/repo'
     })
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const gitSpy = vi.spyOn(gitRunner, 'gitExecFileAsync').mockImplementation(async (args) => {
       if (
         args[0] === 'fetch' &&
@@ -221,7 +221,7 @@ describe('AlfredRuntimeService', () => {
       host: 'gitlab.example',
       path: 'group/repo'
     })
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const gitSpy = vi.spyOn(gitRunner, 'gitExecFileAsync').mockImplementation(async (args) => {
       if (
         args[0] === 'fetch' &&
@@ -301,7 +301,7 @@ describe('AlfredRuntimeService', () => {
       path: 'group/repo'
     })
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     try {
       const result = await runtime.resolveManagedMrBase({

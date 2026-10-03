@@ -67,7 +67,10 @@ async function startHookListener(): Promise<{
       posts.push({
         payload: form.get('payload'),
         paneKey: form.get('paneKey'),
-        token: req.headers['x-alfred-agent-hook-token'] as string | null
+        token:
+          typeof req.headers['x-alfred-agent-hook-token'] === 'string'
+            ? req.headers['x-alfred-agent-hook-token']
+            : null
       })
       res.writeHead(200, { 'content-type': 'application/json' })
       res.end('{}')

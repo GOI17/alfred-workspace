@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   AlfredRuntimeService,
@@ -29,7 +30,7 @@ describe('AlfredRuntimeService', () => {
       getWorktreeMeta: (worktreeId: string) => metaById[worktreeId],
       setWorktreeMeta
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     await runtime.updateManagedWorktreeMeta(`id:${TEST_WORKTREE_ID}`, {
       comment: 'keep me',
@@ -89,7 +90,7 @@ describe('AlfredRuntimeService', () => {
         isMainWorktree: false
       }
     ])
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     await runtime.updateManagedWorktreeMeta(`id:${childId}`, {
       lineage: { parentWorktree: `id:${parentId}` }
@@ -142,7 +143,7 @@ describe('AlfredRuntimeService', () => {
         isMainWorktree: false
       }
     ])
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     await expect(
       runtime.updateManagedWorktreeMeta(`id:${childId}`, {
@@ -215,7 +216,7 @@ describe('AlfredRuntimeService', () => {
           isMainWorktree: false
         }
       ])
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     await runtime.showManagedWorktree(`id:${childId}`)
     const rotatedParentInstance = metaById[parentId].instanceId
@@ -273,7 +274,7 @@ describe('AlfredRuntimeService', () => {
       removeWorktreeLineage
     }
     vi.mocked(listWorktrees).mockRejectedValueOnce(new Error('git unavailable'))
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     await expect(runtime.showManagedWorktree(`id:${childId}`)).rejects.toThrow('selector_not_found')
 
@@ -291,7 +292,7 @@ describe('AlfredRuntimeService', () => {
       removeWorktreeLineage
     }
     vi.mocked(listWorktrees).mockRejectedValueOnce(new Error('git unavailable'))
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
 
     await expect(runtime.listDetectedManagedWorktrees(`id:${TEST_REPO_ID}`)).resolves.toEqual({
       repoId: TEST_REPO_ID,
@@ -415,7 +416,10 @@ describe('AlfredRuntimeService', () => {
     }
     const localRepo = store.getRepos()[0]
     const runtime = new AlfredRuntimeService(
-      { ...store, getRepos: () => [localRepo, { ...localRepo, connectionId: 'ssh-1' }] } as never,
+      createRuntimeStoreTestDouble({
+        ...store,
+        getRepos: () => [localRepo, { ...localRepo, connectionId: 'ssh-1' }]
+      }),
       undefined,
       { getLocalProvider: () => localProvider as never }
     )
@@ -458,10 +462,10 @@ describe('AlfredRuntimeService', () => {
     const localRepo = store.getRepos()[0]
     const sshRepo = { ...localRepo, connectionId: 'ssh-1' }
     const runtime = new AlfredRuntimeService(
-      {
+      createRuntimeStoreTestDouble({
         ...store,
         getRepos: () => [localRepo, sshRepo]
-      } as never,
+      }),
       undefined,
       {
         getLocalProvider: () => localProvider as never,
@@ -513,7 +517,7 @@ describe('AlfredRuntimeService', () => {
       getAllWorktreeMeta: () => metaById,
       getWorktreeMeta: (worktreeId: string) => metaById[worktreeId],
       getAllWorktreeLineage: () => lineageById
-    } as never)
+    })
     vi.mocked(listWorktrees).mockResolvedValue([
       makeWorktreeInfo(childPath),
       makeWorktreeInfo(parentPath)
@@ -573,7 +577,7 @@ describe('AlfredRuntimeService', () => {
         return metaById[worktreeId]
       },
       getAllWorktreeLineage: () => lineageById
-    } as never)
+    })
 
     const result = await runtime.listDetectedManagedWorktrees(`id:${folderRepo.id}`)
 
@@ -628,7 +632,7 @@ describe('AlfredRuntimeService', () => {
       getAllWorktreeMeta: () => metaById,
       getWorktreeMeta: (worktreeId: string) => metaById[worktreeId],
       setWorktreeMeta
-    } as never)
+    })
 
     const result = await runtime.listDetectedManagedWorktrees(`id:${remoteRepo.id}`, 'ssh-1')
 

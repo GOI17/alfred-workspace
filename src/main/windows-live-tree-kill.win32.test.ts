@@ -40,11 +40,11 @@ function appEnvironment(): AppEnvironment {
     isPackaged: () => false,
     onWillQuit: () => {},
     exit: () => {},
-    getAppMetrics: (() =>
+    getAppMetrics: () =>
       alfredChromiumPids.map((pid) => ({
         pid,
         type: 'Tab'
-      }))) as unknown as AppEnvironment['getAppMetrics']
+      }))
   }
 }
 

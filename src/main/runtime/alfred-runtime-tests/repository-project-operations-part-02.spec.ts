@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   DEFAULT_REPO_BADGE_COLOR,
@@ -33,7 +34,7 @@ describe('AlfredRuntimeService', () => {
     const clonePath = join(destination, 'alfred')
     const spawnSpy = vi.spyOn(gitRunner, 'gitSpawnAfterWindowsEnvironmentReady')
     const repos: Record<string, unknown>[] = []
-    getRepoUpstreamMock.mockResolvedValue({ owner: 'alfredlabs', repo: 'alfred' })
+    getRepoUpstreamMock.mockResolvedValue({ owner: 'goi17', repo: 'alfred-workspace' })
     const runtimeStore = {
       ...store,
       getRepos: () => [...repos] as never,
@@ -63,7 +64,7 @@ describe('AlfredRuntimeService', () => {
       })
       return proc as never
     })
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     try {
       const cloned = await runtime.cloneRepo('https://example.com/alfred.git', destination)
@@ -73,7 +74,7 @@ describe('AlfredRuntimeService', () => {
       expect(cloned).not.toHaveProperty('executionHostId')
 
       const result = await runtime.setupProjectExistingFolder({
-        projectId: 'github:GOI17/alfred-workspace',
+        projectId: 'github:goi17/alfred-workspace',
         hostId: 'runtime:env-1',
         path: clonePath,
         kind: 'git',
@@ -113,7 +114,7 @@ describe('AlfredRuntimeService', () => {
         executionHostId: 'runtime:env-1'
       }
     ]
-    getRepoUpstreamMock.mockResolvedValue({ owner: 'alfredlabs', repo: 'alfred' })
+    getRepoUpstreamMock.mockResolvedValue({ owner: 'goi17', repo: 'alfred-workspace' })
     const runtimeStore = {
       ...store,
       getRepos: () => [...repos] as never,
@@ -143,11 +144,11 @@ describe('AlfredRuntimeService', () => {
       })
       return proc as never
     })
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     try {
       const result = await runtime.setupProjectClone({
-        projectId: 'github:GOI17/alfred-workspace',
+        projectId: 'github:goi17/alfred-workspace',
         hostId: 'runtime:env-2',
         url: 'https://example.com/alfred.git',
         destination
@@ -184,7 +185,7 @@ describe('AlfredRuntimeService', () => {
       },
       getRepo: (id: string) => added.find((repo) => repo.id === id) as never
     }
-    const runtime = new AlfredRuntimeService(colorStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(colorStore))
     const parentDir = await mkdtemp('/tmp/alfred-runtime-create-')
     try {
       const result = await runtime.createRepo(parentDir, 'runtime-create-default', 'folder')
@@ -209,7 +210,7 @@ describe('AlfredRuntimeService', () => {
       },
       getRepo: (id: string) => added.find((repo) => repo.id === id) as never
     }
-    const runtime = new AlfredRuntimeService(createStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(createStore))
     const tempRoot = await mkdtemp(join(tmpdir(), 'alfred-runtime-create-parent-'))
     const parentDir = join(tempRoot, 'alfred', 'projects')
     try {
@@ -236,7 +237,7 @@ describe('AlfredRuntimeService', () => {
       },
       getRepo: (id: string) => added.find((repo) => repo.id === id) as never
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     const parentDir = await mkdtemp(join(tmpdir(), 'alfred-runtime-create-root-prep-'))
     try {
       const result = await runtime.createRepo(parentDir, 'runtime-create-root-prep', 'folder')
@@ -264,7 +265,7 @@ describe('AlfredRuntimeService', () => {
       ...store,
       getRepos: () => [existing]
     }
-    const runtime = new AlfredRuntimeService(colorStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(colorStore))
 
     const result = await runtime.createRepo(tmpdir(), repoName, 'folder')
 
@@ -289,7 +290,7 @@ describe('AlfredRuntimeService', () => {
       setImmediate(() => proc.emit('close', 0, null))
       return proc as never
     })
-    const runtime = new AlfredRuntimeService(colorStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(colorStore))
 
     try {
       const repo = await runtime.cloneRepo('https://example.com/repo-badge-color.git', '/tmp')
@@ -334,7 +335,7 @@ describe('AlfredRuntimeService', () => {
       })
       return proc as never
     })
-    const runtime = new AlfredRuntimeService(cloneStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(cloneStore))
 
     try {
       clearSubmodulePathsCacheForTests()
@@ -374,7 +375,7 @@ describe('AlfredRuntimeService', () => {
         return upgraded as never
       }
     }
-    const runtime = new AlfredRuntimeService(colorStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(colorStore))
 
     try {
       const repo = await runtime.cloneRepo('https://example.com/repo-badge-color.git', '/tmp')
@@ -404,7 +405,7 @@ describe('AlfredRuntimeService', () => {
       getRepo: (id: string) => (id === repo.id ? repo : undefined) as never,
       updateRepo: vi.fn(() => updated as never)
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     await expect(runtime.updateRepo(repo.id, { worktreeBasePath: '../worktrees' })).resolves.toBe(
       updated
@@ -433,7 +434,7 @@ describe('AlfredRuntimeService', () => {
       ...store,
       updateProjectHostSetup: vi.fn(() => result as never)
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     expect(
       runtime.updateProjectHostSetup({
@@ -577,7 +578,7 @@ describe('AlfredRuntimeService', () => {
       },
       getRepo: (id: string) => added.find((repo) => repo.id === id) as never
     }
-    const runtime = new AlfredRuntimeService(colorStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(colorStore))
     const destination = await mkdtemp(join(tmpdir(), 'alfred-runtime-clone-'))
 
     try {

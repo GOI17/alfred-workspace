@@ -41,7 +41,7 @@ export async function resolveDirectSetupDecision(
     // Why: route the hooks probe by the repo's owner host (passed in) so preflight
     // and the subsequent owner-routed createWorktree hit the same host.
     const result = await checkRuntimeHooks(settings, repoId)
-    yamlHooks = (result.hooks as AlfredHooks | null) ?? null
+    yamlHooks = result.hooks ?? null
   } catch {
     yamlHooks = null
   }

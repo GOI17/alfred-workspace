@@ -133,26 +133,16 @@ export function useTaskPageLinearFilterSelection(model: TaskPageLinearListSelect
   useEffect(() => {
     inAlfredLinkedLinearRefsRef.current = inAlfredLinkedLinearRefs
   }, [inAlfredLinkedLinearRefs])
-  const nextModel = model as typeof model & {
-    linearAttributePrimaryTeam: typeof linearAttributePrimaryTeam
-    applyLinearAttributeFilter: typeof applyLinearAttributeFilter
-    linearSearchActive: typeof linearSearchActive
-    showLinearAttributeFilters: typeof showLinearAttributeFilters
-    linearAttachmentWorkspaces: typeof linearAttachmentWorkspaces
-    linearIssueAttachmentIndex: typeof linearIssueAttachmentIndex
-    inAlfredLinkedLinearRefs: typeof inAlfredLinkedLinearRefs
-    inAlfredLinkedLinearRefsSignature: typeof inAlfredLinkedLinearRefsSignature
-    inAlfredLinkedLinearRefsRef: typeof inAlfredLinkedLinearRefsRef
-  }
-  nextModel.linearAttributePrimaryTeam = linearAttributePrimaryTeam
-  nextModel.applyLinearAttributeFilter = applyLinearAttributeFilter
-  nextModel.linearSearchActive = linearSearchActive
-  nextModel.showLinearAttributeFilters = showLinearAttributeFilters
-  nextModel.linearAttachmentWorkspaces = linearAttachmentWorkspaces
-  nextModel.linearIssueAttachmentIndex = linearIssueAttachmentIndex
-  nextModel.inAlfredLinkedLinearRefs = inAlfredLinkedLinearRefs
-  nextModel.inAlfredLinkedLinearRefsSignature = inAlfredLinkedLinearRefsSignature
-  nextModel.inAlfredLinkedLinearRefsRef = inAlfredLinkedLinearRefsRef
-  return nextModel
+  return Object.assign(model, {
+    linearAttributePrimaryTeam,
+    applyLinearAttributeFilter,
+    linearSearchActive,
+    showLinearAttributeFilters,
+    linearAttachmentWorkspaces,
+    linearIssueAttachmentIndex,
+    inAlfredLinkedLinearRefs,
+    inAlfredLinkedLinearRefsSignature,
+    inAlfredLinkedLinearRefsRef
+  })
 }
 export type TaskPageLinearFilterSelectionModel = ReturnType<typeof useTaskPageLinearFilterSelection>

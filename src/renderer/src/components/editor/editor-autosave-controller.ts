@@ -117,45 +117,21 @@ export function attachEditorAutosaveController(store: AppStoreApi): () => void {
   })
   syncAutoSave()
 
-  window.addEventListener(
-    ALFRED_EDITOR_SAVE_DIRTY_FILES_EVENT,
-    handleSaveDirtyFiles as EventListener
-  )
-  window.addEventListener(
-    ALFRED_EDITOR_PREPARE_HOT_EXIT_EVENT,
-    handlePrepareHotExit as EventListener
-  )
-  window.addEventListener(ALFRED_EDITOR_SAVE_AND_CLOSE_EVENT, handleSaveAndClose as EventListener)
-  window.addEventListener(ALFRED_EDITOR_SAVE_FILE_EVENT, handleSaveFile as EventListener)
-  window.addEventListener(ALFRED_EDITOR_QUIESCE_FILE_SAVES_EVENT, handleQuiesce as EventListener)
-  window.addEventListener(
-    ALFRED_EDITOR_EXTERNAL_FILE_CHANGE_EVENT,
-    handleExternalFileChange as EventListener
-  )
+  window.addEventListener(ALFRED_EDITOR_SAVE_DIRTY_FILES_EVENT, handleSaveDirtyFiles)
+  window.addEventListener(ALFRED_EDITOR_PREPARE_HOT_EXIT_EVENT, handlePrepareHotExit)
+  window.addEventListener(ALFRED_EDITOR_SAVE_AND_CLOSE_EVENT, handleSaveAndClose)
+  window.addEventListener(ALFRED_EDITOR_SAVE_FILE_EVENT, handleSaveFile)
+  window.addEventListener(ALFRED_EDITOR_QUIESCE_FILE_SAVES_EVENT, handleQuiesce)
+  window.addEventListener(ALFRED_EDITOR_EXTERNAL_FILE_CHANGE_EVENT, handleExternalFileChange)
 
   return () => {
     unsubscribe()
-    window.removeEventListener(
-      ALFRED_EDITOR_SAVE_DIRTY_FILES_EVENT,
-      handleSaveDirtyFiles as EventListener
-    )
-    window.removeEventListener(
-      ALFRED_EDITOR_PREPARE_HOT_EXIT_EVENT,
-      handlePrepareHotExit as EventListener
-    )
-    window.removeEventListener(
-      ALFRED_EDITOR_SAVE_AND_CLOSE_EVENT,
-      handleSaveAndClose as EventListener
-    )
-    window.removeEventListener(ALFRED_EDITOR_SAVE_FILE_EVENT, handleSaveFile as EventListener)
-    window.removeEventListener(
-      ALFRED_EDITOR_QUIESCE_FILE_SAVES_EVENT,
-      handleQuiesce as EventListener
-    )
-    window.removeEventListener(
-      ALFRED_EDITOR_EXTERNAL_FILE_CHANGE_EVENT,
-      handleExternalFileChange as EventListener
-    )
+    window.removeEventListener(ALFRED_EDITOR_SAVE_DIRTY_FILES_EVENT, handleSaveDirtyFiles)
+    window.removeEventListener(ALFRED_EDITOR_PREPARE_HOT_EXIT_EVENT, handlePrepareHotExit)
+    window.removeEventListener(ALFRED_EDITOR_SAVE_AND_CLOSE_EVENT, handleSaveAndClose)
+    window.removeEventListener(ALFRED_EDITOR_SAVE_FILE_EVENT, handleSaveFile)
+    window.removeEventListener(ALFRED_EDITOR_QUIESCE_FILE_SAVES_EVENT, handleQuiesce)
+    window.removeEventListener(ALFRED_EDITOR_EXTERNAL_FILE_CHANGE_EVENT, handleExternalFileChange)
     saveQueue.dispose()
   }
 }

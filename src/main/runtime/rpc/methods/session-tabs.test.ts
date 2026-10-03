@@ -1,7 +1,7 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
-import type { AlfredRuntimeService } from '../../alfred-runtime'
 import {
   SESSION_TAB_CLOSE_INTENT_RUNTIME_CAPABILITY,
   SESSION_TABS_SPLIT_GROUP_PLACEMENT_RUNTIME_CAPABILITY
@@ -15,7 +15,7 @@ function makeRequest(method: string, params?: unknown): RpcRequest {
 
 describe('session tab RPC methods', () => {
   it('routes mobile-only activation without notifying desktop clients', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       activateMobileSessionTab: vi.fn().mockResolvedValue({
         worktree: 'wt-1',
@@ -26,7 +26,7 @@ describe('session tab RPC methods', () => {
         activeTabType: 'terminal',
         tabs: []
       })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -47,11 +47,11 @@ describe('session tab RPC methods', () => {
   })
 
   it('defaults legacy paired activation to the authenticated caller identity', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       listMobileSessionTabs: vi.fn().mockResolvedValue(visibleSnapshot()),
       activateMobileSessionTab: vi.fn().mockResolvedValue({ tabs: [] })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
     const replies: string[] = []
 
@@ -76,10 +76,10 @@ describe('session tab RPC methods', () => {
   // Why: only this field separates a reconnect probe from a user opening the tab,
   // and the tab-open gesture is what wakes a deliberately slept pane (STA-3465).
   it('forwards an automatic activation intent to the runtime', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       activateMobileSessionTab: vi.fn().mockResolvedValue({ tabs: [] })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -103,10 +103,10 @@ describe('session tab RPC methods', () => {
   // Why: the field is additive, so a client that predates it sends nothing and
   // must keep the permissive default rather than losing its wake gesture.
   it('passes no intent for a client that omits the field', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       activateMobileSessionTab: vi.fn().mockResolvedValue({ tabs: [] })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -126,7 +126,7 @@ describe('session tab RPC methods', () => {
   })
 
   it('refuses a reasonless close without invoking destructive runtime logic', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       refuseUnattributedMobileSessionTabClose: vi.fn().mockResolvedValue({
         closed: true,
@@ -134,7 +134,7 @@ describe('session tab RPC methods', () => {
         snapshotRepublished: true
       }),
       closeMobileSessionTab: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -150,11 +150,11 @@ describe('session tab RPC methods', () => {
   })
 
   it('passes explicit user intent to host adjudication', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       refuseUnattributedMobileSessionTabClose: vi.fn(),
       closeMobileSessionTab: vi.fn().mockResolvedValue({ closed: true })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -173,12 +173,12 @@ describe('session tab RPC methods', () => {
   })
 
   it('preserves explicit user closes from current runtime clients', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       listMobileSessionTabs: vi.fn().mockResolvedValue(visibleSnapshot()),
       refuseUnattributedMobileSessionTabClose: vi.fn(),
       closeMobileSessionTab: vi.fn().mockResolvedValue({ closed: true })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
     const replies: string[] = []
 
@@ -201,12 +201,12 @@ describe('session tab RPC methods', () => {
   })
 
   it('preserves reasonless explicit closes from authenticated legacy mobile clients', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       listMobileSessionTabs: vi.fn().mockResolvedValue(visibleSnapshot()),
       refuseUnattributedMobileSessionTabClose: vi.fn(),
       closeMobileSessionTab: vi.fn().mockResolvedValue({ closed: true })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
     const replies: string[] = []
 
@@ -224,12 +224,12 @@ describe('session tab RPC methods', () => {
   })
 
   it('preserves reasonless closes from authenticated legacy runtime clients', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       listMobileSessionTabs: vi.fn().mockResolvedValue(visibleSnapshot()),
       refuseUnattributedMobileSessionTabClose: vi.fn(),
       closeMobileSessionTab: vi.fn().mockResolvedValue({ closed: true })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
     const replies: string[] = []
 
@@ -248,7 +248,7 @@ describe('session tab RPC methods', () => {
   })
 
   it('refuses reasonless closes from runtime clients that negotiated explicit intent', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       listMobileSessionTabs: vi.fn().mockResolvedValue(visibleSnapshot()),
       refuseUnattributedMobileSessionTabClose: vi.fn().mockResolvedValue({
@@ -258,7 +258,7 @@ describe('session tab RPC methods', () => {
         snapshotRepublished: true
       }),
       closeMobileSessionTab: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
     const replies: string[] = []
 
@@ -280,10 +280,10 @@ describe('session tab RPC methods', () => {
   it.each(['pty-exit', 'cleanup'] as const)(
     'rejects %s on the legacy close endpoint before host adjudication',
     async (reason) => {
-      const runtime = {
+      const runtime = createRuntimeServiceTestDouble({
         getRuntimeId: () => 'test-runtime',
         closeMobileSessionTab: vi.fn()
-      } as unknown as AlfredRuntimeService
+      })
       const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
       const response = await dispatcher.dispatch(
@@ -302,10 +302,10 @@ describe('session tab RPC methods', () => {
   it.each(['pty-exit', 'cleanup'] as const)(
     'binds a %s lifecycle close to the observed publication and terminal',
     async (reason) => {
-      const runtime = {
+      const runtime = createRuntimeServiceTestDouble({
         getRuntimeId: () => 'test-runtime',
         closeMobileSessionTab: vi.fn().mockResolvedValue({ closed: true })
-      } as unknown as AlfredRuntimeService
+      })
       const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
       const response = await dispatcher.dispatch(
@@ -328,12 +328,12 @@ describe('session tab RPC methods', () => {
   )
 
   it('dispatches tab moves through the runtime', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       moveMobileSessionTab: vi.fn().mockResolvedValue({
         moved: true
       })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -356,10 +356,10 @@ describe('session tab RPC methods', () => {
   })
 
   it('rejects ambiguous tab move payloads', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       moveMobileSessionTab: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -378,10 +378,10 @@ describe('session tab RPC methods', () => {
   })
 
   it('dispatches split tab moves without reorder-only fields', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       moveMobileSessionTab: vi.fn().mockResolvedValue({ moved: true })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -404,7 +404,7 @@ describe('session tab RPC methods', () => {
   })
 
   it('dispatches ordinary terminal creation with the requested tab group', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       createMobileSessionTerminal: vi.fn().mockResolvedValue({
         tab: {
@@ -420,7 +420,7 @@ describe('session tab RPC methods', () => {
         publicationEpoch: 'epoch-1',
         snapshotVersion: 1
       })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -469,14 +469,14 @@ describe('session tab RPC methods', () => {
   })
 
   it('defaults legacy paired terminal creation to caller-owned selection', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       createMobileSessionTerminal: vi.fn().mockResolvedValue({
         tab: { type: 'terminal', id: 'tab-1::leaf-1' },
         publicationEpoch: 'epoch-1',
         snapshotVersion: 1
       })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     await dispatcher.dispatchStreaming(
@@ -508,14 +508,14 @@ describe('session tab RPC methods', () => {
     },
     { label: 'absent', clientCapabilities: [], expectedSupport: false }
   ])('passes split-group placement support when the capability is $label', async (testCase) => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       createMobileSessionTerminal: vi.fn().mockResolvedValue({
         tab: { type: 'terminal', id: 'tab-1::leaf-1' },
         publicationEpoch: 'epoch-1',
         snapshotVersion: 1
       })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     await dispatcher.dispatchStreaming(
@@ -543,7 +543,7 @@ describe('session tab RPC methods', () => {
   })
 
   it('preserves legacy agent creation for mixed-version clients', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       createMobileSessionTerminal: vi.fn().mockResolvedValue({
         tab: {
@@ -559,7 +559,7 @@ describe('session tab RPC methods', () => {
         publicationEpoch: 'epoch-1',
         snapshotVersion: 1
       })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -589,10 +589,10 @@ describe('session tab RPC methods', () => {
   })
 
   it('rejects agent prompts without an agent preset', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       createMobileSessionTerminal: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -610,7 +610,7 @@ describe('session tab RPC methods', () => {
   })
 
   it('dispatches terminal creation with startup command delivery metadata', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       createMobileSessionTerminal: vi.fn().mockResolvedValue({
         tab: {
@@ -626,7 +626,7 @@ describe('session tab RPC methods', () => {
         publicationEpoch: 'epoch-1',
         snapshotVersion: 1
       })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -652,10 +652,10 @@ describe('session tab RPC methods', () => {
   })
 
   it('rejects unknown agent presets without creating a terminal', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       createMobileSessionTerminal: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -695,10 +695,10 @@ describe('session tab RPC methods', () => {
         tabs: []
       }
     ]
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
-      listAllMobileSessionTabs: vi.fn(() => snapshots),
-      listAllMobileSessionTabsWithChangeSequence: vi.fn(() => ({
+      listAllMobileSessionTabs: vi.fn(async () => snapshots),
+      listAllMobileSessionTabsWithChangeSequence: vi.fn(async () => ({
         snapshots,
         changeSequence: 0
       })),
@@ -710,7 +710,7 @@ describe('session tab RPC methods', () => {
         }
       ),
       registerSubscriptionCleanup: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
     const messages: string[] = []
 
@@ -751,17 +751,17 @@ describe('session tab RPC methods', () => {
   })
 
   it('keeps duplicate all-session-tab subscribers independent on one connection', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
-      listAllMobileSessionTabs: vi.fn(() => []),
-      listAllMobileSessionTabsWithChangeSequence: vi.fn(() => ({
+      listAllMobileSessionTabs: vi.fn(async () => []),
+      listAllMobileSessionTabsWithChangeSequence: vi.fn(async () => ({
         snapshots: [],
         changeSequence: 0
       })),
       supportsAuthoritativeSessionTabsInventory: vi.fn(() => false),
       onMobileSessionTabsChanged: vi.fn(() => vi.fn()),
       registerSubscriptionCleanup: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     await dispatcher.dispatchStreaming(
@@ -788,7 +788,7 @@ describe('session tab RPC methods', () => {
   })
 
   it('registers session tab subscription cleanup with the resolved worktree id', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       listMobileSessionTabs: vi.fn().mockResolvedValue({
         worktree: 'wt-1',
@@ -801,7 +801,7 @@ describe('session tab RPC methods', () => {
       }),
       onMobileSessionTabsChanged: vi.fn(() => vi.fn()),
       registerSubscriptionCleanup: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     await dispatcher.dispatchStreaming(
@@ -823,7 +823,7 @@ describe('session tab RPC methods', () => {
   })
 
   it('keeps duplicate session tab subscribers for one worktree independent', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       listMobileSessionTabs: vi.fn().mockResolvedValue({
         worktree: 'wt-1',
@@ -836,7 +836,7 @@ describe('session tab RPC methods', () => {
       }),
       onMobileSessionTabsChanged: vi.fn(() => vi.fn()),
       registerSubscriptionCleanup: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     await dispatcher.dispatchStreaming(

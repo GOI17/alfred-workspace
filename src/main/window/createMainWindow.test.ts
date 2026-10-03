@@ -239,7 +239,7 @@ describe('createMainWindow', () => {
     fire(
       'will-attach-webview',
       denyRouteNavigationEvent as never,
-      { partition: 'persist:alfred-browser-v1-route-partition' } as never,
+      { partition: 'persist:alfred-browser-v1-route-partition' },
       { src: 'https://example.com/' } as never
     )
     expect(denyRouteNavigationEvent.preventDefault).toHaveBeenCalledOnce()
@@ -248,7 +248,7 @@ describe('createMainWindow', () => {
     fire(
       'will-attach-webview',
       denyInlineHtmlEvent as never,
-      { partition: 'persist:alfred-browser' } as never,
+      { partition: 'persist:alfred-browser' },
       { src: 'data:text/html,<script>alert(1)</script>' } as never
     )
     expect(denyInlineHtmlEvent.preventDefault).toHaveBeenCalledTimes(1)

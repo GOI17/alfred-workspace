@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
@@ -5,13 +6,13 @@ import type { AlfredRuntimeService } from '../../alfred-runtime'
 import { WORKTREE_METHODS } from './worktree'
 
 function makeRuntime(): AlfredRuntimeService {
-  return {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
     dedupeWorktreeCreate: <T>(_repo: string, _id: string | undefined, run: () => Promise<T>) =>
       run(),
     showManagedWorktree: vi.fn().mockResolvedValue({ hostId: 'ssh:builder' }),
     removeManagedWorktree: vi.fn().mockResolvedValue({})
-  } as unknown as AlfredRuntimeService
+  })
 }
 
 /** The dispatcher validates against the Zod schema, so the test spells the wire shape. */

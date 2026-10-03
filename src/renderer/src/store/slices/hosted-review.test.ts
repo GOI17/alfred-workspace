@@ -176,7 +176,7 @@ describe('hosted review slice', () => {
           fetchedAt: 1
         }
       }
-    } as unknown as Partial<AppState>)
+    })
 
     await expect(
       store.getState().fetchHostedReviewForBranch('/repo', 'feature/gitlab')

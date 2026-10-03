@@ -20,7 +20,7 @@ describe('AlfredRuntimeService', () => {
         disabledTuiAgents: [],
         agentCmdOverrides: {}
       })
-    } as never)
+    })
     runtime.setPtyController({
       spawn,
       write: () => true,
@@ -61,7 +61,7 @@ describe('AlfredRuntimeService', () => {
           agentDefaultArgs: { 'command-code': '--note "can\'t"' },
           localWindowsRuntimeDefault: { kind: 'windows-host' }
         })
-      } as never)
+      })
       runtime.setPtyController({
         spawn,
         write: () => true,
@@ -107,7 +107,7 @@ describe('AlfredRuntimeService', () => {
           agentDefaultArgs: { 'command-code': '--note "can\'t"' },
           localWindowsRuntimeDefault: { kind: 'wsl', distro: 'Ubuntu' }
         })
-      } as never)
+      })
       runtime.setPtyController({
         spawn,
         write: () => true,
@@ -154,7 +154,7 @@ describe('AlfredRuntimeService', () => {
           localWindowsRuntimeDefault: { kind: 'wsl', distro: 'Ubuntu' },
           terminalWindowsShell: 'cmd.exe'
         })
-      } as never)
+      })
       runtime.setPtyController({
         spawn,
         write: () => true,
@@ -186,7 +186,7 @@ describe('AlfredRuntimeService', () => {
         disabledTuiAgents: [],
         agentCmdOverrides: {}
       })
-    } as never)
+    })
     runtime.setPtyController({
       spawn,
       write: () => true,
@@ -227,7 +227,7 @@ describe('AlfredRuntimeService', () => {
         disabledTuiAgents: ['codex'],
         agentCmdOverrides: {}
       })
-    } as never)
+    })
     runtime.setPtyController({
       spawn,
       write: () => true,
@@ -253,7 +253,7 @@ describe('AlfredRuntimeService', () => {
         disabledTuiAgents: ['codex'],
         agentCmdOverrides: {}
       })
-    } as never)
+    })
     runtime.setPtyController({
       spawn,
       write: () => true,

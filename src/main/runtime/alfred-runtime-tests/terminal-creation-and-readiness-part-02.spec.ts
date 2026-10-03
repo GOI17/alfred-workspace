@@ -554,7 +554,7 @@ describe('AlfredRuntimeService', () => {
         agentDefaultArgs: { cursor: '--force' },
         agentDefaultEnv: {}
       })
-    } as never)
+    })
     runtime.setPtyController({
       spawn,
       write: () => true,

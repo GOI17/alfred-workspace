@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { AlfredRuntimeService, electronMocks } from '../alfred-runtime-test-mocks.spec'
 import type { RuntimeMobileSessionTabsResult } from '../alfred-runtime-test-mocks.spec'
@@ -240,7 +241,7 @@ describe('AlfredRuntimeService', () => {
     )
     const acknowledged = makeDeferred()
     const closeTerminalTab = vi.fn(() => acknowledged.promise)
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setNotifier({ closeTerminal: vi.fn(), closeTerminalTab } as never)
     runtime.setPtyController({
       write: () => true,
@@ -294,7 +295,7 @@ describe('AlfredRuntimeService', () => {
     const acknowledged = makeDeferred()
     const closeTerminalTab = vi.fn(() => acknowledged.promise)
     const setBackgroundThrottling = vi.fn()
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setNotifier({ closeTerminal: vi.fn(), closeTerminalTab } as never)
     runtime.setPtyController({
       write: () => true,
@@ -374,7 +375,9 @@ describe('AlfredRuntimeService', () => {
     const acknowledged = makeDeferred()
     const closeTerminalTab = vi.fn(() => acknowledged.promise)
     const kill = vi.fn(() => true)
-    const runtime = new AlfredRuntimeService({ ...runtimeStore, flushOrThrow: vi.fn() } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({ ...runtimeStore, flushOrThrow: vi.fn() })
+    )
     runtime.setNotifier({ closeTerminal: vi.fn(), closeTerminalTab } as never)
     runtime.setPtyController({
       write: () => true,
@@ -510,7 +513,9 @@ describe('AlfredRuntimeService', () => {
       .mockResolvedValueOnce({ id: 'headless-left' })
       .mockResolvedValueOnce({ id: 'headless-right' })
     const kill = vi.fn(() => true)
-    const runtime = new AlfredRuntimeService({ ...runtimeStore, flushOrThrow } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({ ...runtimeStore, flushOrThrow })
+    )
     runtime.setPtyController({
       spawn,
       write: () => true,

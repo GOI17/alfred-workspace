@@ -1,3 +1,5 @@
+import { getDefaultRuntimeClientSettings } from './runtime-client-settings-test-fixture'
+import { createRuntimeServiceTestDouble } from './runtime-service-test-double'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -23,7 +25,6 @@ import type {
   StructuredAgentSessionHandoffTransport,
   StructuredTuiOwner
 } from '../native-chat/agent-session-wire/structured-agent-session-handoff-types'
-import type { AlfredRuntimeService } from './alfred-runtime'
 import type { RpcRequest, RpcResponse } from './rpc/core'
 import type { ClaudeStructuredAuthPolicy } from '../claude-accounts/claude-structured-auth-policy'
 import { RpcDispatcher } from './rpc/dispatcher'
@@ -189,13 +190,13 @@ function createIntentParams() {
 function ensureParams(fence: number) {
   const params = {
     location: {
-      executionHostId: 'local',
+      executionHostId: 'local' as const,
       wslDistro: null,
       workspaceId: WORKSPACE,
       workspaceKind: 'git-worktree' as const
     },
     provider: 'claude' as const,
-    agent: 'claude',
+    agent: 'claude' as const,
     accountHome: { variable: 'CLAUDE_CONFIG_DIR' as const, path: join(root, 'claude-home') },
     runtimeKind: 'native' as const,
     providerHandle: {
@@ -391,11 +392,16 @@ beforeEach(async () => {
   }
   const runtime = {
     getRuntimeId: () => 'runtime-1',
-    getClientSettings: () => ({ experimentalStructuredNativeChat: true }),
+    getClientSettings: () => ({
+      ...getDefaultRuntimeClientSettings(),
+      experimentalStructuredNativeChat: true
+    }),
     getStructuredAgentSessionCreateSupport: async () => ({ supported: true }),
-    resolveStructuredAgentSessionCreateIntent: async (input: { envelope: unknown }) => ({
+    resolveStructuredAgentSessionCreateIntent: async (input: {
+      envelope: { sessionId: string; clientOperationId: string }
+    }) => ({
       ...ensureParams(1),
-      envelope: input.envelope,
+      envelope: { expectedRuntimeFence: null, payloadFingerprint: '', ...input.envelope },
       providerHandle: undefined
     }),
     publishStructuredAgentSessionTab: vi.fn(),
@@ -418,7 +424,7 @@ beforeEach(async () => {
     cleanupSubscriptionsByPrefix: () => {}
   }
   dispatcher = new RpcDispatcher({
-    runtime: runtime as unknown as AlfredRuntimeService,
+    runtime: createRuntimeServiceTestDouble(runtime),
     methods: STRUCTURED_AGENT_SESSION_METHODS
   })
 })

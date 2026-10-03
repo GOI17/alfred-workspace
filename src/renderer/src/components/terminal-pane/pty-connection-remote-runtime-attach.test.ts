@@ -658,7 +658,7 @@ describe('connectPanePty', () => {
         repo1: [{ id: 'wt-remote', repoId: 'repo1', path: '/tmp/alfred-docker-relay-perf-repo' }]
       },
       repos: []
-    } as StoreState
+    }
 
     const deps = createDeps({
       worktreeId: 'wt-remote',

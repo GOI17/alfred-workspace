@@ -1,3 +1,4 @@
+import { createSshGitProviderTestDouble } from '../providers/ssh-git-provider-test-double'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { SshGitProvider } from '../providers/ssh-git-provider'
 import type { GitPushTarget } from '../../shared/worktree/types'
@@ -440,7 +441,7 @@ describe('materializeWorktreePushTargetRemoteSsh', () => {
     const target = forkTarget()
 
     const result = await materializeWorktreePushTargetRemoteSsh(
-      { exec, fetchRemoteTrackingRef, markRemoteAlfredCreated } as unknown as SshGitProvider,
+      createSshGitProviderTestDouble({ exec, fetchRemoteTrackingRef, markRemoteAlfredCreated }),
       REPO_PATH,
       target
     )
@@ -476,7 +477,7 @@ describe('materializeWorktreePushTargetRemoteSsh', () => {
     } as unknown as WorktreePushTargetStore
 
     const result = await materializeWorktreePushTargetRemoteSsh(
-      { exec, fetchRemoteTrackingRef, markRemoteAlfredCreated } as unknown as SshGitProvider,
+      createSshGitProviderTestDouble({ exec, fetchRemoteTrackingRef, markRemoteAlfredCreated }),
       REPO_PATH,
       target,
       store,
@@ -531,7 +532,7 @@ describe('materializeWorktreePushTargetRemoteSsh', () => {
 
     await expect(
       materializeWorktreePushTargetRemoteSsh(
-        { exec, fetchRemoteTrackingRef, markRemoteAlfredCreated } as unknown as SshGitProvider,
+        createSshGitProviderTestDouble({ exec, fetchRemoteTrackingRef, markRemoteAlfredCreated }),
         REPO_PATH,
         target
       )

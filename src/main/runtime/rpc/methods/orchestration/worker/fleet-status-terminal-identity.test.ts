@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../../../runtime-service-test-double'
 import { describe, expect, it } from 'vitest'
 import type { AlfredRuntimeService } from '../../../../alfred-runtime'
 import type { OrchestrationDb } from '../../../../orchestration/db'
@@ -48,13 +49,13 @@ function createRuntime(args: {
     // These cases drive the current-identity resolution; ingest-time capture has its own suite.
     readObservedAgentStatusPaneIdentityFn: () => ({ kind: 'unobserved' }) as const
   }
-  return {
+  return createRuntimeServiceTestDouble({
     // Drive the shipping accessor, not a copy of it: the identity loss was in this method.
     getOrchestrationFleetAgentStatusSnapshot: () =>
       AlfredRuntimeWithGetOrchestrationDispatchAuthority.prototype.getOrchestrationFleetAgentStatusSnapshot.call(
         host as never
       )
-  } as unknown as AlfredRuntimeService
+  })
 }
 
 function createDb(): OrchestrationDb {

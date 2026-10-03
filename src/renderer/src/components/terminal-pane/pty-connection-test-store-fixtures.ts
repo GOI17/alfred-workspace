@@ -101,7 +101,7 @@ export function createInitialStoreState(getState: () => StoreState): StoreState 
     markTerminalTabUnread: vi.fn(),
     markTerminalPaneUnread: vi.fn(),
     markAgentCompletionPaneUnread: vi.fn()
-  } as StoreState
+  }
 }
 
 export function buildReattachPaneTitleState(current: StoreState, title: string): StoreState {

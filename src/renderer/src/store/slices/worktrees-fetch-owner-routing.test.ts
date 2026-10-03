@@ -182,7 +182,7 @@ describe('fetchWorktrees', () => {
           connectionId: 'ssh-1'
         }
       ]
-    } as Partial<AppState>)
+    })
     mockApi.worktrees.listDetected.mockImplementationOnce(async (args: ListDetectedWorktreesArgs) =>
       qualifyDetectedResult(args, makeDetectedResult('repo-ssh', [sshWorktree], { source: 'git' }))
     )
@@ -527,7 +527,7 @@ describe('fetchWorktrees', () => {
           updatedAt: 1
         }
       ]
-    } as Partial<AppState>)
+    })
     runtimeEnvironmentCall.mockResolvedValue({
       id: 'rpc-runtime-worktree',
       ok: true,

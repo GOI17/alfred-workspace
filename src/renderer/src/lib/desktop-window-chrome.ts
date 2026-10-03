@@ -4,7 +4,7 @@ export type DesktopWindowChromeInput = {
 }
 
 export function isPairedWebClientWindow(): boolean {
-  return (globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__ === true
+  return globalThis.__ALFRED_WEB_CLIENT__ === true
 }
 
 export function isLocalWindowsDesktopClient(): boolean {

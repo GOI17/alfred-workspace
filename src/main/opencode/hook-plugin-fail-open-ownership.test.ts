@@ -94,9 +94,7 @@ describe('OpenCode plugin fail-open ownership', () => {
   async function loadHooksWithContext(context: unknown): Promise<PluginHooks> {
     const pluginPath = join(tempDir, 'alfred-opencode-status.mjs')
     writeFileSync(pluginPath, _internals.getOpenCodePluginSource())
-    const module = (await import(pathToFileURL(pluginPath).href)) as {
-      AlfredOpenCodeStatusPlugin: (ctx: unknown) => Promise<PluginHooks>
-    }
+    const module = await import(pathToFileURL(pluginPath).href)
     return module.AlfredOpenCodeStatusPlugin(context)
   }
 

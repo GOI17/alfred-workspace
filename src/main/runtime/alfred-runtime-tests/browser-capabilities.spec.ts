@@ -617,7 +617,7 @@ describe('AlfredRuntimeService', () => {
       getWorktreeMeta: () => ({ ...store.getWorktreeMeta(TEST_WORKTREE_ID), hostId: 'local' }),
       removeWorktreeMeta: vi.fn()
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const host = attachClientBrowserHost(runtime)
     const placement = await publishClientHostedPage(runtime, host, 'page-kept', TEST_WORKTREE_ID)
 
@@ -640,7 +640,7 @@ describe('AlfredRuntimeService', () => {
       getWorktreeMeta: () => ({ ...store.getWorktreeMeta(TEST_WORKTREE_ID), hostId: 'local' }),
       removeWorktreeMeta
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const internals = runtime as unknown as {
       mobileSessionTabsByWorktree: Map<string, unknown>
       removeWorktreeMetadataAndHistory: (
@@ -672,7 +672,7 @@ describe('AlfredRuntimeService', () => {
       getWorktreeMeta: () => ({ ...store.getWorktreeMeta(TEST_WORKTREE_ID), hostId: 'ssh:ssh-1' }),
       removeWorktreeMeta
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const internals = runtime as unknown as {
       mobileSessionTabsByWorktree: Map<string, unknown>
       removeWorktreeMetadataAndHistory: (

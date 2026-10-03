@@ -71,7 +71,7 @@ const INTENTIONALLY_RETAINED: Record<string, string> = {
 }
 
 function ptyKeyedFieldNames(): string[] {
-  const runtime = new AlfredRuntimeService() as unknown as Record<string, unknown>
+  const runtime = new AlfredRuntimeService()
   return Object.keys(runtime).filter((key) => {
     const value = runtime[key]
     return PTY_KEYED_FIELD.test(key) && (value instanceof Map || value instanceof Set)

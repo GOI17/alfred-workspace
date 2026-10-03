@@ -90,8 +90,8 @@ describe('diagnostics IPC handlers', () => {
     deleteDiagnosticBundleMock.mockReset()
     getDiagnosticsStatusMock.mockReset()
     uploadDiagnosticBundleMock.mockReset()
-    delete (globalThis as { ALFRED_BUILD_IDENTITY?: unknown }).ALFRED_BUILD_IDENTITY
-    delete (globalThis as { ALFRED_DIAGNOSTICS_TOKEN_URL?: unknown }).ALFRED_DIAGNOSTICS_TOKEN_URL
+    Reflect.deleteProperty(globalThis, 'ALFRED_BUILD_IDENTITY')
+    Reflect.deleteProperty(globalThis, 'ALFRED_DIAGNOSTICS_TOKEN_URL')
     process.env.ALFRED_DIAGNOSTICS_TOKEN_URL = 'https://diagnostics.example.com/diagnostics/token'
     getDiagnosticsStatusMock.mockReturnValue({
       localFileEnabled: true,
@@ -140,10 +140,7 @@ describe('diagnostics IPC handlers', () => {
       bundleSubmissionId: 'bundleabcdefghijklmnop',
       payload: '{"type":"bundle-header"}\n{"safe":true}\n'
     })
-    const globalOverrides = globalThis as {
-      ALFRED_BUILD_IDENTITY?: 'stable'
-      ALFRED_DIAGNOSTICS_TOKEN_URL?: string
-    }
+    const globalOverrides = globalThis
     globalOverrides.ALFRED_BUILD_IDENTITY = 'stable'
     globalOverrides.ALFRED_DIAGNOSTICS_TOKEN_URL = 'https://official.example.com/diagnostics/token'
     process.env.ALFRED_DIAGNOSTICS_TOKEN_URL = 'https://attacker.example.com/diagnostics/token'

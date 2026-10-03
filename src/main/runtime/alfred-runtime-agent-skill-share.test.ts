@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { randomUUID } from 'node:crypto'
 import { mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -110,12 +111,14 @@ function runtimeWithCloud(options: {
     status: 'ok' as const,
     value: { id: 'share-id', url: 'https://share.alfredlabs.org/skills/share/share-id' }
   }))
-  const runtime = new AlfredRuntimeService({
-    getSettings: () => ({
-      ...getDefaultSettings(testRoot),
-      agentSkillSharingEnabled: options.isEnabled()
+  const runtime = new AlfredRuntimeService(
+    createRuntimeStoreTestDouble({
+      getSettings: () => ({
+        ...getDefaultSettings(testRoot),
+        agentSkillSharingEnabled: options.isEnabled()
+      })
     })
-  } as never)
+  )
   runtime.setSkillCloudService({ publishVersion, createShare } as never)
   return { runtime, publishVersion, createShare, manifests, started }
 }

@@ -94,7 +94,7 @@ export function parseHeadlessPairedRuntimePairingOffer(
 /** True for the `alfred_server_ready` line, whether or not it carries a pairing offer. */
 export function isHeadlessPairedRuntimeServeReadyLine(line: string): boolean {
   try {
-    return (JSON.parse(line) as ServeReady | null)?.type === 'alfred_server_ready'
+    return JSON.parse(line)?.type === 'alfred_server_ready'
   } catch {
     return false
   }

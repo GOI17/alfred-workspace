@@ -12,10 +12,7 @@ const MIN_OVERLAY_FIT_HEIGHT_PX = 24
 const FALLBACK_RECT_MIN_CHANGE_PX = 1
 
 function shouldUseCssAnchorPositioning(): boolean {
-  return (
-    HAS_CSS_ANCHOR_POSITIONING &&
-    (globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__ !== true
-  )
+  return HAS_CSS_ANCHOR_POSITIONING && globalThis.__ALFRED_WEB_CLIENT__ !== true
 }
 
 type MeasuredFallbackRect = {

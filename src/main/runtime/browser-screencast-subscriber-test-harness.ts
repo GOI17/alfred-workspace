@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { expect, vi } from 'vitest'
 import { AlfredRuntimeService } from './alfred-runtime'
 import type { RuntimeBrowserDriverState } from '../../shared/runtime-types'
@@ -56,7 +57,7 @@ export type ScreencastHarness = {
  * drive the real subscription state machine without a browser.
  */
 export function createScreencastHarness(): ScreencastHarness {
-  const runtime = new AlfredRuntimeService(store as unknown as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
   let seq = 0
   const browserScreencast = vi.fn(async () => {
     const subscriptionId = `browser-screencast:${HARNESS_PAGE_ID}:${++seq}`

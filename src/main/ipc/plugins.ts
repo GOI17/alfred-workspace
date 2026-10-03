@@ -73,7 +73,7 @@ export { listPluginsForClients } from '../plugins/plugin-client-list'
 import { listPluginsForClients } from '../plugins/plugin-client-list'
 
 export function canRemoveInstalledPlugin(
-  pluginService: PluginService,
+  pluginService: { getDiscovered(): readonly { pluginKey?: string | null; isDev?: boolean }[] },
   pluginKey: string,
   lock?: PluginLockfile
 ): boolean {

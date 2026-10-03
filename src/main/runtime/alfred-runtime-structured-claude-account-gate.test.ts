@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AlfredRuntimeService } from './alfred-runtime'
 import { setStructuredAgentSessionHost } from '../native-chat/agent-session-wire/structured-agent-session-registry'
@@ -49,7 +50,7 @@ function runtimeWithAccounts(
 ): AlfredRuntimeService {
   // No store at all is the unreadable-settings case the gate must fail closed on.
   const runtime = claude
-    ? new AlfredRuntimeService({ getSettings: () => claude } as never)
+    ? new AlfredRuntimeService(createRuntimeStoreTestDouble({ getSettings: () => claude }))
     : new AlfredRuntimeService()
   const internal = runtime as unknown as {
     resolveStructuredAgentSessionLocation: (selector: string) => Promise<unknown>

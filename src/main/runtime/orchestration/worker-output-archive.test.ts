@@ -1,8 +1,8 @@
+import { createRuntimeServiceTestDouble } from '../runtime-service-test-double'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { AlfredRuntimeService } from '../alfred-runtime'
 import * as sshFilesystemDispatch from '../../providers/ssh-filesystem-dispatch'
 import * as workerTranscriptRead from './worker-transcript-read'
 import { captureWorkerOutputArchive, summarizeWorkerOutputArchive } from './worker-output-archive'
@@ -78,16 +78,16 @@ describe('worker output archive WSL routing', () => {
       wslDistro: 'Ubuntu',
       agent: 'codex' as const,
       providerSession: {
-        key: 'session_id',
+        key: 'session_id' as const,
         id: 'wsl-session',
         transcriptPath: guestTranscriptPath
       },
       observedAt: Date.now()
     }
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getExactWorkerProviderSession: vi.fn(() => session),
       readTerminal: vi.fn()
-    } as unknown as AlfredRuntimeService
+    })
 
     const result = await captureWorkerOutputArchive({
       runtime,
@@ -117,14 +117,14 @@ describe('worker output archive WSL routing', () => {
   it('does not resolve an SSH transcript locally when its provider is unavailable', async () => {
     vi.mocked(sshFilesystemDispatch.getSshFilesystemProvider).mockReturnValue(undefined)
     transcriptReadSpy = vi.spyOn(workerTranscriptRead, 'readWorkerTranscript')
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getExactWorkerProviderSession: vi.fn(() => ({
         paneKey: 'tab:ssh-worker',
         processIncarnation: 'pty:ssh-incarnation',
         connectionId: 'ssh:remote-host',
         agent: 'codex' as const,
         providerSession: {
-          key: 'session_id',
+          key: 'session_id' as const,
           id: 'ssh-session',
           transcriptPath: '/home/ada/.codex/sessions/rollout-ssh.jsonl'
         },
@@ -135,7 +135,7 @@ describe('worker output archive WSL routing', () => {
         truncated: false,
         status: 'live'
       })
-    } as unknown as AlfredRuntimeService
+    })
 
     const result = await captureWorkerOutputArchive({
       runtime,
@@ -168,13 +168,13 @@ describe('worker output archive WSL routing', () => {
       clipping: [],
       warnings: []
     })
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getExactWorkerProviderSession: vi.fn(() => ({
         paneKey: 'tab:worker',
         processIncarnation: 'pty:incarnation',
         agent: 'codex' as const,
         providerSession: {
-          key: 'session_id',
+          key: 'session_id' as const,
           id: 'empty-session',
           transcriptPath
         },
@@ -185,7 +185,7 @@ describe('worker output archive WSL routing', () => {
         truncated: false,
         status: 'running'
       })
-    } as unknown as AlfredRuntimeService
+    })
 
     const result = await captureWorkerOutputArchive({
       runtime,

@@ -1,5 +1,5 @@
+import { createRuntimeServiceTestDouble } from '../runtime/runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
-import type { AlfredRuntimeService } from '../runtime/alfred-runtime'
 import { runRemoteAlfredCli } from './ssh-remote-alfred-cli'
 
 function createRuntime() {
@@ -17,10 +17,10 @@ function createRuntime() {
     meta: { workspaceId: 'workspace-1', created: false }
   }))
   return {
-    runtime: {
+    runtime: createRuntimeServiceTestDouble({
       getRuntimeId: () => 'runtime-test',
       linearSaveIssue
-    } as unknown as AlfredRuntimeService,
+    }),
     linearSaveIssue
   }
 }

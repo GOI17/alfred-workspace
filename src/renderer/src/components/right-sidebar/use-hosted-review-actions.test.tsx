@@ -1,3 +1,4 @@
+import { makePR as fixtureMakePR } from '../../../../shared/github/pr-test-fixture'
 // @vitest-environment happy-dom
 
 import { act, createElement } from 'react'
@@ -236,7 +237,7 @@ describe('useHostedReviewActions', () => {
   })
 
   it('confirms the downstack merge scope before merging a registered stack', async () => {
-    const stackedPR = {
+    const stackedPR = fixtureMakePR({
       ...githubPR,
       stack: {
         number: 51,
@@ -273,7 +274,7 @@ describe('useHostedReviewActions', () => {
           }
         ]
       }
-    } as PRInfo
+    })
     await renderHook(makeRepo(), undefined, stackedPR)
 
     await act(async () => {
@@ -290,7 +291,7 @@ describe('useHostedReviewActions', () => {
   })
 
   it('describes merge-queue stack behavior without promising atomicity or a method', async () => {
-    const stackedPR = {
+    const stackedPR = fixtureMakePR({
       ...githubPR,
       mergeQueueRequired: true,
       stack: {
@@ -319,7 +320,7 @@ describe('useHostedReviewActions', () => {
           }
         ]
       }
-    } as PRInfo
+    })
     await renderHook(makeRepo(), undefined, stackedPR)
 
     await act(async () => {

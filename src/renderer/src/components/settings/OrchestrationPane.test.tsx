@@ -167,7 +167,7 @@ describe('OrchestrationPane', () => {
     mocks.panelProps.length = 0
     mocks.skillInstalled = true
     mocks.updateSettings.mockReset()
-    delete (globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__
+    delete globalThis.__ALFRED_WEB_CLIENT__
   })
 
   it('keeps skill setup visible after install and shows agent coverage plus examples', () => {
@@ -243,7 +243,7 @@ describe('OrchestrationPane', () => {
   })
 
   it('keeps host-only nested depth out of paired web clients', () => {
-    ;(globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__ = true
+    globalThis.__ALFRED_WEB_CLIENT__ = true
     const markup = renderToStaticMarkup(<OrchestrationPane {...getPaneProps()} />)
 
     expect(markup).not.toContain('Nested worker depth')

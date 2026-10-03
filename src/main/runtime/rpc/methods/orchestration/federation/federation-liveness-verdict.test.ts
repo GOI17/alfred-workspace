@@ -1,3 +1,5 @@
+import type { ExecutionHostId } from '../../../../../../shared/execution-host'
+import { createRuntimeStoreTestDouble } from '../../../../runtime-store-test-double'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getDefaultWorkspaceSession } from '../../../../../../shared/constants'
 import { ORCHESTRATION_CONTRACT_VERSION } from '../../../../../../shared/protocol-version'
@@ -23,7 +25,7 @@ function realRuntimeStore() {
   return {
     getWorkspaceSession: vi.fn(() => getDefaultWorkspaceSession()),
     setWorkspaceSession: vi.fn(),
-    getWorkspaceSessionHostIds: vi.fn(() => ['local']),
+    getWorkspaceSessionHostIds: vi.fn((): ExecutionHostId[] => ['local']),
     getRepos: vi.fn(() => [
       {
         id: 'repo-federation',
@@ -102,7 +104,7 @@ describe('federation host liveness verdicts', () => {
 
   async function createRealHost(connectionId: string | null = null) {
     const hostDb = new OrchestrationDb(':memory:')
-    const hostRuntime = new AlfredRuntimeService(realRuntimeStore() as never)
+    const hostRuntime = new AlfredRuntimeService(createRuntimeStoreTestDouble(realRuntimeStore()))
     hostRuntime.setOrchestrationDb(hostDb)
     hostRuntime.attachWindow(1)
     hostRuntime.syncWindowGraph(1, { tabs: [], leaves: [] })

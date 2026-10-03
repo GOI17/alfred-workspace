@@ -1,3 +1,4 @@
+import { makeRepo as completeMakeRepo } from '../../../../shared/repo-test-fixture'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getDefaultSettings } from '../../../../shared/constants'
 import type { GitHubWorkItem } from '../../../../shared/github/work-item-types'
@@ -81,15 +82,14 @@ function makeLinearIssue(overrides: Partial<LinearIssue> = {}): LinearIssue {
     state: { name: 'Todo', type: 'unstarted', color: '#999' },
     priority: 0,
     estimate: null,
-    assignee: null,
+    assignee: undefined,
     labels: [],
     labelIds: [],
     team: { id: 'team-1', name: 'Alfred', key: 'ORC' },
     workspaceId: 'workspace-1',
     updatedAt: '2026-05-30T00:00:00.000Z',
-    createdAt: '2026-05-30T00:00:00.000Z',
     ...overrides
-  } as LinearIssue
+  }
 }
 
 function makeJiraIssue(overrides: Partial<JiraIssue> = {}): JiraIssue {
@@ -156,14 +156,14 @@ describe('createUISlice settings navigation', () => {
 
     store.setState({
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo-1',
           path: '/repo',
           displayName: 'Repo',
           badgeColor: 'blue',
           addedAt: 1,
           kind: 'git'
-        }
+        })
       ],
       settings: {
         visibleTaskProviders: ['linear'],
@@ -174,7 +174,7 @@ describe('createUISlice settings navigation', () => {
       preflightStatus: { glab: { installed: false } } as AppState['preflightStatus'],
       prefetchWorkItems,
       prefetchLinearIssues
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().openTaskPage()
 
@@ -204,14 +204,14 @@ describe('createUISlice settings navigation', () => {
 
     store.setState({
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo-1',
           path: '/repo',
           displayName: 'Repo',
           badgeColor: 'blue',
           addedAt: 1,
           kind: 'git'
-        }
+        })
       ],
       settings: {
         visibleTaskProviders: ['github'],
@@ -219,7 +219,7 @@ describe('createUISlice settings navigation', () => {
         defaultTaskViewPreset: 'all'
       } as unknown as AppState['settings'],
       prefetchWorkItems
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().openTaskPage({
       taskSource: 'github',
@@ -256,7 +256,7 @@ describe('createUISlice settings navigation', () => {
       } as unknown as AppState['settings'],
       linearStatus: { connected: true } as AppState['linearStatus'],
       prefetchLinearIssues
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().openTaskPage({
       taskSource: 'linear',
@@ -367,7 +367,7 @@ describe('createUISlice page navigation history', () => {
   it('records provider-depth interactions for direct Tasks detail opens', () => {
     const store = createUIStore()
     const recordFeatureInteraction = vi.fn()
-    store.setState({ recordFeatureInteraction } as Partial<AppState>)
+    store.setState({ recordFeatureInteraction })
     const workItem = makeGitHubWorkItem()
     const linearIssue = makeLinearIssue()
     const jiraIssue = makeJiraIssue()
@@ -491,7 +491,7 @@ describe('createUISlice page navigation history', () => {
   it('can suppress the Tasks surface interaction for in-page provider navigation', () => {
     const store = createUIStore()
     const recordFeatureInteraction = vi.fn()
-    store.setState({ recordFeatureInteraction } as Partial<AppState>)
+    store.setState({ recordFeatureInteraction })
     const workItem = makeGitHubWorkItem()
     const linearIssue = makeLinearIssue()
     const jiraIssue = makeJiraIssue()

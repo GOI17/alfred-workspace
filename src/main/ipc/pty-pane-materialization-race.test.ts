@@ -355,7 +355,7 @@ describe('registerPtyHandlers', () => {
         ALFRED_TAB_ID: 'tab-race',
         ALFRED_WORKTREE_ID: 'repo-1::/tmp'
       }
-    }) as Promise<{ id: string }>
+    })
     await Promise.resolve()
 
     const spawnController = controller as unknown as RuntimeSpawnController

@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -91,7 +92,7 @@ describe('external worktree discovery for paired clients', () => {
   it('publishes one host-scoped catalog invalidation to two paired clients', async () => {
     vi.mocked(listWorktrees).mockResolvedValue([initialWorktree])
     vi.mocked(listWorktreesStrict).mockResolvedValue([initialWorktree])
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
     setWorktreeCatalogRemoteClientNotifier(runtime)
     const userDataPath = mkdtempSync(join(tmpdir(), 'o-ewd-'))
     tempDirs.push(userDataPath)
@@ -274,7 +275,7 @@ describe('external worktree discovery for paired clients', () => {
     let scanCount = 0
     vi.mocked(listWorktrees).mockResolvedValue([initialWorktree])
     vi.mocked(listWorktreesStrict).mockResolvedValue([initialWorktree, externalWorktree])
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
     setWorktreeCatalogRemoteClientNotifier(runtime)
     const userDataPath = mkdtempSync(join(tmpdir(), 'o-ewd-race-'))
     tempDirs.push(userDataPath)
@@ -395,11 +396,13 @@ describe('external worktree discovery for paired clients', () => {
       ...store.getRepos(),
       { ...localRepo, path: '/remote/repo', connectionId: 'ssh-target-1' }
     ]
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getRepo: (id: string) => collidingRepos.find((repo) => repo.id === id),
-      getRepos: () => collidingRepos
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getRepo: (id: string) => collidingRepos.find((repo) => repo.id === id),
+        getRepos: () => collidingRepos
+      })
+    )
     setWorktreeCatalogRemoteClientNotifier(runtime)
     const userDataPath = mkdtempSync(join(tmpdir(), 'o-ewd-collision-'))
     tempDirs.push(userDataPath)
@@ -455,7 +458,7 @@ describe('external worktree discovery for paired clients', () => {
   })
 
   it('does not publish a host-blind event for a nested SSH watcher', async () => {
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
     setWorktreeCatalogRemoteClientNotifier(runtime)
     const userDataPath = mkdtempSync(join(tmpdir(), 'o-ewd-ssh-owner-'))
     tempDirs.push(userDataPath)
@@ -514,7 +517,7 @@ describe('external worktree discovery for paired clients', () => {
   it('keeps the shared runtime publication valid without a headed renderer', async () => {
     vi.mocked(listWorktrees).mockResolvedValue([initialWorktree])
     vi.mocked(listWorktreesStrict).mockResolvedValue([initialWorktree])
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
     const userDataPath = mkdtempSync(join(tmpdir(), 'o-ewd-h-'))
     tempDirs.push(userDataPath)
     const server = new AlfredRuntimeRpcServer({

@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { createServer, connect, type Server, type Socket } from 'node:net'
 import { tmpdir } from 'node:os'
@@ -23,7 +24,7 @@ describe('paired runtime browser network tunnel', () => {
   it('returns page command results on the exact authenticated attach connection', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-browser-command-'))
     resources.push(() => rmSync(userDataPath, { recursive: true, force: true }))
-    const runtime = new AlfredRuntimeService({} as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble({}))
     const rpc = new AlfredRuntimeRpcServer({
       runtime,
       userDataPath,
@@ -104,7 +105,7 @@ describe('paired runtime browser network tunnel', () => {
   it('commits same-runtime reconciliation placement after a real paired command result', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-browser-reconciliation-'))
     resources.push(() => rmSync(userDataPath, { recursive: true, force: true }))
-    const runtime = new AlfredRuntimeService({} as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble({}))
     const rpc = new AlfredRuntimeRpcServer({
       runtime,
       userDataPath,
@@ -200,7 +201,7 @@ describe('paired runtime browser network tunnel', () => {
 
     const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-browser-tunnel-'))
     resources.push(() => rmSync(userDataPath, { recursive: true, force: true }))
-    const runtime = new AlfredRuntimeService({} as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble({}))
     const rpc = new AlfredRuntimeRpcServer({
       runtime,
       userDataPath,

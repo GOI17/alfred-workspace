@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../runtime-service-test-double'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
 import type { AlfredRuntimeService } from '../alfred-runtime'
@@ -20,10 +21,10 @@ function request(params: unknown): RpcRequest {
 function runtime(
   routeClientHostedBrowserRpc?: AlfredRuntimeService['routeClientHostedBrowserRpc']
 ) {
-  return {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'runtime-a',
     routeClientHostedBrowserRpc
-  } as AlfredRuntimeService
+  })
 }
 
 describe('RpcDispatcher client-hosted browser automation', () => {

@@ -13,7 +13,7 @@ describe('AlfredRuntimeService', () => {
       ...store,
       getWorktreeMeta: () => ({ ...store.getWorktreeMeta(TEST_WORKTREE_ID), hostId: 'local' })
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(runtimeStore)
     const internals = runtime as unknown as {
       listResolvedWorktrees: () => Promise<unknown[]>
       resolveWorktreeRemovalTarget: (

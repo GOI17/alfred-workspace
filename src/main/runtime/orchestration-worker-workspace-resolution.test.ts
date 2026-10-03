@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -93,7 +94,7 @@ function makeStore(
     getAllWorkspaceLineage: () => ({}),
     removeWorktreeLineage: vi.fn(),
     removeWorkspaceLineage: vi.fn(),
-    getGitHubCache: () => undefined,
+    getGitHubCache: () => ({ pr: {}, issue: {} }),
     getSettings: () => ({
       workspaceDir: '/tmp/workspaces',
       nestWorkspaces: false,
@@ -136,7 +137,7 @@ describe('orchestration worker workspace resolution', () => {
     ['path', `path:${WORKTREE_PATH}`],
     ['name', 'name:Feature']
   ])('resolves a local worktree by %s with one catalog scan', async (_label, selector) => {
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
 
     await expect(runtime.showManagedTerminalWorkspace(selector)).resolves.toMatchObject({
       id: WORKTREE_ID,
@@ -155,10 +156,12 @@ describe('orchestration worker workspace resolution', () => {
       connectionId: 'ssh-1'
     } satisfies Repo
     const runtime = new AlfredRuntimeService(
-      makeStore({
-        repos: [remoteRepo],
-        meta: { [WORKTREE_ID]: makeMeta('Remote feature') }
-      }) as never
+      createRuntimeStoreTestDouble(
+        makeStore({
+          repos: [remoteRepo],
+          meta: { [WORKTREE_ID]: makeMeta('Remote feature') }
+        })
+      )
     )
 
     await expect(runtime.showManagedTerminalWorkspace(`id:${WORKTREE_ID}`)).resolves.toMatchObject({
@@ -168,7 +171,7 @@ describe('orchestration worker workspace resolution', () => {
   })
 
   it('does not fall back from the floating terminal sentinel to another workspace', async () => {
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
 
     await expect(
       runtime.showManagedTerminalWorkspace(`id:${FLOATING_TERMINAL_WORKTREE_ID}`)
@@ -186,12 +189,14 @@ describe('orchestration worker workspace resolution', () => {
       ]
     })
     const runtime = new AlfredRuntimeService(
-      makeStore({
-        meta: {
-          [WORKTREE_ID]: makeMeta('Duplicate'),
-          [`${REPO_ID}::${secondPath}`]: makeMeta('Duplicate')
-        }
-      }) as never
+      createRuntimeStoreTestDouble(
+        makeStore({
+          meta: {
+            [WORKTREE_ID]: makeMeta('Duplicate'),
+            [`${REPO_ID}::${secondPath}`]: makeMeta('Duplicate')
+          }
+        })
+      )
     )
 
     await expect(runtime.showManagedTerminalWorkspace('name:Duplicate')).rejects.toThrow(
@@ -220,13 +225,15 @@ describe('orchestration worker workspace resolution', () => {
       ])
     })
     const runtime = new AlfredRuntimeService(
-      makeStore({
-        repos: [makeStore().getRepos()[0], remoteRepo],
-        meta: {
-          [WORKTREE_ID]: makeMeta('Local feature'),
-          [`${remoteRepo.id}::${WORKTREE_PATH}`]: makeMeta('Remote feature')
-        }
-      }) as never
+      createRuntimeStoreTestDouble(
+        makeStore({
+          repos: [makeStore().getRepos()[0], remoteRepo],
+          meta: {
+            [WORKTREE_ID]: makeMeta('Local feature'),
+            [`${remoteRepo.id}::${WORKTREE_PATH}`]: makeMeta('Remote feature')
+          }
+        })
+      )
     )
 
     await expect(runtime.showManagedTerminalWorkspace(`path:${WORKTREE_PATH}`)).rejects.toThrow(
@@ -256,10 +263,12 @@ describe('orchestration worker workspace resolution', () => {
     } as never)
     try {
       const runtime = new AlfredRuntimeService(
-        makeStore({
-          folderWorkspaces: [localFolder, remoteFolder],
-          projectGroups: [group]
-        }) as never
+        createRuntimeStoreTestDouble(
+          makeStore({
+            folderWorkspaces: [localFolder, remoteFolder],
+            projectGroups: [group]
+          })
+        )
       )
 
       await expect(
@@ -297,7 +306,9 @@ describe('orchestration worker workspace resolution', () => {
       ...repo
     })) as Repo[]
     const runtime = new AlfredRuntimeService(
-      makeStore({ repos, folderWorkspaces: [folder], projectGroups: [group] }) as never
+      createRuntimeStoreTestDouble(
+        makeStore({ repos, folderWorkspaces: [folder], projectGroups: [group] })
+      )
     )
 
     await expect(runtime.showManagedTerminalWorkspace('folder:folder-1')).rejects.toThrow(

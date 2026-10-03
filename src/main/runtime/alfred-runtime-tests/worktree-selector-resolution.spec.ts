@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   FLOATING_TERMINAL_WORKTREE_ID,
@@ -122,7 +123,7 @@ describe('AlfredRuntimeService', () => {
     }
     registerSshFilesystemProvider('ssh-1', fsProvider as never)
     registerSshGitProvider('ssh-1', gitProvider as never)
-    const runtime = new AlfredRuntimeService(remoteStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(remoteStore))
 
     try {
       await runtime.readFileExplorerDir('path://server/share/repo', 'src')
@@ -151,7 +152,7 @@ describe('AlfredRuntimeService', () => {
     const folderWorkspace = makeFolderWorkspace({ folderPath })
     const projectGroup = makeFolderProjectGroup({ parentPath: folderPath })
     const runtime = new AlfredRuntimeService(
-      createFolderWorkspaceRuntimeStore(folderWorkspace, projectGroup) as never
+      createRuntimeStoreTestDouble(createFolderWorkspaceRuntimeStore(folderWorkspace, projectGroup))
     )
 
     await expect(runtime.readFileExplorerDir(selector, 'src')).resolves.toContainEqual({
@@ -185,7 +186,7 @@ describe('AlfredRuntimeService', () => {
     const folderWorkspace = makeFolderWorkspace({ folderPath, connectionId: 'ssh-folder' })
     const projectGroup = makeFolderProjectGroup({ parentPath: folderPath })
     const runtime = new AlfredRuntimeService(
-      createFolderWorkspaceRuntimeStore(folderWorkspace, projectGroup) as never
+      createRuntimeStoreTestDouble(createFolderWorkspaceRuntimeStore(folderWorkspace, projectGroup))
     )
     registerSshFilesystemProvider('ssh-folder', fsProvider as never)
 
@@ -239,7 +240,7 @@ describe('AlfredRuntimeService', () => {
         return metaById[worktreeId]
       }
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     const listed = await runtime.listManagedWorktrees('id:remote-repo')
 

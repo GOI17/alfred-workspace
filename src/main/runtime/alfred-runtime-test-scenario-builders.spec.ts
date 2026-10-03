@@ -1,3 +1,5 @@
+import type { TuiAgent } from '../../shared/tui-agent'
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import * as mocks from './alfred-runtime-test-mocks.spec'
 import type { Mock } from 'vitest'
 
@@ -211,7 +213,7 @@ function makePostRevealWorkerRecoveryHarness(
   }
   const { runtimeStore, getSession } = makeRuntimeStoreWithWorkspaceSession(session)
   const runtime = new AlfredRuntimeService(
-    { ...runtimeStore, flushOrThrow: vi.fn() } as never,
+    createRuntimeStoreTestDouble({ ...runtimeStore, flushOrThrow: vi.fn() }),
     undefined,
     { canRecoverPersistentLocalPtys: () => true }
   )
@@ -279,7 +281,7 @@ function makePostRevealWorkerRecoveryHarness(
   }
 }
 
-function makePendingAgentTabActivationRuntime(opts: { disabledTuiAgents?: string[] } = {}): {
+function makePendingAgentTabActivationRuntime(opts: { disabledTuiAgents?: TuiAgent[] } = {}): {
   runtime: RuntimeService
   spawn: ReturnType<typeof vi.fn>
 } {
@@ -306,13 +308,15 @@ function makePendingAgentTabActivationRuntime(opts: { disabledTuiAgents?: string
       }
     })
   )
-  const runtime = new AlfredRuntimeService({
-    ...runtimeStore,
-    getSettings: () => ({
-      ...store.getSettings(),
-      disabledTuiAgents: opts.disabledTuiAgents ?? []
+  const runtime = new AlfredRuntimeService(
+    createRuntimeStoreTestDouble({
+      ...runtimeStore,
+      getSettings: () => ({
+        ...store.getSettings(),
+        disabledTuiAgents: opts.disabledTuiAgents ?? []
+      })
     })
-  } as never)
+  )
   runtime.setPtyController({
     spawn,
     write: () => true,
@@ -345,12 +349,14 @@ function createMobileCreateTestNotifier(
   }
 }
 
-function createWorktreeRemovalRuntime(runtimeStore: unknown = store): RuntimeService {
+function createWorktreeRemovalRuntime(
+  runtimeStore: Parameters<typeof createRuntimeStoreTestDouble>[0] = store
+): RuntimeService {
   const emptyPtyProvider = {
     listProcesses: vi.fn(async () => []),
     shutdown: vi.fn(async () => {})
   }
-  return new AlfredRuntimeService(runtimeStore as never, undefined, {
+  return new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore), undefined, {
     getLocalProvider: () => emptyPtyProvider as never,
     getSshProvider: () => emptyPtyProvider as never
   })

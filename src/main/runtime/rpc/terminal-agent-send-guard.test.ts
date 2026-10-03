@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../runtime-service-test-double'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { AlfredRuntimeService } from '../alfred-runtime'
 import type { RpcRequest } from './core'
@@ -5,10 +6,10 @@ import { RpcDispatcher } from './dispatcher'
 import { TERMINAL_METHODS } from './methods/terminal'
 
 function stubRuntime(overrides: Partial<AlfredRuntimeService>): AlfredRuntimeService {
-  return {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
     ...overrides
-  } as AlfredRuntimeService
+  })
 }
 
 function guardedSendRequest(): RpcRequest {

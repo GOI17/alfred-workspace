@@ -1,5 +1,5 @@
+import { createRuntimeServiceTestDouble } from '../../../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
-import type { AlfredRuntimeService } from '../../../../alfred-runtime'
 import type { OrchestrationDb } from '../../../../orchestration/db'
 import { exposeDispatchContext, exposeWorker, inspectWorkerTerminal } from './worker-observation'
 import type { DispatchContextRow, WorkerDispatchRow } from '../../../../orchestration/types'
@@ -11,13 +11,28 @@ function createHarness(args: {
   connected: boolean
   hostScope: { kind: 'local'; hostId: 'local' } | { kind: 'ssh'; targetId: string }
 }) {
-  const runtime = {
-    showTerminal: vi.fn(async () => ({ handle: TERMINAL_HANDLE, connected: args.connected })),
+  const runtime = createRuntimeServiceTestDouble({
+    showTerminal: vi.fn(async () => ({
+      ptyId: null,
+      worktreePath: '/repo',
+      branch: 'main',
+      tabId: 'tab-worker',
+      leafId: 'leaf-worker',
+      title: null,
+      writable: false,
+      lastOutputAt: null,
+      preview: '',
+      paneRuntimeId: 1,
+      rendererGraphEpoch: 0,
+      worktreeId: 'wt-1',
+      handle: TERMINAL_HANDLE,
+      connected: args.connected
+    })),
     getTerminalPaneKey: vi.fn(() => 'tab-worker:leaf-worker'),
     getTerminalProcessIncarnation: vi.fn(() => 'pty-worker:incarnation-1'),
     getTerminalLivenessVerdict: vi.fn(() => null),
     getOrchestrationDispatchAuthority: vi.fn(() => null)
-  } as unknown as AlfredRuntimeService
+  })
   const db = {
     getWorkerDispatch: vi.fn(() => ({ agent_terminal_handle: TERMINAL_HANDLE })),
     getDispatchContextById: vi.fn(() => ({ host_scope: JSON.stringify(args.hostScope) })),

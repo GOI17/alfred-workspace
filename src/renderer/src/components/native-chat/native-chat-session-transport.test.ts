@@ -42,7 +42,7 @@ function flush(): Promise<void> {
 beforeEach(() => {
   vi.clearAllMocks()
   clearRuntimeCompatibilityCacheForTests()
-  delete (globalThis as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__
+  delete globalThis.__ALFRED_WEB_CLIENT__
   vi.stubGlobal('window', {
     location: { pathname: '/index.html' },
     api: {
@@ -136,7 +136,7 @@ describe('getNativeChatSessionTransport — selection', () => {
   })
 
   it('returns the local adapter on the web client even with an owner (R3 guard)', async () => {
-    ;(window as unknown as { __ALFRED_WEB_CLIENT__?: boolean }).__ALFRED_WEB_CLIENT__ = true
+    window.__ALFRED_WEB_CLIENT__ = true
     nativeChatReadSession.mockResolvedValue({ messages: [] })
     const transport = getNativeChatSessionTransport(ENV)
 

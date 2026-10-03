@@ -1,3 +1,5 @@
+import type { Repo } from '../../../shared/repo-types'
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   DEFAULT_REPO_BADGE_COLOR,
@@ -21,7 +23,7 @@ import { store } from '../alfred-runtime-test-fixtures.spec'
 
 describe('AlfredRuntimeService', () => {
   it('deduplicates runtime repo paths with Windows/UNC comparison semantics', async () => {
-    const added: Record<string, unknown>[] = []
+    const added: Repo[] = []
     const uncStore = {
       ...store,
       getRepos: () => [
@@ -31,16 +33,16 @@ describe('AlfredRuntimeService', () => {
           displayName: 'repo',
           badgeColor: 'blue',
           addedAt: 1,
-          kind: 'folder'
+          kind: 'folder' as const
         },
         ...added
       ],
-      addRepo: (repo: Record<string, unknown>) => {
+      addRepo: (repo: Repo) => {
         added.push(repo)
       },
       getRepo: (id: string) => [...uncStore.getRepos()].find((repo) => repo.id === id) as never
     }
-    const runtime = new AlfredRuntimeService(uncStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(uncStore))
 
     const repo = await runtime.addRepo('//server/share/repo', 'folder')
 
@@ -85,16 +87,16 @@ describe('AlfredRuntimeService', () => {
   })
 
   it('defaults runtime addRepo badgeColor to DEFAULT_REPO_BADGE_COLOR', async () => {
-    const added: Record<string, unknown>[] = []
+    const added: Repo[] = []
     const colorStore = {
       ...store,
       getRepos: () => [...added] as never,
-      addRepo: (repo: Record<string, unknown>) => {
+      addRepo: (repo: Repo) => {
         added.push(repo)
       },
       getRepo: (id: string) => added.find((repo) => repo.id === id) as never
     }
-    const runtime = new AlfredRuntimeService(colorStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(colorStore))
 
     const repo = await runtime.addRepo('/tmp/runtime-add-default', 'folder')
 
@@ -103,16 +105,16 @@ describe('AlfredRuntimeService', () => {
   })
 
   it('prepares the runtime worktree root when adding a repo', async () => {
-    const added: Record<string, unknown>[] = []
+    const added: Repo[] = []
     const runtimeStore = {
       ...store,
       getRepos: () => [...added] as never,
-      addRepo: (repo: Record<string, unknown>) => {
+      addRepo: (repo: Repo) => {
         added.push(repo)
       },
       getRepo: (id: string) => added.find((repo) => repo.id === id) as never
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     const repo = await runtime.addRepo('/tmp/runtime-add-root-prep', 'folder')
 
@@ -122,11 +124,11 @@ describe('AlfredRuntimeService', () => {
   it('sets up an existing folder on a fresh runtime after importing the repo project', async () => {
     const tempRoot = await mkdtemp(join(tmpdir(), 'alfred-runtime-project-setup-'))
     const repos: Record<string, unknown>[] = []
-    getRepoUpstreamMock.mockResolvedValueOnce({ owner: 'alfredlabs', repo: 'alfred' })
+    getRepoUpstreamMock.mockResolvedValueOnce({ owner: 'goi17', repo: 'alfred-workspace' })
     const runtimeStore = {
       ...store,
       getRepos: () => [...repos] as never,
-      addRepo: (repo: Record<string, unknown>) => {
+      addRepo: (repo: Repo) => {
         repos.push(repo)
       },
       getRepo: (id: string) => repos.find((repo) => repo.id === id) as never,
@@ -174,22 +176,22 @@ describe('AlfredRuntimeService', () => {
           }
         }) as never
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     try {
       execFileSync('git', ['init'], { cwd: tempRoot, stdio: 'ignore' })
       const result = await runtime.setupProjectExistingFolder({
-        projectId: 'github:GOI17/alfred-workspace',
+        projectId: 'github:goi17/alfred-workspace',
         hostId: 'runtime:env-1',
         path: tempRoot,
-        kind: 'git',
+        kind: 'git' as const,
         setupMethod: 'imported-existing-folder'
       })
 
-      expect(result.project.id).toBe('github:GOI17/alfred-workspace')
+      expect(result.project.id).toBe('github:goi17/alfred-workspace')
       expect(result.repo.path).toBe(tempRoot)
       expect(result.setup).toMatchObject({
-        projectId: 'github:GOI17/alfred-workspace',
+        projectId: 'github:goi17/alfred-workspace',
         path: tempRoot,
         setupMethod: 'imported-existing-folder'
       })
@@ -205,7 +207,7 @@ describe('AlfredRuntimeService', () => {
     const runtimeStore = {
       ...store,
       getRepos: () => [...repos] as never,
-      addRepo: (repo: Record<string, unknown>) => repos.push(repo),
+      addRepo: (repo: Repo) => repos.push(repo),
       getRepo: (id: string) => repos.find((repo) => repo.id === id) as never,
       updateRepo: (id: string, updates: Record<string, unknown>) => {
         const repo = repos.find((entry) => entry.id === id)
@@ -219,7 +221,7 @@ describe('AlfredRuntimeService', () => {
       getProjectHostSetups: () =>
         projectHostSetupProjectionFromRepos(repos as never).setups as never
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     try {
       execFileSync('git', ['init'], { cwd: tempRoot, stdio: 'ignore' })
@@ -233,7 +235,7 @@ describe('AlfredRuntimeService', () => {
         },
         hostId: 'runtime:env-1',
         path: tempRoot,
-        kind: 'git'
+        kind: 'git' as const
       })
 
       expect(result.project).toMatchObject({
@@ -257,7 +259,7 @@ describe('AlfredRuntimeService', () => {
     const runtimeStore = {
       ...store,
       getRepos: () => [...repos] as never,
-      addRepo: (repo: Record<string, unknown>) => repos.push(repo),
+      addRepo: (repo: Repo) => repos.push(repo),
       getRepo: (id: string) => repos.find((repo) => repo.id === id) as never,
       updateRepo: (id: string, updates: Record<string, unknown>) => {
         const repo = repos.find((entry) => entry.id === id)
@@ -277,7 +279,7 @@ describe('AlfredRuntimeService', () => {
       getProjectHostSetups: () =>
         projectHostSetupProjectionFromRepos(repos as never).setups as never
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     try {
       execFileSync('git', ['init'], { cwd: tempRoot, stdio: 'ignore' })
@@ -286,7 +288,7 @@ describe('AlfredRuntimeService', () => {
           projectId: 'git:git.example.test/acme/alfred',
           hostId: 'runtime:env-1',
           path: tempRoot,
-          kind: 'git'
+          kind: 'git' as const
         })
       ).rejects.toThrow('Imported folder does not match the selected project identity.')
 
@@ -304,7 +306,7 @@ describe('AlfredRuntimeService', () => {
       displayName: 'cloned-repo',
       badgeColor: '#737373',
       addedAt: 1,
-      kind: 'git'
+      kind: 'git' as const
     }
     const runtimeStore = {
       ...store,
@@ -319,7 +321,7 @@ describe('AlfredRuntimeService', () => {
       getProjectHostSetups: () =>
         projectHostSetupProjectionFromRepos(repos as never).setups as never
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     vi.spyOn(runtime, 'cloneRepo').mockImplementation(async () => {
       repos.push(clonedRepo)
       return clonedRepo as never
@@ -340,11 +342,11 @@ describe('AlfredRuntimeService', () => {
   it('keeps existing-folder imports split by runtime host on the same normalized path', async () => {
     const tempRoot = await mkdtemp(join(tmpdir(), 'alfred-runtime-project-host-'))
     const repos: Record<string, unknown>[] = []
-    getRepoUpstreamMock.mockResolvedValue({ owner: 'alfredlabs', repo: 'alfred' })
+    getRepoUpstreamMock.mockResolvedValue({ owner: 'goi17', repo: 'alfred-workspace' })
     const runtimeStore = {
       ...store,
       getRepos: () => [...repos] as never,
-      addRepo: (repo: Record<string, unknown>) => {
+      addRepo: (repo: Repo) => {
         repos.push(repo)
       },
       getRepo: (id: string) => repos.find((repo) => repo.id === id) as never,
@@ -360,22 +362,22 @@ describe('AlfredRuntimeService', () => {
       getProjectHostSetups: () =>
         projectHostSetupProjectionFromRepos(repos as never).setups as never
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     try {
       execFileSync('git', ['init'], { cwd: tempRoot, stdio: 'ignore' })
       const first = await runtime.setupProjectExistingFolder({
-        projectId: 'github:GOI17/alfred-workspace',
+        projectId: 'github:goi17/alfred-workspace',
         hostId: 'runtime:env-1',
         path: tempRoot,
-        kind: 'git',
+        kind: 'git' as const,
         setupMethod: 'imported-existing-folder'
       })
       const second = await runtime.setupProjectExistingFolder({
-        projectId: 'github:GOI17/alfred-workspace',
+        projectId: 'github:goi17/alfred-workspace',
         hostId: 'runtime:env-2',
         path: tempRoot,
-        kind: 'git',
+        kind: 'git' as const,
         setupMethod: 'imported-existing-folder'
       })
 
@@ -421,19 +423,19 @@ describe('AlfredRuntimeService', () => {
         displayName: 'repo',
         badgeColor: 'blue',
         addedAt: 1,
-        kind: 'folder',
+        kind: 'folder' as const,
         executionHostId: 'runtime:env-1'
       }
     ]
     const runtimeStore = {
       ...store,
       getRepos: () => [...repos] as never,
-      addRepo: (repo: Record<string, unknown>) => {
+      addRepo: (repo: Repo) => {
         repos.push(repo)
       },
       getRepo: (id: string) => repos.find((repo) => repo.id === id) as never
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     const repo = await runtime.addRepo('/tmp/runtime-shared', 'folder')
 
@@ -454,14 +456,14 @@ describe('AlfredRuntimeService', () => {
         displayName: 'workspace',
         badgeColor: 'blue',
         addedAt: 1,
-        kind: 'folder',
+        kind: 'folder' as const,
         connectionId: 'ssh-target-1'
       }
     ]
     const runtimeStore = {
       ...store,
       getRepos: () => [...repos] as never,
-      addRepo: (repo: Record<string, unknown>) => {
+      addRepo: (repo: Repo) => {
         repos.push(repo)
       },
       getRepo: (id: string) => repos.find((repo) => repo.id === id) as never,
@@ -474,7 +476,7 @@ describe('AlfredRuntimeService', () => {
         return repos[index] as never
       }
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     const repo = await runtime.addRepo('/workspace', 'folder', 'runtime:env-1')
 
@@ -496,13 +498,13 @@ describe('AlfredRuntimeService', () => {
           displayName: 'workspace',
           badgeColor: 'blue',
           addedAt: 1,
-          kind: 'folder'
+          kind: 'folder' as const
         }
       ]
       const runtimeStore = {
         ...store,
         getRepos: () => [...repos] as never,
-        addRepo: (repo: Record<string, unknown>) => {
+        addRepo: (repo: Repo) => {
           repos.push(repo)
         },
         getRepo: (id: string) => repos.find((repo) => repo.id === id) as never,
@@ -515,7 +517,7 @@ describe('AlfredRuntimeService', () => {
           return repos[index] as never
         }
       }
-      const runtime = new AlfredRuntimeService(runtimeStore as never)
+      const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
       const repo = await runtime.addRepo('/workspace', 'folder', importHostId)
 
@@ -531,11 +533,11 @@ describe('AlfredRuntimeService', () => {
     const clonePath = join(destination, 'alfred')
     const spawnSpy = vi.spyOn(gitRunner, 'gitSpawnAfterWindowsEnvironmentReady')
     const repos: Record<string, unknown>[] = []
-    getRepoUpstreamMock.mockResolvedValue({ owner: 'alfredlabs', repo: 'alfred' })
+    getRepoUpstreamMock.mockResolvedValue({ owner: 'goi17', repo: 'alfred-workspace' })
     const runtimeStore = {
       ...store,
       getRepos: () => [...repos] as never,
-      addRepo: (repo: Record<string, unknown>) => {
+      addRepo: (repo: Repo) => {
         repos.push(repo)
       },
       getRepo: (id: string) => repos.find((repo) => repo.id === id) as never,
@@ -561,11 +563,11 @@ describe('AlfredRuntimeService', () => {
       })
       return proc as never
     })
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     try {
       const result = await runtime.setupProjectClone({
-        projectId: 'github:GOI17/alfred-workspace',
+        projectId: 'github:goi17/alfred-workspace',
         hostId: 'runtime:env-1',
         url: 'https://example.com/alfred.git',
         destination
@@ -610,16 +612,16 @@ describe('AlfredRuntimeService', () => {
     const runtimeStore = {
       ...store,
       getRepos: () => [...repos] as never,
-      addRepo: (repo: Record<string, unknown>) => {
+      addRepo: (repo: Repo) => {
         repos.push(repo)
       }
     }
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
 
     try {
       const cloneError = await runtime
         .setupProjectClone({
-          projectId: 'github:GOI17/alfred-workspace',
+          projectId: 'github:goi17/alfred-workspace',
           hostId: 'ssh:openclaw',
           url: 'https://example.com/alfred.git',
           destination
@@ -627,10 +629,10 @@ describe('AlfredRuntimeService', () => {
         .catch((error: unknown) => error)
       const existingFolderError = await runtime
         .setupProjectExistingFolder({
-          projectId: 'github:GOI17/alfred-workspace',
+          projectId: 'github:goi17/alfred-workspace',
           hostId: 'ssh:openclaw',
           path: existingFolder,
-          kind: 'git'
+          kind: 'git' as const
         })
         .catch((error: unknown) => error)
 

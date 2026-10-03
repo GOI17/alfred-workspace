@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   AlfredRuntimeService,
@@ -13,7 +14,7 @@ function makeRuntimeHostedStore(extraRepoFields: Record<string, unknown> = {}) {
   const repo = {
     ...store.getRepos()[0]!,
     path: RUNTIME_REPO_PATH,
-    executionHostId: 'runtime:env-1',
+    executionHostId: 'runtime:env-1' as const,
     ...extraRepoFields
   }
   return {
@@ -29,7 +30,7 @@ describe('AlfredRuntimeService worktree create execution host', () => {
   })
 
   it('refuses to create for a runtime-hosted repo with no nested SSH target', async () => {
-    const runtime = new AlfredRuntimeService(makeRuntimeHostedStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeRuntimeHostedStore()))
 
     await expect(
       runtime.createManagedWorktree({ repoSelector: 'id:repo-1', name: 'wt' })
@@ -44,7 +45,7 @@ describe('AlfredRuntimeService worktree create execution host', () => {
     const provider = { exec: vi.fn(), addWorktree: vi.fn(), listWorktrees: vi.fn() }
     registerSshGitProvider('target-a', provider as never)
     const runtime = new AlfredRuntimeService(
-      makeRuntimeHostedStore({ connectionId: 'target-a' }) as never
+      createRuntimeStoreTestDouble(makeRuntimeHostedStore({ connectionId: 'target-a' }))
     )
 
     try {

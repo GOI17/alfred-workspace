@@ -1,6 +1,6 @@
+import type { PluginService } from '../plugins/plugin-service'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { PluginLockfile } from '../../shared/plugins/plugin-install-lockfile'
-import type { PluginService } from '../plugins/plugin-service'
 import type { Store } from '../persistence'
 
 const electronMocks = vi.hoisted(() => ({ handle: vi.fn(), on: vi.fn() }))
@@ -104,7 +104,7 @@ describe('plugin removal authority', () => {
         { pluginKey: 'alfred-samples.installed', isDev: false },
         { pluginKey: 'alfred-samples.dev', isDev: true }
       ]
-    } as unknown as PluginService
+    }
 
     expect(canRemoveInstalledPlugin(service, 'alfred-samples.installed')).toBe(true)
     expect(canRemoveInstalledPlugin(service, 'alfred-samples.dev')).toBe(false)
@@ -114,7 +114,7 @@ describe('plugin removal authority', () => {
   it('refuses bundled installs because startup would restore them', () => {
     const service = {
       getDiscovered: () => [{ pluginKey: 'alfredlabs.alfred-theme', isDev: false }]
-    } as unknown as PluginService
+    }
     const lock = {
       version: 1,
       plugins: {

@@ -55,7 +55,7 @@ import { readStoredWebRuntimeEnvironment } from './web-runtime-environment'
 
 export function installWebPreloadApi(): void {
   webRuntimeState.activeEnvironment = readStoredWebRuntimeEnvironment()
-  const webWindow = window as unknown as { __ALFRED_WEB_CLIENT__?: boolean }
+  const webWindow = window
   webWindow.__ALFRED_WEB_CLIENT__ = true
   window.api = withFallback(createWebPreloadApi(), []) as PreloadApi
 }

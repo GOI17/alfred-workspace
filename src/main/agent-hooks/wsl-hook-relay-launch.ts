@@ -292,6 +292,6 @@ export function buildWslRelaySpawnEnv(
   // Why: the relay derives its own guest endpoint path; a /p-translated
   // Windows endpoint here would only add WSLENV noise.
   delete env.ALFRED_AGENT_HOOK_ENDPOINT
-  addAlfredWslInteropEnv(env as Record<string, string>)
+  addAlfredWslInteropEnv(env)
   return env
 }

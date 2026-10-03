@@ -25,7 +25,7 @@ function createMockRuntime(): CoordinatorRuntime & {
   setProbeDrift(result: DriftResult): void
   throwProbeDrift: Error | null
 } {
-  const mock = {
+  const mock: ReturnType<typeof createMockRuntime> = {
     sentMessages: [] as { handle: string; text: string }[],
     terminals: [] as {
       handle: string
@@ -37,7 +37,7 @@ function createMockRuntime(): CoordinatorRuntime & {
     createdTerminalOptions: [] as { title?: string }[],
     probeDriftCalls: [] as string[],
     probeDriftResult: null as DriftResult,
-    cliCommand: 'alfred' as 'alfred' | 'alfred-ide',
+    cliCommand: 'alfred',
     throwProbeDrift: null as Error | null,
     setProbeDrift(result: DriftResult): void {
       mock.probeDriftResult = result
@@ -66,7 +66,7 @@ function createMockRuntime(): CoordinatorRuntime & {
       }
       return mock.probeDriftResult
     },
-    getTerminalOrchestrationCliCommand() {
+    getTerminalOrchestrationCliCommand(): 'alfred' | 'alfred-ide' {
       return mock.cliCommand
     }
   }

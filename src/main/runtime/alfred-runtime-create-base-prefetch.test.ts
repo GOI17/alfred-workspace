@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type * as WorktreeCreatePreparation from '../worktree-create-preparation'
 import type { Project } from '../../shared/project-types'
@@ -34,15 +35,15 @@ const project: Project = {
   sourceRepoIds: ['repo-1'],
   createdAt: 0,
   updatedAt: 0,
-  localWindowsRuntimePreference: { kind: 'wsl', distro: 'Ubuntu' }
+  localWindowsRuntimePreference: { kind: 'wsl' as const, distro: 'Ubuntu' }
 }
 
-function makeStore(overrides: Partial<Project> = {}): unknown {
+function makeStore(overrides: Partial<Project> = {}) {
   return {
     getRepos: () => [repo],
     getRepo: (id: string) => (id === repo.id ? repo : undefined),
     getProjects: () => [{ ...project, ...overrides }],
-    getSettings: () => ({ localWindowsRuntimeDefault: { kind: 'windows-host' } })
+    getSettings: () => ({ localWindowsRuntimeDefault: { kind: 'windows-host' as const } })
   }
 }
 
@@ -69,7 +70,7 @@ describe('prefetchManagedWorktreeCreateBase (alfred-runtime-get-worktree-termina
   it('warms up in the distro a WSL-routed project runs in', async () => {
     _setWslCachesForTests({ available: true, distros: ['Ubuntu'] })
     setPlatform('win32')
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
 
     await runtime.prefetchManagedWorktreeCreateBase({ repoSelector: 'repo-1' })
 
@@ -80,7 +81,7 @@ describe('prefetchManagedWorktreeCreateBase (alfred-runtime-get-worktree-termina
 
   it('warms up on host git when no project runtime routes the repo', async () => {
     setPlatform('darwin')
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
 
     await runtime.prefetchManagedWorktreeCreateBase({ repoSelector: 'repo-1' })
 
@@ -93,7 +94,7 @@ describe('prefetchManagedWorktreeCreateBase (alfred-runtime-get-worktree-termina
   it('does not surface a repair-required project runtime as a prefetch failure', async () => {
     _setWslCachesForTests({ available: true, distros: ['Debian'] })
     setPlatform('win32')
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
 
     await expect(
       runtime.prefetchManagedWorktreeCreateBase({ repoSelector: 'repo-1' })
@@ -111,7 +112,7 @@ describe('prefetchManagedWorktreeCreateBase (alfred-runtime-get-worktree-termina
       await prepareCheckout('origin/main')
       return 'origin/main'
     })
-    const runtime = new AlfredRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
 
     await runtime.prefetchManagedWorktreeCreateBase({ repoSelector: 'repo-1' })
 

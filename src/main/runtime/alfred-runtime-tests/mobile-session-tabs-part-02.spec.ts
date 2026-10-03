@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   AlfredRuntimeService,
@@ -32,22 +33,24 @@ describe('AlfredRuntimeService', () => {
           paneKey: 'tab-1:leaf-1',
           tabId: 'tab-1',
           worktreeId: TEST_WORKTREE_ID,
-          agent: 'codex',
-          providerSession: { key: 'session_id', id: 'session-1' },
+          agent: 'codex' as const,
+          providerSession: { key: 'session_id' as const, id: 'session-1' },
           prompt: 'test',
-          state: 'done',
+          state: 'done' as const,
           capturedAt: 1,
           updatedAt: 1,
-          origin: 'worktree-sleep'
+          origin: 'worktree-sleep' as const
         }
       }
     }))
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getAllWorktreeMeta: () => metaById,
-      getWorktreeMeta: (worktreeId: string) => metaById[worktreeId],
-      getWorkspaceSession
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getAllWorktreeMeta: () => metaById,
+        getWorktreeMeta: (worktreeId: string) => metaById[worktreeId],
+        getWorkspaceSession
+      })
+    )
     runtime.setNotifier({
       worktreesChanged: vi.fn(),
       reposChanged: vi.fn(),
@@ -81,7 +84,7 @@ describe('AlfredRuntimeService', () => {
   })
 
   it('does not report headless wake degradation without sleeping records', async () => {
-    const runtime = new AlfredRuntimeService(store as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
     electronMocks.BrowserWindow.fromId.mockReturnValue(null as never)
     runtime.attachWindow(TEST_WINDOW_ID)
     runtime.markGraphReady(TEST_WINDOW_ID)
@@ -99,11 +102,13 @@ describe('AlfredRuntimeService', () => {
       [TEST_WORKTREE_ID]: makeWorktreeMeta({ isUnread: false })
     }
     const resumeSleepingAgents = vi.fn()
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getAllWorktreeMeta: () => metaById,
-      getWorktreeMeta: (worktreeId: string) => metaById[worktreeId]
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getAllWorktreeMeta: () => metaById,
+        getWorktreeMeta: (worktreeId: string) => metaById[worktreeId]
+      })
+    )
     runtime.setNotifier({
       worktreesChanged: vi.fn(),
       reposChanged: vi.fn(),
@@ -143,12 +148,14 @@ describe('AlfredRuntimeService', () => {
       return metaById[worktreeId]
     })
     const worktreesChanged = vi.fn()
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getAllWorktreeMeta: () => metaById,
-      getWorktreeMeta: (worktreeId: string) => metaById[worktreeId],
-      setWorktreeMeta
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getAllWorktreeMeta: () => metaById,
+        getWorktreeMeta: (worktreeId: string) => metaById[worktreeId],
+        setWorktreeMeta
+      })
+    )
     runtime.setNotifier({
       worktreesChanged,
       reposChanged: vi.fn(),
@@ -193,12 +200,14 @@ describe('AlfredRuntimeService', () => {
       metaById[worktreeId] = { ...(metaById[worktreeId] ?? makeWorktreeMeta()), ...meta }
       return metaById[worktreeId]
     })
-    const runtime = new AlfredRuntimeService({
-      ...store,
-      getAllWorktreeMeta: () => metaById,
-      getWorktreeMeta: (worktreeId: string) => metaById[worktreeId],
-      setWorktreeMeta
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        ...store,
+        getAllWorktreeMeta: () => metaById,
+        getWorktreeMeta: (worktreeId: string) => metaById[worktreeId],
+        setWorktreeMeta
+      })
+    )
     runtime.setNotifier({
       worktreesChanged: vi.fn(),
       reposChanged: vi.fn(),
@@ -256,7 +265,7 @@ describe('AlfredRuntimeService', () => {
         }
       })
     )
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setNotifier({
       worktreesChanged: vi.fn(),
       reposChanged: vi.fn(),
@@ -330,7 +339,7 @@ describe('AlfredRuntimeService', () => {
         }
       })
     )
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setNotifier({
       worktreesChanged: vi.fn(),
       reposChanged: vi.fn(),
@@ -431,7 +440,7 @@ describe('AlfredRuntimeService', () => {
         }
       })
     )
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.setNotifier({
       worktreesChanged: vi.fn(),
       reposChanged: vi.fn(),
@@ -495,7 +504,7 @@ describe('AlfredRuntimeService', () => {
         }
       })
     )
-    const runtime = new AlfredRuntimeService(runtimeStore as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(runtimeStore))
     runtime.registerPty(stalePtyId, TEST_WORKTREE_ID)
     runtime.setNotifier({
       worktreesChanged: vi.fn(),

@@ -81,7 +81,7 @@ test.use({
     QT_IM_MODULE: 'ibus',
     XMODIFIERS: '@im=ibus',
     ...(process.env.ALFRED_E2E_EXTRA_APP_ENV
-      ? (JSON.parse(process.env.ALFRED_E2E_EXTRA_APP_ENV) as Record<string, string>)
+      ? JSON.parse(process.env.ALFRED_E2E_EXTRA_APP_ENV)
       : {})
   },
   alfredAppExtraArgs: (process.env.ALFRED_E2E_EXTRA_APP_ARGS ?? '').split(' ').filter(Boolean)

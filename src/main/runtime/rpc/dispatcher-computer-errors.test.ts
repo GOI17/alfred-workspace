@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
 import { RpcDispatcher } from './dispatcher'
@@ -9,9 +10,9 @@ function makeRequest(method: string, params?: unknown): RpcRequest {
 }
 
 function makeRuntime(): AlfredRuntimeService {
-  return {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime'
-  } as AlfredRuntimeService
+  })
 }
 
 const METHODS = [

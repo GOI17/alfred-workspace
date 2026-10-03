@@ -304,13 +304,11 @@ export type TypingDiagnosticBridge = {
   report: () => TypingLatencyReport
 }
 
-type TypingDiagnosticWindow = Window & { __alfredTypingDiagnostic?: TypingDiagnosticBridge }
-
 export function installTypingLatencyDiagnostic(): void {
   if (typeof window === 'undefined') {
     return
   }
-  const target = window as TypingDiagnosticWindow
+  const target = window
   if (target.__alfredTypingDiagnostic) {
     return
   }

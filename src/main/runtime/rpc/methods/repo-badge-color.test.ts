@@ -1,7 +1,7 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
-import type { AlfredRuntimeService } from '../../alfred-runtime'
 import { REPO_METHODS } from './repo'
 
 function makeRequest(method: string, params?: unknown): RpcRequest {
@@ -10,14 +10,14 @@ function makeRequest(method: string, params?: unknown): RpcRequest {
 
 describe('repo badge color RPC updates', () => {
   it('normalizes repo badge colors before runtime updates', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       updateRepo: vi.fn().mockResolvedValue({
         id: 'repo-1',
         path: '/srv/repo',
         badgeColor: '#abcdef'
       })
-    } as unknown as AlfredRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: REPO_METHODS })
 
     const response = await dispatcher.dispatch(
