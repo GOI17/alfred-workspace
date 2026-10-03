@@ -4,10 +4,10 @@
   "namedDeltas": [],
   "runnerVersion": 1,
   "baseline": "b4dfad0a8ba4e15976ec06b9d38994b6a31e1643",
-  "lockfileSha256": "4568633356187895ccda8e2ff83245c37d5621832c69e268733733b6947971e3",
-  "recorderSha256": "f67c2f5b753d2a4f572599f6861fae8e6e917fe89ac75b58288f8e84be609d86",
+  "lockfileSha256": "6dc9405f6240556235cc8c897075c4dab1e8f5f8f1cf571c8eafdb496d3da818",
+  "recorderSha256": "96c80e2da6f1dbc42aad4f355811aa0e88e121b01243422126e7d08bd0ea57e2",
   "adapterSha256": "76b53dea504a688493843e23e8e7d052fc196f559bb1e2579d0fd38bf3156d0e",
-  "scenarioSha256": "d85a4031b701e563941afcdd7375cf78a1ee1487a0dab722f8516c2bc8d3dcee",
+  "scenarioSha256": "b1dc5ff969f0678a51c77c3656da8065813b028e347e4025f08adc366562cf34",
   "platform": "darwin",
   "scenarioVersion": 1,
   "projectionVersion": 2,
@@ -102,11 +102,11 @@
         "outcome": "alreadyRedeemed"
       }
     },
-    "413aa2c48b5e": {
+    "2298e10fca94": {
       "name": "device-store.removeItem",
       "ordinal": 3,
       "value": {
-        "key": "orca:codex-reset-credit-attempt:v1:0832055c2fa90e8e145c588ad4db656a2fc2840ed2e851a28494eae769db9b3e"
+        "key": "alfred:codex-reset-credit-attempt:v1:0832055c2fa90e8e145c588ad4db656a2fc2840ed2e851a28494eae769db9b3e"
       }
     },
     "9270aeb7d9c6": {
@@ -282,7 +282,7 @@
             "confirm": "074c5080c062"
           },
           "state": "0e5764df4bfd",
-          "effects": ["413aa2c48b5e"]
+          "effects": ["2298e10fca94"]
         }
       }
     ]

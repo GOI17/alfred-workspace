@@ -1,11 +1,11 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { MessageCircle, Star } from 'lucide-react'
+import { Star } from 'lucide-react'
 import { ThemeSwitch } from 'fumadocs-ui/layouts/shared/slots/theme-switch'
 
 async function getGithubStars(): Promise<number | undefined> {
   try {
-    const response = await fetch('https://api.github.com/repos/stablyai/orca', {
+    const response = await fetch('https://api.github.com/repos/GOI17/alfred-workspace', {
       headers: { Accept: 'application/vnd.github+json' },
       next: { revalidate: 3600 }
     })
@@ -33,7 +33,7 @@ export async function DocsHeader() {
         <div className="flex shrink-0 items-center gap-6">
           <Link
             href="/docs"
-            aria-label="Orca docs"
+            aria-label="Alfred docs"
             className="group flex shrink-0 items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
           >
             <Image src="/docs/logo.svg" alt="" width={40} height={25} />
@@ -41,7 +41,7 @@ export async function DocsHeader() {
               aria-hidden="true"
               className="font-sans text-sm font-semibold tracking-tight text-foreground"
             >
-              ORCA
+              ALFRED
             </span>
           </Link>
           <nav className="hidden items-center gap-5 sm:flex" aria-label="Primary navigation">
@@ -52,13 +52,13 @@ export async function DocsHeader() {
               Docs
             </Link>
             <a
-              href="https://www.onorca.dev"
+              href="https://alfredlabs.org"
               className="rounded-md px-2 py-1 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
             >
               Home
             </a>
             <a
-              href="https://www.onorca.dev/download"
+              href="https://alfredlabs.org/download"
               className="rounded-md px-2 py-1 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
             >
               Download
@@ -69,27 +69,7 @@ export async function DocsHeader() {
         <div className="flex shrink-0 items-center gap-3 sm:gap-5">
           <ThemeSwitch className="border-border bg-card" />
           <a
-            href="https://discord.gg/fzjDKHxv8Q"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 sm:flex"
-            aria-label="Join Orca on Discord"
-          >
-            <MessageCircle className="size-4" aria-hidden="true" />
-          </a>
-          <a
-            href="https://x.com/orca_build"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 sm:flex"
-            aria-label="Follow Orca on X"
-          >
-            <span aria-hidden="true" className="text-[15px] font-semibold leading-none">
-              𝕏
-            </span>
-          </a>
-          <a
-            href="https://github.com/stablyai/orca"
+            href="https://github.com/GOI17/alfred-workspace"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"

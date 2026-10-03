@@ -11,7 +11,9 @@ describe('normalizeBrowserUrl', () => {
   })
 
   it('adds https for regular domains without a scheme', () => {
-    expect(normalizeBrowserUrl('github.com/stablyai/orca')).toBe('https://github.com/stablyai/orca')
+    expect(normalizeBrowserUrl('github.com/GOI17/alfred-workspace')).toBe(
+      'https://github.com/GOI17/alfred-workspace'
+    )
   })
 })
 

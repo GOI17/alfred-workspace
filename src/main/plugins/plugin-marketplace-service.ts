@@ -1,5 +1,5 @@
 import {
-  OFFICIAL_MARKETPLACE_OWNER,
+  OFFICIAL_PLUGIN_PUBLISHER,
   OFFICIAL_MARKETPLACE_GIT_SOURCE,
   isOfficialMarketplaceGitSource,
   isOfficialOrganizationGitSource,
@@ -101,7 +101,7 @@ export class PluginMarketplaceService {
   async removeSource(sourceId: string): Promise<boolean> {
     const source = (await this.store.listSources()).find((candidate) => candidate.id === sourceId)
     if (source && isOfficialMarketplaceGitSource(source.source.url)) {
-      throw new Error('the official marketplace is managed by Orca and cannot be removed')
+      throw new Error('the official marketplace is managed by Alfred and cannot be removed')
     }
     const removed = await this.store.removeSource(sourceId)
     if (removed) {
@@ -268,7 +268,7 @@ export class PluginMarketplaceService {
   ): PluginMarketplaceListing {
     const official =
       isOfficialMarketplaceGitSource(source.source.url) &&
-      snapshot.marketplace.owner.toLowerCase() === OFFICIAL_MARKETPLACE_OWNER &&
+      snapshot.marketplace.owner.toLowerCase() === OFFICIAL_PLUGIN_PUBLISHER &&
       isOfficialPluginIdentity(entry.id) &&
       isOfficialOrganizationGitSource(entry.source.url)
     const blocked = this.getKillListEntry(entry.id)

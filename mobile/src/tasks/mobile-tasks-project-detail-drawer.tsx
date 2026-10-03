@@ -35,34 +35,34 @@ export function renderMobileTasksProjectMissingRepoDrawer(model: ConnectionPrese
   const {
     copiedLinkKey,
     copyTextToClipboard,
-    projectRepoNotInOrca,
-    setProjectRepoNotInOrca,
+    projectRepoNotInAlfred,
+    setProjectRepoNotInAlfred,
     taskUiReady
   } = model
   return (
     <BottomDrawer
-      visible={taskUiReady && projectRepoNotInOrca != null}
+      visible={taskUiReady && projectRepoNotInAlfred != null}
       onClose={() => {
-        setProjectRepoNotInOrca(null)
+        setProjectRepoNotInAlfred(null)
       }}
     >
-      {projectRepoNotInOrca ? (
+      {projectRepoNotInAlfred ? (
         <View>
           <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>Repository not in Orca</Text>
+            <Text style={styles.sheetTitle}>Repository not in Alfred</Text>
             <Text style={styles.sheetSubtitle}>
-              {projectRepoNotInOrca.owner}/{projectRepoNotInOrca.repo} is not added to Orca. Add
-              this repository from the desktop app, then refresh mobile Tasks.
+              {projectRepoNotInAlfred.owner}/{projectRepoNotInAlfred.repo} is not added to Alfred.
+              Add this repository from the desktop app, then refresh mobile Tasks.
             </Text>
           </View>
 
           <View style={styles.actionGroup}>
-            {projectRepoNotInOrca.url ? (
+            {projectRepoNotInAlfred.url ? (
               <Pressable
                 style={styles.actionRow}
                 onPress={() => {
-                  if (projectRepoNotInOrca.url) {
-                    void Linking.openURL(projectRepoNotInOrca.url)
+                  if (projectRepoNotInAlfred.url) {
+                    void Linking.openURL(projectRepoNotInAlfred.url)
                   }
                 }}
               >
@@ -70,20 +70,20 @@ export function renderMobileTasksProjectMissingRepoDrawer(model: ConnectionPrese
                 <Text style={styles.actionText}>Open in GitHub</Text>
               </Pressable>
             ) : null}
-            {projectRepoNotInOrca.url ? <View style={styles.actionSeparator} /> : null}
+            {projectRepoNotInAlfred.url ? <View style={styles.actionSeparator} /> : null}
             <Pressable
               style={styles.actionRow}
               onPress={() =>
                 void copyTextToClipboard(
-                  `project-repo:${projectRepoNotInOrca.owner}/${projectRepoNotInOrca.repo}`,
-                  `${projectRepoNotInOrca.owner}/${projectRepoNotInOrca.repo}`
+                  `project-repo:${projectRepoNotInAlfred.owner}/${projectRepoNotInAlfred.repo}`,
+                  `${projectRepoNotInAlfred.owner}/${projectRepoNotInAlfred.repo}`
                 )
               }
             >
               <Copy size={16} color={colors.textPrimary} />
               <Text style={styles.actionText}>
                 {copiedLinkKey ===
-                `project-repo:${projectRepoNotInOrca.owner}/${projectRepoNotInOrca.repo}`
+                `project-repo:${projectRepoNotInAlfred.owner}/${projectRepoNotInAlfred.repo}`
                   ? 'Copied'
                   : 'Copy repository'}
               </Text>
@@ -340,7 +340,7 @@ export function renderMobileTasksProjectDetailDrawer(model: ConnectionPresentati
                 </Pressable>
                 {!projectRowHostedRepo ? (
                   <Text style={styles.emptyInlineText}>
-                    Merge requires this repository in Orca.
+                    Merge requires this repository in Alfred.
                   </Text>
                 ) : null}
               </>

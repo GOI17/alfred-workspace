@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import type { Page } from '@stablyai/playwright-test'
-import { test, expect } from './helpers/orca-app'
+import { test, expect } from './helpers/alfred-app'
 import {
   ensureTerminalVisible,
   getAllWorktreeIds,
@@ -183,12 +183,12 @@ function writeSleepWakePayloadScript(scriptPath: string, payload: string): void 
 
 test.describe('Terminal sleep wake restore', () => {
   test('restores slept terminal output and accepts fresh input after wake', async ({
-    orcaPage,
+    alfredPage,
     testRepoPath
   }) => {
-    await waitForSessionReady(orcaPage)
-    const firstWorktreeId = await waitForActiveWorktree(orcaPage)
-    const secondWorktreeId = (await getAllWorktreeIds(orcaPage)).find(
+    await waitForSessionReady(alfredPage)
+    const firstWorktreeId = await waitForActiveWorktree(alfredPage)
+    const secondWorktreeId = (await getAllWorktreeIds(alfredPage)).find(
       (id) => id !== firstWorktreeId
     )
     test.skip(!secondWorktreeId, 'sleep wake restore needs the seeded secondary worktree')
@@ -196,35 +196,35 @@ test.describe('Terminal sleep wake restore', () => {
       return
     }
 
-    await switchToWorktree(orcaPage, secondWorktreeId)
-    await ensureTerminalVisible(orcaPage)
-    await waitForActiveTerminalManager(orcaPage, 30_000)
-    const ptyId = await waitForActivePanePtyId(orcaPage)
+    await switchToWorktree(alfredPage, secondWorktreeId)
+    await ensureTerminalVisible(alfredPage)
+    await waitForActiveTerminalManager(alfredPage, 30_000)
+    const ptyId = await waitForActivePanePtyId(alfredPage)
     const runId = randomUUID()
     const restoreMarker = `SLEEP_WAKE_RESTORE_${runId}`
     const freshMarker = `SLEEP_WAKE_FRESH_${runId}`
     const expectedMarkers = sleepWakeExpectedMarkers(runId)
-    const scriptPath = path.join(testRepoPath, `.orca-sleep-wake-restore-${runId}.mjs`)
+    const scriptPath = path.join(testRepoPath, `.alfred-sleep-wake-restore-${runId}.mjs`)
     writeSleepWakePayloadScript(scriptPath, richSleepWakePayload(runId))
     try {
-      await sendToTerminal(orcaPage, ptyId, `node ${JSON.stringify(scriptPath)}\r`)
-      await waitForTerminalOutput(orcaPage, restoreMarker, 10_000, 20_000)
-      const beforeSleepDebug = await readSleepWakeTerminalDebug(orcaPage, secondWorktreeId)
+      await sendToTerminal(alfredPage, ptyId, `node ${JSON.stringify(scriptPath)}\r`)
+      await waitForTerminalOutput(alfredPage, restoreMarker, 10_000, 20_000)
+      const beforeSleepDebug = await readSleepWakeTerminalDebug(alfredPage, secondWorktreeId)
       for (const marker of expectedMarkers) {
-        expect(await mainSnapshotContains(orcaPage, ptyId, marker)).toBe(true)
+        expect(await mainSnapshotContains(alfredPage, ptyId, marker)).toBe(true)
       }
 
-      await switchToWorktree(orcaPage, firstWorktreeId)
-      await sleepWorktreeTerminals(orcaPage, secondWorktreeId)
-      const afterSleepDebug = await readSleepWakeTerminalDebug(orcaPage, secondWorktreeId)
+      await switchToWorktree(alfredPage, firstWorktreeId)
+      await sleepWorktreeTerminals(alfredPage, secondWorktreeId)
+      const afterSleepDebug = await readSleepWakeTerminalDebug(alfredPage, secondWorktreeId)
       await expect
-        .poll(() => readLivePtyCountForWorktree(orcaPage, secondWorktreeId), {
+        .poll(() => readLivePtyCountForWorktree(alfredPage, secondWorktreeId), {
           timeout: 10_000,
           message: 'sleep did not release live PTYs for the background worktree'
         })
         .toBe(0)
       await expect
-        .poll(() => readRemoteSleepOracle(orcaPage, secondWorktreeId), {
+        .poll(() => readRemoteSleepOracle(alfredPage, secondWorktreeId), {
           timeout: 10_000,
           message: 'first sleep did not converge host terminal liveness and worktree projection'
         })
@@ -234,12 +234,12 @@ test.describe('Terminal sleep wake restore', () => {
           worktreePsHasAttachedPty: false
         })
 
-      await switchToWorktree(orcaPage, secondWorktreeId)
-      await ensureTerminalVisible(orcaPage)
-      await waitForActiveTerminalManager(orcaPage, 30_000)
-      const awakePtyId = await waitForActivePanePtyId(orcaPage)
-      const afterWakeDebug = await readSleepWakeTerminalDebug(orcaPage, secondWorktreeId)
-      const awakeTerminalContent = await getTerminalContent(orcaPage, 20_000)
+      await switchToWorktree(alfredPage, secondWorktreeId)
+      await ensureTerminalVisible(alfredPage)
+      await waitForActiveTerminalManager(alfredPage, 30_000)
+      const awakePtyId = await waitForActivePanePtyId(alfredPage)
+      const afterWakeDebug = await readSleepWakeTerminalDebug(alfredPage, secondWorktreeId)
+      const awakeTerminalContent = await getTerminalContent(alfredPage, 20_000)
       for (const marker of expectedMarkers) {
         expect
           .soft(awakeTerminalContent.includes(marker), {
@@ -259,9 +259,9 @@ test.describe('Terminal sleep wake restore', () => {
           })
           .toBe(true)
       }
-      await waitForTerminalOutput(orcaPage, restoreMarker, 15_000, 20_000)
-      await sendToTerminal(orcaPage, awakePtyId, `printf '\\n${freshMarker}\\n'\r`)
-      await waitForTerminalOutput(orcaPage, freshMarker, 10_000, 20_000)
+      await waitForTerminalOutput(alfredPage, restoreMarker, 15_000, 20_000)
+      await sendToTerminal(alfredPage, awakePtyId, `printf '\\n${freshMarker}\\n'\r`)
+      await waitForTerminalOutput(alfredPage, freshMarker, 10_000, 20_000)
     } finally {
       rmSync(scriptPath, { force: true })
     }

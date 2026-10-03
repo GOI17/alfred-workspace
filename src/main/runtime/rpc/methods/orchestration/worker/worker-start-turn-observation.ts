@@ -1,6 +1,6 @@
 import { AGENT_PROMPT_EFFECT_TIMEOUT_MS } from '../../../../../../shared/orchestration-timing-budgets'
 import type { RuntimeTerminalPromptDelivery } from '../../../../../../shared/runtime-terminal-contracts'
-import type { OrcaRuntimeService } from '../../../../orca-runtime'
+import type { AlfredRuntimeService } from '../../../../alfred-runtime'
 
 /**
  * Turn-start verdict for a dispatched worker prompt, in the execution-boundary vocabulary:
@@ -44,7 +44,7 @@ function classifyPromptDelivery(prompt: RuntimeTerminalPromptDelivery): WorkerTu
  * grace already budgets for (see orchestration-worker-start-prompt-budget.ts).
  */
 export async function observeWorkerTurnStart(args: {
-  runtime: OrcaRuntimeService
+  runtime: AlfredRuntimeService
   terminalHandle: string
   prompt: RuntimeTerminalPromptDelivery | undefined
   timeoutMs?: number

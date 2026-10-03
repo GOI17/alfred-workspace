@@ -1,20 +1,20 @@
 // Chinese phrase fixes from high-visibility UI audit round 5.
 export const ZH_PHRASE_FIXES_ROUND5 = [
-  { pattern: /Orca集成开发环境/g, replacement: 'Orca IDE', whenEnIncludes: 'Orca IDE' },
-  { pattern: /Orca第一/g, replacement: 'Orca 优先', whenEnIncludes: 'Orca first' },
-  { pattern: /Orca移动/g, replacement: 'Orca Mobile', whenEnIncludes: 'Orca Mobile' },
-  { pattern: /Orca标志/g, replacement: 'Orca 标志', whenEnIncludes: 'Orca logo' },
-  { pattern: /喜欢Orca/g, replacement: '喜欢 Orca', whenEnIncludes: 'Enjoying Orca' },
-  { pattern: /认识Orca/g, replacement: '了解 Orca', whenEnIncludes: 'Get to know Orca' },
-  { pattern: /支持Orca/g, replacement: '支持 Orca', whenEnIncludes: 'Support Orca' },
-  { pattern: /展开Orca/g, replacement: '展开 Orca', whenEnIncludes: 'Expand Orca' },
-  { pattern: /来自Orca/g, replacement: '来自 Orca', whenEnIncludes: 'from Orca' },
+  { pattern: /Alfred集成开发环境/g, replacement: 'Alfred IDE', whenEnIncludes: 'Alfred IDE' },
+  { pattern: /Alfred第一/g, replacement: 'Alfred 优先', whenEnIncludes: 'Alfred first' },
+  { pattern: /Alfred移动/g, replacement: 'Alfred Mobile', whenEnIncludes: 'Alfred Mobile' },
+  { pattern: /Alfred标志/g, replacement: 'Alfred 标志', whenEnIncludes: 'Alfred logo' },
+  { pattern: /喜欢Alfred/g, replacement: '喜欢 Alfred', whenEnIncludes: 'Enjoying Alfred' },
+  { pattern: /认识Alfred/g, replacement: '了解 Alfred', whenEnIncludes: 'Get to know Alfred' },
+  { pattern: /支持Alfred/g, replacement: '支持 Alfred', whenEnIncludes: 'Support Alfred' },
+  { pattern: /展开Alfred/g, replacement: '展开 Alfred', whenEnIncludes: 'Expand Alfred' },
+  { pattern: /来自Alfred/g, replacement: '来自 Alfred', whenEnIncludes: 'from Alfred' },
   {
-    pattern: /正在重新启动Orca/g,
-    replacement: '正在重启 Orca',
-    whenEnIncludes: 'Restarting Orca'
+    pattern: /正在重新启动Alfred/g,
+    replacement: '正在重启 Alfred',
+    whenEnIncludes: 'Restarting Alfred'
   },
-  { pattern: /Orca([\u4e00-\u9fff])/g, replacement: 'Orca $1', whenEnIncludes: 'Orca' },
+  { pattern: /Alfred([\u4e00-\u9fff])/g, replacement: 'Alfred $1', whenEnIncludes: 'Alfred' },
   { pattern: /Linear([\u4e00-\u9fff])/g, replacement: 'Linear $1', whenEnIncludes: 'Linear' },
   { pattern: /Codex([\u4e00-\u9fff])/g, replacement: 'Codex $1', whenEnIncludes: 'Codex' },
   { pattern: /Claude([\u4e00-\u9fff])/g, replacement: 'Claude $1', whenEnIncludes: 'Claude' },
@@ -49,8 +49,8 @@ export const ZH_PHRASE_FIXES_ROUND5 = [
     whenEnIncludes: 'actionable issues'
   },
   {
-    pattern: /显示 Orca 移动按钮/g,
-    replacement: '显示 Orca Mobile 按钮',
-    whenEnIncludes: 'Show Orca Mobile Button'
+    pattern: /显示 Alfred 移动按钮/g,
+    replacement: '显示 Alfred Mobile 按钮',
+    whenEnIncludes: 'Show Alfred Mobile Button'
   }
 ]

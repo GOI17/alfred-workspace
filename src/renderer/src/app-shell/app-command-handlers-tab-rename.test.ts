@@ -111,7 +111,7 @@ function shortcutState(): AppShortcutState {
     openFloatingWorkspaceMaximized: vi.fn(),
     pluginCommands: [],
     setFloatingTerminalOpen: vi.fn(),
-    terminalShortcutPolicy: 'orca-first',
+    terminalShortcutPolicy: 'alfred-first',
     workspaceChromeActive: true
   }
 }

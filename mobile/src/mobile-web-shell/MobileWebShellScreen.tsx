@@ -2,9 +2,9 @@ import type { ReactNode } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
-  OrcaMobileWebShellView,
+  AlfredMobileWebShellView,
   parseMobileWebShellLoadState
-} from '../../modules/orca-mobile-web-shell/src'
+} from '../../modules/alfred-mobile-web-shell/src'
 import { ProtocolBlockScreen } from '../components/ProtocolBlockScreen'
 import { colors, radii, spacing, typography } from '../theme/mobile-theme'
 import type {
@@ -152,7 +152,7 @@ export function MobileWebShellScreen({ hostId, runtime }: MobileWebShellScreenPr
       style={[styles.shellRoot, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
       testID="mobile-web-shell-ready"
     >
-      <OrcaMobileWebShellView
+      <AlfredMobileWebShellView
         key={state.sessionId}
         ref={bridge.viewRef}
         style={styles.shellView}

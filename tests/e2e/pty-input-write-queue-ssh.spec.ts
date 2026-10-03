@@ -1,6 +1,6 @@
 import { mkdirSync } from 'node:fs'
 import path from 'node:path'
-import { expect, test } from './helpers/orca-app'
+import { expect, test } from './helpers/alfred-app'
 import { connectDockerSshRelayTarget } from './helpers/docker-ssh-relay-connection'
 import {
   cleanupDockerSshRelayTarget,
@@ -19,7 +19,7 @@ import {
 } from './helpers/terminal'
 import { ensureTerminalVisible, waitForActiveWorktree, waitForSessionReady } from './helpers/store'
 
-const RUN_DOCKER_SSH = process.env.ORCA_E2E_SSH_DOCKER === '1'
+const RUN_DOCKER_SSH = process.env.ALFRED_E2E_SSH_DOCKER === '1'
 const FISH_VERSION = '4.8.1'
 const FISH_ASSETS = {
   aarch64: {
@@ -74,34 +74,34 @@ function installRemoteFish(target: DockerSshRelayTarget): void {
 }
 
 test.describe('PTY input write queue over SSH', () => {
-  test.skip(!RUN_DOCKER_SSH, 'Set ORCA_E2E_SSH_DOCKER=1 to run Docker-backed SSH E2E.')
+  test.skip(!RUN_DOCKER_SSH, 'Set ALFRED_E2E_SSH_DOCKER=1 to run Docker-backed SSH E2E.')
   test.skip(process.platform === 'win32', 'Docker SSH E2E uses POSIX ssh tooling.')
 
   test('returns an xterm OSC query reply through the live SSH PTY', async ({
-    orcaPage
+    alfredPage
   }, testInfo) => {
     test.slow()
     let target: DockerSshRelayTarget | null = null
     try {
       target = startDockerSshRelayTarget(testInfo)
-      await waitForSessionReady(orcaPage)
-      await waitForActiveWorktree(orcaPage)
-      await connectDockerSshRelayTarget(orcaPage, target)
-      await ensureTerminalVisible(orcaPage, 45_000)
-      await waitForActiveTerminalManager(orcaPage, 60_000)
-      const ptyId = await waitForActivePanePtyId(orcaPage, 60_000)
+      await waitForSessionReady(alfredPage)
+      await waitForActiveWorktree(alfredPage)
+      await connectDockerSshRelayTarget(alfredPage, target)
+      await ensureTerminalVisible(alfredPage, 45_000)
+      await waitForActiveTerminalManager(alfredPage, 60_000)
+      const ptyId = await waitForActivePanePtyId(alfredPage, 60_000)
       const runId = String(Date.now())
 
-      await execInTerminal(orcaPage, ptyId, `node -e ${shellQuote(remoteOscQueryScript(runId))}`)
-      await waitForTerminalOutput(orcaPage, `REMOTE_OSC_READY_${runId}`, 30_000, 80_000)
-      await waitForTerminalOutput(orcaPage, `REMOTE_OSC_REPLY_${runId}`, 30_000, 80_000)
+      await execInTerminal(alfredPage, ptyId, `node -e ${shellQuote(remoteOscQueryScript(runId))}`)
+      await waitForTerminalOutput(alfredPage, `REMOTE_OSC_READY_${runId}`, 30_000, 80_000)
+      await waitForTerminalOutput(alfredPage, `REMOTE_OSC_REPLY_${runId}`, 30_000, 80_000)
     } finally {
       cleanupDockerSshRelayTarget(target)
     }
   })
 
   test('keeps fish query replies out of the next child stdin on an upstream relay pty', async ({
-    orcaPage
+    alfredPage
   }, testInfo) => {
     test.slow()
     let target: DockerSshRelayTarget | null = null
@@ -109,8 +109,8 @@ test.describe('PTY input write queue over SSH', () => {
       target = startDockerSshRelayTarget(testInfo)
       installRemoteFish(target)
       const runId = String(Date.now())
-      const home = `/tmp/orca-fish-${runId}`
-      const prompt = `ORCA_SSH_FISH_${runId}> `
+      const home = `/tmp/alfred-fish-${runId}`
+      const prompt = `ALFRED_SSH_FISH_${runId}> `
       const childReady = `CHILD_READY_${runId}`
       const childRead = `CHILD_READ_${runId}`
       execDockerSshRelayTargetCommand(
@@ -144,37 +144,37 @@ test.describe('PTY input write queue over SSH', () => {
         ].join('\n')
       )
 
-      await waitForSessionReady(orcaPage)
-      await waitForActiveWorktree(orcaPage)
-      await connectDockerSshRelayTarget(orcaPage, target)
+      await waitForSessionReady(alfredPage)
+      await waitForActiveWorktree(alfredPage)
+      await connectDockerSshRelayTarget(alfredPage, target)
       const relayExports = execDockerSshRelayTargetCommand(
         target,
-        'module=$(find /root/.orca-remote -type d -path \'*/node_modules/node-pty\' | head -n 1); node -e "const p=require(process.argv[1]); console.log(Object.keys(p.native || {}).join(\',\'))" "$module"'
+        'module=$(find /root/.alfred-remote -type d -path \'*/node_modules/node-pty\' | head -n 1); node -e "const p=require(process.argv[1]); console.log(Object.keys(p.native || {}).join(\',\'))" "$module"'
       )
       testInfo.annotations.push({ type: 'relay-node-pty-exports', description: relayExports })
       expect(relayExports).not.toContain('echoState')
 
-      await ensureTerminalVisible(orcaPage, 45_000)
-      await waitForActiveTerminalManager(orcaPage, 60_000)
-      const ptyId = await waitForActivePanePtyId(orcaPage, 60_000)
+      await ensureTerminalVisible(alfredPage, 45_000)
+      await waitForActiveTerminalManager(alfredPage, 60_000)
+      const ptyId = await waitForActivePanePtyId(alfredPage, 60_000)
       await execInTerminal(
-        orcaPage,
+        alfredPage,
         ptyId,
         `env HOME=${shellQuote(home)} XDG_CONFIG_HOME=${shellQuote(`${home}/.config`)} XDG_DATA_HOME=${shellQuote(`${home}/.local/share`)} TERM=xterm-256color /usr/local/bin/fish -l -i`
       )
-      await waitForTerminalOutput(orcaPage, prompt, 30_000, 80_000)
+      await waitForTerminalOutput(alfredPage, prompt, 30_000, 80_000)
 
       const blocker = `node -e ${shellQuote(`console.log('BLOCKER_STARTED_${runId}'); setTimeout(() => process.exit(0), 5000)`)}`
-      await execInTerminal(orcaPage, ptyId, blocker)
-      await waitForTerminalOutput(orcaPage, `BLOCKER_STARTED_${runId}`, 30_000, 80_000)
-      await execInTerminal(orcaPage, ptyId, `node ${shellQuote(childScript)}`)
-      await waitForTerminalOutput(orcaPage, childReady, 30_000, 80_000)
-      await sendToTerminal(orcaPage, ptyId, 'hello\r')
-      await waitForTerminalOutput(orcaPage, `${childRead}:"hello\\n"`, 30_000, 80_000)
+      await execInTerminal(alfredPage, ptyId, blocker)
+      await waitForTerminalOutput(alfredPage, `BLOCKER_STARTED_${runId}`, 30_000, 80_000)
+      await execInTerminal(alfredPage, ptyId, `node ${shellQuote(childScript)}`)
+      await waitForTerminalOutput(alfredPage, childReady, 30_000, 80_000)
+      await sendToTerminal(alfredPage, ptyId, 'hello\r')
+      await waitForTerminalOutput(alfredPage, `${childRead}:"hello\\n"`, 30_000, 80_000)
       const screenshotDir = path.join(process.cwd(), 'validation-screenshots', 'sta-3948')
       const screenshotPath = path.join(screenshotDir, 'linux-ssh-fish-child-stdin-pass.png')
       mkdirSync(screenshotDir, { recursive: true })
-      await orcaPage.screenshot({ path: screenshotPath, fullPage: true })
+      await alfredPage.screenshot({ path: screenshotPath, fullPage: true })
       await testInfo.attach('linux-ssh-fish-child-stdin-pass', {
         path: screenshotPath,
         contentType: 'image/png'

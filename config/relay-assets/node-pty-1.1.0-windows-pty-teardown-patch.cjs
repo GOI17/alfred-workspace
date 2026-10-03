@@ -80,8 +80,8 @@ const { join, resolve } = require('node:path')
  *
  *   - the pnpm patch does not cross the SSH boundary -- the remote `npm install` yields upstream's
  *     unpatched node-pty;
- *   - the orcad prebuild matrix has no win32 entry (`MATRIX_SLOTS`,
- *     `config/scripts/build-orcad-prebuilds.mjs`), so no Windows binary is ever compiled from
+ *   - the alfredd prebuild matrix has no win32 entry (`MATRIX_SLOTS`,
+ *     `config/scripts/build-alfredd-prebuilds.mjs`), so no Windows binary is ever compiled from
  *     patched source to ship;
  *   - a relay asset CAN patch native source and rebuild on the host -- that is exactly what
  *     `node-pty-1.1.0-master-cloexec-patch.cjs` does -- but it returns
@@ -102,11 +102,11 @@ const PATCH_TARGETS = [
   {
     relativePath: ['lib', 'windowsPtyAgent.js'],
     originalSha256: '8636d16b38266112204061a22b135734177c242837982fd3a4055be726efa64a',
-    patchedSha256: '1e23ef480569e73706e3ab4f5482c7e553c76f51414ae8e7b0bdcc2fd75f7280',
+    patchedSha256: 'b567727d49ceec9558e496509778555c1a2e81b9a2b5993cf1c44104dddeb68d',
     replacements: [
       [
         '                this._ptyNative.kill(this._pty, this._useConptyDll);\n                this._conoutSocketWorker.dispose();\n',
-        '                this._ptyNative.kill(this._pty, this._useConptyDll);\n                this._conoutSocketWorker.dispose();\n                // Orca: released AFTER the console-list fork and the native kill, not before them.\n                // Destroying conin first aborts teardown partway -- measured on a Windows SSH relay\n                // as +2 File and +1 Process handles per terminal, against +1 File unpatched.\n                this._inSocket.destroy();\n'
+        '                this._ptyNative.kill(this._pty, this._useConptyDll);\n                this._conoutSocketWorker.dispose();\n                // Alfred: released AFTER the console-list fork and the native kill, not before them.\n                // Destroying conin first aborts teardown partway -- measured on a Windows SSH relay\n                // as +2 File and +1 Process handles per terminal, against +1 File unpatched.\n                this._inSocket.destroy();\n'
       ]
     ]
   },
@@ -179,7 +179,7 @@ function patchNodePtyWindowsTeardown(relayDir = process.cwd()) {
       }
       patchedSource = patchedSource.replace(from, to)
     }
-    const temporaryPath = `${inspected.filePath}.orca-patch-${process.pid}`
+    const temporaryPath = `${inspected.filePath}.alfred-patch-${process.pid}`
     // Why: a terminated remote install must leave either known source version recoverable on reconnect.
     try {
       writeFileSync(temporaryPath, patchedSource)

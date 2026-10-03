@@ -24,7 +24,7 @@ type Fixture = { id: number; cwd: string; filePath: string; text: string }
 const SESSIONS: Fixture[] = [
   {
     id: 1,
-    cwd: '/Users/Ada/orca/session-search',
+    cwd: '/Users/Ada/alfred/session-search',
     filePath: '/Users/Ada/.claude/projects/a/one.jsonl',
     text: 'harbor pilot manifest'
   },
@@ -42,7 +42,7 @@ const SESSIONS: Fixture[] = [
   },
   {
     id: 4,
-    cwd: 'C:\\Work\\Orca\\App',
+    cwd: 'C:\\Work\\Alfred\\App',
     filePath: 'C:\\Users\\Ada\\.claude\\four.jsonl',
     text: 'harbor windows lane'
   },
@@ -59,11 +59,11 @@ const SESSIONS: Fixture[] = [
 // tried to say `repo:` / `path:` in SQL.
 const QUERIES = [
   'harbor path:jsonl',
-  'harbor repo:orca/session-search',
+  'harbor repo:alfred/session-search',
   'harbor path:CAFÉ',
-  'harbor path:/Users/Ada/orca',
+  'harbor path:/Users/Ada/alfred',
   'harbor repo:app',
-  'harbor repo:Orca/App',
+  'harbor repo:Alfred/App',
   'harbor path:.codex',
   'harbor path:/srv repo:other/service',
   'harbor repo:session-search path:jsonl',

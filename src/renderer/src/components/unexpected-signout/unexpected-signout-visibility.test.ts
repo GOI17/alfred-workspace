@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import type { OrcaProfileAuthStatus } from '../../../../shared/orca-profiles'
+import type { AlfredProfileAuthStatus } from '../../../../shared/alfred-profiles'
 import { shouldShowUnexpectedSignoutCard } from './unexpected-signout-visibility'
 
-function reconnectRequired(): OrcaProfileAuthStatus {
+function reconnectRequired(): AlfredProfileAuthStatus {
   return {
     activeProfileId: 'profile-1',
     configured: true,
@@ -56,7 +56,7 @@ describe('shouldShowUnexpectedSignoutCard', () => {
       auth: { ...reconnectRequired(), credentialError: 'Permission denied' },
       visible: true
     }
-  ] satisfies { name: string; auth: OrcaProfileAuthStatus | null; visible: boolean }[])(
+  ] satisfies { name: string; auth: AlfredProfileAuthStatus | null; visible: boolean }[])(
     '$name',
     ({ auth, visible }) => {
       expect(

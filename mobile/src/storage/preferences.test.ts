@@ -55,10 +55,10 @@ describe('session view preference', () => {
   it('defaults to terminal and persists the chat default', async () => {
     vi.mocked(AsyncStorage.getItem).mockResolvedValue(null)
     await expect(loadDefaultSessionView()).resolves.toBe('terminal')
-    expect(AsyncStorage.getItem).toHaveBeenCalledWith('orca:defaultSessionView')
+    expect(AsyncStorage.getItem).toHaveBeenCalledWith('alfred:defaultSessionView')
 
     await saveDefaultSessionView('chat')
-    expect(AsyncStorage.setItem).toHaveBeenCalledWith('orca:defaultSessionView', 'chat')
+    expect(AsyncStorage.setItem).toHaveBeenCalledWith('alfred:defaultSessionView', 'chat')
 
     vi.mocked(AsyncStorage.getItem).mockResolvedValue('bogus')
     await expect(loadDefaultSessionView()).resolves.toBe('terminal')
@@ -108,12 +108,12 @@ describe('session view preference', () => {
       ['tab-2', 'terminal']
     ])
     expect(AsyncStorage.getItem).toHaveBeenCalledWith(
-      'orca:nativeChatTabs:host%2Fone:folder%3AC%3A%5Crepo'
+      'alfred:nativeChatTabs:host%2Fone:folder%3AC%3A%5Crepo'
     )
 
     await updateSessionViewOverride('host/one', 'folder:C:\\repo', 'tab-2', 'chat')
     expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-      'orca:nativeChatTabs:host%2Fone:folder%3AC%3A%5Crepo',
+      'alfred:nativeChatTabs:host%2Fone:folder%3AC%3A%5Crepo',
       JSON.stringify({ 'tab-1': 'chat', 'tab-2': 'chat' })
     )
   })
@@ -152,8 +152,8 @@ describe('session view preference', () => {
     await Promise.all([older, newer])
 
     await expect(reloaded).resolves.toBe('terminal')
-    expect(AsyncStorage.setItem).toHaveBeenNthCalledWith(1, 'orca:defaultSessionView', 'chat')
-    expect(AsyncStorage.setItem).toHaveBeenNthCalledWith(2, 'orca:defaultSessionView', 'terminal')
+    expect(AsyncStorage.setItem).toHaveBeenNthCalledWith(1, 'alfred:defaultSessionView', 'chat')
+    expect(AsyncStorage.setItem).toHaveBeenNthCalledWith(2, 'alfred:defaultSessionView', 'terminal')
   })
 
   it('continues the shared default queue after a failed write', async () => {
@@ -220,7 +220,7 @@ describe('session view preference', () => {
     await updateSessionViewOverride('other-host', 'worktree', 'tab', 'terminal')
 
     expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-      'orca:nativeChatTabs:other-host:worktree',
+      'alfred:nativeChatTabs:other-host:worktree',
       JSON.stringify({ tab: 'terminal' })
     )
     blockedWrite.resolve()
@@ -267,7 +267,7 @@ describe('session view preference', () => {
     await updateSessionViewOverride('host', 'worktree', 'tab', 'chat')
 
     expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-      'orca:nativeChatTabs:host:worktree',
+      'alfred:nativeChatTabs:host:worktree',
       JSON.stringify({ tab: 'chat' })
     )
   })
@@ -281,7 +281,7 @@ describe('push notification preference', () => {
 
   it.each(['true', 'false'])('requires fresh consent for legacy choice %s', async (legacy) => {
     vi.mocked(AsyncStorage.getItem).mockImplementation(async (key) =>
-      key === 'orca:pushNotificationsEnabled' ? legacy : null
+      key === 'alfred:pushNotificationsEnabled' ? legacy : null
     )
     await expect(readPushNotificationsPreference()).resolves.toEqual({ value: null, loaded: true })
     await expect(loadPushNotificationsEnabled()).resolves.toBe(false)
@@ -289,7 +289,7 @@ describe('push notification preference', () => {
 
   it('distinguishes an unset preference from an explicit disabled choice', async () => {
     vi.mocked(AsyncStorage.getItem).mockImplementation(async (key) =>
-      key === 'orca:remotePushEnabled' ? 'true' : null
+      key === 'alfred:remotePushEnabled' ? 'true' : null
     )
     await expect(readPushNotificationsPreference()).resolves.toEqual({
       value: null,
@@ -324,7 +324,7 @@ describe('push notification preference', () => {
       await savePushNotificationsEnabled(enabled)
       await expect(loadPushNotificationsEnabled()).resolves.toBe(enabled)
     }
-    expect([...storage]).toEqual([['orca:pushServiceNotificationsEnabled', 'false']])
+    expect([...storage]).toEqual([['alfred:pushServiceNotificationsEnabled', 'false']])
   })
 })
 
@@ -338,7 +338,7 @@ describe('terminal autocomplete preference', () => {
     vi.mocked(AsyncStorage.getItem).mockResolvedValue(null)
 
     await expect(loadTerminalAutocompleteEnabled()).resolves.toBe(false)
-    expect(AsyncStorage.getItem).toHaveBeenCalledWith('orca:terminalAutocompleteEnabled')
+    expect(AsyncStorage.getItem).toHaveBeenCalledWith('alfred:terminalAutocompleteEnabled')
   })
 
   it('loads enabled only from the persisted true value', async () => {
@@ -360,11 +360,11 @@ describe('terminal autocomplete preference', () => {
   it('persists the selected value', async () => {
     await saveTerminalAutocompleteEnabled(true)
 
-    expect(AsyncStorage.setItem).toHaveBeenCalledWith('orca:terminalAutocompleteEnabled', 'true')
+    expect(AsyncStorage.setItem).toHaveBeenCalledWith('alfred:terminalAutocompleteEnabled', 'true')
 
     await saveTerminalAutocompleteEnabled(false)
 
-    expect(AsyncStorage.setItem).toHaveBeenCalledWith('orca:terminalAutocompleteEnabled', 'false')
+    expect(AsyncStorage.setItem).toHaveBeenCalledWith('alfred:terminalAutocompleteEnabled', 'false')
   })
 })
 
@@ -418,7 +418,7 @@ describe('terminal live input disabled handles preference', () => {
     )
 
     expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-      'orca:terminalLiveInputDisabled:host%2Fone:folder%3AC%3A%5Crepo',
+      'alfred:terminalLiveInputDisabled:host%2Fone:folder%3AC%3A%5Crepo',
       JSON.stringify(['pty-2', 'pty-1'])
     )
   })
@@ -458,7 +458,7 @@ describe('host sidebar width preference', () => {
     await saveHostSidebarWidth(HOST_SIDEBAR_MIN_WIDTH - 20)
 
     expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-      'orca:hostSidebarWidth',
+      'alfred:hostSidebarWidth',
       String(HOST_SIDEBAR_MIN_WIDTH)
     )
   })
@@ -478,11 +478,11 @@ describe('terminal link open mode preference', () => {
     vi.mocked(AsyncStorage.setItem).mockReset()
   })
 
-  it('defaults to Orca browser when unset', async () => {
+  it('defaults to Alfred browser when unset', async () => {
     vi.mocked(AsyncStorage.getItem).mockResolvedValue(null)
 
-    await expect(loadTerminalLinkOpenMode()).resolves.toBe('orca-browser')
-    expect(AsyncStorage.getItem).toHaveBeenCalledWith('orca:terminalLinkOpenMode')
+    await expect(loadTerminalLinkOpenMode()).resolves.toBe('alfred-browser')
+    expect(AsyncStorage.getItem).toHaveBeenCalledWith('alfred:terminalLinkOpenMode')
   })
 
   it('loads only known modes', async () => {
@@ -490,19 +490,22 @@ describe('terminal link open mode preference', () => {
     await expect(loadTerminalLinkOpenMode()).resolves.toBe('phone-browser')
 
     vi.mocked(AsyncStorage.getItem).mockResolvedValue('external')
-    await expect(loadTerminalLinkOpenMode()).resolves.toBe('orca-browser')
+    await expect(loadTerminalLinkOpenMode()).resolves.toBe('alfred-browser')
   })
 
-  it('falls back to Orca browser when storage cannot be read', async () => {
+  it('falls back to Alfred browser when storage cannot be read', async () => {
     vi.mocked(AsyncStorage.getItem).mockRejectedValue(new Error('storage unavailable'))
 
-    await expect(loadTerminalLinkOpenMode()).resolves.toBe('orca-browser')
+    await expect(loadTerminalLinkOpenMode()).resolves.toBe('alfred-browser')
   })
 
   it('persists the selected mode', async () => {
     await saveTerminalLinkOpenMode('phone-browser')
 
-    expect(AsyncStorage.setItem).toHaveBeenCalledWith('orca:terminalLinkOpenMode', 'phone-browser')
+    expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+      'alfred:terminalLinkOpenMode',
+      'phone-browser'
+    )
   })
 })
 
@@ -527,7 +530,7 @@ describe('hybrid shell flag', () => {
     vi.mocked(AsyncStorage.getItem).mockResolvedValue('true')
 
     await expect(loadMobileWebShellEnabled()).resolves.toBe(true)
-    expect(AsyncStorage.getItem).toHaveBeenCalledWith('orca:mobileWebShellEnabled')
+    expect(AsyncStorage.getItem).toHaveBeenCalledWith('alfred:mobileWebShellEnabled')
   })
 
   it.each([

@@ -3,13 +3,14 @@ import type { ReactNode } from 'react'
 import { RootProvider } from 'fumadocs-ui/provider/next'
 import './globals.css'
 
-const siteUrl = 'https://www.onorca.dev'
+const siteUrl = 'https://alfredlabs.org'
 
 export const metadata: Metadata = {
-  title: 'Orca Docs',
-  description: 'Product documentation for Orca — the worktree IDE for AI coding agents.',
+  title: 'Alfred workspace Docs',
+  description:
+    'Product documentation for Alfred workspace — the worktree IDE for AI coding agents.',
   metadataBase: new URL(siteUrl),
-  applicationName: 'Orca Docs',
+  applicationName: 'Alfred workspace Docs',
   icons: {
     icon: '/docs/favicon.ico',
     shortcut: '/docs/favicon.ico'
@@ -18,14 +19,16 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: `${siteUrl}/docs`,
-    siteName: 'Orca',
-    title: 'Orca Docs',
-    description: 'Product documentation for Orca — the worktree IDE for AI coding agents.'
+    siteName: 'Alfred workspace',
+    title: 'Alfred workspace Docs',
+    description:
+      'Product documentation for Alfred workspace — the worktree IDE for AI coding agents.'
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Orca Docs',
-    description: 'Product documentation for Orca — the worktree IDE for AI coding agents.'
+    title: 'Alfred workspace Docs',
+    description:
+      'Product documentation for Alfred workspace — the worktree IDE for AI coding agents.'
   },
   robots: {
     index: true,

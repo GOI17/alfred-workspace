@@ -25,8 +25,8 @@ const RICH_CHANGELOG: ChangelogData = {
   release: {
     title: 'Inline Diffs',
     description: 'Review diffs without leaving the terminal.',
-    mediaUrl: 'https://onorca.dev/media/inline-diffs.png',
-    releaseNotesUrl: 'https://onorca.dev/changelog/1.2.0'
+    mediaUrl: 'https://alfredlabs.org/media/inline-diffs.png',
+    releaseNotesUrl: 'https://alfredlabs.org/changelog/1.2.0'
   },
   releasesBehind: 3
 }
@@ -498,7 +498,7 @@ describe('UpdateCard visibility gates', () => {
       computeVisibility({
         status: {
           state: 'error',
-          message: 'Quit Orca before running the system package install command.',
+          message: 'Quit Alfred before running the system package install command.',
           recovery: {
             kind: 'linux-package-install',
             packageType: 'deb',

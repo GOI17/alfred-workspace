@@ -27,7 +27,9 @@ function agentsOf(body: AgentJournalItemBody | undefined): NativeChatSubagentEnt
 }
 
 function isGroupRow(identity: AgentJournalItemIdentity, groupId: string): boolean {
-  return identity.provider === 'orca' && identity.clientMessageId === `claude-subagents:${groupId}`
+  return (
+    identity.provider === 'alfred' && identity.clientMessageId === `claude-subagents:${groupId}`
+  )
 }
 
 function harness(groupKey: string | null = TURN_1) {
@@ -78,7 +80,7 @@ describe('ClaudeSubagentRoster', () => {
     )
     expect(items).toHaveLength(1)
     expect(items[0]?.identity).toEqual({
-      provider: 'orca',
+      provider: 'alfred',
       clientMessageId: 'claude-subagents:claude-session:turn-1'
     })
     const body = items[0]?.body
@@ -134,7 +136,7 @@ describe('ClaudeSubagentRoster', () => {
       })
     )
     expect(tombstones).toEqual([
-      { provider: 'orca', clientMessageId: 'claude-subagents:claude-session:turn-1' }
+      { provider: 'alfred', clientMessageId: 'claude-subagents:claude-session:turn-1' }
     ])
     expect(items).toHaveLength(1)
   })
@@ -392,7 +394,7 @@ describe('ClaudeSubagentRoster', () => {
     const { roster, items } = harness(null)
     roster.observeSystemFrame(started({ task_id: 'task-1', description: 'Audit' }))
     expect(items[0]?.identity).toEqual({
-      provider: 'orca',
+      provider: 'alfred',
       clientMessageId: 'claude-subagents:outside-turn'
     })
   })

@@ -2,9 +2,9 @@
   "version": 1,
   "plugins": [
     {
-      "pluginKey": "stablyai.orca-navigation-shortcuts",
-      "path": "stablyai.orca-navigation-shortcuts",
-      "contentHash": "ce3a146bae9e121a18cb86a710973422be749a25da5a1c21a8911e2e98cc3a77"
+      "pluginKey": "alfredlabs.alfred-navigation-shortcuts",
+      "path": "alfredlabs.alfred-navigation-shortcuts",
+      "contentHash": "579baddddb1a3fd216e13aef6d75d0353c5cea89e4c15bd56df4627c00e626d9"
     }
   ]
 }

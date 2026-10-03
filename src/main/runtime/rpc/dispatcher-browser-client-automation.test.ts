@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
-import type { OrcaRuntimeService } from '../orca-runtime'
+import type { AlfredRuntimeService } from '../alfred-runtime'
 import { defineMethod, type RpcRequest } from './core'
 import { RpcDispatcher } from './dispatcher'
 
@@ -17,11 +17,13 @@ function request(params: unknown): RpcRequest {
   return { id: 'request-a', authToken: 'token-a', method: 'browser.click', params }
 }
 
-function runtime(routeClientHostedBrowserRpc?: OrcaRuntimeService['routeClientHostedBrowserRpc']) {
+function runtime(
+  routeClientHostedBrowserRpc?: AlfredRuntimeService['routeClientHostedBrowserRpc']
+) {
   return {
     getRuntimeId: () => 'runtime-a',
     routeClientHostedBrowserRpc
-  } as OrcaRuntimeService
+  } as AlfredRuntimeService
 }
 
 describe('RpcDispatcher client-hosted browser automation', () => {

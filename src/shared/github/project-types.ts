@@ -162,7 +162,7 @@ export type GitHubProjectRow = {
     stateReason: string | null
     /** PullRequest.isDraft; null otherwise. */
     isDraft: boolean | null
-    /** nameWithOwner, e.g. 'stablyai/orca'. */
+    /** nameWithOwner, e.g. 'GOI17/alfred-workspace'. */
     repository: string | null
     assignees: GitHubProjectUser[]
     labels: GitHubProjectLabel[]

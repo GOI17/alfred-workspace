@@ -4,8 +4,8 @@
   "namedDeltas": [],
   "runnerVersion": 1,
   "baseline": "b4dfad0a8ba4e15976ec06b9d38994b6a31e1643",
-  "lockfileSha256": "4568633356187895ccda8e2ff83245c37d5621832c69e268733733b6947971e3",
-  "recorderSha256": "f67c2f5b753d2a4f572599f6861fae8e6e917fe89ac75b58288f8e84be609d86",
+  "lockfileSha256": "6dc9405f6240556235cc8c897075c4dab1e8f5f8f1cf571c8eafdb496d3da818",
+  "recorderSha256": "96c80e2da6f1dbc42aad4f355811aa0e88e121b01243422126e7d08bd0ea57e2",
   "adapterSha256": "c582ce355b0704b38d7e84cbce352630096c91231bf09aecd1f6dbb409fed17f",
   "scenarioSha256": "beb1161b98ffde8c5f1128e843766a1da3182d195f1f0a9012e12e5318ae01bc",
   "platform": "darwin",
@@ -247,6 +247,48 @@
         }
       }
     },
+    "1f540653f8a4": {
+      "outcome": {
+        "committed": true,
+        "ok": true,
+        "prefill": {
+          "base": "main",
+          "blockedReason": {
+            "$rpc": "null"
+          },
+          "body": "Host body",
+          "canCreate": true,
+          "nextAction": {
+            "$rpc": "null"
+          },
+          "provider": "github",
+          "reviewLookupOutcome": "not_found",
+          "title": "Host title"
+        },
+        "status": {
+          "branch": "feature",
+          "conflictOperation": "unknown",
+          "entries": [],
+          "head": "def5678",
+          "upstreamStatus": {
+            "ahead": 0,
+            "behind": 0,
+            "behindCommitsArePatchEquivalent": {
+              "$rpc": "undefined"
+            },
+            "hasConfiguredPushTarget": {
+              "$rpc": "undefined"
+            },
+            "hasUpstream": true,
+            "upstreamName": {
+              "$rpc": "undefined"
+            }
+          }
+        },
+        "url": "https://review.test/5",
+        "warning": "Pull Request created, but Alfred could not refresh it yet."
+      }
+    },
     "201cece6e0bb": {
       "name": "git.status#3",
       "ordinal": 15,
@@ -323,48 +365,6 @@
         }
       }
     },
-    "2c6dd148501e": {
-      "outcome": {
-        "committed": true,
-        "ok": true,
-        "prefill": {
-          "base": "main",
-          "blockedReason": {
-            "$rpc": "null"
-          },
-          "body": "Host body",
-          "canCreate": true,
-          "nextAction": {
-            "$rpc": "null"
-          },
-          "provider": "github",
-          "reviewLookupOutcome": "not_found",
-          "title": "Host title"
-        },
-        "status": {
-          "branch": "feature",
-          "conflictOperation": "unknown",
-          "entries": [],
-          "head": "def5678",
-          "upstreamStatus": {
-            "ahead": 0,
-            "behind": 0,
-            "behindCommitsArePatchEquivalent": {
-              "$rpc": "undefined"
-            },
-            "hasConfiguredPushTarget": {
-              "$rpc": "undefined"
-            },
-            "hasUpstream": true,
-            "upstreamName": {
-              "$rpc": "undefined"
-            }
-          }
-        },
-        "url": "https://review.test/5",
-        "warning": "Pull Request created, but Orca could not refresh it yet."
-      }
-    },
     "395c47c3d42e": {
       "name": "hostedReview.getCreationEligibility#1",
       "ordinal": 17,
@@ -402,6 +402,51 @@
           "message": "transport failure",
           "isRpcDeliveryUnknown": true
         }
+      }
+    },
+    "4158a01b39ba": {
+      "status": "fulfilled",
+      "startedAt": 0,
+      "settledAt": 0,
+      "value": {
+        "committed": true,
+        "ok": true,
+        "prefill": {
+          "base": "main",
+          "blockedReason": {
+            "$rpc": "null"
+          },
+          "body": "Host body",
+          "canCreate": true,
+          "nextAction": {
+            "$rpc": "null"
+          },
+          "provider": "github",
+          "reviewLookupOutcome": "not_found",
+          "title": "Host title"
+        },
+        "status": {
+          "branch": "feature",
+          "conflictOperation": "unknown",
+          "entries": [],
+          "head": "def5678",
+          "upstreamStatus": {
+            "ahead": 0,
+            "behind": 0,
+            "behindCommitsArePatchEquivalent": {
+              "$rpc": "undefined"
+            },
+            "hasConfiguredPushTarget": {
+              "$rpc": "undefined"
+            },
+            "hasUpstream": true,
+            "upstreamName": {
+              "$rpc": "undefined"
+            }
+          }
+        },
+        "url": "https://review.test/5",
+        "warning": "Pull Request created, but Alfred could not refresh it yet."
       }
     },
     "42e0a785c289": {
@@ -1105,51 +1150,6 @@
       "ordinal": 8,
       "value": "generating_commit_message"
     },
-    "b661d30b2d73": {
-      "status": "fulfilled",
-      "startedAt": 0,
-      "settledAt": 0,
-      "value": {
-        "committed": true,
-        "ok": true,
-        "prefill": {
-          "base": "main",
-          "blockedReason": {
-            "$rpc": "null"
-          },
-          "body": "Host body",
-          "canCreate": true,
-          "nextAction": {
-            "$rpc": "null"
-          },
-          "provider": "github",
-          "reviewLookupOutcome": "not_found",
-          "title": "Host title"
-        },
-        "status": {
-          "branch": "feature",
-          "conflictOperation": "unknown",
-          "entries": [],
-          "head": "def5678",
-          "upstreamStatus": {
-            "ahead": 0,
-            "behind": 0,
-            "behindCommitsArePatchEquivalent": {
-              "$rpc": "undefined"
-            },
-            "hasConfiguredPushTarget": {
-              "$rpc": "undefined"
-            },
-            "hasUpstream": true,
-            "upstreamName": {
-              "$rpc": "undefined"
-            }
-          }
-        },
-        "url": "https://review.test/5",
-        "warning": "Pull Request created, but Orca could not refresh it yet."
-      }
-    },
     "c9569b29c1f2": {
       "name": "worktree.set#1",
       "ordinal": 28,
@@ -1826,9 +1826,9 @@
             "ffef2a178ce4"
           ],
           "settlements": {
-            "run": "b661d30b2d73"
+            "run": "4158a01b39ba"
           },
-          "state": "2c6dd148501e",
+          "state": "1f540653f8a4",
           "effects": [
             "e83dca631c9c",
             "b2ae4b8e30b7",
@@ -1870,9 +1870,9 @@
             "ffef2a178ce4"
           ],
           "settlements": {
-            "run": "b661d30b2d73"
+            "run": "4158a01b39ba"
           },
-          "state": "2c6dd148501e",
+          "state": "1f540653f8a4",
           "effects": [
             "e83dca631c9c",
             "b2ae4b8e30b7",
@@ -1914,9 +1914,9 @@
             "ffef2a178ce4"
           ],
           "settlements": {
-            "run": "b661d30b2d73"
+            "run": "4158a01b39ba"
           },
-          "state": "2c6dd148501e",
+          "state": "1f540653f8a4",
           "effects": [
             "e83dca631c9c",
             "b2ae4b8e30b7",
@@ -1958,9 +1958,9 @@
             "ffef2a178ce4"
           ],
           "settlements": {
-            "run": "b661d30b2d73"
+            "run": "4158a01b39ba"
           },
-          "state": "2c6dd148501e",
+          "state": "1f540653f8a4",
           "effects": [
             "e83dca631c9c",
             "b2ae4b8e30b7",

@@ -62,11 +62,13 @@ describe('buildWindowsGrokHookScript', () => {
   it('re-checks the envelope after appending the trailing-backslash sentinel', () => {
     const lines = buildWindowsGrokHookScript().split('\r\n')
     const appended = lines.indexOf(
-      'if "%ORCA_GROK_HOME:~-1%"=="\\" set "ORCA_GROK_HOME=%ORCA_GROK_HOME%."'
+      'if "%ALFRED_GROK_HOME:~-1%"=="\\" set "ALFRED_GROK_HOME=%ALFRED_GROK_HOME%."'
     )
 
     expect(appended).toBeGreaterThan(-1)
-    expect(lines[appended + 1]).toBe('if not "%ORCA_GROK_HOME:~4096,1%"=="" set "ORCA_GROK_HOME="')
+    expect(lines[appended + 1]).toBe(
+      'if not "%ALFRED_GROK_HOME:~4096,1%"=="" set "ALFRED_GROK_HOME="'
+    )
   })
 })
 
@@ -81,7 +83,7 @@ describe.skipIf(process.platform !== 'win32')('buildWindowsGrokHookScript (win32
   })
 
   function writeScript(): string {
-    const dir = mkdtempSync(join(tmpdir(), 'orca-grok-hook-'))
+    const dir = mkdtempSync(join(tmpdir(), 'alfred-grok-hook-'))
     dirs.push(dir)
     const scriptPath = join(dir, 'grok-hook.cmd')
     writeFileSync(scriptPath, buildWindowsGrokHookScript())
@@ -125,12 +127,12 @@ describe.skipIf(process.platform !== 'win32')('buildWindowsGrokHookScript (win32
         const address = server.address()
         const env: NodeJS.ProcessEnv = {
           ...process.env,
-          ORCA_AGENT_HOOK_PORT: String(typeof address === 'object' && address ? address.port : 0),
-          ORCA_AGENT_HOOK_TOKEN: 'test-token',
-          ORCA_PANE_KEY: PANE_KEY,
-          ORCA_WORKTREE_ID: WORKTREE_ID
+          ALFRED_AGENT_HOOK_PORT: String(typeof address === 'object' && address ? address.port : 0),
+          ALFRED_AGENT_HOOK_TOKEN: 'test-token',
+          ALFRED_PANE_KEY: PANE_KEY,
+          ALFRED_WORKTREE_ID: WORKTREE_ID
         }
-        delete env.ORCA_AGENT_HOOK_ENDPOINT
+        delete env.ALFRED_AGENT_HOOK_ENDPOINT
         delete env.GROK_HOME
         if (grokHome !== undefined) {
           env.GROK_HOME = grokHome

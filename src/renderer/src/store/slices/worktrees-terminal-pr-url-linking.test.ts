@@ -38,32 +38,38 @@ describe('worktree remote runtime mutations', () => {
     const wt = makeWorktree({
       id: 'repo1::/path/wt1',
       repoId: 'repo1',
-      path: '/worktrees/orca',
+      path: '/worktrees/alfred',
       branch: 'refs/heads/feature/pr-link',
       pushTarget: {
         remoteName: 'origin',
         branchName: 'feature/pr-link',
-        remoteUrl: 'https://github.com/acme/orca.git'
+        remoteUrl: 'https://github.com/acme/alfred.git'
       }
     })
     store.setState({
       repos: [
-        { id: 'repo1', path: '/repos/orca', displayName: 'orca', badgeColor: '#000', addedAt: 0 }
+        {
+          id: 'repo1',
+          path: '/repos/alfred',
+          displayName: 'alfred',
+          badgeColor: '#000',
+          addedAt: 0
+        }
       ],
       worktreesByRepo: { repo1: [wt] },
       fetchPRForBranch
     } as unknown as Partial<AppState>)
 
     store.getState().observeTerminalGitHubPullRequestLink(wt.id, {
-      url: 'https://github.com/acme/orca/pull/42',
-      slug: { owner: 'acme', repo: 'orca' },
+      url: 'https://github.com/acme/alfred/pull/42',
+      slug: { owner: 'acme', repo: 'alfred' },
       number: 42
     })
 
     expect(store.getState().worktreesByRepo.repo1[0]?.linkedPR).toBeNull()
     expect(mockApi.worktrees.resolvePrBase).not.toHaveBeenCalled()
     expect(mockApi.worktrees.updateMeta).not.toHaveBeenCalled()
-    expect(fetchPRForBranch).toHaveBeenCalledWith('/repos/orca', 'feature/pr-link', {
+    expect(fetchPRForBranch).toHaveBeenCalledWith('/repos/alfred', 'feature/pr-link', {
       force: true,
       repoId: 'repo1',
       worktreeId: wt.id,
@@ -89,22 +95,28 @@ describe('worktree remote runtime mutations', () => {
     const wt = makeWorktree({
       id: 'repo1::/path/wt1',
       repoId: 'repo1',
-      path: '/worktrees/orca',
+      path: '/worktrees/alfred',
       branch: 'refs/heads/feature/pr-link',
       linkedPR: null,
       suppressedGitHubPR: 42
     })
     store.setState({
       repos: [
-        { id: 'repo1', path: '/repos/orca', displayName: 'orca', badgeColor: '#000', addedAt: 0 }
+        {
+          id: 'repo1',
+          path: '/repos/alfred',
+          displayName: 'alfred',
+          badgeColor: '#000',
+          addedAt: 0
+        }
       ],
       worktreesByRepo: { repo1: [wt] },
       fetchPRForBranch
     } as unknown as Partial<AppState>)
 
     store.getState().observeTerminalGitHubPullRequestLink(wt.id, {
-      url: 'https://github.com/acme/orca/pull/42',
-      slug: { owner: 'acme', repo: 'orca' },
+      url: 'https://github.com/acme/alfred/pull/42',
+      slug: { owner: 'acme', repo: 'alfred' },
       number: 42
     })
 
@@ -118,7 +130,7 @@ describe('worktree remote runtime mutations', () => {
     const wt = makeWorktree({
       id: 'repo1::/path/wt1',
       repoId: 'repo1',
-      path: '/worktrees/orca',
+      path: '/worktrees/alfred',
       branch: 'refs/heads/feature/pr-link',
       linkedPR: null,
       suppressedGitHubPR: 42,
@@ -129,15 +141,21 @@ describe('worktree remote runtime mutations', () => {
     })
     store.setState({
       repos: [
-        { id: 'repo1', path: '/repos/orca', displayName: 'orca', badgeColor: '#000', addedAt: 0 }
+        {
+          id: 'repo1',
+          path: '/repos/alfred',
+          displayName: 'alfred',
+          badgeColor: '#000',
+          addedAt: 0
+        }
       ],
       worktreesByRepo: { repo1: [wt] },
       fetchPRForBranch
     } as unknown as Partial<AppState>)
 
     store.getState().observeTerminalGitHubPullRequestLink(wt.id, {
-      url: 'https://github.com/acme/orca/pull/43',
-      slug: { owner: 'acme', repo: 'orca' },
+      url: 'https://github.com/acme/alfred/pull/43',
+      slug: { owner: 'acme', repo: 'alfred' },
       number: 43
     })
     for (let i = 0; i < 6; i++) {
@@ -163,7 +181,7 @@ describe('worktree remote runtime mutations', () => {
     const wt = makeWorktree({
       id: 'repo1::/path/wt1',
       repoId: 'repo1',
-      path: '/worktrees/orca',
+      path: '/worktrees/alfred',
       branch: 'refs/heads/feature/pr-link',
       linkedPR: null,
       pushTarget: {
@@ -173,15 +191,21 @@ describe('worktree remote runtime mutations', () => {
     })
     store.setState({
       repos: [
-        { id: 'repo1', path: '/repos/orca', displayName: 'orca', badgeColor: '#000', addedAt: 0 }
+        {
+          id: 'repo1',
+          path: '/repos/alfred',
+          displayName: 'alfred',
+          badgeColor: '#000',
+          addedAt: 0
+        }
       ],
       worktreesByRepo: { repo1: [wt] },
       fetchPRForBranch
     } as unknown as Partial<AppState>)
 
     store.getState().observeTerminalGitHubPullRequestLink(wt.id, {
-      url: 'https://github.com/acme/orca/pull/42',
-      slug: { owner: 'acme', repo: 'orca' },
+      url: 'https://github.com/acme/alfred/pull/42',
+      slug: { owner: 'acme', repo: 'alfred' },
       number: 42
     })
     store.setState({
@@ -204,7 +228,7 @@ describe('worktree remote runtime mutations', () => {
     const wt = makeWorktree({
       id: 'repo1::/path/wt1',
       repoId: 'repo1',
-      path: '/worktrees/orca',
+      path: '/worktrees/alfred',
       branch: 'refs/heads/feature/pr-link',
       pushTarget: {
         remoteName: 'origin',
@@ -213,20 +237,26 @@ describe('worktree remote runtime mutations', () => {
     })
     store.setState({
       repos: [
-        { id: 'repo1', path: '/repos/orca', displayName: 'orca', badgeColor: '#000', addedAt: 0 }
+        {
+          id: 'repo1',
+          path: '/repos/alfred',
+          displayName: 'alfred',
+          badgeColor: '#000',
+          addedAt: 0
+        }
       ],
       worktreesByRepo: { repo1: [wt] },
       fetchPRForBranch
     } as unknown as Partial<AppState>)
 
     store.getState().observeTerminalGitHubPullRequestLink(wt.id, {
-      url: 'https://github.com/acme/orca/pull/42',
-      slug: { owner: 'acme', repo: 'orca' },
+      url: 'https://github.com/acme/alfred/pull/42',
+      slug: { owner: 'acme', repo: 'alfred' },
       number: 42
     })
 
     expect(store.getState().worktreesByRepo.repo1[0]?.linkedPR).toBeNull()
-    expect(fetchPRForBranch).toHaveBeenCalledWith('/repos/orca', 'feature/pr-link', {
+    expect(fetchPRForBranch).toHaveBeenCalledWith('/repos/alfred', 'feature/pr-link', {
       force: true,
       repoId: 'repo1',
       worktreeId: wt.id,
@@ -258,7 +288,7 @@ describe('worktree remote runtime mutations', () => {
     const wt = makeWorktree({
       id: 'repo1::/path/wt1',
       repoId: 'repo1',
-      path: '/worktrees/orca',
+      path: '/worktrees/alfred',
       branch: 'refs/heads/feature/pr-link',
       pushTarget: {
         remoteName: 'origin',
@@ -267,15 +297,21 @@ describe('worktree remote runtime mutations', () => {
     })
     store.setState({
       repos: [
-        { id: 'repo1', path: '/repos/orca', displayName: 'orca', badgeColor: '#000', addedAt: 0 }
+        {
+          id: 'repo1',
+          path: '/repos/alfred',
+          displayName: 'alfred',
+          badgeColor: '#000',
+          addedAt: 0
+        }
       ],
       worktreesByRepo: { repo1: [wt] },
       fetchPRForBranch
     } as unknown as Partial<AppState>)
 
     store.getState().observeTerminalGitHubPullRequestLink(wt.id, {
-      url: 'https://github.com/acme/orca/pull/42',
-      slug: { owner: 'acme', repo: 'orca' },
+      url: 'https://github.com/acme/alfred/pull/42',
+      slug: { owner: 'acme', repo: 'alfred' },
       number: 42
     })
     expect(mockApi.worktrees.updateMeta).not.toHaveBeenCalled()
@@ -312,20 +348,26 @@ describe('worktree remote runtime mutations', () => {
     const wt = makeWorktree({
       id: 'repo1::/path/wt1',
       repoId: 'repo1',
-      path: '/worktrees/orca',
+      path: '/worktrees/alfred',
       branch: 'refs/heads/feature/pr-link'
     })
     store.setState({
       repos: [
-        { id: 'repo1', path: '/repos/orca', displayName: 'orca', badgeColor: '#000', addedAt: 0 }
+        {
+          id: 'repo1',
+          path: '/repos/alfred',
+          displayName: 'alfred',
+          badgeColor: '#000',
+          addedAt: 0
+        }
       ],
       worktreesByRepo: { repo1: [wt] },
       fetchPRForBranch
     } as unknown as Partial<AppState>)
 
     store.getState().observeTerminalGitHubPullRequestLink(wt.id, {
-      url: 'https://github.com/acme/orca/pull/42',
-      slug: { owner: 'acme', repo: 'orca' },
+      url: 'https://github.com/acme/alfred/pull/42',
+      slug: { owner: 'acme', repo: 'alfred' },
       number: 42
     })
 
@@ -360,25 +402,31 @@ describe('worktree remote runtime mutations', () => {
     const wt = makeWorktree({
       id: 'repo1::/path/wt1',
       repoId: 'repo1',
-      path: '/worktrees/orca',
+      path: '/worktrees/alfred',
       branch: 'refs/heads/feature/pr-link',
       pushTarget: {
         remoteName: 'origin',
         branchName: 'feature/pr-link',
-        remoteUrl: 'https://github.com/acme/orca.git'
+        remoteUrl: 'https://github.com/acme/alfred.git'
       }
     })
     store.setState({
       repos: [
-        { id: 'repo1', path: '/repos/orca', displayName: 'orca', badgeColor: '#000', addedAt: 0 }
+        {
+          id: 'repo1',
+          path: '/repos/alfred',
+          displayName: 'alfred',
+          badgeColor: '#000',
+          addedAt: 0
+        }
       ],
       worktreesByRepo: { repo1: [wt] },
       fetchPRForBranch
     } as unknown as Partial<AppState>)
 
     store.getState().observeTerminalGitHubPullRequestLink(wt.id, {
-      url: 'https://github.com/acme/orca/pull/1',
-      slug: { owner: 'acme', repo: 'orca' },
+      url: 'https://github.com/acme/alfred/pull/1',
+      slug: { owner: 'acme', repo: 'alfred' },
       number: 1
     })
 
@@ -399,13 +447,19 @@ describe('worktree remote runtime mutations', () => {
     const wt = makeWorktree({
       id: 'repo1::/path/wt1',
       repoId: 'repo1',
-      path: '/worktrees/orca',
+      path: '/worktrees/alfred',
       branch: 'refs/heads/feature/pr-link'
     })
     mockApi.worktrees.resolvePrBase.mockResolvedValueOnce({ baseBranch: 'main' })
     store.setState({
       repos: [
-        { id: 'repo1', path: '/repos/orca', displayName: 'orca', badgeColor: '#000', addedAt: 0 }
+        {
+          id: 'repo1',
+          path: '/repos/alfred',
+          displayName: 'alfred',
+          badgeColor: '#000',
+          addedAt: 0
+        }
       ],
       worktreesByRepo: { repo1: [wt] },
       fetchPRForBranch
@@ -418,7 +472,7 @@ describe('worktree remote runtime mutations', () => {
     })
 
     expect(store.getState().worktreesByRepo.repo1[0]?.linkedPR).toBeNull()
-    expect(fetchPRForBranch).toHaveBeenCalledWith('/repos/orca', 'feature/pr-link', {
+    expect(fetchPRForBranch).toHaveBeenCalledWith('/repos/alfred', 'feature/pr-link', {
       force: true,
       repoId: 'repo1',
       worktreeId: wt.id,

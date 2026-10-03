@@ -4,10 +4,10 @@
   "namedDeltas": [],
   "runnerVersion": 1,
   "baseline": "b4dfad0a8ba4e15976ec06b9d38994b6a31e1643",
-  "lockfileSha256": "4568633356187895ccda8e2ff83245c37d5621832c69e268733733b6947971e3",
-  "recorderSha256": "f67c2f5b753d2a4f572599f6861fae8e6e917fe89ac75b58288f8e84be609d86",
+  "lockfileSha256": "6dc9405f6240556235cc8c897075c4dab1e8f5f8f1cf571c8eafdb496d3da818",
+  "recorderSha256": "96c80e2da6f1dbc42aad4f355811aa0e88e121b01243422126e7d08bd0ea57e2",
   "adapterSha256": "eacf859143588ae6bee2804975d642b6c1088d57ae77ffe298620250d9a9f0e4",
-  "scenarioSha256": "afd3985ecdc07a1880aaee81739432633a1e87ec2de2c02166f43a6c78cb493b",
+  "scenarioSha256": "1eac5ac488515abee9a44e0ab4ad9a6980e3f3ec9837904e3d125da07b15ef83",
   "platform": "darwin",
   "scenarioVersion": 1,
   "projectionVersion": 2,
@@ -104,14 +104,6 @@
       "ordinal": 7,
       "value": {
         "identifier": "tray-2"
-      }
-    },
-    "4924583cde9d": {
-      "name": "device-store.setItem",
-      "ordinal": 6,
-      "value": {
-        "key": "orca:pushDismissalWatermarks:v1",
-        "value": "[{\"key\":\"[\\\"Yw3NKWbEM2aRElRI\\\",\\\"epoch-1\\\",\\\"note-2\\\"]\",\"seq\":8,\"expiresAt\":1767312000000}]"
       }
     },
     "4c376c5d53ac": {
@@ -256,6 +248,14 @@
           "id": "frame-3",
           "ok": true
         }
+      }
+    },
+    "71bf83016ddd": {
+      "name": "device-store.setItem",
+      "ordinal": 6,
+      "value": {
+        "key": "alfred:pushDismissalWatermarks:v1",
+        "value": "[{\"key\":\"[\\\"Yw3NKWbEM2aRElRI\\\",\\\"epoch-1\\\",\\\"note-2\\\"]\",\"seq\":8,\"expiresAt\":1767312000000}]"
       }
     },
     "96f940529e7e": {
@@ -534,6 +534,14 @@
         }
       }
     },
+    "e3ad25c6c469": {
+      "name": "device-store.setItem",
+      "ordinal": 4,
+      "value": {
+        "key": "alfred:pushDismissalWatermarks:v1",
+        "value": "[{\"key\":\"[\\\"Yw3NKWbEM2aRElRI\\\",\\\"epoch-1\\\",\\\"note-1\\\"]\",\"seq\":7,\"expiresAt\":1767312000000}]"
+      }
+    },
     "eb79a9b3682a": {
       "status": "fulfilled",
       "startedAt": 0,
@@ -552,14 +560,6 @@
       "ordinal": 5,
       "value": {
         "identifier": "tray-1"
-      }
-    },
-    "ff11f542ada5": {
-      "name": "device-store.setItem",
-      "ordinal": 4,
-      "value": {
-        "key": "orca:pushDismissalWatermarks:v1",
-        "value": "[{\"key\":\"[\\\"Yw3NKWbEM2aRElRI\\\",\\\"epoch-1\\\",\\\"note-1\\\"]\",\"seq\":7,\"expiresAt\":1767312000000}]"
       }
     }
   },
@@ -599,7 +599,7 @@
             "start": "eb79a9b3682a"
           },
           "state": "5359579cc62d",
-          "effects": ["ff11f542ada5", "f79cc42f0819"]
+          "effects": ["e3ad25c6c469", "f79cc42f0819"]
         }
       },
       {
@@ -611,7 +611,7 @@
             "start": "eb79a9b3682a"
           },
           "state": "5359579cc62d",
-          "effects": ["ff11f542ada5", "f79cc42f0819", "4924583cde9d", "45aca32cac62"]
+          "effects": ["e3ad25c6c469", "f79cc42f0819", "71bf83016ddd", "45aca32cac62"]
         }
       },
       {
@@ -624,7 +624,7 @@
             "stop": "eb79a9b3682a"
           },
           "state": "a0b2bcfcde77",
-          "effects": ["ff11f542ada5", "f79cc42f0819", "4924583cde9d", "45aca32cac62"]
+          "effects": ["e3ad25c6c469", "f79cc42f0819", "71bf83016ddd", "45aca32cac62"]
         }
       },
       {
@@ -637,7 +637,7 @@
             "stop": "eb79a9b3682a"
           },
           "state": "a0b2bcfcde77",
-          "effects": ["ff11f542ada5", "f79cc42f0819", "4924583cde9d", "45aca32cac62"]
+          "effects": ["e3ad25c6c469", "f79cc42f0819", "71bf83016ddd", "45aca32cac62"]
         }
       },
       {
@@ -650,7 +650,7 @@
             "stop": "eb79a9b3682a"
           },
           "state": "a0b2bcfcde77",
-          "effects": ["ff11f542ada5", "f79cc42f0819", "4924583cde9d", "45aca32cac62"]
+          "effects": ["e3ad25c6c469", "f79cc42f0819", "71bf83016ddd", "45aca32cac62"]
         }
       },
       {
@@ -663,7 +663,7 @@
             "stop": "eb79a9b3682a"
           },
           "state": "a0b2bcfcde77",
-          "effects": ["ff11f542ada5", "f79cc42f0819", "4924583cde9d", "45aca32cac62"]
+          "effects": ["e3ad25c6c469", "f79cc42f0819", "71bf83016ddd", "45aca32cac62"]
         }
       },
       {
@@ -676,7 +676,7 @@
             "stop": "eb79a9b3682a"
           },
           "state": "a0b2bcfcde77",
-          "effects": ["ff11f542ada5", "f79cc42f0819", "4924583cde9d", "45aca32cac62"]
+          "effects": ["e3ad25c6c469", "f79cc42f0819", "71bf83016ddd", "45aca32cac62"]
         }
       },
       {
@@ -689,7 +689,7 @@
             "stop": "eb79a9b3682a"
           },
           "state": "a0b2bcfcde77",
-          "effects": ["ff11f542ada5", "f79cc42f0819", "4924583cde9d", "45aca32cac62"]
+          "effects": ["e3ad25c6c469", "f79cc42f0819", "71bf83016ddd", "45aca32cac62"]
         }
       },
       {
@@ -702,7 +702,7 @@
             "stop": "eb79a9b3682a"
           },
           "state": "a0b2bcfcde77",
-          "effects": ["ff11f542ada5", "f79cc42f0819", "4924583cde9d", "45aca32cac62"]
+          "effects": ["e3ad25c6c469", "f79cc42f0819", "71bf83016ddd", "45aca32cac62"]
         }
       },
       {
@@ -715,7 +715,7 @@
             "stop": "eb79a9b3682a"
           },
           "state": "a0b2bcfcde77",
-          "effects": ["ff11f542ada5", "f79cc42f0819", "4924583cde9d", "45aca32cac62"]
+          "effects": ["e3ad25c6c469", "f79cc42f0819", "71bf83016ddd", "45aca32cac62"]
         }
       },
       {
@@ -728,7 +728,7 @@
             "stop": "eb79a9b3682a"
           },
           "state": "a0b2bcfcde77",
-          "effects": ["ff11f542ada5", "f79cc42f0819", "4924583cde9d", "45aca32cac62"]
+          "effects": ["e3ad25c6c469", "f79cc42f0819", "71bf83016ddd", "45aca32cac62"]
         }
       },
       {
@@ -741,7 +741,7 @@
             "stop": "eb79a9b3682a"
           },
           "state": "a0b2bcfcde77",
-          "effects": ["ff11f542ada5", "f79cc42f0819", "4924583cde9d", "45aca32cac62"]
+          "effects": ["e3ad25c6c469", "f79cc42f0819", "71bf83016ddd", "45aca32cac62"]
         }
       },
       {
@@ -754,7 +754,7 @@
             "stop": "eb79a9b3682a"
           },
           "state": "a0b2bcfcde77",
-          "effects": ["ff11f542ada5", "f79cc42f0819", "4924583cde9d", "45aca32cac62"]
+          "effects": ["e3ad25c6c469", "f79cc42f0819", "71bf83016ddd", "45aca32cac62"]
         }
       },
       {
@@ -767,7 +767,7 @@
             "stop": "eb79a9b3682a"
           },
           "state": "a0b2bcfcde77",
-          "effects": ["ff11f542ada5", "f79cc42f0819", "4924583cde9d", "45aca32cac62"]
+          "effects": ["e3ad25c6c469", "f79cc42f0819", "71bf83016ddd", "45aca32cac62"]
         }
       }
     ]

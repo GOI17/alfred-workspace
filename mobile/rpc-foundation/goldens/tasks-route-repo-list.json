@@ -4,10 +4,10 @@
   "namedDeltas": [],
   "runnerVersion": 1,
   "baseline": "b4dfad0a8ba4e15976ec06b9d38994b6a31e1643",
-  "lockfileSha256": "4568633356187895ccda8e2ff83245c37d5621832c69e268733733b6947971e3",
-  "recorderSha256": "f67c2f5b753d2a4f572599f6861fae8e6e917fe89ac75b58288f8e84be609d86",
+  "lockfileSha256": "6dc9405f6240556235cc8c897075c4dab1e8f5f8f1cf571c8eafdb496d3da818",
+  "recorderSha256": "96c80e2da6f1dbc42aad4f355811aa0e88e121b01243422126e7d08bd0ea57e2",
   "adapterSha256": "feb6cee1ab7ecff1ba98bfba22d4924c748d3bb6b749db460cb617ee50b92f2c",
-  "scenarioSha256": "b62ca571d4defcc2e53960033c5b4eb3f7e406b57664664cbc6a173041a9f803",
+  "scenarioSha256": "fc2899c78e08eb0e0b1c5f0c89c19faa1b0b7a41043712b4e8d58c1117814871",
   "platform": "darwin",
   "scenarioVersion": 1,
   "projectionVersion": 2,
@@ -44,7 +44,42 @@
         "startedAt": 0
       }
     },
-    "7d0fa424be7c": {
+    "4c53e492c1d9": {
+      "status": "fulfilled",
+      "startedAt": 0,
+      "settledAt": 0,
+      "value": [
+        {
+          "id": "repo-1",
+          "name": "alfred"
+        },
+        {
+          "id": "repo-2",
+          "name": "relay"
+        }
+      ]
+    },
+    "9270aeb7d9c6": {
+      "status": "pending",
+      "startedAt": 0
+    },
+    "afa949a66032": {
+      "crash": {
+        "$rpc": "null"
+      },
+      "repoListError": "",
+      "repoListStatus": "idle",
+      "repos": []
+    },
+    "b15e86f79919": {
+      "crash": {
+        "$rpc": "null"
+      },
+      "repoListError": "",
+      "repoListStatus": "loading",
+      "repos": []
+    },
+    "d516b2341242": {
       "name": "repo.list#1",
       "ordinal": 1,
       "args": [
@@ -76,7 +111,7 @@
             "repos": [
               {
                 "id": "repo-1",
-                "name": "orca"
+                "name": "alfred"
               },
               {
                 "id": "repo-2",
@@ -86,26 +121,6 @@
           }
         }
       }
-    },
-    "9270aeb7d9c6": {
-      "status": "pending",
-      "startedAt": 0
-    },
-    "afa949a66032": {
-      "crash": {
-        "$rpc": "null"
-      },
-      "repoListError": "",
-      "repoListStatus": "idle",
-      "repos": []
-    },
-    "b15e86f79919": {
-      "crash": {
-        "$rpc": "null"
-      },
-      "repoListError": "",
-      "repoListStatus": "loading",
-      "repos": []
     },
     "eb79a9b3682a": {
       "status": "fulfilled",
@@ -122,21 +137,6 @@
       "repoListError": "",
       "repoListStatus": "loaded",
       "repos": ["repo-1", "repo-2"]
-    },
-    "fcd8faa86ca8": {
-      "status": "fulfilled",
-      "startedAt": 0,
-      "settledAt": 0,
-      "value": [
-        {
-          "id": "repo-1",
-          "name": "orca"
-        },
-        {
-          "id": "repo-2",
-          "name": "relay"
-        }
-      ]
     }
   },
   "recording": {
@@ -170,11 +170,11 @@
       {
         "id": "repos-loaded",
         "observation": {
-          "sender": ["7d0fa424be7c"],
+          "sender": ["d516b2341242"],
           "payloads": ["19b2979d7fc2"],
           "settlements": {
             "mount": "eb79a9b3682a",
-            "ensure": "fcd8faa86ca8"
+            "ensure": "4c53e492c1d9"
           },
           "state": "f5484d90b3f7",
           "effects": []

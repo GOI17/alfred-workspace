@@ -10,7 +10,7 @@
  * proves what actually leaves the renderer.
  */
 
-import { test, expect } from './helpers/orca-app'
+import { test, expect } from './helpers/alfred-app'
 import type { ElectronApplication, Page } from '@stablyai/playwright-test'
 import {
   execInTerminal,
@@ -159,15 +159,15 @@ test.describe('Option-composed ASCII in a kitty-keyboard pane', () => {
   test.skip(process.platform !== 'darwin', 'Option composition is a macOS-only input path (#14024)')
 
   test('types the composed character instead of reporting the physical Alt chord', async ({
-    orcaPage,
+    alfredPage,
     electronApp
   }) => {
-    const { joinedWrites } = await setUpPane(orcaPage, electronApp)
-    await setMacOptionAsAlt(orcaPage, 'false')
+    const { joinedWrites } = await setUpPane(alfredPage, electronApp)
+    await setMacOptionAsAlt(alfredPage, 'false')
     await clearPtyWriteLog(electronApp)
 
     // Turkish Q: the physical `q` key composes `@`.
-    const dispatch = await pressOptionComposedKey(orcaPage, { key: '@', code: 'KeyQ' })
+    const dispatch = await pressOptionComposedKey(alfredPage, { key: '@', code: 'KeyQ' })
     expect(dispatch.keydownDefaultPrevented).toBe(true)
 
     await expect
@@ -180,14 +180,14 @@ test.describe('Option-composed ASCII in a kitty-keyboard pane', () => {
     expect(await joinedWrites()).not.toContain('\x1b[113;3u')
   })
 
-  test('types a composed character that also needs Shift', async ({ orcaPage, electronApp }) => {
-    const { joinedWrites } = await setUpPane(orcaPage, electronApp)
-    await setMacOptionAsAlt(orcaPage, 'false')
+  test('types a composed character that also needs Shift', async ({ alfredPage, electronApp }) => {
+    const { joinedWrites } = await setUpPane(alfredPage, electronApp)
+    await setMacOptionAsAlt(alfredPage, 'false')
     await clearPtyWriteLog(electronApp)
 
     // QWERTZ-class layouts put `\` on the shifted Option layer (Option+Shift+7),
     // where no other chord can reach it.
-    const dispatch = await pressOptionComposedKey(orcaPage, {
+    const dispatch = await pressOptionComposedKey(alfredPage, {
       key: '\\',
       code: 'Digit7',
       shiftKey: true
@@ -204,14 +204,14 @@ test.describe('Option-composed ASCII in a kitty-keyboard pane', () => {
   })
 
   test('still reports the Alt chord when Option is configured as Alt', async ({
-    orcaPage,
+    alfredPage,
     electronApp
   }) => {
-    const { joinedWrites } = await setUpPane(orcaPage, electronApp)
-    await setMacOptionAsAlt(orcaPage, 'true')
+    const { joinedWrites } = await setUpPane(alfredPage, electronApp)
+    await setMacOptionAsAlt(alfredPage, 'true')
     await clearPtyWriteLog(electronApp)
 
-    const dispatch = await pressOptionComposedKey(orcaPage, { key: '@', code: 'KeyQ' })
+    const dispatch = await pressOptionComposedKey(alfredPage, { key: '@', code: 'KeyQ' })
     expect(dispatch.keydownDefaultPrevented).toBe(true)
 
     await expect
@@ -223,13 +223,13 @@ test.describe('Option-composed ASCII in a kitty-keyboard pane', () => {
     expect(await joinedWrites()).not.toContain('@')
   })
 
-  test('keeps non-ASCII Option glyphs as TUI hotkeys', async ({ orcaPage, electronApp }) => {
-    const { joinedWrites } = await setUpPane(orcaPage, electronApp)
-    await setMacOptionAsAlt(orcaPage, 'false')
+  test('keeps non-ASCII Option glyphs as TUI hotkeys', async ({ alfredPage, electronApp }) => {
+    const { joinedWrites } = await setUpPane(alfredPage, electronApp)
+    await setMacOptionAsAlt(alfredPage, 'false')
     await clearPtyWriteLog(electronApp)
 
     // #8031: OMP-class TUIs bind Option+P, which composes the non-ASCII `π`.
-    const dispatch = await pressOptionComposedKey(orcaPage, { key: 'π', code: 'KeyP' })
+    const dispatch = await pressOptionComposedKey(alfredPage, { key: 'π', code: 'KeyP' })
     expect(dispatch.keydownDefaultPrevented).toBe(true)
 
     await expect

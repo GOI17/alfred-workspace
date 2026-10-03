@@ -4,30 +4,30 @@ import { getDevInstanceIdentity, shouldApplyPreReadyAppName } from './dev-instan
 describe('dev-instance-identity', () => {
   it('keeps packaged identity stable', () => {
     expect(getDevInstanceIdentity(false, {})).toMatchObject({
-      name: 'Orca',
-      appName: 'Orca',
+      name: 'Alfred workspace',
+      appName: 'Alfred workspace',
       isDev: false,
       devLabel: null,
       dockBadgeLabel: null,
-      appUserModelId: 'com.stablyai.orca'
+      appUserModelId: 'org.alfredlabs.workspace'
     })
   })
 
   it('pins a stable dev appName across branches so the safeStorage key does not churn', () => {
-    const a = getDevInstanceIdentity(true, { ORCA_DEV_BRANCH: 'feature/a' })
-    const b = getDevInstanceIdentity(true, { ORCA_DEV_BRANCH: 'feature/b' })
+    const a = getDevInstanceIdentity(true, { ALFRED_DEV_BRANCH: 'feature/a' })
+    const b = getDevInstanceIdentity(true, { ALFRED_DEV_BRANCH: 'feature/b' })
 
     // Per-branch label differs (window title / app menu)...
     expect(a.name).not.toBe(b.name)
     // ...but the Keychain-driving appName is identical and distinct from prod.
-    expect(a.appName).toBe('Orca Dev')
-    expect(b.appName).toBe('Orca Dev')
-    expect(a.appName).not.toBe('Orca')
+    expect(a.appName).toBe('Alfred workspace Dev')
+    expect(b.appName).toBe('Alfred workspace Dev')
+    expect(a.appName).not.toBe('Alfred workspace')
   })
 
   it('never renames a packaged build before ready', () => {
     // Packaged builds must keep deriving the safeStorage key from their own CFBundleName;
-    // a pre-ready rename would repoint forks ("Orca ALab Edition") at Orca's key.
+    // a pre-ready rename would repoint forks ("Alfred ALab Edition") at Alfred's key.
     expect(shouldApplyPreReadyAppName(getDevInstanceIdentity(false, {}))).toBe(false)
     expect(shouldApplyPreReadyAppName({ isDev: false })).toBe(false)
   })
@@ -38,9 +38,9 @@ describe('dev-instance-identity', () => {
 
   it('derives a readable dev label from worktree and branch env', () => {
     const identity = getDevInstanceIdentity(true, {
-      ORCA_DEV_REPO_ROOT: '/repo/worktrees/dev-indicator',
-      ORCA_DEV_WORKTREE_NAME: 'dev-indicator',
-      ORCA_DEV_BRANCH: 'nwparker/dev-indicator'
+      ALFRED_DEV_REPO_ROOT: '/repo/worktrees/dev-indicator',
+      ALFRED_DEV_WORKTREE_NAME: 'dev-indicator',
+      ALFRED_DEV_BRANCH: 'nwparker/dev-indicator'
     })
 
     expect(identity).toMatchObject({
@@ -50,32 +50,32 @@ describe('dev-instance-identity', () => {
       devWorktreeName: 'dev-indicator',
       devRepoRoot: '/repo/worktrees/dev-indicator'
     })
-    expect(identity.name).toBe('Orca: nwparker/dev-indicator')
+    expect(identity.name).toBe('Alfred workspace: nwparker/dev-indicator')
     expect(identity.dockBadgeLabel).toBeNull()
-    expect(identity.appUserModelId).toMatch(/^com\.stablyai\.orca\.dev\.[a-f0-9]{10}$/)
+    expect(identity.appUserModelId).toMatch(/^org\.alfredlabs\.workspace\.dev\.[a-f0-9]{10}$/)
   })
 
   it('includes the branch when it differs from the worktree basename', () => {
     const identity = getDevInstanceIdentity(true, {
-      ORCA_DEV_REPO_ROOT: '/repo/worktrees/payment-ui',
-      ORCA_DEV_WORKTREE_NAME: 'payment-ui',
-      ORCA_DEV_BRANCH: 'feature/billing-shell'
+      ALFRED_DEV_REPO_ROOT: '/repo/worktrees/payment-ui',
+      ALFRED_DEV_WORKTREE_NAME: 'payment-ui',
+      ALFRED_DEV_BRANCH: 'feature/billing-shell'
     })
 
     expect(identity.devLabel).toBe('payment-ui @ feature/billing-shell')
-    expect(identity.name).toBe('Orca: feature/billing-shell')
+    expect(identity.name).toBe('Alfred workspace: feature/billing-shell')
     expect(identity.dockBadgeLabel).toBeNull()
   })
 
   it('allows an explicit label override', () => {
     const identity = getDevInstanceIdentity(true, {
-      ORCA_DEV_INSTANCE_LABEL: 'manual label',
-      ORCA_DEV_WORKTREE_NAME: 'dev-indicator',
-      ORCA_DEV_BRANCH: 'feature/other'
+      ALFRED_DEV_INSTANCE_LABEL: 'manual label',
+      ALFRED_DEV_WORKTREE_NAME: 'dev-indicator',
+      ALFRED_DEV_BRANCH: 'feature/other'
     })
 
     expect(identity.devLabel).toBe('manual label')
-    expect(identity.name).toBe('Orca: feature/other')
+    expect(identity.name).toBe('Alfred workspace: feature/other')
     expect(identity.dockBadgeLabel).toBeNull()
   })
 })

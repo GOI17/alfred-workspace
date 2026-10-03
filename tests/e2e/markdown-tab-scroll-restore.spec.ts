@@ -1,6 +1,6 @@
 import { writeFile, rm } from 'node:fs/promises'
 import path from 'node:path'
-import { test, expect } from './helpers/orca-app'
+import { test, expect } from './helpers/alfred-app'
 import { waitForActiveWorktree, waitForSessionReady } from './helpers/store'
 import {
   cleanupMarkdownFixture,
@@ -11,13 +11,13 @@ import {
 } from './helpers/markdown-editor-fixture'
 
 test('restores the Markdown viewport when an image gains height after a tab switch', async ({
-  orcaPage,
+  alfredPage,
   registerPostElectronShutdownCleanup
 }, testInfo) => {
-  await waitForSessionReady(orcaPage)
-  await waitForActiveWorktree(orcaPage)
-  const context = await getActiveWorktreeContext(orcaPage)
-  const directory = '.orca-e2e-markdown-scroll'
+  await waitForSessionReady(alfredPage)
+  await waitForActiveWorktree(alfredPage)
+  const context = await getActiveWorktreeContext(alfredPage)
+  const directory = '.alfred-e2e-markdown-scroll'
   let filePath: string | null = null
   let otherPath: string | null = null
   let imagePath: string | null = null
@@ -53,32 +53,32 @@ test('restores the Markdown viewport when an image gains height after a tab swit
     testInfo.workerIndex,
     '# Other tab'
   )
-  await openMarkdownFixture(orcaPage, context, otherPath)
-  await waitForRichMarkdownEditor(orcaPage)
-  await openMarkdownFixture(orcaPage, context, filePath)
-  const editor = await waitForRichMarkdownEditor(orcaPage)
+  await openMarkdownFixture(alfredPage, context, otherPath)
+  await waitForRichMarkdownEditor(alfredPage)
+  await openMarkdownFixture(alfredPage, context, filePath)
+  const editor = await waitForRichMarkdownEditor(alfredPage)
   const image = editor.getByRole('img', { name: 'Scroll restoration image' })
   await expect
     .poll(() =>
       image.evaluate((element) => (element instanceof HTMLImageElement ? element.naturalHeight : 0))
     )
     .toBe(1500)
-  const viewport = orcaPage.locator('.rich-markdown-editor-shell .overflow-auto')
+  const viewport = alfredPage.locator('.rich-markdown-editor-shell .overflow-auto')
   await viewport.evaluate((element) => {
     element.scrollTop = 4000
   })
   const heading = editor.getByRole('heading', { name: 'Section 45', exact: true })
   const originalTop = await heading.evaluate((element) => element.getBoundingClientRect().top)
 
-  await orcaPage
+  await alfredPage
     .locator('[data-tab-id]')
     .filter({ hasText: path.basename(otherPath) })
     .click()
   // Model image dimensions arriving after restoration, independent of the host's decode speed.
-  const pendingImage = await orcaPage.addStyleTag({
+  const pendingImage = await alfredPage.addStyleTag({
     content: '.rich-markdown-editor img[alt="Scroll restoration image"] { height: 1px !important; }'
   })
-  await orcaPage
+  await alfredPage
     .locator('[data-tab-id]')
     .filter({ hasText: path.basename(filePath) })
     .click()

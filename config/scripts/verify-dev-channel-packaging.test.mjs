@@ -10,7 +10,7 @@ const CONFIG_PATH = resolve(import.meta.dirname, '../electron-builder.config.cjs
 function loadConfigWithEnv(env) {
   const saved = { ...process.env }
   for (const key of Object.keys(process.env)) {
-    if (key.startsWith('ORCA_')) {
+    if (key.startsWith('ALFRED_')) {
       delete process.env[key]
     }
   }
@@ -25,8 +25,8 @@ function loadConfigWithEnv(env) {
 }
 
 const WIN_ADHOC_ENV = {
-  ORCA_WIN_ADHOC: '1',
-  ORCA_ADHOC_BUILD_VERSION: '1.4.178-adhoc.20260819010203'
+  ALFRED_WIN_ADHOC: '1',
+  ALFRED_ADHOC_BUILD_VERSION: '1.4.178-adhoc.20260819010203'
 }
 
 afterEach(() => {
@@ -34,12 +34,12 @@ afterEach(() => {
 })
 
 describe('electron-builder dev-channel identity', () => {
-  it('keeps the SignPath publisherName on stable Windows builds', () => {
+  it('does not claim an unconfigured signing publisher', () => {
     const config = loadConfigWithEnv({})
 
-    expect(config.win.signtoolOptions.publisherName).toBe('SignPath Foundation')
+    expect(config.win.signtoolOptions.publisherName).toBeUndefined()
     expect(config.win.verifyUpdateCodeSignature).toBeUndefined()
-    expect(config.publish.repo).toBe('orca')
+    expect(config.publish.repo).toBe('alfred-workspace')
     expect(config.publish.releaseType).toBe('release')
   })
 
@@ -62,14 +62,14 @@ describe('electron-builder dev-channel identity', () => {
       const config = loadConfigWithEnv(env)
       expect(typeof config.win.signtoolOptions.sign).toBe('function')
     }
-    expect(loadConfigWithEnv({}).win.signtoolOptions.publisherName).toBe('SignPath Foundation')
+    expect(loadConfigWithEnv({}).win.signtoolOptions.publisherName).toBeUndefined()
     expect(loadConfigWithEnv(WIN_ADHOC_ENV).win.signtoolOptions.publisherName).toBeUndefined()
   })
 
   it.each([
-    ['hourly', { ORCA_WIN_HOURLY: '1' }, 'orca-hourly'],
-    ['daily', { ORCA_WIN_DAILY: '1' }, 'orca-daily'],
-    ['adhoc', { ORCA_WIN_ADHOC: '1' }, 'orca-adhoc']
+    ['hourly', { ALFRED_WIN_HOURLY: '1' }, 'alfred-workspace-hourly'],
+    ['daily', { ALFRED_WIN_DAILY: '1' }, 'alfred-workspace-daily'],
+    ['adhoc', { ALFRED_WIN_ADHOC: '1' }, 'alfred-workspace-adhoc']
   ])('publishes %s Windows builds to its own repo as a prerelease', (_channel, env, repo) => {
     const config = loadConfigWithEnv(env)
 
@@ -77,7 +77,7 @@ describe('electron-builder dev-channel identity', () => {
     expect(config.publish.releaseType).toBe('prerelease')
   })
 
-  // Why: ORCA_MAC_* gates hardened runtime, notarization, and root-level
+  // Why: ALFRED_MAC_* gates hardened runtime, notarization, and root-level
   // forceCodeSigning. If the Windows variables leaked into that, the Windows job
   // would fail packaging for want of a cert it deliberately does not use.
   it('leaves mac release signing off for Windows dev builds', () => {
@@ -90,22 +90,22 @@ describe('electron-builder dev-channel identity', () => {
 
   it('still notarizes mac dev builds', () => {
     const config = loadConfigWithEnv({
-      ORCA_MAC_ADHOC: '1',
-      ORCA_ADHOC_BUILD_VERSION: '1.4.178-adhoc.20260819010203'
+      ALFRED_MAC_ADHOC: '1',
+      ALFRED_ADHOC_BUILD_VERSION: '1.4.178-adhoc.20260819010203'
     })
 
     expect(config.mac.notarize).toBe(true)
-    expect(config.publish.repo).toBe('orca-adhoc')
+    expect(config.publish.repo).toBe('alfred-workspace-adhoc')
   })
 })
 
 describe('collectDevChannelPackagingProblems', () => {
   const goodWinConfig = {
-    publish: { repo: 'orca-adhoc', releaseType: 'prerelease' },
+    publish: { repo: 'alfred-workspace-adhoc', releaseType: 'prerelease' },
     extraMetadata: { version: '1.4.178-adhoc.20260819010203' },
     win: { verifyUpdateCodeSignature: false }
   }
-  const env = { ORCA_ADHOC_BUILD_VERSION: '1.4.178-adhoc.20260819010203' }
+  const env = { ALFRED_ADHOC_BUILD_VERSION: '1.4.178-adhoc.20260819010203' }
 
   it('accepts a correctly configured Windows dev build', () => {
     expect(
@@ -124,11 +124,11 @@ describe('collectDevChannelPackagingProblems', () => {
     const problems = collectDevChannelPackagingProblems({
       channel: 'adhoc',
       platform: 'win32',
-      config: { ...goodWinConfig, publish: { repo: 'orca', releaseType: 'release' } },
+      config: { ...goodWinConfig, publish: { repo: 'alfred-workspace', releaseType: 'release' } },
       env
     })
 
-    expect(problems.join('\n')).toContain('must publish to "orca-adhoc"')
+    expect(problems.join('\n')).toContain('must publish to "alfred-workspace-adhoc"')
     expect(problems.join('\n')).toContain('rebase it onto a main that does')
   })
 
@@ -165,7 +165,7 @@ describe('collectDevChannelPackagingProblems', () => {
         channel: 'adhoc',
         platform: 'darwin',
         config: {
-          publish: { repo: 'orca-adhoc', releaseType: 'prerelease' },
+          publish: { repo: 'alfred-workspace-adhoc', releaseType: 'prerelease' },
           extraMetadata: { version: '1.4.178-adhoc.20260819010203' },
           win: { signtoolOptions: { publisherName: 'SignPath Foundation' } }
         },

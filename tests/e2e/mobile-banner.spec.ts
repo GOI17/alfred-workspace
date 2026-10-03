@@ -1,5 +1,5 @@
 import type { ElectronApplication, Page, TestInfo } from '@stablyai/playwright-test'
-import { test, expect } from './helpers/orca-app'
+import { test, expect } from './helpers/alfred-app'
 import {
   ensureTerminalVisible,
   getActiveWorktreeId,
@@ -28,21 +28,21 @@ import {
 test.describe.configure({ mode: 'serial' })
 
 test('mobile subscribe mounts overlay; collapse → chip; Take back dismisses', async ({
-  orcaPage,
+  alfredPage,
   electronApp
 }, testInfo) => {
-  await waitForSessionReady(orcaPage)
-  await waitForActiveWorktree(orcaPage)
-  await ensureTerminalVisible(orcaPage)
-  await waitForActiveTerminalManager(orcaPage)
-  const ptyId = await waitForActivePanePtyId(orcaPage)
+  await waitForSessionReady(alfredPage)
+  await waitForActiveWorktree(alfredPage)
+  await ensureTerminalVisible(alfredPage)
+  await waitForActiveTerminalManager(alfredPage)
+  const ptyId = await waitForActivePanePtyId(alfredPage)
   await installRestoreTerminalFitRecorder(electronApp)
 
-  const overlay = orcaPage.locator('.mobile-driver-banner')
+  const overlay = alfredPage.locator('.mobile-driver-banner')
   await expect(overlay).toHaveCount(0)
 
   // Fire the IPC events main emits when a mobile client subscribes in 'auto'
-  // mode (handleMobileSubscribe in src/main/runtime/orca-runtime.ts). The
+  // mode (handleMobileSubscribe in src/main/runtime/alfred-runtime.ts). The
   // renderer's listener calls setFitOverride + setDriverForPty, the banner
   // observes the change, and MobileDriverOverlay mounts in loud mode.
   await sendMobileSubscribeIpc(electronApp, { ptyId, cols: 45, rows: 20 })
@@ -50,7 +50,7 @@ test('mobile subscribe mounts overlay; collapse → chip; Take back dismisses', 
   await expect(overlay).toBeVisible({ timeout: 15_000 })
   await expect(overlay).toContainText(/from your phone/i)
   await expect(overlay).toContainText(/your phone is in control/i)
-  await expectExpandedOverlayLeavesPaneReadable(orcaPage, ptyId)
+  await expectExpandedOverlayLeavesPaneReadable(alfredPage, ptyId)
 
   const takeBackThisTerminal = overlay.getByRole('button', { name: /take back this terminal/i })
   const takeBackAllTerminals = overlay.getByRole('button', { name: /take back all terminals/i })
@@ -59,7 +59,7 @@ test('mobile subscribe mounts overlay; collapse → chip; Take back dismisses', 
   await expect(takeBackAllTerminals).toBeVisible()
   await expect(collapse).toBeVisible()
 
-  await captureAttachment(orcaPage, testInfo, 'overlay-loud.png')
+  await captureAttachment(alfredPage, testInfo, 'overlay-loud.png')
 
   // Click Collapse → loud overlay swaps to the corner chip while the lock stays
   // engaged. The user can keep watching live mobile output while the chip
@@ -68,13 +68,13 @@ test('mobile subscribe mounts overlay; collapse → chip; Take back dismisses', 
   await expect(overlay).toContainText(/phone driving/i)
   await expect(overlay.getByRole('button', { name: /take back/i })).toBeVisible()
   await expect(overlay).not.toContainText(/your phone is in control/i)
-  await expectChipIsCompactInPane(orcaPage, ptyId)
+  await expectChipIsCompactInPane(alfredPage, ptyId)
 
-  await captureAttachment(orcaPage, testInfo, 'overlay-collapsed.png')
+  await captureAttachment(alfredPage, testInfo, 'overlay-collapsed.png')
 
   await overlay.getByRole('button', { name: /phone driving/i }).click()
   await expect(overlay).toContainText(/your phone is in control/i)
-  await expectExpandedOverlayLeavesPaneReadable(orcaPage, ptyId)
+  await expectExpandedOverlayLeavesPaneReadable(alfredPage, ptyId)
 
   await collapse.click()
   await expect(overlay).not.toContainText(/your phone is in control/i)
@@ -90,17 +90,17 @@ test('mobile subscribe mounts overlay; collapse → chip; Take back dismisses', 
 })
 
 test('held phone-fit state mounts restore overlay without collapse', async ({
-  orcaPage,
+  alfredPage,
   electronApp
 }, testInfo) => {
-  await waitForSessionReady(orcaPage)
-  await waitForActiveWorktree(orcaPage)
-  await ensureTerminalVisible(orcaPage)
-  await waitForActiveTerminalManager(orcaPage)
-  const ptyId = await waitForActivePanePtyId(orcaPage)
+  await waitForSessionReady(alfredPage)
+  await waitForActiveWorktree(alfredPage)
+  await ensureTerminalVisible(alfredPage)
+  await waitForActiveTerminalManager(alfredPage)
+  const ptyId = await waitForActivePanePtyId(alfredPage)
   await installRestoreTerminalFitRecorder(electronApp)
 
-  const overlay = orcaPage.locator('.mobile-driver-banner')
+  const overlay = alfredPage.locator('.mobile-driver-banner')
   await expect(overlay).toHaveCount(0)
 
   // Held-fit is the post-mobile-disconnect state: the phone-fit override remains
@@ -116,9 +116,9 @@ test('held phone-fit state mounts restore overlay without collapse', async ({
   await expect(overlay.getByRole('button', { name: /restore all terminals/i })).toBeVisible()
   await expect(overlay.getByRole('button', { name: /^collapse$/i })).toHaveCount(0)
   await expect(overlay.getByRole('button', { name: /take back/i })).toHaveCount(0)
-  await expectExpandedOverlayLeavesPaneReadable(orcaPage, ptyId)
+  await expectExpandedOverlayLeavesPaneReadable(alfredPage, ptyId)
 
-  await captureAttachment(orcaPage, testInfo, 'overlay-held-fit.png')
+  await captureAttachment(alfredPage, testInfo, 'overlay-held-fit.png')
 
   await overlay.getByRole('button', { name: /restore this terminal/i }).click()
   await expectRestoreTerminalFitCalls(electronApp, [ptyId])
@@ -126,30 +126,33 @@ test('held phone-fit state mounts restore overlay without collapse', async ({
   await expect(overlay).toBeHidden({ timeout: 15_000 })
 })
 
-test('restore this terminal refits the active restored pane', async ({ orcaPage, electronApp }) => {
-  await waitForSessionReady(orcaPage)
-  await waitForActiveWorktree(orcaPage)
-  await ensureTerminalVisible(orcaPage)
-  await waitForActiveTerminalManager(orcaPage)
-  const ptyId = await waitForActivePanePtyId(orcaPage)
+test('restore this terminal refits the active restored pane', async ({
+  alfredPage,
+  electronApp
+}) => {
+  await waitForSessionReady(alfredPage)
+  await waitForActiveWorktree(alfredPage)
+  await ensureTerminalVisible(alfredPage)
+  await waitForActiveTerminalManager(alfredPage)
+  const ptyId = await waitForActivePanePtyId(alfredPage)
   await installRestoreTerminalFitAutoRestoreRecorder(electronApp)
 
   await sendHeldPhoneFitIpc(electronApp, { ptyId, cols: 1, rows: 20 })
-  await expect(orcaPage.locator('.mobile-driver-banner')).toHaveCount(1, { timeout: 15_000 })
+  await expect(alfredPage.locator('.mobile-driver-banner')).toHaveCount(1, { timeout: 15_000 })
   await expect
-    .poll(() => getPaneTerminalCols(orcaPage, ptyId), {
+    .poll(() => getPaneTerminalCols(alfredPage, ptyId), {
       message: 'test harness should hold the active pane in the bad narrow state'
     })
     .toBeLessThanOrEqual(2)
 
-  await orcaPage
+  await alfredPage
     .locator(`[data-pty-id="${ptyId}"] .mobile-driver-banner`)
     .getByRole('button', { name: /restore this terminal/i })
     .click()
 
   await expectRestoreTerminalFitCalls(electronApp, [ptyId])
   await expect
-    .poll(() => getPaneTerminalCols(orcaPage, ptyId), {
+    .poll(() => getPaneTerminalCols(alfredPage, ptyId), {
       timeout: 5_000,
       message: 'Restore this terminal should refit the active restored pane'
     })
@@ -157,16 +160,16 @@ test('restore this terminal refits the active restored pane', async ({ orcaPage,
 })
 
 test('restore all refits non-focused restored terminal panes', async ({
-  orcaPage,
+  alfredPage,
   electronApp
 }) => {
-  await waitForSessionReady(orcaPage)
-  await waitForActiveWorktree(orcaPage)
-  await ensureTerminalVisible(orcaPage)
-  await waitForActiveTerminalManager(orcaPage)
-  await splitActiveTerminalPane(orcaPage, 'vertical')
-  const ptyIds = await waitForVisiblePanePtyIds(orcaPage, 2)
-  const focusPtyId = await waitForActivePanePtyId(orcaPage)
+  await waitForSessionReady(alfredPage)
+  await waitForActiveWorktree(alfredPage)
+  await ensureTerminalVisible(alfredPage)
+  await waitForActiveTerminalManager(alfredPage)
+  await splitActiveTerminalPane(alfredPage, 'vertical')
+  const ptyIds = await waitForVisiblePanePtyIds(alfredPage, 2)
+  const focusPtyId = await waitForActivePanePtyId(alfredPage)
   const inactivePtyId = ptyIds.find((ptyId) => ptyId !== focusPtyId)
   if (!inactivePtyId || !focusPtyId) {
     throw new Error('Expected two visible terminal panes with PTY bindings')
@@ -175,23 +178,23 @@ test('restore all refits non-focused restored terminal panes', async ({
 
   await sendHeldPhoneFitIpc(electronApp, { ptyId: inactivePtyId, cols: 45, rows: 20 })
   await sendHeldPhoneFitIpc(electronApp, { ptyId: focusPtyId, cols: 45, rows: 20 })
-  await expect(orcaPage.locator('.mobile-driver-banner')).toHaveCount(2, { timeout: 15_000 })
+  await expect(alfredPage.locator('.mobile-driver-banner')).toHaveCount(2, { timeout: 15_000 })
 
-  await forcePaneToOneColumn(orcaPage, inactivePtyId)
+  await forcePaneToOneColumn(alfredPage, inactivePtyId)
   await expect
-    .poll(() => getPaneTerminalCols(orcaPage, inactivePtyId), {
+    .poll(() => getPaneTerminalCols(alfredPage, inactivePtyId), {
       message: 'test harness should force the non-focused pane into the bad narrow state'
     })
     .toBeLessThanOrEqual(2)
 
-  await orcaPage
+  await alfredPage
     .locator(`[data-pty-id="${focusPtyId}"] .mobile-driver-banner`)
     .getByRole('button', { name: /restore all terminals/i })
     .click()
 
   await expectRestoreTerminalFitCallSet(electronApp, [inactivePtyId, focusPtyId])
   await expect
-    .poll(() => getPaneTerminalCols(orcaPage, inactivePtyId), {
+    .poll(() => getPaneTerminalCols(alfredPage, inactivePtyId), {
       timeout: 5_000,
       message: 'Restore all should refit the non-focused restored pane'
     })
@@ -199,12 +202,12 @@ test('restore all refits non-focused restored terminal panes', async ({
 })
 
 test('restore all recovers a hidden workspace held at narrow terminal geometry', async ({
-  orcaPage,
+  alfredPage,
   electronApp
 }) => {
-  await waitForSessionReady(orcaPage)
-  const firstWorktreeId = await waitForActiveWorktree(orcaPage)
-  const secondWorktreeId = (await getAllWorktreeIds(orcaPage)).find(
+  await waitForSessionReady(alfredPage)
+  const firstWorktreeId = await waitForActiveWorktree(alfredPage)
+  const secondWorktreeId = (await getAllWorktreeIds(alfredPage)).find(
     (worktreeId) => worktreeId !== firstWorktreeId
   )
   test.skip(!secondWorktreeId, 'hidden-workspace restore repro needs the seeded secondary worktree')
@@ -212,51 +215,51 @@ test('restore all recovers a hidden workspace held at narrow terminal geometry',
     return
   }
 
-  await ensureTerminalVisible(orcaPage)
-  await waitForActiveTerminalManager(orcaPage)
-  const hiddenWorkspacePtyId = await waitForActivePanePtyId(orcaPage)
+  await ensureTerminalVisible(alfredPage)
+  await waitForActiveTerminalManager(alfredPage)
+  const hiddenWorkspacePtyId = await waitForActivePanePtyId(alfredPage)
   await sendHeldPhoneFitIpc(electronApp, { ptyId: hiddenWorkspacePtyId, cols: 45, rows: 20 })
-  await expect(orcaPage.locator('.mobile-driver-banner')).toHaveCount(1, { timeout: 15_000 })
+  await expect(alfredPage.locator('.mobile-driver-banner')).toHaveCount(1, { timeout: 15_000 })
 
-  await forcePaneToOneColumnAndSwitchWorktree(orcaPage, hiddenWorkspacePtyId, secondWorktreeId)
+  await forcePaneToOneColumnAndSwitchWorktree(alfredPage, hiddenWorkspacePtyId, secondWorktreeId)
   await expect
-    .poll(() => getActiveWorktreeId(orcaPage), {
+    .poll(() => getActiveWorktreeId(alfredPage), {
       timeout: 5_000,
       message: 'second worktree should become active before restore-all'
     })
     .toBe(secondWorktreeId)
   await expect
-    .poll(() => getPaneTerminalCols(orcaPage, hiddenWorkspacePtyId), {
+    .poll(() => getPaneTerminalCols(alfredPage, hiddenWorkspacePtyId), {
       message: 'test harness should hold workspace 1 in the bad narrow state'
     })
     .toBeLessThanOrEqual(2)
-  await ensureTerminalVisible(orcaPage)
-  await waitForActiveTerminalManager(orcaPage)
-  const activeWorkspacePtyId = await waitForActivePanePtyId(orcaPage)
+  await ensureTerminalVisible(alfredPage)
+  await waitForActiveTerminalManager(alfredPage)
+  const activeWorkspacePtyId = await waitForActivePanePtyId(alfredPage)
   await installRestoreTerminalFitAutoRestoreRecorder(electronApp)
   await sendHeldPhoneFitIpc(electronApp, { ptyId: activeWorkspacePtyId, cols: 45, rows: 20 })
   await expect(
-    orcaPage.locator(`[data-pty-id="${activeWorkspacePtyId}"] .mobile-driver-banner`)
+    alfredPage.locator(`[data-pty-id="${activeWorkspacePtyId}"] .mobile-driver-banner`)
   ).toBeVisible({ timeout: 15_000 })
 
-  await orcaPage
+  await alfredPage
     .locator(`[data-pty-id="${activeWorkspacePtyId}"] .mobile-driver-banner`)
     .getByRole('button', { name: /restore all terminals/i })
     .click()
 
   await expectRestoreTerminalFitCallSet(electronApp, [hiddenWorkspacePtyId, activeWorkspacePtyId])
 
-  await switchToWorktree(orcaPage, firstWorktreeId)
+  await switchToWorktree(alfredPage, firstWorktreeId)
   await expect
-    .poll(() => getActiveWorktreeId(orcaPage), {
+    .poll(() => getActiveWorktreeId(alfredPage), {
       timeout: 5_000,
       message: 'first worktree should become active after restore-all'
     })
     .toBe(firstWorktreeId)
-  await ensureTerminalVisible(orcaPage)
-  await waitForActiveTerminalManager(orcaPage)
+  await ensureTerminalVisible(alfredPage)
+  await waitForActiveTerminalManager(alfredPage)
   await expect
-    .poll(() => getPaneTerminalCols(orcaPage, hiddenWorkspacePtyId), {
+    .poll(() => getPaneTerminalCols(alfredPage, hiddenWorkspacePtyId), {
       timeout: 5_000,
       message: 'Restore all should refit the hidden workspace when it becomes visible'
     })

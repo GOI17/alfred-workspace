@@ -1,7 +1,7 @@
-import type { OrcaProfileAuthStatus } from '../../../../shared/orca-profiles'
+import type { AlfredProfileAuthStatus } from '../../../../shared/alfred-profiles'
 
 export type UnexpectedSignoutGate = {
-  authStatus: OrcaProfileAuthStatus | null
+  authStatus: AlfredProfileAuthStatus | null
   persistedUIReady: boolean
   appVersion: string | null
   dismissedVersion: string | null

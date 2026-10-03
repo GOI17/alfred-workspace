@@ -1,5 +1,5 @@
 import type { Page } from '@stablyai/playwright-test'
-import { expect, test } from './helpers/orca-app'
+import { expect, test } from './helpers/alfred-app'
 import { waitForSessionReady } from './helpers/store'
 
 const TARGET_INDEX = 24
@@ -26,7 +26,7 @@ declare global {
 }
 
 async function pauseForVisualProof(page: Page): Promise<void> {
-  if (process.env.ORCA_E2E_RECORD_VIDEO === '1') {
+  if (process.env.ALFRED_E2E_RECORD_VIDEO === '1') {
     await page.waitForTimeout(VISUAL_PROOF_PAUSE_MS)
   }
 }
@@ -232,36 +232,36 @@ async function finishRowRemovalSampling(page: Page): Promise<RowRemovalFrame[]> 
 }
 
 test('deleting the active scrolled worktree preserves position and closes the row gap', async ({
-  orcaPage
+  alfredPage
 }) => {
-  await waitForSessionReady(orcaPage)
-  await orcaPage.setViewportSize({ width: 1_200, height: 800 })
-  const { belowId, successorId, targetId } = await seedActiveDeletionRows(orcaPage)
-  await prepareScrolledActiveRow(orcaPage, targetId)
-  const target = orcaPage.locator(
+  await waitForSessionReady(alfredPage)
+  await alfredPage.setViewportSize({ width: 1_200, height: 800 })
+  const { belowId, successorId, targetId } = await seedActiveDeletionRows(alfredPage)
+  await prepareScrolledActiveRow(alfredPage, targetId)
+  const target = alfredPage.locator(
     `[data-worktree-sidebar] [data-worktree-id=${JSON.stringify(targetId)}]`
   )
-  const below = orcaPage.locator(
+  const below = alfredPage.locator(
     `[data-worktree-sidebar] [data-worktree-id=${JSON.stringify(belowId)}]`
   )
-  await pauseForVisualProof(orcaPage)
+  await pauseForVisualProof(alfredPage)
   const contextMenuScope = target.locator('[data-worktree-context-menu-scope="worktree"]')
   await expect(contextMenuScope).toBeVisible()
   await contextMenuScope.click({ button: 'right' })
-  const deleteItem = orcaPage.getByRole('menuitem', { name: /^Delete(?:\s|$)/ })
+  const deleteItem = alfredPage.getByRole('menuitem', { name: /^Delete(?:\s|$)/ })
   await expect(deleteItem).toBeVisible()
   await expect(deleteItem).toBeInViewport()
-  await pauseForVisualProof(orcaPage)
-  await startRowRemovalSampling(orcaPage, targetId, belowId)
+  await pauseForVisualProof(alfredPage)
+  await startRowRemovalSampling(alfredPage, targetId, belowId)
   await deleteItem.click()
 
   await expect(target).toHaveCount(0)
   await expect(below).toBeVisible()
   await expect
-    .poll(() => orcaPage.evaluate(() => window.__store?.getState().activeWorktreeId ?? null))
+    .poll(() => alfredPage.evaluate(() => window.__store?.getState().activeWorktreeId ?? null))
     .toBe(successorId)
-  const frames = await finishRowRemovalSampling(orcaPage)
-  await pauseForVisualProof(orcaPage)
+  const frames = await finishRowRemovalSampling(alfredPage)
+  await pauseForVisualProof(alfredPage)
   const mountedTops = frames.flatMap((frame) => (frame.belowTop === null ? [] : [frame.belowTop]))
   const firstRemovedFrame = frames.findIndex((frame) => !frame.targetExists)
   const scrollTopBeforeDelete = frames[0]?.scrollTop
@@ -280,19 +280,19 @@ test('deleting the active scrolled worktree preserves position and closes the ro
     scrollTopBeforeDelete - 1
   )
   await expect(
-    orcaPage.locator(`[data-worktree-sidebar] [data-worktree-id=${JSON.stringify(successorId)}]`)
+    alfredPage.locator(`[data-worktree-sidebar] [data-worktree-id=${JSON.stringify(successorId)}]`)
   ).toHaveCount(0)
 })
 
 test('reduced motion removes the active row without animating its neighbor', async ({
-  orcaPage
+  alfredPage
 }) => {
-  await orcaPage.emulateMedia({ reducedMotion: 'reduce' })
-  await waitForSessionReady(orcaPage)
-  const { belowId, targetId } = await seedActiveDeletionRows(orcaPage)
-  await prepareScrolledActiveRow(orcaPage, targetId)
+  await alfredPage.emulateMedia({ reducedMotion: 'reduce' })
+  await waitForSessionReady(alfredPage)
+  const { belowId, targetId } = await seedActiveDeletionRows(alfredPage)
+  await prepareScrolledActiveRow(alfredPage, targetId)
 
-  const animationCount = await orcaPage.evaluate(
+  const animationCount = await alfredPage.evaluate(
     async ({ belowId, targetId }) => {
       const store = window.__store
       if (!store) {

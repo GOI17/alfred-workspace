@@ -8,7 +8,7 @@ import { mkdtemp } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import type { ElectronApplication, Page } from '@stablyai/playwright-test'
-import { test, expect } from './helpers/orca-app'
+import { test, expect } from './helpers/alfred-app'
 import { ensureTerminalVisible, waitForActiveWorktree, waitForSessionReady } from './helpers/store'
 import {
   countVisibleTerminalPanes,
@@ -405,22 +405,22 @@ async function completeWorkspaceCreationTour(page: Page, workspaceName: string):
 test.describe('Existing-user golden core flow', () => {
   test('adds project, creates workspace, opens a terminal tab, and splits a pane', async ({
     electronApp,
-    orcaPage
+    alfredPage
   }) => {
-    await waitForSessionReady(orcaPage)
-    await waitForActiveWorktree(orcaPage)
-    const repoPath = await createGitRepo('orca-e2e-golden-existing-', 'golden-existing-project')
+    await waitForSessionReady(alfredPage)
+    await waitForActiveWorktree(alfredPage)
+    const repoPath = await createGitRepo('alfred-e2e-golden-existing-', 'golden-existing-project')
 
-    await addProjectFromSidebar(orcaPage, electronApp, repoPath)
+    await addProjectFromSidebar(alfredPage, electronApp, repoPath)
     const workspaceName = `golden-existing-${Date.now()}`
-    await createWorkspace(orcaPage, workspaceName)
-    await expectActiveWorkspaceBelongsToRepo(orcaPage, workspaceName, repoPath)
-    await ensureTerminalVisible(orcaPage)
-    await expectTerminalSurface(orcaPage)
-    await waitForTerminalPaneManager(orcaPage)
+    await createWorkspace(alfredPage, workspaceName)
+    await expectActiveWorkspaceBelongsToRepo(alfredPage, workspaceName, repoPath)
+    await ensureTerminalVisible(alfredPage)
+    await expectTerminalSurface(alfredPage)
+    await waitForTerminalPaneManager(alfredPage)
 
-    await createTerminalTabThroughMenu(orcaPage)
-    await splitTerminalPaneAndAssertIdentity(orcaPage)
+    await createTerminalTabThroughMenu(alfredPage)
+    await splitTerminalPaneAndAssertIdentity(alfredPage)
   })
 })
 
@@ -429,45 +429,47 @@ test.describe('New-user golden core flow', () => {
 
   test('completes onboarding, adds a project, and follows the workspace tour handoff', async ({
     electronApp,
-    orcaPage
+    alfredPage
   }) => {
-    await waitForSessionReady(orcaPage)
-    await expect(orcaPage.getByRole('heading', { name: /Pick your default agent/i })).toBeVisible({
-      timeout: 15_000
-    })
+    await waitForSessionReady(alfredPage)
+    await expect(alfredPage.getByRole('heading', { name: /Pick your default agent/i })).toBeVisible(
+      {
+        timeout: 15_000
+      }
+    )
 
-    await selectCodexAgent(orcaPage)
-    await continueOnboarding(orcaPage)
-    await expect(orcaPage.getByRole('heading', { name: /Make it feel like home/i })).toBeVisible()
-    await chooseOppositeTheme(orcaPage)
-    await continueOnboarding(orcaPage)
-    await continueThroughOptionalSetupToNotifications(orcaPage)
-    await expect(orcaPage.getByRole('button', { name: /Send Test Notification/i })).toBeVisible()
-    await chooseNotificationSound(orcaPage)
-    await continueFromNotificationsToAddProject(orcaPage)
+    await selectCodexAgent(alfredPage)
+    await continueOnboarding(alfredPage)
+    await expect(alfredPage.getByRole('heading', { name: /Make it feel like home/i })).toBeVisible()
+    await chooseOppositeTheme(alfredPage)
+    await continueOnboarding(alfredPage)
+    await continueThroughOptionalSetupToNotifications(alfredPage)
+    await expect(alfredPage.getByRole('button', { name: /Send Test Notification/i })).toBeVisible()
+    await chooseNotificationSound(alfredPage)
+    await continueFromNotificationsToAddProject(alfredPage)
 
-    const repoPath = await createGitRepo('orca-e2e-golden-new-', 'golden-new-project')
+    const repoPath = await createGitRepo('alfred-e2e-golden-new-', 'golden-new-project')
     await chooseFolderInNativeDialog(electronApp, repoPath)
-    await orcaPage
+    await alfredPage
       .getByRole('button', { name: /Browse for a folder|Open a folder|Browse folder/i })
       .click()
-    await waitForRepoLoaded(orcaPage, repoPath)
-    await expectProjectVisible(orcaPage, repoPath)
-    await waitForActiveWorktree(orcaPage)
-    await ensureTerminalVisible(orcaPage)
-    await expectTerminalSurface(orcaPage)
-    await waitForTerminalPaneManager(orcaPage)
+    await waitForRepoLoaded(alfredPage, repoPath)
+    await expectProjectVisible(alfredPage, repoPath)
+    await waitForActiveWorktree(alfredPage)
+    await ensureTerminalVisible(alfredPage)
+    await expectTerminalSurface(alfredPage)
+    await waitForTerminalPaneManager(alfredPage)
 
-    await requestAgentSessionsTour(orcaPage)
-    const paneCountBeforeTourSplit = await countVisibleTerminalPanes(orcaPage)
-    await orcaPage.getByRole('button', { name: /^Split terminal$/ }).click()
-    await waitForPaneCount(orcaPage, paneCountBeforeTourSplit + 1)
-    await waitForPaneIdentitySnapshot(orcaPage, paneCountBeforeTourSplit + 1)
+    await requestAgentSessionsTour(alfredPage)
+    const paneCountBeforeTourSplit = await countVisibleTerminalPanes(alfredPage)
+    await alfredPage.getByRole('button', { name: /^Split terminal$/ }).click()
+    await waitForPaneCount(alfredPage, paneCountBeforeTourSplit + 1)
+    await waitForPaneIdentitySnapshot(alfredPage, paneCountBeforeTourSplit + 1)
 
     await expect(
-      orcaPage.getByRole('dialog', { name: /Start another task in parallel/i })
+      alfredPage.getByRole('dialog', { name: /Start another task in parallel/i })
     ).toBeVisible()
-    const createControl = orcaPage
+    const createControl = alfredPage
       .locator('[data-contextual-tour-target="workspace-create-control"]')
       .first()
     await expect(createControl).toBeVisible()
@@ -478,7 +480,7 @@ test.describe('New-user golden core flow', () => {
     await createControl.click()
 
     const workspaceName = `golden-new-${Date.now()}`
-    await completeWorkspaceCreationTour(orcaPage, workspaceName)
-    await expectActiveWorkspaceBelongsToRepo(orcaPage, workspaceName, repoPath)
+    await completeWorkspaceCreationTour(alfredPage, workspaceName)
+    await expectActiveWorkspaceBelongsToRepo(alfredPage, workspaceName, repoPath)
   })
 })

@@ -47,15 +47,15 @@ describe('locale-translation-policy', () => {
     ).toBe('Gemini')
   })
 
-  it('preserves orca URL scheme in Chinese', () => {
+  it('preserves alfred URL scheme in Chinese', () => {
     expect(
       repairTranslatedValue({
         key: 'auto.web.WebConnect.27393856e4',
-        enValue: 'orca://pair?code=...',
+        enValue: 'alfred://pair?code=...',
         localeValue: '虎鲸://pair?code=...',
         locale: 'zh'
       })
-    ).toBe('orca://pair?code=...')
+    ).toBe('alfred://pair?code=...')
   })
 
   it('skips machine translation for standalone brands', () => {

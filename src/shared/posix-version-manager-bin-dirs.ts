@@ -56,10 +56,10 @@ const POSIX_VERSION_MANAGER_BIN_DIRS = [
  */
 export function buildPosixFallbackPathPrelude(): string {
   return [
-    `for _orca_dir in ${POSIX_VERSION_MANAGER_BIN_DIRS}; do`,
-    '  if [ -d "$_orca_dir" ]; then PATH="$PATH:$_orca_dir"; fi',
+    `for _alfred_dir in ${POSIX_VERSION_MANAGER_BIN_DIRS}; do`,
+    '  if [ -d "$_alfred_dir" ]; then PATH="$PATH:$_alfred_dir"; fi',
     'done',
     'export PATH',
-    'unset _orca_dir'
+    'unset _alfred_dir'
   ].join('\n')
 }

@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import {
-  getTerminalUrlOrcaBrowserHint,
+  getTerminalUrlAlfredBrowserHint,
   getTerminalUrlSystemBrowserHint
 } from '../terminal-pane/terminal-link-open-hints'
 import type { ChecksPanelReview } from './checks-panel-review'
@@ -75,8 +75,8 @@ export function ChecksPanelReviewHeader({
   const modifierHint =
     modifierHintDestination === 'system-browser'
       ? getTerminalUrlSystemBrowserHint()
-      : modifierHintDestination === 'orca'
-        ? getTerminalUrlOrcaBrowserHint()
+      : modifierHintDestination === 'alfred'
+        ? getTerminalUrlAlfredBrowserHint()
         : null
   const title = modifierHint ? `${openTitle}. ${modifierHint}` : openTitle
 

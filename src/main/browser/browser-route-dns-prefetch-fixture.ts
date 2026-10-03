@@ -16,10 +16,10 @@ export type BrowserRouteDnsPrefetchProbeResult = {
 }
 
 export async function runBrowserRouteDnsPrefetchProbe(): Promise<BrowserRouteDnsPrefetchProbeResult> {
-  const root = mkdtempSync(join(tmpdir(), 'orca-browser-dns-prefetch-'))
+  const root = mkdtempSync(join(tmpdir(), 'alfred-browser-dns-prefetch-'))
   const unique = `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`
-  const probeHost = `orca-prefetch-${unique}.invalid`
-  const controlHost = `orca-control-${unique}.invalid`
+  const probeHost = `alfred-prefetch-${unique}.invalid`
+  const controlHost = `alfred-control-${unique}.invalid`
   const sockets = new Set<Socket>()
   const socks = createServer((socket) => socket.destroy())
   let result: BrowserRouteDnsPrefetchProbeResult | null = null

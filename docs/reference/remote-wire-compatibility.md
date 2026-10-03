@@ -1,6 +1,6 @@
 # Remote wire compatibility
 
-Orca's remote-server feature pairs a desktop client to a remote Orca runtime, and
+Alfred's remote-server feature pairs a desktop client to a remote Alfred runtime, and
 users update the two independently. **Mixed versions are the normal state**, not an
 edge case. This page is the contract for changing anything a paired client and host
 exchange: the runtime RPC envelope, the terminal binary stream, and the content
@@ -102,7 +102,7 @@ gate, and a conflicted worktree that looks clean is granted a hosted-review crea
 should not have. Withholding an affordance is a degrade; removing the evidence a gate
 reads is not.
 
-A fallback is only ever allowed to shape a *reading*. If the member is sent back to the
+A fallback is only ever allowed to shape a _reading_. If the member is sent back to the
 host — a token the client echoes into a later call's params — pass it through as
 `z.string()` and let the send site keep it verbatim. `hostedReview`'s `provider` is the
 case: the eligibility reply names it and the create call returns it, so an

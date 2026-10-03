@@ -16,7 +16,7 @@ const PNG_1X1_BASE64 =
 const tempDirs: string[] = []
 
 async function makeTempRepoDir(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'orca-repo-icon-'))
+  const dir = await mkdtemp(join(tmpdir(), 'alfred-repo-icon-'))
   tempDirs.push(dir)
   return dir
 }
@@ -250,17 +250,20 @@ describe('detectRepoIcon', () => {
   it('falls back to the GitHub owner avatar for GitHub repos', async () => {
     const repoPath = await makeTempRepoDir()
     await gitExecFileAsync(['init'], { cwd: repoPath })
-    await gitExecFileAsync(['remote', 'add', 'origin', 'git@github.com:stablyai/orca.git'], {
-      cwd: repoPath
-    })
+    await gitExecFileAsync(
+      ['remote', 'add', 'origin', 'git@github.com:GOI17/alfred-workspace.git'],
+      {
+        cwd: repoPath
+      }
+    )
 
     await expect(
       detectRepoIcon({ repoPath, kind: 'git', executionHostId: 'local' })
     ).resolves.toEqual({
       type: 'image',
-      src: 'https://github.com/stablyai.png?size=64',
+      src: 'https://github.com/alfredlabs.png?size=64',
       source: 'github',
-      label: 'stablyai/orca'
+      label: 'GOI17/alfred-workspace'
     })
   })
 
@@ -268,20 +271,23 @@ describe('detectRepoIcon', () => {
     const repoPath = await makeTempRepoDir()
     await writeFile(
       join(repoPath, 'package.json'),
-      JSON.stringify({ homepage: 'https://github.com/stablyai/orca' })
+      JSON.stringify({ homepage: 'https://github.com/GOI17/alfred-workspace' })
     )
     await gitExecFileAsync(['init'], { cwd: repoPath })
-    await gitExecFileAsync(['remote', 'add', 'origin', 'https://github.com/stablyai/orca.git'], {
-      cwd: repoPath
-    })
+    await gitExecFileAsync(
+      ['remote', 'add', 'origin', 'https://github.com/GOI17/alfred-workspace.git'],
+      {
+        cwd: repoPath
+      }
+    )
 
     await expect(
       detectRepoIcon({ repoPath, kind: 'git', executionHostId: 'local' })
     ).resolves.toEqual({
       type: 'image',
-      src: 'https://github.com/stablyai.png?size=64',
+      src: 'https://github.com/alfredlabs.png?size=64',
       source: 'github',
-      label: 'stablyai/orca'
+      label: 'GOI17/alfred-workspace'
     })
   })
 
@@ -299,29 +305,32 @@ describe('detectRepoIcon', () => {
   it('uses the resolved fork upstream for both metadata and the GitHub avatar', async () => {
     const repoPath = await makeTempRepoDir()
     await gitExecFileAsync(['init'], { cwd: repoPath })
-    await gitExecFileAsync(['remote', 'add', 'origin', 'git@github.com:tmchow/orca.git'], {
+    await gitExecFileAsync(['remote', 'add', 'origin', 'git@github.com:tmchow/alfred.git'], {
       cwd: repoPath
     })
-    await gitExecFileAsync(['remote', 'add', 'upstream', 'git@github.com:stablyai/orca.git'], {
-      cwd: repoPath
-    })
+    await gitExecFileAsync(
+      ['remote', 'add', 'upstream', 'git@github.com:GOI17/alfred-workspace.git'],
+      {
+        cwd: repoPath
+      }
+    )
 
     await expect(
       detectRepoIconAndUpstream({ repoPath, kind: 'git', executionHostId: 'local' })
     ).resolves.toEqual({
       gitRemoteIdentity: {
-        canonicalKey: 'github.com/stablyai/orca',
+        canonicalKey: 'github.com/GOI17/alfred-workspace',
         remoteName: 'upstream',
-        remoteUrl: 'git@github.com:stablyai/orca.git'
+        remoteUrl: 'git@github.com:GOI17/alfred-workspace.git'
       },
       repoIcon: {
         type: 'image',
-        src: 'https://github.com/stablyai.png?size=64',
+        src: 'https://github.com/alfredlabs.png?size=64',
         source: 'github',
-        label: 'stablyai/orca'
+        label: 'GOI17/alfred-workspace'
       },
       // Why: fork parents resolve host-qualified so avatars/links stay on the fork's server.
-      upstream: { owner: 'stablyai', repo: 'orca', host: 'github.com' }
+      upstream: { owner: 'alfredlabs', repo: 'alfred', host: 'github.com' }
     })
   })
 

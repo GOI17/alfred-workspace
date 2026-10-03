@@ -83,12 +83,12 @@ describe('useComposerProviderRuntimeSync', () => {
     })
 
     hook.rerender({ repoId: 'second' })
-    first.resolve({ owner: 'orca', repo: 'stale' })
+    first.resolve({ owner: 'alfred', repo: 'stale' })
     await act(async () => first.promise)
-    expect(setSelectedRepoSlug).not.toHaveBeenCalledWith({ owner: 'orca', repo: 'stale' })
+    expect(setSelectedRepoSlug).not.toHaveBeenCalledWith({ owner: 'alfred', repo: 'stale' })
 
-    second.resolve({ owner: 'orca', repo: 'current' })
+    second.resolve({ owner: 'alfred', repo: 'current' })
     await act(async () => second.promise)
-    expect(setSelectedRepoSlug).toHaveBeenLastCalledWith({ owner: 'orca', repo: 'current' })
+    expect(setSelectedRepoSlug).toHaveBeenLastCalledWith({ owner: 'alfred', repo: 'current' })
   })
 })

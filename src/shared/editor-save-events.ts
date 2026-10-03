@@ -1,5 +1,5 @@
-export const ORCA_EDITOR_SAVE_DIRTY_FILES_EVENT = 'orca:editor-save-dirty-files'
-export const ORCA_EDITOR_PREPARE_HOT_EXIT_EVENT = 'orca:editor-prepare-hot-exit'
+export const ALFRED_EDITOR_SAVE_DIRTY_FILES_EVENT = 'alfred:editor-save-dirty-files'
+export const ALFRED_EDITOR_PREPARE_HOT_EXIT_EVENT = 'alfred:editor-prepare-hot-exit'
 
 export type EditorSaveDirtyFilesDetail = {
   claim: () => void

@@ -4,10 +4,10 @@
   "namedDeltas": [],
   "runnerVersion": 1,
   "baseline": "b4dfad0a8ba4e15976ec06b9d38994b6a31e1643",
-  "lockfileSha256": "4568633356187895ccda8e2ff83245c37d5621832c69e268733733b6947971e3",
-  "recorderSha256": "f67c2f5b753d2a4f572599f6861fae8e6e917fe89ac75b58288f8e84be609d86",
+  "lockfileSha256": "6dc9405f6240556235cc8c897075c4dab1e8f5f8f1cf571c8eafdb496d3da818",
+  "recorderSha256": "96c80e2da6f1dbc42aad4f355811aa0e88e121b01243422126e7d08bd0ea57e2",
   "adapterSha256": "595a3eb2994d0596b9fcd0707b175b4e978625053dfbc5c541b0350c0cbfb524",
-  "scenarioSha256": "9ab21cda2ac956c70ddd23fe589778bbb46333314508cf92770d668ba59d5a90",
+  "scenarioSha256": "ffb3387fa8c17f725a703587827d39e0b0583c7cec7a6a3da92ce927bc08f367",
   "platform": "darwin",
   "scenarioVersion": 1,
   "projectionVersion": 2,
@@ -498,6 +498,14 @@
         }
       }
     },
+    "ddbf93523d08": {
+      "name": "device-store.setItem",
+      "ordinal": 3,
+      "value": {
+        "key": "alfred:pushDismissalWatermarks:v1",
+        "value": "[{\"key\":\"[\\\"Yw3NKWbEM2aRElRI\\\",\\\"epoch-1\\\",\\\"note-1\\\"]\",\"seq\":7,\"expiresAt\":1767312000000}]"
+      }
+    },
     "ea1440778921": {
       "name": "notifications.getMissedSince#1",
       "ordinal": 1,
@@ -549,14 +557,6 @@
       "value": {
         "$rpc": "undefined"
       }
-    },
-    "fa03fdca3d1d": {
-      "name": "device-store.setItem",
-      "ordinal": 3,
-      "value": {
-        "key": "orca:pushDismissalWatermarks:v1",
-        "value": "[{\"key\":\"[\\\"Yw3NKWbEM2aRElRI\\\",\\\"epoch-1\\\",\\\"note-1\\\"]\",\"seq\":7,\"expiresAt\":1767312000000}]"
-      }
     }
   },
   "recording": {
@@ -583,7 +583,7 @@
             "catchup": "eb79a9b3682a"
           },
           "state": "cf9c28129225",
-          "effects": ["fa03fdca3d1d", "6cfa895b17c4"]
+          "effects": ["ddbf93523d08", "6cfa895b17c4"]
         }
       },
       {

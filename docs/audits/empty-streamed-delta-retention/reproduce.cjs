@@ -4,7 +4,7 @@ const path = require('node:path')
 const { scenario } = require('./scenario.cjs')
 const { loadSources, sha, versions } = require('./sources.cjs')
 
-assert.equal(process.env.ORCA_BACKGROUND_LAUNCH, '1', 'Run with ORCA_BACKGROUND_LAUNCH=1')
+assert.equal(process.env.ALFRED_BACKGROUND_LAUNCH, '1', 'Run with ALFRED_BACKGROUND_LAUNCH=1')
 
 ;(async () => {
   const canonical = loadSources()

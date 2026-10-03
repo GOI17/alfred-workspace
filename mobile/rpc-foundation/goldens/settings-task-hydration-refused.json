@@ -4,9 +4,9 @@
   "namedDeltas": [],
   "runnerVersion": 1,
   "baseline": "b4dfad0a8ba4e15976ec06b9d38994b6a31e1643",
-  "lockfileSha256": "4568633356187895ccda8e2ff83245c37d5621832c69e268733733b6947971e3",
-  "recorderSha256": "f67c2f5b753d2a4f572599f6861fae8e6e917fe89ac75b58288f8e84be609d86",
-  "adapterSha256": "fc73116d95985606fe32f22d3f14f434a6d5cd49219416c9fa0f47f971fa6ff0",
+  "lockfileSha256": "6dc9405f6240556235cc8c897075c4dab1e8f5f8f1cf571c8eafdb496d3da818",
+  "recorderSha256": "96c80e2da6f1dbc42aad4f355811aa0e88e121b01243422126e7d08bd0ea57e2",
+  "adapterSha256": "ed91cd17761635a1c3ebff73344ff272181eb237538178c2de8c48bd1dceb46b",
   "scenarioSha256": "a510ff7505cddbd6dad3c7e5a2dcde206a5dab1940901511d72c97aca576a6f1",
   "platform": "darwin",
   "scenarioVersion": 1,
@@ -60,6 +60,11 @@
       "name": "showLinearTeamPicker",
       "ordinal": 4,
       "value": false
+    },
+    "0f7d18f75f05": {
+      "name": "trustedAlfredHooks",
+      "ordinal": 52,
+      "value": {}
     },
     "1221fd1c3ae9": {
       "name": "mergeMethodProjectRow",
@@ -315,13 +320,6 @@
         "startedAt": 0
       }
     },
-    "7d8029e889cf": {
-      "name": "projectRepoNotInOrca",
-      "ordinal": 27,
-      "value": {
-        "$rpc": "null"
-      }
-    },
     "8515b9b6e08f": {
       "name": "linear.status#1",
       "ordinal": 50,
@@ -448,14 +446,16 @@
         }
       }
     },
-    "9490fcb6d06d": {
-      "name": "trustedOrcaHooks",
-      "ordinal": 52,
-      "value": {}
-    },
     "963a91c532c8": {
       "hydrated": true,
       "settings": {}
+    },
+    "9e4961c86ad5": {
+      "name": "projectRepoNotInAlfred",
+      "ordinal": 27,
+      "value": {
+        "$rpc": "null"
+      }
     },
     "a5110db5951d": {
       "name": "linearTeams",
@@ -719,7 +719,7 @@
             "b7c96dd7bb6a",
             "f3dafd073b87",
             "1f75fb0d92bd",
-            "7d8029e889cf",
+            "9e4961c86ad5",
             "52b5f68c6d97",
             "16e4f4209bcf",
             "917e8342c71e",
@@ -784,7 +784,7 @@
             "b7c96dd7bb6a",
             "f3dafd073b87",
             "1f75fb0d92bd",
-            "7d8029e889cf",
+            "9e4961c86ad5",
             "52b5f68c6d97",
             "16e4f4209bcf",
             "917e8342c71e",
@@ -799,7 +799,7 @@
             "3d60f87d082e",
             "294741680522",
             "5746a2b64cdf",
-            "9490fcb6d06d",
+            "0f7d18f75f05",
             "e715718a7e8c",
             "2ae9c5d06de2",
             "644df42439c4",

@@ -44,28 +44,28 @@ describe('sanitizeRepoIcon', () => {
     expect(
       sanitizeRepoIcon({
         type: 'image',
-        src: 'https://github.com/stablyai.png?size=64',
+        src: 'https://github.com/alfredlabs.png?size=64',
         source: 'github',
-        label: 'stablyai/orca'
+        label: 'GOI17/alfred-workspace'
       })
     ).toEqual({
       type: 'image',
-      src: 'https://github.com/stablyai.png?size=64',
+      src: 'https://github.com/alfredlabs.png?size=64',
       source: 'github',
-      label: 'stablyai/orca'
+      label: 'GOI17/alfred-workspace'
     })
     expect(
       sanitizeRepoIcon({
         type: 'image',
-        src: 'https://github.acme.test/stablyai.png?size=64',
+        src: 'https://github.acme.test/alfredlabs.png?size=64',
         source: 'github',
-        label: 'stablyai/orca'
+        label: 'GOI17/alfred-workspace'
       })
     ).toEqual({
       type: 'image',
-      src: 'https://github.acme.test/stablyai.png?size=64',
+      src: 'https://github.acme.test/alfredlabs.png?size=64',
       source: 'github',
-      label: 'stablyai/orca'
+      label: 'GOI17/alfred-workspace'
     })
     expect(
       sanitizeRepoIcon({

@@ -36,11 +36,11 @@ describe('parseMobileMarkdown', () => {
   })
 
   it('parses GFM tables into table blocks', () => {
-    expect(parseMobileMarkdown('| Name | State |\n| --- | --- |\n| Orca | Open |')).toEqual([
+    expect(parseMobileMarkdown('| Name | State |\n| --- | --- |\n| Alfred | Open |')).toEqual([
       {
         type: 'table',
         headers: ['Name', 'State'],
-        rows: [['Orca', 'Open']]
+        rows: [['Alfred', 'Open']]
       }
     ])
   })
@@ -58,19 +58,21 @@ describe('parseMobileMarkdown', () => {
   it('normalizes common README HTML into readable Markdown preview text', () => {
     const normalized = normalizeMobileMarkdownPreviewHtml(`
 <h1 align="center">
-  <a href="https://onOrca.dev"><img src="resources/build/icon.png" alt="Orca" width="64" /></a>
-  Orca
+  <a href="https://alfredlabs.org"><img src="resources/build/icon.png" alt="Alfred" width="64" /></a>
+  Alfred
 </h1>
 
 <p align="center">
-  <a href="https://github.com/stablyai/orca/stargazers"><img src="https://badgen.net/github/stars/stablyai/orca" alt="GitHub stars" /></a>
+  <a href="https://github.com/GOI17/alfred-workspace/stargazers"><img src="https://badgen.net/github/stars/GOI17/alfred-workspace" alt="GitHub stars" /></a>
   <strong>The AI Orchestrator</strong><br/>
   Run Codex side-by-side.
 </p>
 `)
 
-    expect(normalized).toContain('# [Orca](https://onOrca.dev)')
-    expect(normalized).toContain('[GitHub stars](https://github.com/stablyai/orca/stargazers)')
+    expect(normalized).toContain('# [Alfred](https://alfredlabs.org)')
+    expect(normalized).toContain(
+      '[GitHub stars](https://github.com/GOI17/alfred-workspace/stargazers)'
+    )
     expect(normalized).toContain('**The AI Orchestrator**')
     expect(normalized).not.toContain('<h1')
     expect(normalized).not.toContain('<img')
@@ -123,8 +125,8 @@ describe('parseMobileMarkdown', () => {
     expect(normalizeMobileMarkdownPreviewHtml('<T> is a type parameter')).toBe(
       '<T> is a type parameter'
     )
-    expect(normalizeMobileMarkdownPreviewHtml('<mailto:orca@example.com>')).toBe(
-      '<mailto:orca@example.com>'
+    expect(normalizeMobileMarkdownPreviewHtml('<mailto:alfred@example.com>')).toBe(
+      '<mailto:alfred@example.com>'
     )
     expect(normalizeMobileMarkdownPreviewHtml('<ftp://example.com/file>')).toBe(
       '<ftp://example.com/file>'
@@ -173,7 +175,7 @@ describe('parseMobileMarkdown', () => {
   })
 
   it('does not replace literal code placeholder text in markdown prose', () => {
-    const literalPlaceholder = '\uE000ORCA_MD_CODE_0\uE000'
+    const literalPlaceholder = '\uE000ALFRED_MD_CODE_0\uE000'
     expect(normalizeMobileMarkdownPreviewHtml(`${literalPlaceholder} and \`Array<string>\``)).toBe(
       `${literalPlaceholder} and \`Array<string>\``
     )

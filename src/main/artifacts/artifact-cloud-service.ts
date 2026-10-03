@@ -10,10 +10,10 @@ import type {
   ArtifactWriteRequest
 } from '../../shared/artifacts'
 import { assertArtifactSharingAllowed } from '../../shared/artifact-sharing-gate'
-import { ensureActiveOrcaProfile } from '../orca-profiles/profile-index-store'
-import { getOrcaCloudAuthConfig } from '../orca-profiles/profile-cloud-auth-config'
-import { prepareArtifactCloudUse } from '../orca-profiles/profile-artifact-cloud-cleanup'
-import { runWithFreshOrcaCloudSession } from '../orca-profiles/profile-cloud-session-refresh'
+import { ensureActiveAlfredProfile } from '../alfred-profiles/profile-index-store'
+import { getAlfredCloudAuthConfig } from '../alfred-profiles/profile-cloud-auth-config'
+import { prepareArtifactCloudUse } from '../alfred-profiles/profile-artifact-cloud-cleanup'
+import { runWithFreshAlfredCloudSession } from '../alfred-profiles/profile-cloud-session-refresh'
 import {
   allowsArtifactCloudAuthOverride,
   resolveArtifactCloudApiUrl
@@ -26,10 +26,10 @@ import {
   refreshArtifactShareRecordExpiration,
   removeArtifactShareRecords
 } from './artifact-share-record-store'
-import type { ActiveOrcaProfileState } from '../orca-profiles/profile-index-store'
+import type { ActiveAlfredProfileState } from '../alfred-profiles/profile-index-store'
 import { artifactRequest, artifactWriteBody } from './artifact-cloud-request'
 import { ArtifactPublisher } from './artifact-publisher'
-import { OrcaCloudRequestError } from '../orca-profiles/profile-cloud-client'
+import { AlfredCloudRequestError } from '../alfred-profiles/profile-cloud-client'
 
 type ArtifactAuthContext = {
   profileId: string
@@ -50,7 +50,7 @@ async function deleteArtifactRequest(
     })
   } catch (error) {
     if (
-      !(error instanceof OrcaCloudRequestError) ||
+      !(error instanceof AlfredCloudRequestError) ||
       error.statusCode !== 404 ||
       error.errorCode !== 'artifact_not_found'
     ) {
@@ -64,7 +64,7 @@ function tokenFingerprint(token: string): string {
 }
 
 function authContext(
-  active: ActiveOrcaProfileState,
+  active: ActiveAlfredProfileState,
   scope: ArtifactShareScope,
   userDataPath: string,
   expectedCloud?: { userId: string; profileId: string; organizationId: string }
@@ -74,7 +74,7 @@ function authContext(
     profileId: active.profile.id,
     scope,
     assertCurrent: () => {
-      const current = ensureActiveOrcaProfile(userDataPath)
+      const current = ensureActiveAlfredProfile(userDataPath)
       const cloudCurrent =
         !expectedCloud ||
         (current.profile.cloud?.userId === expectedCloud.userId &&
@@ -86,7 +86,7 @@ function authContext(
         !isArtifactShareLifecycleCurrent(active.profile.id, userDataPath, lifecycleGeneration)
       ) {
         throw new Error(
-          'The signed-in Orca account changed while the artifact request was running.'
+          'The signed-in Alfred account changed while the artifact request was running.'
         )
       }
     }
@@ -94,12 +94,12 @@ function authContext(
 }
 
 function storedSessionAuthContext(
-  active: ActiveOrcaProfileState,
+  active: ActiveAlfredProfileState,
   apiOrigin: string,
   userDataPath: string
 ): ArtifactAuthContext {
   if (!active.profile.cloud) {
-    throw new Error('The active Orca profile is not linked to a cloud account.')
+    throw new Error('The active Alfred profile is not linked to a cloud account.')
   }
   return authContext(
     active,
@@ -119,7 +119,7 @@ function storedSessionAuthContext(
 }
 
 function explicitTokenAuthContext(
-  active: ActiveOrcaProfileState,
+  active: ActiveAlfredProfileState,
   apiOrigin: string,
   token: string,
   userDataPath: string
@@ -205,7 +205,7 @@ export class ArtifactCloudService {
           auth.scope
         )
         if (!record) {
-          throw new Error('This file has not been shared from the active Orca profile.')
+          throw new Error('This file has not been shared from the active Alfred profile.')
         }
         return this.publisher.runForSlug(record.slug, auth, async () => {
           auth.assertCurrent()
@@ -247,7 +247,7 @@ export class ArtifactCloudService {
           auth.scope
         )
         if (!record) {
-          throw new Error('This file has not been shared from the active Orca profile.')
+          throw new Error('This file has not been shared from the active Alfred profile.')
         }
         return this.publisher.runForSlug(record.slug, auth, async () => {
           auth.assertCurrent()
@@ -278,7 +278,7 @@ export class ArtifactCloudService {
     operation: (token: string, apiUrl: string, auth: ArtifactAuthContext) => Promise<T>
   ): Promise<ArtifactCloudOperation<T>> {
     const apiUrl = resolveArtifactCloudApiUrl(options.apiUrl)
-    const active = ensureActiveOrcaProfile(this.userDataPath)
+    const active = ensureActiveAlfredProfile(this.userDataPath)
     prepareArtifactCloudUse(active.profile, this.userDataPath)
     if (options.authToken?.trim()) {
       if (!allowsArtifactCloudAuthOverride()) {
@@ -295,11 +295,11 @@ export class ArtifactCloudService {
         value
       }
     }
-    const config = getOrcaCloudAuthConfig()
+    const config = getAlfredCloudAuthConfig()
     if (!config.configured) {
       return { status: 'unconfigured', message: config.setupMessage }
     }
-    const result = await runWithFreshOrcaCloudSession(
+    const result = await runWithFreshAlfredCloudSession(
       config.config,
       active,
       this.userDataPath,

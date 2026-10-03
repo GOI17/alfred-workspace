@@ -6,10 +6,10 @@ import { expandWindowsEnvironmentVariables } from '../../shared/windows-environm
 import { resolveSafePtyDefaultCwd } from './pty-default-cwd'
 
 const PANE_IDENTITY_ENV_KEYS = [
-  'ORCA_PANE_KEY',
-  'ORCA_TAB_ID',
-  'ORCA_WORKTREE_ID',
-  'ORCA_AGENT_LAUNCH_TOKEN'
+  'ALFRED_PANE_KEY',
+  'ALFRED_TAB_ID',
+  'ALFRED_WORKTREE_ID',
+  'ALFRED_AGENT_LAUNCH_TOKEN'
 ] as const
 
 export function getDefaultCwd(): string {
@@ -31,7 +31,7 @@ export function promoteAgentTeamsShimPath(
   env: Record<string, string>,
   requestedPath: string | undefined
 ): void {
-  if (!env.ORCA_AGENT_TEAMS_TEAM_ID || !requestedPath) {
+  if (!env.ALFRED_AGENT_TEAMS_TEAM_ID || !requestedPath) {
     return
   }
   const normalizedRequestedPath =

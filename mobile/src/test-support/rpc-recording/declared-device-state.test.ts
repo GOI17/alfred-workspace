@@ -74,9 +74,9 @@ describe('a scenario that declares its device', () => {
   })
 
   it('reads the declared entry, and null for everything else', async () => {
-    const { module } = store({ 'orca:key': 'declared' })
-    await expect(module.getItem!('orca:key')).resolves.toBe('declared')
-    await expect(module.getItem!('orca:other')).resolves.toBeNull()
+    const { module } = store({ 'alfred:key': 'declared' })
+    await expect(module.getItem!('alfred:key')).resolves.toBe('declared')
+    await expect(module.getItem!('alfred:other')).resolves.toBeNull()
   })
 
   /**
@@ -85,18 +85,18 @@ describe('a scenario that declares its device', () => {
    */
   it('records a write as an effect without letting a read see it', async () => {
     const { module, effects } = store({})
-    await module.setItem!('orca:key', 'written')
-    await module.removeItem!('orca:key')
-    await expect(module.getItem!('orca:key')).resolves.toBeNull()
+    await module.setItem!('alfred:key', 'written')
+    await module.removeItem!('alfred:key')
+    await expect(module.getItem!('alfred:key')).resolves.toBeNull()
     expect(effects).toEqual([
-      { name: 'device-store.setItem', value: { key: 'orca:key', value: 'written' } },
-      { name: 'device-store.removeItem', value: { key: 'orca:key' } }
+      { name: 'device-store.setItem', value: { key: 'alfred:key', value: 'written' } },
+      { name: 'device-store.removeItem', value: { key: 'alfred:key' } }
     ])
   })
 
   it('refuses a member the declaration does not back', () => {
     const { module } = store({})
-    expect(() => module.multiGet!('orca:key')).toThrow(
+    expect(() => module.multiGet!('alfred:key')).toThrow(
       `Native store reached during recording: ${STORE}.multiGet`
     )
   })
@@ -137,7 +137,7 @@ describe('a scenario that declares its device', () => {
     expect(effects.map((effect) => effect.name)).toEqual(['device-store.setItem'])
     // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: as above.
     const write = effects[0]!.value as { key: string; value: string }
-    expect(write.key).toMatch(/^orca:codex-reset-credit-attempt:v1:[0-9a-f]{64}$/)
+    expect(write.key).toMatch(/^alfred:codex-reset-credit-attempt:v1:[0-9a-f]{64}$/)
     expect(JSON.parse(write.value)).toMatchObject({ idempotencyKey: params.params.idempotencyKey })
   })
 

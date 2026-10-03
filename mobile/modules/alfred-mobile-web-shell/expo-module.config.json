@@ -1,0 +1,9 @@
+{
+  "platforms": ["ios", "android"],
+  "ios": {
+    "modules": ["AlfredMobileWebShellModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.alfredmobilewebshell.AlfredMobileWebShellModule"]
+  }
+}

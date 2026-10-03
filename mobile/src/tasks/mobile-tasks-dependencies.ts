@@ -108,7 +108,7 @@ export { WORKTREE_CREATE_TIMEOUT_MS } from './workspace-create-timeout'
 export {
   isSetupHookTrusted,
   normalizeSetupHookTrust,
-  trustedOrcaHooksWithSetupApproval,
+  trustedAlfredHooksWithSetupApproval,
   wasSetupHookPreviouslyApproved
 } from './setup-hook-trust'
 export { colors, radii, spacing, typography } from '../theme/mobile-theme'
@@ -139,7 +139,7 @@ export type {
   GitHubOwnerRepo,
   ProviderCheckSummary
 } from '../../../src/shared/github/pull-request-types'
-export type { PersistedTrustedOrcaHooks } from '../../../src/shared/orca-yaml-hook-types'
+export type { PersistedTrustedAlfredHooks } from '../../../src/shared/alfred-yaml-hook-types'
 export type { SparsePreset } from '../../../src/shared/worktree/create-types'
 export type { TuiAgent } from '../../../src/shared/tui-agent'
 export type { SshConnectionState } from '../../../src/shared/ssh-types'

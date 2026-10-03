@@ -1,5 +1,5 @@
 import {
-  OFFICIAL_MARKETPLACE_OWNER,
+  OFFICIAL_PLUGIN_PUBLISHER,
   isOfficialMarketplaceGitSource,
   isOfficialOrganizationGitSource,
   isReservedPluginIdentity
@@ -13,14 +13,14 @@ export function validateMarketplaceProvenance(
 ): void {
   if (
     isOfficialMarketplaceGitSource(source.source.url) &&
-    fetched.marketplace.owner.toLowerCase() !== OFFICIAL_MARKETPLACE_OWNER
+    fetched.marketplace.owner.toLowerCase() !== OFFICIAL_PLUGIN_PUBLISHER
   ) {
     throw new Error('official marketplace metadata has an unexpected owner')
   }
   for (const entry of fetched.marketplace.plugins) {
     if (isReservedPluginIdentity(entry.id) && !isOfficialOrganizationGitSource(entry.source.url)) {
       throw new Error(
-        `reserved plugin identity ${entry.id} must resolve to the stablyai organization`
+        `reserved plugin identity ${entry.id} must resolve to the alfredlabs organization`
       )
     }
   }

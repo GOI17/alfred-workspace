@@ -72,10 +72,10 @@ export function WorktreeCardDetailsHover({
   onWorkspaceTitleEditingChange,
   onEditIssue,
   onEditComment,
-  onOpenGitHubIssueInOrca,
+  onOpenGitHubIssueInAlfred,
   onOpenIssueInBrowser,
-  onOpenLinearIssueInOrca,
-  onOpenReviewInOrca,
+  onOpenLinearIssueInAlfred,
+  onOpenReviewInAlfred,
   onOpenReviewInBrowser,
   onUnlinkReview,
   onOpenAutomation,
@@ -219,8 +219,8 @@ export function WorktreeCardDetailsHover({
             onIssueMenuOpenChange={handleIssueMenuOpenChange}
             onCopyIssueLink={issue?.url ? handleCopyIssueLink : undefined}
             onEditIssue={onEditIssue}
-            onOpenGitHubIssueInOrca={
-              onOpenGitHubIssueInOrca ? dismissAndRun(onOpenGitHubIssueInOrca) : undefined
+            onOpenGitHubIssueInAlfred={
+              onOpenGitHubIssueInAlfred ? dismissAndRun(onOpenGitHubIssueInAlfred) : undefined
             }
             onOpenIssueInBrowser={
               onOpenIssueInBrowser && issue?.url
@@ -243,13 +243,13 @@ export function WorktreeCardDetailsHover({
                 )}
                 actions={
                   <>
-                    {linearIssue.url && onOpenLinearIssueInOrca && (
+                    {linearIssue.url && onOpenLinearIssueInAlfred && (
                       <MetadataActionIcon
                         label={translate(
                           'auto.components.sidebar.WorktreeCardMeta.2c67730e07',
-                          'Open in Orca'
+                          'Open in Alfred'
                         )}
-                        onClick={dismissAndRun(onOpenLinearIssueInOrca)}
+                        onClick={dismissAndRun(onOpenLinearIssueInAlfred)}
                       >
                         <MonitorUp className="size-3" />
                       </MetadataActionIcon>
@@ -322,7 +322,7 @@ export function WorktreeCardDetailsHover({
             review={review}
             reviewMenuOpen={reviewMenuOpen}
             onReviewMenuOpenChange={handleReviewMenuOpenChange}
-            onOpenReviewInOrca={onOpenReviewInOrca}
+            onOpenReviewInAlfred={onOpenReviewInAlfred}
             onOpenReviewInBrowser={
               onOpenReviewInBrowser && review?.url ? onOpenReviewInBrowser : undefined
             }

@@ -13,8 +13,8 @@ const WINDOWS_REPO_ID = 'a0a2b4a4-1bff-494c-b005-d77918abc6a7'
 
 function command(repoId: string): TerminalQuickCommand {
   return {
-    id: 'test-orca',
-    label: 'Test Orca',
+    id: 'test-alfred',
+    label: 'Test Alfred',
     action: 'terminal-command',
     command: 'pnpm test',
     appendEnter: true,
@@ -25,7 +25,7 @@ function command(repoId: string): TerminalQuickCommand {
 function setup(
   hostId: ExecutionHostId,
   repoId: string,
-  projectId = 'github:stablyai/orca'
+  projectId = 'github:GOI17/alfred-workspace'
 ): ScopeSetup {
   return { hostId, projectId, repoId }
 }
@@ -54,20 +54,20 @@ describe('terminalQuickCommandMatchesWorkspaceProject', () => {
     const repo = (id: string, path: string, executionHostId?: ExecutionHostId): Repo => ({
       id,
       path,
-      displayName: 'orca',
+      displayName: 'alfred',
       badgeColor: '#737373',
       addedAt: 100,
       kind: 'git',
       gitRemoteIdentity: {
-        canonicalKey: 'github.com/stablyai/orca',
+        canonicalKey: 'github.com/GOI17/alfred-workspace',
         remoteName: 'origin',
-        remoteUrl: 'git@github.com:stablyai/orca.git'
+        remoteUrl: 'git@github.com:GOI17/alfred-workspace.git'
       },
       ...(executionHostId ? { executionHostId } : {})
     })
     const projectHostSetups = projectHostSetupProjectionFromRepos([
-      repo(LOCAL_REPO_ID, '/Users/alice/orca'),
-      repo(WINDOWS_REPO_ID, 'C:\\Users\\alice\\orca', 'runtime:windows-2')
+      repo(LOCAL_REPO_ID, '/Users/alice/alfred'),
+      repo(WINDOWS_REPO_ID, 'C:\\Users\\alice\\alfred', 'runtime:windows-2')
     ]).setups
 
     expect(
@@ -83,7 +83,7 @@ describe('terminalQuickCommandMatchesWorkspaceProject', () => {
   it('does not show a repo command for a different known project', () => {
     const projectHostSetups = [
       setup('local', LOCAL_REPO_ID),
-      setup('runtime:windows-2', WINDOWS_REPO_ID, 'github:stablyai/other')
+      setup('runtime:windows-2', WINDOWS_REPO_ID, 'github:alfredlabs/other')
     ]
 
     expect(
@@ -99,7 +99,7 @@ describe('terminalQuickCommandMatchesWorkspaceProject', () => {
   it('does not trust colliding cross-host repo ids when both projects are known', () => {
     const projectHostSetups = [
       setup('local', LOCAL_REPO_ID),
-      setup('runtime:windows-2', LOCAL_REPO_ID, 'github:stablyai/other')
+      setup('runtime:windows-2', LOCAL_REPO_ID, 'github:alfredlabs/other')
     ]
 
     expect(

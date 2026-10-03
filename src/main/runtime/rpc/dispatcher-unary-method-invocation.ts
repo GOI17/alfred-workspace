@@ -1,4 +1,4 @@
-import type { OrcaRuntimeService } from '../orca-runtime'
+import type { AlfredRuntimeService } from '../alfred-runtime'
 import type { RpcContext, RpcMethod, RpcRequest } from './core'
 import { routeDispatcherClientHostedBrowserRpc } from './dispatcher-client-browser-routing'
 import { needsLocalCallerFingerprint } from './dispatcher-caller-fingerprint'
@@ -10,7 +10,7 @@ import type {
 import { recordRuntimeFeatureInteraction } from './runtime-feature-interaction'
 
 type DispatcherUnaryMethodInvocation = {
-  runtime: OrcaRuntimeService
+  runtime: AlfredRuntimeService
   request: RpcRequest
   method: RpcMethod
   params: unknown

@@ -10,14 +10,14 @@ function project(id: string, displayName: string, detail: string): NewWorkspaceP
   return { kind: 'project', id, projectId: id, displayName, badgeColor: '#111', detail }
 }
 
-const orca = project('orca', 'orca', 'stablyai/orca')
-const relay = project('relay', 'orca-relay', 'stablyai/orca-relay')
+const alfred = project('alfred', 'alfred', 'GOI17/alfred-workspace')
+const relay = project('relay', 'alfred-relay', 'GOI17/alfred-workspace-relay')
 const gateway = project('gateway', 'api-gateway', 'acme/api-gateway')
 
 describe('rankProjectOptions', () => {
   it('ranks a name-prefix match above a mid-name match', () => {
-    const ranked = rankProjectOptions([relay, orca], 'orca', [])
-    expect(ranked[0]?.option.id).toBe('orca')
+    const ranked = rankProjectOptions([relay, alfred], 'alfred', [])
+    expect(ranked[0]?.option.id).toBe('alfred')
   })
 
   it('matches the detail line when the name does not match', () => {
@@ -35,12 +35,12 @@ describe('rankProjectOptions', () => {
   })
 
   it('orders an unfiltered list by recency', () => {
-    const ranked = rankProjectOptions([orca, relay, gateway], '', ['gateway', 'relay'])
-    expect(ranked.map((r) => r.option.id)).toEqual(['gateway', 'relay', 'orca'])
+    const ranked = rankProjectOptions([alfred, relay, gateway], '', ['gateway', 'relay'])
+    expect(ranked.map((r) => r.option.id)).toEqual(['gateway', 'relay', 'alfred'])
   })
 
   it('returns nothing for an oversized query rather than scanning it', () => {
-    expect(rankProjectOptions([orca], 'x'.repeat(4096), [])).toEqual([])
+    expect(rankProjectOptions([alfred], 'x'.repeat(4096), [])).toEqual([])
   })
 })
 
@@ -62,7 +62,7 @@ describe('sectionProjectOptions', () => {
   })
 
   it('keeps a short list unsectioned', () => {
-    const matches = rankProjectOptions([orca, relay], '', ['relay'])
+    const matches = rankProjectOptions([alfred, relay], '', ['relay'])
     expect(sectionProjectOptions(matches, '', ['relay'])).toHaveLength(1)
   })
 })
@@ -71,7 +71,7 @@ describe('getAmbiguousProjectOptionIds', () => {
   it('flags only ids whose display name repeats', () => {
     const a = project('a', 'scratch', '~/code/scratch')
     const b = project('b', 'scratch', '~/src/scratch')
-    const ids = getAmbiguousProjectOptionIds([a, b, orca])
+    const ids = getAmbiguousProjectOptionIds([a, b, alfred])
     expect(ids).toEqual(new Set(['a', 'b']))
   })
 })

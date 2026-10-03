@@ -1,4 +1,4 @@
-import { test, expect } from './helpers/orca-app'
+import { test, expect } from './helpers/alfred-app'
 import { getStoreState, waitForSessionReady } from './helpers/store'
 import type { ElectronApplication } from '@stablyai/playwright-test'
 
@@ -6,10 +6,10 @@ async function openFeatureTourFromMenu(electronApp: ElectronApplication): Promis
   await electronApp.evaluate(({ BrowserWindow, Menu }) => {
     const featureTourItem = Menu.getApplicationMenu()
       ?.items.find((item) => item.label === 'Help')
-      ?.submenu?.items.find((item) => item.label === 'Explore Orca')
+      ?.submenu?.items.find((item) => item.label === 'Explore Alfred')
 
     if (!featureTourItem) {
-      throw new Error('Explore Orca menu item was not registered')
+      throw new Error('Explore Alfred menu item was not registered')
     }
 
     const window = BrowserWindow.getAllWindows()[0]
@@ -24,36 +24,36 @@ async function openFeatureTourFromMenu(electronApp: ElectronApplication): Promis
 }
 
 test.describe('Feature tour modal', () => {
-  test.beforeEach(async ({ orcaPage }) => {
-    await waitForSessionReady(orcaPage)
+  test.beforeEach(async ({ alfredPage }) => {
+    await waitForSessionReady(alfredPage)
   })
 
   test('opens from the Help menu and renders the workflow rail', async ({
     electronApp,
-    orcaPage
+    alfredPage
   }) => {
     await openFeatureTourFromMenu(electronApp)
 
-    await expect(orcaPage.getByRole('dialog', { name: 'Get to know Orca' })).toBeVisible({
+    await expect(alfredPage.getByRole('dialog', { name: 'Get to know Alfred' })).toBeVisible({
       timeout: 10_000
     })
-    await expect(orcaPage.getByText('Reopen any time from Help > Explore Orca.')).toBeVisible()
+    await expect(alfredPage.getByText('Reopen any time from Help > Explore Alfred.')).toBeVisible()
 
     // Five workflow rows in the rail.
-    const rail = orcaPage.getByRole('navigation', { name: 'Workflows' })
+    const rail = alfredPage.getByRole('navigation', { name: 'Workflows' })
     await expect(rail.getByRole('tab')).toHaveCount(5)
     await expect(rail.getByRole('tab', { name: /Workspaces/i })).toHaveAttribute(
       'aria-selected',
       'true'
     )
 
-    await expect(orcaPage.locator('[data-ws-id]')).toHaveCount(3)
+    await expect(alfredPage.locator('[data-ws-id]')).toHaveCount(3)
 
     // ArrowDown moves selection through the rail.
     await rail.getByRole('tab', { name: /Workspaces/i }).focus()
-    await orcaPage.keyboard.press('ArrowDown')
+    await alfredPage.keyboard.press('ArrowDown')
     await expect(rail.getByRole('tab', { name: /Tasks/i })).toHaveAttribute('aria-selected', 'true')
-    await orcaPage.keyboard.press('ArrowDown')
+    await alfredPage.keyboard.press('ArrowDown')
     await expect(rail.getByRole('tab', { name: /Agents/i })).toHaveAttribute(
       'aria-selected',
       'true'
@@ -62,20 +62,20 @@ test.describe('Feature tour modal', () => {
     await rail.getByRole('tab', { name: /Workbench/i }).click()
     await rail.getByRole('button', { name: /Browser/i }).click()
     await expect(
-      orcaPage.getByText(
-        "Run your app in Orca's browser, send selected UI elements to agents, and let your agents interact with your webpage."
+      alfredPage.getByText(
+        "Run your app in Alfred's browser, send selected UI elements to agents, and let your agents interact with your webpage."
       )
     ).toBeVisible()
-    await expect(orcaPage.getByRole('heading', { name: 'Browser Use skill' })).toBeVisible()
+    await expect(alfredPage.getByRole('heading', { name: 'Browser Use skill' })).toBeVisible()
     await expect(
-      orcaPage.getByText("Enables agents to navigate and verify pages in Orca's browser.")
+      alfredPage.getByText("Enables agents to navigate and verify pages in Alfred's browser.")
     ).toBeVisible()
-    await expect(orcaPage.getByRole('heading', { name: 'CLI skill' })).toHaveCount(0)
-    await expect(orcaPage.getByText('With the Orca CLI skill', { exact: false })).toHaveCount(0)
+    await expect(alfredPage.getByRole('heading', { name: 'CLI skill' })).toHaveCount(0)
+    await expect(alfredPage.getByText('With the Alfred CLI skill', { exact: false })).toHaveCount(0)
   })
 
-  test('shows unified task copy without leaving the walkthrough', async ({ orcaPage }) => {
-    await orcaPage.evaluate(() => {
+  test('shows unified task copy without leaving the walkthrough', async ({ alfredPage }) => {
+    await alfredPage.evaluate(() => {
       const store = window.__store
       if (!store) {
         throw new Error('window.__store is not available')
@@ -109,25 +109,25 @@ test.describe('Feature tour modal', () => {
       store.getState().openModal('feature-wall', { source: 'help_menu' })
     })
 
-    await expect(orcaPage.getByRole('dialog', { name: 'Get to know Orca' })).toBeVisible({
+    await expect(alfredPage.getByRole('dialog', { name: 'Get to know Alfred' })).toBeVisible({
       timeout: 10_000
     })
-    await orcaPage
+    await alfredPage
       .getByRole('navigation', { name: 'Workflows' })
       .getByRole('tab', { name: /Tasks/i })
       .click()
-    await expect(orcaPage.getByText('Start work directly from GitHub or Linear.')).toBeVisible()
-    await expect(orcaPage.getByText('Connect GitHub or Linear once')).toHaveCount(0)
-    await expect(orcaPage.getByRole('dialog', { name: 'Get to know Orca' })).toBeVisible()
+    await expect(alfredPage.getByText('Start work directly from GitHub or Linear.')).toBeVisible()
+    await expect(alfredPage.getByText('Connect GitHub or Linear once')).toHaveCount(0)
+    await expect(alfredPage.getByRole('dialog', { name: 'Get to know Alfred' })).toBeVisible()
     await expect
-      .poll(async () => getStoreState<string>(orcaPage, 'activeView'))
+      .poll(async () => getStoreState<string>(alfredPage, 'activeView'))
       .not.toBe('settings')
   })
 
   test('continue advances through workflow substeps before the next workflow', async ({
-    orcaPage
+    alfredPage
   }) => {
-    await orcaPage.evaluate(() => {
+    await alfredPage.evaluate(() => {
       const store = window.__store
       if (!store) {
         throw new Error('window.__store is not available')
@@ -135,8 +135,8 @@ test.describe('Feature tour modal', () => {
       store.getState().openModal('feature-wall', { source: 'help_menu' })
     })
 
-    const rail = orcaPage.getByRole('navigation', { name: 'Workflows' })
-    const continueButton = orcaPage.getByRole('button', { name: /^Continue/ })
+    const rail = alfredPage.getByRole('navigation', { name: 'Workflows' })
+    const continueButton = alfredPage.getByRole('button', { name: /^Continue/ })
 
     await continueButton.click()
     await expect(rail.getByRole('tab', { name: /Tasks/i })).toHaveAttribute('aria-selected', 'true')
@@ -179,7 +179,7 @@ test.describe('Feature tour modal', () => {
   })
 
   test('does not pre-check configured workflows until the user visits them', async ({
-    orcaPage,
+    alfredPage,
     electronApp
   }) => {
     await electronApp.evaluate(
@@ -212,16 +212,16 @@ test.describe('Feature tour modal', () => {
         }
       }
     )
-    await orcaPage.evaluate(async () => {
+    await alfredPage.evaluate(async () => {
       for (const key of [
-        'orca.featureWall.visitedWorkflows.v1',
-        'orca.featureWall.visitedAgentSteps.v1',
-        'orca.featureWall.visitedWorkbenchSteps.v1',
-        'orca.featureWall.visitedReviewSteps.v1',
-        'orca.featureWall.completedWorkflows.v1',
-        'orca.featureWall.completedAgentSteps.v1',
-        'orca.featureWall.completedWorkbenchSteps.v1',
-        'orca.featureWall.completedReviewSteps.v1'
+        'alfred.featureWall.visitedWorkflows.v1',
+        'alfred.featureWall.visitedAgentSteps.v1',
+        'alfred.featureWall.visitedWorkbenchSteps.v1',
+        'alfred.featureWall.visitedReviewSteps.v1',
+        'alfred.featureWall.completedWorkflows.v1',
+        'alfred.featureWall.completedAgentSteps.v1',
+        'alfred.featureWall.completedWorkbenchSteps.v1',
+        'alfred.featureWall.completedReviewSteps.v1'
       ]) {
         localStorage.removeItem(key)
       }
@@ -238,7 +238,7 @@ test.describe('Feature tour modal', () => {
       store.getState().openModal('feature-wall', { source: 'help_menu' })
     })
 
-    const rail = orcaPage.getByRole('navigation', { name: 'Workflows' })
+    const rail = alfredPage.getByRole('navigation', { name: 'Workflows' })
     const workspacesTab = rail.locator('[data-feature-wall-workflow-id="workspaces"]')
     const tasksTab = rail.locator('[data-feature-wall-workflow-id="tasks"]')
     await expect(workspacesTab.locator('[aria-label="Completed"]')).toHaveCount(1)
@@ -249,15 +249,15 @@ test.describe('Feature tour modal', () => {
   })
 
   test('keeps persisted completed setup-backed substeps checked when reopened', async ({
-    orcaPage
+    alfredPage
   }) => {
-    await orcaPage.evaluate(() => {
+    await alfredPage.evaluate(() => {
       localStorage.setItem(
-        'orca.featureWall.completedAgentSteps.v1',
+        'alfred.featureWall.completedAgentSteps.v1',
         JSON.stringify(['orchestration'])
       )
       localStorage.setItem(
-        'orca.featureWall.completedWorkbenchSteps.v1',
+        'alfred.featureWall.completedWorkbenchSteps.v1',
         JSON.stringify(['browser'])
       )
       const store = window.__store
@@ -267,7 +267,7 @@ test.describe('Feature tour modal', () => {
       store.getState().openModal('feature-wall', { source: 'help_menu' })
     })
 
-    const rail = orcaPage.getByRole('navigation', { name: 'Workflows' })
+    const rail = alfredPage.getByRole('navigation', { name: 'Workflows' })
 
     await rail.getByRole('tab', { name: /Agents/i }).click()
     await expect(

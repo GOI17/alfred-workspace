@@ -7,10 +7,10 @@ import { canSkipAgentBrowserSessionReset } from './agent-browser-session-reset'
 
 const owned = {
   ownsSocketDirectory: true,
-  socketDirectory: '/tmp/orca-ab-profile',
-  sessionName: 'orca-tab-page'
+  socketDirectory: '/tmp/alfred-ab-profile',
+  sessionName: 'alfred-tab-page'
 }
-const socketPath = join(owned.socketDirectory, 'orca-tab-page.sock')
+const socketPath = join(owned.socketDirectory, 'alfred-tab-page.sock')
 
 beforeEach(() => {
   lstatSync.mockReset()

@@ -1,7 +1,7 @@
-import { ORCA_ISSUE_FIELDS, ORCA_PROJECT_FIELDS } from './linear-project-graphql'
+import { ALFRED_ISSUE_FIELDS, ALFRED_PROJECT_FIELDS } from './linear-project-graphql'
 
 export const CUSTOM_VIEWS_QUERY = `
-  query OrcaLinearCustomViews(
+  query AlfredLinearCustomViews(
     $first: Int,
     $filter: CustomViewFilter,
     $orderBy: PaginationOrderBy
@@ -42,7 +42,7 @@ export const CUSTOM_VIEWS_QUERY = `
 `
 
 export const CUSTOM_VIEW_QUERY = `
-  query OrcaLinearCustomView($id: String!) {
+  query AlfredLinearCustomView($id: String!) {
     customView(id: $id) {
       id
       name
@@ -74,7 +74,7 @@ export const CUSTOM_VIEW_QUERY = `
 `
 
 export const CUSTOM_VIEW_ISSUES_QUERY = `
-  query OrcaLinearCustomViewIssues(
+  query AlfredLinearCustomViewIssues(
     $id: String!,
     $first: Int,
     $after: String,
@@ -85,7 +85,7 @@ export const CUSTOM_VIEW_ISSUES_QUERY = `
       modelName
       issues(first: $first, after: $after, orderBy: $orderBy) {
         nodes {
-          ${ORCA_ISSUE_FIELDS}
+          ${ALFRED_ISSUE_FIELDS}
         }
         pageInfo {
           hasNextPage
@@ -97,13 +97,13 @@ export const CUSTOM_VIEW_ISSUES_QUERY = `
 `
 
 export const CUSTOM_VIEW_PROJECTS_QUERY = `
-  query OrcaLinearCustomViewProjects($id: String!, $first: Int, $orderBy: PaginationOrderBy) {
+  query AlfredLinearCustomViewProjects($id: String!, $first: Int, $orderBy: PaginationOrderBy) {
     customView(id: $id) {
       id
       modelName
       projects(first: $first, orderBy: $orderBy) {
         nodes {
-          ${ORCA_PROJECT_FIELDS}
+          ${ALFRED_PROJECT_FIELDS}
         }
         pageInfo {
           hasNextPage

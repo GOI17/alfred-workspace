@@ -7,10 +7,10 @@ import {
 
 describe('serve-mode-argv', () => {
   it('detects --serve and bare serve subcommand', () => {
-    expect(argvRequestsServeMode(['orca', '--serve'])).toBe(true)
+    expect(argvRequestsServeMode(['alfred', '--serve'])).toBe(true)
     expect(argvRequestsServeMode(['/AppRun', 'serve'])).toBe(true)
     expect(argvRequestsServeMode(['/AppRun', '--no-sandbox', 'serve', '--port', '8080'])).toBe(true)
-    expect(argvRequestsServeMode(['orca'])).toBe(false)
+    expect(argvRequestsServeMode(['alfred'])).toBe(false)
   })
 
   it('does not treat serve as a subcommand when it is an option value', () => {
@@ -76,15 +76,15 @@ describe('serve-mode-argv', () => {
     // Why: a false positive here is the expensive direction — the window never opens and a runtime
     // server binds instead. These are the argv shapes the desktop actually receives.
     for (const argv of [
-      ['/Applications/Orca.app/Contents/MacOS/Orca', '-psn_0_123456'],
-      ['C:\\Program Files\\Orca\\Orca.exe', '--squirrel-firstrun'],
-      ['C:\\Program Files\\Orca\\Orca.exe', 'orca://worktree/serve'],
-      ['/opt/orca/orca-ide', '/home/u/serve'],
+      ['/Applications/Alfred workspace.app/Contents/MacOS/Alfred workspace', '-psn_0_123456'],
+      ['C:\\Program Files\\Alfred\\Alfred.exe', '--squirrel-firstrun'],
+      ['C:\\Program Files\\Alfred\\Alfred.exe', 'alfred://worktree/serve'],
+      ['/opt/alfred/alfred-ide', '/home/u/serve'],
       // `--pairing-code` takes the next token, so its value is never the subcommand.
-      ['/opt/orca/orca-ide', '--pairing-code', 'serve'],
-      ['/opt/orca/orca-ide', '--environment=serve'],
-      ['/opt/orca/orca-ide', '--', 'serve'],
-      ['/opt/orca/orca-ide', 'Serve']
+      ['/opt/alfred/alfred-ide', '--pairing-code', 'serve'],
+      ['/opt/alfred/alfred-ide', '--environment=serve'],
+      ['/opt/alfred/alfred-ide', '--', 'serve'],
+      ['/opt/alfred/alfred-ide', 'Serve']
     ]) {
       expect(argvRequestsServeMode(argv), argv.join(' ')).toBe(false)
       expect(normalizeServeModeArgv(argv)).toEqual(argv)
@@ -123,14 +123,14 @@ describe('serve-mode-argv', () => {
   it('keeps Electron-injected Chromium switches while normalizing direct serve', () => {
     expect(
       normalizeServeModeArgv([
-        '/opt/orca/orca-ide',
+        '/opt/alfred/alfred-ide',
         '--disable-features=FedCm,DirectSockets',
         'serve',
         '--port',
         '6768'
       ])
     ).toEqual([
-      '/opt/orca/orca-ide',
+      '/opt/alfred/alfred-ide',
       '--disable-features=FedCm,DirectSockets',
       '--serve',
       '--serve-port',
@@ -139,10 +139,10 @@ describe('serve-mode-argv', () => {
   })
 
   it('leaves already-normalized argv unchanged', () => {
-    // Why every value flag: the CLI's own `orca serve` spawns the app with exactly this shape
-    // (serveOrcaApp), and the rewrite now runs over it too — a bad mapping would drop the port here.
+    // Why every value flag: the CLI's own `alfred serve` spawns the app with exactly this shape
+    // (serveAlfredApp), and the rewrite now runs over it too — a bad mapping would drop the port here.
     const argv = [
-      'orca',
+      'alfred',
       '--serve',
       '--serve-json',
       '--serve-port',
@@ -174,17 +174,13 @@ describe('serve-mode-argv', () => {
 
   it('translates serve flags in the mixed `--serve --port` form', () => {
     // Why: leaving these untranslated silently kept pairing enabled despite --no-pairing.
-    expect(normalizeServeModeArgv(['orca', '--serve', '--port', '9090', '--no-pairing'])).toEqual([
-      'orca',
-      '--serve',
-      '--serve-port',
-      '9090',
-      '--serve-no-pairing'
-    ])
+    expect(normalizeServeModeArgv(['alfred', '--serve', '--port', '9090', '--no-pairing'])).toEqual(
+      ['alfred', '--serve', '--serve-port', '9090', '--serve-no-pairing']
+    )
   })
 
   it('leaves a non-serve launch untouched', () => {
-    const argv = ['orca', '--no-sandbox', '/home/u/project']
+    const argv = ['alfred', '--no-sandbox', '/home/u/project']
     expect(argvRequestsServeMode(argv)).toBe(false)
     expect(normalizeServeModeArgv(argv)).toEqual(argv)
   })

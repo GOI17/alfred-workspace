@@ -42,12 +42,18 @@ on:
         default: false
         type: boolean
       version_suffix:
-        description: Extra prerelease identifier appended to an rc version (e.g. "perf" -> 1.2.3-rc.4.perf). Applies to kind=rc, or to an explicit version that is a bare X.Y.Z-rc.N.
+        description: Extra prerelease identifier appended to an rc version (e.g. "perf"
+          -> 1.2.3-rc.4.perf). Applies to kind=rc, or to an explicit version
+          that is a bare X.Y.Z-rc.N.
         required: false
         type: string
         default: ''
       version:
-        description: Exact version to cut (e.g. 1.4.155 or 1.4.155-rc.4), bypassing kind-based computation. Use to leapfrog a deleted/rolled-back stable that regressed the release list. Must be greater than the latest published stable, and an -rc.N must be above the highest RC already cut for its own base.
+        description: Exact version to cut (e.g. 1.4.155 or 1.4.155-rc.4), bypassing
+          kind-based computation. Use to leapfrog a deleted/rolled-back stable
+          that regressed the release list. Must be greater than the latest
+          published stable, and an -rc.N must be above the highest RC already
+          cut for its own base.
         required: false
         type: string
         default: ''
@@ -65,14 +71,16 @@ jobs:
     # Actions enabled, the scheduled cut would run against the fork's main and
     # diverge it (version line) every slot, conflicting every PR back upstream.
     # Gate to the canonical repo so the workflow no-ops on forks.
-    if: github.repository == 'stablyai/orca'
+    if: vars.ALFRED_RELEASES_ENABLED == 'true' && (github.repository ==
+      'GOI17/alfred-workspace')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
       contents: write
     outputs:
       tag: ${{ steps.tag.outputs.tag || steps.version.outputs.recovered_tag }}
-      should_release: ${{ steps.tag.outputs.tag != '' || steps.version.outputs.recovered_tag != '' }}
+      should_release: ${{ steps.tag.outputs.tag != '' ||
+        steps.version.outputs.recovered_tag != '' }}
       latest_published_rc_tag: ${{ steps.publish_drafts.outputs.latest_published_tag }}
       # Why: downstream SignPath Slack pings need the cut source (not only the
       # new tag) so approvers know what they're signing and who cut it.
@@ -307,7 +315,8 @@ jobs:
           echo "Reason: ${{ steps.existing.outputs.reason }}"
 
       - name: Skip summary
-        if: steps.window.outputs.allowed != 'true' || steps.existing.outputs.already_ran == 'true'
+        if: steps.window.outputs.allowed != 'true' || steps.existing.outputs.already_ran
+          == 'true'
         run: |
           echo "Skipping release cut."
           echo "Current PT slot: ${{ steps.slot.outputs.value }}"
@@ -319,7 +328,8 @@ jobs:
         id: publish_drafts
         # Why: a manual RC dispatch should unstick any complete RC draft before
         # deciding whether to cut another tag.
-        if: steps.window.outputs.allowed == 'true' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run)
+        if: steps.window.outputs.allowed == 'true' && !(github.event_name ==
+          'workflow_dispatch' && inputs.dry_run)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node config/scripts/publish-complete-draft-releases.mjs
@@ -329,7 +339,11 @@ jobs:
         # Why: if an RC run only had complete drafts to publish, stop there
         # instead of immediately cutting another RC after the recovered one.
         # Stable dispatches should still cut the requested stable release.
-        if: steps.window.outputs.allowed == 'true' && steps.existing.outputs.already_ran != 'true' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run) && !((github.event_name == 'schedule' || inputs.kind == 'rc') && steps.publish_drafts.outputs.published_count != '0' && steps.publish_drafts.outputs.skipped_count == '0')
+        if: steps.window.outputs.allowed == 'true' && steps.existing.outputs.already_ran
+          != 'true' && !(github.event_name == 'workflow_dispatch' &&
+          inputs.dry_run) && !((github.event_name == 'schedule' || inputs.kind
+          == 'rc') && steps.publish_drafts.outputs.published_count != '0' &&
+          steps.publish_drafts.outputs.skipped_count == '0')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           KIND: ${{ github.event_name == 'schedule' && 'rc' || inputs.kind }}
@@ -707,7 +721,8 @@ jobs:
 
       - name: Bump package.json and tag
         id: tag
-        if: steps.version.outputs.version != '' && steps.version.outputs.recovered != 'true'
+        if: steps.version.outputs.version != '' && steps.version.outputs.recovered !=
+          'true'
         env:
           EVENT_NAME: ${{ github.event_name }}
           SLOT: ${{ steps.slot.outputs.value }}
@@ -795,7 +810,8 @@ jobs:
 
   create-release:
     needs: cut
-    if: needs.cut.outputs.should_release == 'true'
+    if: vars.ALFRED_RELEASES_ENABLED == 'true' && (needs.cut.outputs.should_release
+      == 'true')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -813,7 +829,8 @@ jobs:
 
   terminal-rendering-golden:
     needs: cut
-    if: needs.cut.outputs.should_release == 'true'
+    if: vars.ALFRED_RELEASES_ENABLED == 'true' && (needs.cut.outputs.should_release
+      == 'true')
     name: golden e2e ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
@@ -893,39 +910,43 @@ jobs:
       - name: Run terminal rendering golden on Linux
         if: runner.os == 'Linux'
         run: |
-          xvfb-run --auto-servernum env SKIP_BUILD=1 ORCA_E2E_FORWARD_APP_LOGS=1 pnpm run --if-present test:e2e:workspace-session-golden
-          xvfb-run --auto-servernum env SKIP_BUILD=1 ORCA_E2E_FORWARD_APP_LOGS=1 pnpm run test:e2e:terminal-rendering-golden
-          xvfb-run --auto-servernum env SKIP_BUILD=1 ORCA_E2E_FORWARD_APP_LOGS=1 pnpm run --if-present test:e2e:posix-profile-index-golden
+          xvfb-run --auto-servernum env SKIP_BUILD=1 ALFRED_E2E_FORWARD_APP_LOGS=1 pnpm run --if-present test:e2e:workspace-session-golden
+          xvfb-run --auto-servernum env SKIP_BUILD=1 ALFRED_E2E_FORWARD_APP_LOGS=1 pnpm run test:e2e:terminal-rendering-golden
+          xvfb-run --auto-servernum env SKIP_BUILD=1 ALFRED_E2E_FORWARD_APP_LOGS=1 pnpm run --if-present test:e2e:posix-profile-index-golden
 
       - name: Run source-control golden on Linux
         if: runner.os == 'Linux'
-        run: xvfb-run --auto-servernum env SKIP_BUILD=1 ORCA_E2E_FORWARD_APP_LOGS=1 pnpm run --if-present test:e2e:source-control-golden
+        run: xvfb-run --auto-servernum env SKIP_BUILD=1 ALFRED_E2E_FORWARD_APP_LOGS=1
+          pnpm run --if-present test:e2e:source-control-golden
 
       - name: Run terminal rendering golden on macOS
         if: runner.os == 'macOS'
         run: |
-          env SKIP_BUILD=1 ORCA_E2E_FORWARD_APP_LOGS=1 pnpm run --if-present test:e2e:workspace-session-golden
-          env SKIP_BUILD=1 ORCA_E2E_FORWARD_APP_LOGS=1 pnpm run test:e2e:terminal-rendering-golden
-          env SKIP_BUILD=1 ORCA_E2E_FORWARD_APP_LOGS=1 pnpm run --if-present test:e2e:posix-profile-index-golden
+          env SKIP_BUILD=1 ALFRED_E2E_FORWARD_APP_LOGS=1 pnpm run --if-present test:e2e:workspace-session-golden
+          env SKIP_BUILD=1 ALFRED_E2E_FORWARD_APP_LOGS=1 pnpm run test:e2e:terminal-rendering-golden
+          env SKIP_BUILD=1 ALFRED_E2E_FORWARD_APP_LOGS=1 pnpm run --if-present test:e2e:posix-profile-index-golden
 
       - name: Run agent TUI golden on Linux
         if: runner.os == 'Linux'
-        run: xvfb-run --auto-servernum env SKIP_BUILD=1 ORCA_E2E_FORWARD_APP_LOGS=1 pnpm run --if-present test:e2e:agent-tui-golden
+        run: xvfb-run --auto-servernum env SKIP_BUILD=1 ALFRED_E2E_FORWARD_APP_LOGS=1
+          pnpm run --if-present test:e2e:agent-tui-golden
 
       - name: Run agent TUI golden on macOS
         if: runner.os == 'macOS'
-        run: env SKIP_BUILD=1 ORCA_E2E_FORWARD_APP_LOGS=1 pnpm run --if-present test:e2e:agent-tui-golden
+        run: env SKIP_BUILD=1 ALFRED_E2E_FORWARD_APP_LOGS=1 pnpm run --if-present
+          test:e2e:agent-tui-golden
 
       - name: Run source-control golden on macOS
         if: runner.os == 'macOS'
-        run: env SKIP_BUILD=1 ORCA_E2E_FORWARD_APP_LOGS=1 pnpm run --if-present test:e2e:source-control-golden
+        run: env SKIP_BUILD=1 ALFRED_E2E_FORWARD_APP_LOGS=1 pnpm run --if-present
+          test:e2e:source-control-golden
 
       - name: Run fresh-startup golden on Windows
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $env:SKIP_BUILD = '1'
-          $env:ORCA_E2E_FORWARD_APP_LOGS = '1'
+          $env:ALFRED_E2E_FORWARD_APP_LOGS = '1'
           pnpm run --if-present test:e2e:windows-fresh-startup-golden
 
       - name: Upload Playwright traces
@@ -939,7 +960,8 @@ jobs:
 
   skill-sharing-release-gate:
     needs: cut
-    if: needs.cut.outputs.should_release == 'true'
+    if: vars.ALFRED_RELEASES_ENABLED == 'true' && (needs.cut.outputs.should_release
+      == 'true')
     name: skill sharing release gate ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
     # The full suite is release-blocking on macOS. Windows still produces the
@@ -980,9 +1002,10 @@ jobs:
 
       - name: Run skill package, transaction, and compatibility suites
         env:
-          ORCA_REAL_PROCESS_SKILL_TEST: '1'
-          ORCA_REAL_WINDOWS_SKILL_TEST: ${{ runner.os == 'Windows' && '1' || '0' }}
-        run: pnpm test:skill-sharing:release --reporter=json --outputFile=skill-sharing-release-results.json
+          ALFRED_REAL_PROCESS_SKILL_TEST: '1'
+          ALFRED_REAL_WINDOWS_SKILL_TEST: ${{ runner.os == 'Windows' && '1' || '0' }}
+        run: pnpm test:skill-sharing:release --reporter=json
+          --outputFile=skill-sharing-release-results.json
 
       - name: Archive bounded skill-sharing results
         if: always()
@@ -995,7 +1018,8 @@ jobs:
 
   skill-sharing-linux-floor-release-gate:
     needs: cut
-    if: needs.cut.outputs.should_release == 'true'
+    if: vars.ALFRED_RELEASES_ENABLED == 'true' && (needs.cut.outputs.should_release
+      == 'true')
     name: skill sharing release gate linux-glibc-2.31
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -1003,7 +1027,8 @@ jobs:
 
     steps:
       - name: Install Ubuntu 20.04 prerequisites
-        run: apt-get update && apt-get install -y build-essential ca-certificates git python3 unzip
+        run: apt-get update && apt-get install -y build-essential ca-certificates git
+          python3 unzip
 
       - name: Checkout
         uses: actions/checkout@v6
@@ -1032,8 +1057,9 @@ jobs:
 
       - name: Run skill package, transaction, and compatibility suites
         env:
-          ORCA_REAL_PROCESS_SKILL_TEST: '1'
-        run: pnpm test:skill-sharing:release --reporter=json --outputFile=skill-sharing-release-results.json
+          ALFRED_REAL_PROCESS_SKILL_TEST: '1'
+        run: pnpm test:skill-sharing:release --reporter=json
+          --outputFile=skill-sharing-release-results.json
 
       - name: Archive bounded skill-sharing results
         if: always()
@@ -1048,7 +1074,8 @@ jobs:
   # but they include heavier app-like flows and must not block publishing.
   terminal-rendering-release-evidence:
     needs: cut
-    if: needs.cut.outputs.should_release == 'true'
+    if: vars.ALFRED_RELEASES_ENABLED == 'true' && (needs.cut.outputs.should_release
+      == 'true')
     continue-on-error: true
     name: terminal rendering release evidence ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
@@ -1111,25 +1138,28 @@ jobs:
 
       - name: Run terminal rendering evidence on Linux
         if: runner.os == 'Linux'
-        run: xvfb-run --auto-servernum env SKIP_BUILD=1 ORCA_E2E_FORWARD_APP_LOGS=1 pnpm run test:e2e:terminal-rendering-release-evidence
+        run: xvfb-run --auto-servernum env SKIP_BUILD=1 ALFRED_E2E_FORWARD_APP_LOGS=1
+          pnpm run test:e2e:terminal-rendering-release-evidence
 
       - name: Run terminal rendering evidence on macOS
         if: runner.os == 'macOS'
-        run: env SKIP_BUILD=1 ORCA_E2E_FORWARD_APP_LOGS=1 pnpm run test:e2e:terminal-rendering-release-evidence
+        run: env SKIP_BUILD=1 ALFRED_E2E_FORWARD_APP_LOGS=1 pnpm run
+          test:e2e:terminal-rendering-release-evidence
 
       - name: Run terminal rendering evidence on Windows
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $env:SKIP_BUILD = '1'
-          $env:ORCA_E2E_FORWARD_APP_LOGS = '1'
+          $env:ALFRED_E2E_FORWARD_APP_LOGS = '1'
           pnpm run test:e2e:terminal-rendering-release-evidence
 
       - name: Upload Playwright traces
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: terminal-rendering-release-evidence-${{ matrix.platform }}-playwright-traces
+          name: terminal-rendering-release-evidence-${{ matrix.platform
+            }}-playwright-traces
           path: test-results/
           retention-days: 7
           if-no-files-found: ignore
@@ -1144,11 +1174,11 @@ jobs:
       - skill-sharing-release-gate
       - skill-sharing-linux-floor-release-gate
     if: >-
-      always() &&
+      vars.ALFRED_RELEASES_ENABLED == 'true' && (always() &&
       needs.cut.outputs.should_release == 'true' &&
       needs.terminal-rendering-golden.result == 'success' &&
       needs.skill-sharing-release-gate.result == 'success' &&
-      needs.skill-sharing-linux-floor-release-gate.result == 'success'
+      needs.skill-sharing-linux-floor-release-gate.result == 'success')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -1161,7 +1191,8 @@ jobs:
       - cut
       - create-release
       - release-preflight
-    if: needs.cut.outputs.should_release == 'true'
+    if: vars.ALFRED_RELEASES_ENABLED == 'true' && (needs.cut.outputs.should_release
+      == 'true')
     strategy:
       fail-fast: false
       matrix:
@@ -1170,20 +1201,29 @@ jobs:
           # node-gyp could detect VS 18, breaking native dependency install.
           - os: windows-2022
             platform: win
-            release_command: 'node config/scripts/ensure-native-runtime.mjs --runtime=electron; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; pnpm exec electron-builder --config config/electron-builder.config.cjs --win --publish never'
+            release_command: 'node config/scripts/ensure-native-runtime.mjs
+              --runtime=electron; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE
+              }; pnpm exec electron-builder --config
+              config/electron-builder.config.cjs --win --publish never'
             eb_cache_path: |
               ~\AppData\Local\electron\Cache
               ~\AppData\Local\electron-builder\Cache
           - os: ubuntu-latest
             platform: linux-x64
-            release_command: node config/scripts/ensure-native-runtime.mjs --runtime=electron && pnpm exec electron-builder --config config/electron-builder.config.cjs --linux AppImage deb rpm --x64 --publish always
+            release_command: node config/scripts/ensure-native-runtime.mjs
+              --runtime=electron && pnpm exec electron-builder --config
+              config/electron-builder.config.cjs --linux AppImage deb rpm --x64
+              --publish always
             unpacked_dir: dist/linux-unpacked
             eb_cache_path: |
               ~/.cache/electron
               ~/.cache/electron-builder
           - os: ubuntu-24.04-arm
             platform: linux-arm64
-            release_command: node config/scripts/ensure-native-runtime.mjs --runtime=electron && ORCA_LINUX_ARM64_RELEASE=1 pnpm exec electron-builder --config config/electron-builder.config.cjs --linux AppImage deb rpm --arm64 --publish always
+            release_command: node config/scripts/ensure-native-runtime.mjs
+              --runtime=electron && ALFRED_LINUX_ARM64_RELEASE=1 pnpm exec
+              electron-builder --config config/electron-builder.config.cjs
+              --linux AppImage deb rpm --arm64 --publish always
             unpacked_dir: dist/linux-arm64-unpacked
             eb_cache_path: |
               ~/.cache/electron
@@ -1312,7 +1352,8 @@ jobs:
       # .rpm artifact. Stock Ubuntu runners do not ship it.
       - name: Install Linux computer-use provider dependencies
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y python3-gi gir1.2-atspi-2.0 at-spi2-core xclip xdotool rpm
+        run: sudo apt-get update && sudo apt-get install -y python3-gi gir1.2-atspi-2.0
+          at-spi2-core xclip xdotool rpm
 
       # Why: telemetry's transport gate (`src/main/telemetry/client.ts:IS_OFFICIAL_BUILD`)
       # requires the build identity to be the literal string `stable` or `rc`,
@@ -1358,18 +1399,18 @@ jobs:
           node config/scripts/build-windows-process-tree-relay-addon.mjs --arch=x64
           node config/scripts/build-windows-process-tree-relay-addon.mjs --arch=arm64
 
-      # Why ORCA_POSTHOG_WRITE_KEY here: this is the only build that
+      # Why ALFRED_POSTHOG_WRITE_KEY here: this is the only build that
       # produces a published binary, so this is the only place the secret
       # needs to be in scope. The key is a PostHog *project* API key, not
       # a server secret — it ships in every official binary's app.asar
       # and is therefore extractable from any release. We still keep it
       # in GitHub Actions secrets so the literal stays out of the repo
       # (and out of fork CI runs / log scrapers / casual greps).
-      # Why ORCA_BUILD_IDENTITY here (not in env at the job level): the
+      # Why ALFRED_BUILD_IDENTITY here (not in env at the job level): the
       # value comes from the per-tag classification above and electron-vite
       # reads it from `process.env` during `pnpm build:release` only.
-      # Why ORCA_DIAGNOSTICS_TOKEN_URL here: official builds pin crash
-      # diagnostic uploads to Orca's endpoint at compile time, matching the
+      # Why ALFRED_DIAGNOSTICS_TOKEN_URL here: official builds pin crash
+      # diagnostic uploads to Alfred's endpoint at compile time, matching the
       # telemetry gate's "official binary only" behavior.
       - name: Build app
         run: pnpm build:release
@@ -1377,12 +1418,12 @@ jobs:
           # Why: Vite's web build crossed Node's default old-space ceiling on
           # the macOS release runner, leaving v1.4.2-rc.8 as an incomplete draft.
           NODE_OPTIONS: --max-old-space-size=4096
-          ORCA_BUILD_IDENTITY: ${{ steps.tag-classify.outputs.identity }}
-          ORCA_DIAGNOSTICS_TOKEN_URL: https://www.onorca.dev/diagnostics/token
-          ORCA_POSTHOG_WRITE_KEY: ${{ secrets.ORCA_POSTHOG_WRITE_KEY }}
+          ALFRED_BUILD_IDENTITY: ${{ steps.tag-classify.outputs.identity }}
+          ALFRED_DIAGNOSTICS_TOKEN_URL: https://alfredlabs.org/diagnostics/token
+          ALFRED_POSTHOG_WRITE_KEY: ${{ secrets.ALFRED_POSTHOG_WRITE_KEY }}
           # Fail the release rather than ship a relay that silently falls back to
           # the PowerShell scan on every Windows SSH host.
-          ORCA_REQUIRE_RELAY_NATIVE_ADDONS: ${{ matrix.platform == 'win' && 'x64,arm64' || '' }}
+          ALFRED_REQUIRE_RELAY_NATIVE_ADDONS: ${{ matrix.platform == 'win' && 'x64,arm64' || '' }}
 
       - name: Gate runtime file-watcher process isolation
         if: runner.os == 'Linux'
@@ -1425,17 +1466,20 @@ jobs:
           # Why: every entry in electron-builder's `files` is a negation, so
           # app-builder prepends `**/*` and packs anything left in the workspace
           # root into app.asar. Stage the bundle outside the checkout instead.
-          find out/main -name '*.js.map' -print | sort | zip -q -X "$RUNNER_TEMP/orca-sourcemaps-$TAG.zip" -@
-          ls -l "$RUNNER_TEMP/orca-sourcemaps-$TAG.zip"
+          find out/main -name '*.js.map' -print | sort | zip -q -X "$RUNNER_TEMP/alfred-sourcemaps-$TAG.zip" -@
+          ls -l "$RUNNER_TEMP/alfred-sourcemaps-$TAG.zip"
 
       - name: Publish main-process source maps
-        if: matrix.platform == 'linux-x64' && steps.bundle-main-sourcemaps.outputs.has_maps == 'true'
+        if: matrix.platform == 'linux-x64' &&
+          steps.bundle-main-sourcemaps.outputs.has_maps == 'true'
         uses: nick-fields/retry@v4
         with:
           timeout_minutes: 10
           max_attempts: 3
           retry_wait_seconds: 30
-          command: gh release upload "${{ needs.cut.outputs.tag }}" "${{ runner.temp }}/orca-sourcemaps-${{ needs.cut.outputs.tag }}.zip" --clobber --repo "${{ github.repository }}"
+          command: gh release upload "${{ needs.cut.outputs.tag }}" "${{ runner.temp
+            }}/alfred-sourcemaps-${{ needs.cut.outputs.tag }}.zip" --clobber
+            --repo "${{ github.repository }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -1483,7 +1527,8 @@ jobs:
           # step retries up to 3 times; attempt 1 writes the file after packing,
           # but attempts 2 and 3 would then pack the unsigned uninstaller into
           # app.asar - the exact defect this chain exists to remove.
-          ORCA_WIN_UNINSTALLER_EXPORT_PATH: ${{ runner.temp }}\uninstaller-signing\unsigned\orca-uninstaller.exe
+          ALFRED_WIN_UNINSTALLER_EXPORT_PATH: ${{ runner.temp
+            }}\uninstaller-signing\unsigned\alfred-uninstaller.exe
 
       - name: Verify Windows node-pty ConPTY runtime
         if: matrix.platform == 'win' && github.run_attempt == 1
@@ -1508,11 +1553,11 @@ jobs:
 
       # ── Windows inner-binary signing (issue #7785) ─────────────────────
       # Why: SignPath cannot deep-sign inside NSIS installers, so inner PE
-      # files (Orca.exe, node-pty *.node, DLLs) are signed via a separate zip
+      # files (Alfred.exe, node-pty *.node, DLLs) are signed via a separate zip
       # request, then the installer is rebuilt from the signed tree before the
       # existing installer signing request below. The NSIS uninstaller rides
       # this same request (it is the MDE update cluster: old-uninstaller.exe /
-      # Uninstall Orca.exe), captured through electron-builder's sign hook and
+      # Uninstall Alfred.exe), captured through electron-builder's sign hook and
       # swapped back in during the rebuild — no third approval wait. Every step is
       # fail-open (continue-on-error + outcome gating): any failure ships the
       # original installer with unsigned inner binaries, exactly like releases
@@ -1547,8 +1592,8 @@ jobs:
               $list.Add($relative)
             }
 
-          if (-not ($list -contains 'Orca.exe')) {
-            throw 'Orca.exe was not staged for signing; unpacked layout changed?'
+          if (-not ($list -contains 'Alfred.exe')) {
+            throw 'Alfred.exe was not staged for signing; unpacked layout changed?'
           }
           if (-not ($list | Where-Object { $_ -like '*conpty_console_list.node' })) {
             throw 'node-pty conpty_console_list.node was not staged; this is the file from issue #7785.'
@@ -1561,15 +1606,15 @@ jobs:
           $skipped | ForEach-Object { Write-Host "  $_" }
 
           # Why the uninstaller rides this request: it is the file MDE flagged in
-          # the whole update cluster (old-uninstaller.exe / Uninstall Orca.exe),
+          # the whole update cluster (old-uninstaller.exe / Uninstall Alfred.exe),
           # and folding it in here costs no extra approval wait. Why it is kept
           # out of inner-signing-list.txt: that list drives the copy-back into
           # dist/win-unpacked, and the uninstaller does not live there — it is
           # re-injected through the sign hook during the rebuild instead.
-          # Why this name and not "Uninstall Orca.exe": the restore loop below
+          # Why this name and not "Uninstall Alfred.exe": the restore loop below
           # matches staged files by suffix (`-like "*$relative"`) and takes the
-          # first hit, so any staged path ending in "Orca.exe" is separated from
-          # the real Orca.exe only by Get-ChildItem's enumeration order. That
+          # first hit, so any staged path ending in "Alfred.exe" is separated from
+          # the real Alfred.exe only by Get-ChildItem's enumeration order. That
           # order happens to favour the root file today, but it is not a
           # documented guarantee; a name that cannot suffix-match is.
           # Why the whole block is caught rather than just Test-Path'd: this
@@ -1577,12 +1622,12 @@ jobs:
           # file or a full disk here would cost all of them their signatures -
           # worse than shipping no uninstaller signature at all.
           try {
-            $exportedUninstaller = Join-Path $env:RUNNER_TEMP 'uninstaller-signing\unsigned\orca-uninstaller.exe'
+            $exportedUninstaller = Join-Path $env:RUNNER_TEMP 'uninstaller-signing\unsigned\alfred-uninstaller.exe'
             if (Test-Path -LiteralPath $exportedUninstaller) {
-              $uninstallerStagePath = Join-Path $stage.FullName 'uninstaller\orca-uninstaller.exe'
+              $uninstallerStagePath = Join-Path $stage.FullName 'uninstaller\alfred-uninstaller.exe'
               New-Item -ItemType Directory -Force -Path (Split-Path $uninstallerStagePath) -ErrorAction Stop | Out-Null
               Copy-Item -LiteralPath $exportedUninstaller -Destination $uninstallerStagePath -Force -ErrorAction Stop
-              Write-Host 'Staged the NSIS uninstaller for signing: uninstaller\orca-uninstaller.exe'
+              Write-Host 'Staged the NSIS uninstaller for signing: uninstaller\alfred-uninstaller.exe'
             } else {
               Write-Host "::warning::No exported NSIS uninstaller at $exportedUninstaller; this release ships an unsigned uninstaller (fail-open)."
             }
@@ -1592,23 +1637,25 @@ jobs:
 
       - name: Upload unsigned inner binaries for SignPath
         id: upload-unsigned-inner
-        if: matrix.platform == 'win' && github.run_attempt == 1 && steps.stage-inner.outcome == 'success'
+        if: matrix.platform == 'win' && github.run_attempt == 1 &&
+          steps.stage-inner.outcome == 'success'
         continue-on-error: true
         uses: actions/upload-artifact@v7
         with:
-          name: orca-windows-inner-unsigned-${{ needs.cut.outputs.tag }}
+          name: alfred-windows-inner-unsigned-${{ needs.cut.outputs.tag }}
           path: signing-stage/**
           if-no-files-found: error
 
       - name: Submit inner binaries signing request
         id: submit-inner-signing
-        if: matrix.platform == 'win' && github.run_attempt == 1 && steps.upload-unsigned-inner.outcome == 'success'
+        if: matrix.platform == 'win' && github.run_attempt == 1 &&
+          steps.upload-unsigned-inner.outcome == 'success'
         continue-on-error: true
         uses: signpath/github-action-submit-signing-request@v2
         with:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
           organization-id: c37aa192-a27a-4377-9c90-5d6c95912dc0
-          project-slug: orca
+          project-slug: alfred
           signing-policy-slug: release-signing
           artifact-configuration-slug: windows-inner-binaries-zip
           github-artifact-id: ${{ steps.upload-unsigned-inner.outputs.artifact-id }}
@@ -1616,7 +1663,8 @@ jobs:
 
       - name: Notify Slack that inner-binary signing is waiting for approval
         id: notify-inner-signing
-        if: matrix.platform == 'win' && github.run_attempt == 1 && steps.submit-inner-signing.outcome == 'success'
+        if: matrix.platform == 'win' && github.run_attempt == 1 &&
+          steps.submit-inner-signing.outcome == 'success'
         continue-on-error: true
         shell: pwsh
         env:
@@ -1631,7 +1679,8 @@ jobs:
           # Prefer triggering_actor so re-runs name who re-ran; fall back to actor.
           CUT_BY: ${{ github.triggering_actor || github.actor }}
           REPO_URL: ${{ github.server_url }}/${{ github.repository }}
-          GITHUB_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GITHUB_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{
+            github.run_id }}
         run: |
           if ([string]::IsNullOrWhiteSpace($env:SLACK_WEBHOOK_URL)) {
             throw 'SLACK_WEBHOOK_URL secret is required so release approvers know when SignPath is waiting.'
@@ -1661,7 +1710,7 @@ jobs:
           } else {
             'unknown'
           }
-          $message = "Orca Windows release ``$($env:TAG)`` inner-binaries signing request (1 of 2) is ready for SignPath approval.`nSource: ``$sourceRef`` @ $commitLink · cut by $cutBy`n<$requestUrl|Open SignPath signing request>`n<$($env:GITHUB_RUN_URL)|Open GitHub Actions run>"
+          $message = "Alfred Windows release ``$($env:TAG)`` inner-binaries signing request (1 of 2) is ready for SignPath approval.`nSource: ``$sourceRef`` @ $commitLink · cut by $cutBy`n<$requestUrl|Open SignPath signing request>`n<$($env:GITHUB_RUN_URL)|Open GitHub Actions run>"
           $payload = @{
             text = $message
             blocks = @(
@@ -1684,7 +1733,9 @@ jobs:
       # falls through to today's unsigned-inner flow rather than blocking.
       - name: Download signed inner binaries from SignPath
         id: download-signed-inner
-        if: matrix.platform == 'win' && github.run_attempt == 1 && steps.submit-inner-signing.outcome == 'success' && steps.notify-inner-signing.outcome == 'success'
+        if: matrix.platform == 'win' && github.run_attempt == 1 &&
+          steps.submit-inner-signing.outcome == 'success' &&
+          steps.notify-inner-signing.outcome == 'success'
         continue-on-error: true
         shell: pwsh
         env:
@@ -1707,7 +1758,8 @@ jobs:
       # shipping a mix of signed and unsigned binaries.
       - name: Restore signed inner binaries into unpacked app
         id: restore-signed-inner
-        if: matrix.platform == 'win' && github.run_attempt == 1 && steps.download-signed-inner.outcome == 'success'
+        if: matrix.platform == 'win' && github.run_attempt == 1 &&
+          steps.download-signed-inner.outcome == 'success'
         continue-on-error: true
         shell: pwsh
         run: |
@@ -1741,14 +1793,15 @@ jobs:
       # ships the signed inner binaries, exactly as it does today.
       - name: Restore signed uninstaller for the installer rebuild
         id: restore-signed-uninstaller
-        if: matrix.platform == 'win' && github.run_attempt == 1 && steps.restore-signed-inner.outcome == 'success'
+        if: matrix.platform == 'win' && github.run_attempt == 1 &&
+          steps.restore-signed-inner.outcome == 'success'
         continue-on-error: true
         shell: pwsh
         run: |
-          $signed = Get-ChildItem -Path signed-inner -Recurse -File -Filter 'orca-uninstaller.exe' |
+          $signed = Get-ChildItem -Path signed-inner -Recurse -File -Filter 'alfred-uninstaller.exe' |
             Select-Object -First 1
           if ($null -eq $signed) {
-            throw 'SignPath did not return uninstaller/orca-uninstaller.exe; check the windows-inner-binaries-zip artifact configuration covers it.'
+            throw 'SignPath did not return uninstaller/alfred-uninstaller.exe; check the windows-inner-binaries-zip artifact configuration covers it.'
           }
           $signature = Get-AuthenticodeSignature -FilePath $signed.FullName
           if ($null -eq $signature.SignerCertificate) {
@@ -1756,7 +1809,7 @@ jobs:
           }
           $signedDir = Join-Path $env:RUNNER_TEMP 'uninstaller-signing\signed'
           New-Item -ItemType Directory -Force -Path $signedDir | Out-Null
-          Copy-Item -LiteralPath $signed.FullName -Destination (Join-Path $signedDir 'orca-uninstaller.exe') -Force
+          Copy-Item -LiteralPath $signed.FullName -Destination (Join-Path $signedDir 'alfred-uninstaller.exe') -Force
           Write-Host ("{0,-14} uninstaller  <{1}>" -f $signature.Status, $signature.SignerCertificate.Subject)
 
       # Why this step exists: electron-builder's CopyElevateHelper re-copies a
@@ -1776,7 +1829,8 @@ jobs:
       # shipped an unsigned elevate.exe that way. A miss now fails the step.
       - name: Replace cached elevate.exe with the signed copy
         id: sign-elevate-cache
-        if: matrix.platform == 'win' && github.run_attempt == 1 && steps.restore-signed-inner.outcome == 'success'
+        if: matrix.platform == 'win' && github.run_attempt == 1 &&
+          steps.restore-signed-inner.outcome == 'success'
         continue-on-error: true
         shell: pwsh
         run: |
@@ -1809,33 +1863,35 @@ jobs:
 
       - name: Rebuild NSIS installer from signed unpacked app
         id: rebuild-nsis-signed
-        if: matrix.platform == 'win' && github.run_attempt == 1 && steps.restore-signed-inner.outcome == 'success'
+        if: matrix.platform == 'win' && github.run_attempt == 1 &&
+          steps.restore-signed-inner.outcome == 'success'
         continue-on-error: true
         shell: pwsh
         env:
           # Why unconditional: the sign hook keys off the file existing, which it
           # only does when the restore step above succeeded. A missing file logs a
           # warning and embeds the freshly built unsigned uninstaller instead.
-          ORCA_WIN_UNINSTALLER_SIGNED_PATH: ${{ runner.temp }}\uninstaller-signing\signed\orca-uninstaller.exe
+          ALFRED_WIN_UNINSTALLER_SIGNED_PATH: ${{ runner.temp }}\uninstaller-signing\signed\alfred-uninstaller.exe
         run: |
           # Why: keep the pre-rebuild artifacts so a failed rebuild can fall
           # back to shipping them unchanged (fail-open).
           New-Item -ItemType Directory -Path prepack-backup -Force | Out-Null
-          Copy-Item 'dist/orca-windows-setup.exe' 'prepack-backup/orca-windows-setup.exe' -Force
+          Copy-Item 'dist/alfred-windows-setup.exe' 'prepack-backup/alfred-windows-setup.exe' -Force
           Copy-Item 'dist/latest.yml' 'prepack-backup/latest.yml' -Force
 
           pnpm exec electron-builder --config config/electron-builder.config.cjs --win --publish never --prepackaged "$env:GITHUB_WORKSPACE\dist\win-unpacked"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          if (-not (Test-Path 'dist/orca-windows-setup.exe')) {
-            throw 'electron-builder --prepackaged did not produce dist/orca-windows-setup.exe'
+          if (-not (Test-Path 'dist/alfred-windows-setup.exe')) {
+            throw 'electron-builder --prepackaged did not produce dist/alfred-windows-setup.exe'
           }
 
       - name: Roll back to original installer after failed rebuild
-        if: matrix.platform == 'win' && github.run_attempt == 1 && steps.rebuild-nsis-signed.outcome == 'failure'
+        if: matrix.platform == 'win' && github.run_attempt == 1 &&
+          steps.rebuild-nsis-signed.outcome == 'failure'
         shell: pwsh
         run: |
-          if (Test-Path 'prepack-backup/orca-windows-setup.exe') {
-            Copy-Item 'prepack-backup/orca-windows-setup.exe' 'dist/orca-windows-setup.exe' -Force
+          if (Test-Path 'prepack-backup/alfred-windows-setup.exe') {
+            Copy-Item 'prepack-backup/alfred-windows-setup.exe' 'dist/alfred-windows-setup.exe' -Force
             Copy-Item 'prepack-backup/latest.yml' 'dist/latest.yml' -Force
             Write-Warning 'Restored pre-rebuild installer; this release ships with unsigned inner binaries.'
           }
@@ -1845,8 +1901,8 @@ jobs:
         id: upload-unsigned-windows-installer
         uses: actions/upload-artifact@v7
         with:
-          name: orca-windows-unsigned-${{ needs.cut.outputs.tag }}
-          path: dist/orca-windows-setup.exe
+          name: alfred-windows-unsigned-${{ needs.cut.outputs.tag }}
+          path: dist/alfred-windows-setup.exe
           compression-level: 0
           if-no-files-found: error
 
@@ -1859,7 +1915,7 @@ jobs:
         with:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
           organization-id: c37aa192-a27a-4377-9c90-5d6c95912dc0
-          project-slug: orca
+          project-slug: alfred
           signing-policy-slug: release-signing
           artifact-configuration-slug: github-actions-windows-installer
           github-artifact-id: ${{ steps.upload-unsigned-windows-installer.outputs.artifact-id }}
@@ -1880,7 +1936,8 @@ jobs:
           # Prefer triggering_actor so re-runs name who re-ran; fall back to actor.
           CUT_BY: ${{ github.triggering_actor || github.actor }}
           REPO_URL: ${{ github.server_url }}/${{ github.repository }}
-          GITHUB_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GITHUB_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{
+            github.run_id }}
           INNER_SIGNING_SUBMITTED: ${{ steps.submit-inner-signing.outcome == 'success' }}
         run: |
           if ([string]::IsNullOrWhiteSpace($env:SLACK_WEBHOOK_URL)) {
@@ -1913,7 +1970,7 @@ jobs:
           } else {
             'unknown'
           }
-          $message = "Orca Windows release ``$($env:TAG)`` $stage is ready for SignPath approval.`nSource: ``$sourceRef`` @ $commitLink · cut by $cutBy`n<$requestUrl|Open SignPath signing request>`n<$($env:GITHUB_RUN_URL)|Open GitHub Actions run>"
+          $message = "Alfred Windows release ``$($env:TAG)`` $stage is ready for SignPath approval.`nSource: ``$sourceRef`` @ $commitLink · cut by $cutBy`n<$requestUrl|Open SignPath signing request>`n<$($env:GITHUB_RUN_URL)|Open GitHub Actions run>"
           $payload = @{
             text = $message
             blocks = @(
@@ -1951,17 +2008,17 @@ jobs:
         if: matrix.platform == 'win' && github.run_attempt == 1
         shell: pwsh
         run: |
-          $signedInstaller = Get-ChildItem -Path signed-windows -Recurse -File -Filter 'orca-windows-setup.exe' | Select-Object -First 1
+          $signedInstaller = Get-ChildItem -Path signed-windows -Recurse -File -Filter 'alfred-windows-setup.exe' | Select-Object -First 1
           if ($null -eq $signedInstaller) {
             throw 'Signed Windows installer was not returned by SignPath.'
           }
 
-          Copy-Item -Path $signedInstaller.FullName -Destination 'dist/orca-windows-setup.exe' -Force
-          node config/scripts/generate-windows-blockmap.mjs 'dist/orca-windows-setup.exe' 'dist/orca-windows-setup.exe.blockmap'
+          Copy-Item -Path $signedInstaller.FullName -Destination 'dist/alfred-windows-setup.exe' -Force
+          node config/scripts/generate-windows-blockmap.mjs 'dist/alfred-windows-setup.exe' 'dist/alfred-windows-setup.exe.blockmap'
           if ($LASTEXITCODE -ne 0) { throw "blockmap generation failed with exit code $LASTEXITCODE" }
 
-          $installer = Get-Item 'dist/orca-windows-setup.exe'
-          $blockmap = Get-Item 'dist/orca-windows-setup.exe.blockmap'
+          $installer = Get-Item 'dist/alfred-windows-setup.exe'
+          $blockmap = Get-Item 'dist/alfred-windows-setup.exe.blockmap'
           $stream = [System.IO.File]::OpenRead($installer.FullName)
           try {
             $sha512 = [System.Security.Cryptography.SHA512]::Create()
@@ -1982,13 +2039,13 @@ jobs:
           $latestYml = $latestYml -replace '(?m)^    blockMapSize: \d+$', "    blockMapSize: $($blockmap.Length)"
           Set-Content -Path 'dist/latest.yml' -Value $latestYml -NoNewline
 
-          Get-Item 'dist/orca-windows-setup.exe', 'dist/orca-windows-setup.exe.blockmap', 'dist/latest.yml'
+          Get-Item 'dist/alfred-windows-setup.exe', 'dist/alfred-windows-setup.exe.blockmap', 'dist/latest.yml'
 
       - name: Verify signed Windows installer
         if: matrix.platform == 'win' && github.run_attempt == 1
         shell: pwsh
         run: |
-          $signature = Get-AuthenticodeSignature -FilePath 'dist/orca-windows-setup.exe'
+          $signature = Get-AuthenticodeSignature -FilePath 'dist/alfred-windows-setup.exe'
           if ($signature.Status -ne 'Valid') {
             throw ($signature | Format-List * | Out-String)
           }
@@ -1998,19 +2055,19 @@ jobs:
           $signature.SignerCertificate | Format-List Subject,Issuer,NotBefore,NotAfter,Thumbprint
 
       # Why: evidence gate for inner-binary signing (issue #7785, supersedes
-      # PR #7170's Orca.exe-only gate — this covers every staged .exe/.dll/.node
+      # PR #7170's Alfred.exe-only gate — this covers every staged .exe/.dll/.node
       # by extracting the shipped installer). Warn-only until the flow has been
-      # proven on a real release, then flip ORCA_WINDOWS_INNER_SIGNATURE_REQUIRED
+      # proven on a real release, then flip ALFRED_WINDOWS_INNER_SIGNATURE_REQUIRED
       # to 'true' so unsigned inner binaries block the release.
       - name: Verify Windows inner binary signatures
         if: matrix.platform == 'win' && github.run_attempt == 1
         shell: pwsh
         env:
-          ORCA_WINDOWS_INNER_SIGNATURE_REQUIRED: 'false'
+          ALFRED_WINDOWS_INNER_SIGNATURE_REQUIRED: 'false'
           INNER_SIGNING_COMPLETED: ${{ steps.rebuild-nsis-signed.outcome == 'success' }}
           UNINSTALLER_SIGNING_COMPLETED: ${{ steps.restore-signed-uninstaller.outcome == 'success' }}
         run: |
-          $required = $env:ORCA_WINDOWS_INNER_SIGNATURE_REQUIRED -eq 'true'
+          $required = $env:ALFRED_WINDOWS_INNER_SIGNATURE_REQUIRED -eq 'true'
 
           # Why: a fail-open gate that writes nothing is indistinguishable from a
           # gate that passed. Always leave a verdict in the evidence artifact and
@@ -2077,7 +2134,7 @@ jobs:
               throw "The 7za resolver returned an invalid path for the inner-binary evidence gate: $7za"
             }
             New-Item -ItemType Directory -Path inner-evidence-extract -Force | Out-Null
-            & $7za x 'dist/orca-windows-setup.exe' '-oinner-evidence-extract' -y | Out-Null
+            & $7za x 'dist/alfred-windows-setup.exe' '-oinner-evidence-extract' -y | Out-Null
 
             $root = Resolve-Path 'inner-evidence-extract'
             # Why elevate.exe is always appended: staging skips already-signed
@@ -2101,7 +2158,7 @@ jobs:
             # check lives in windows-signing-rehearsal.yml, which installs the
             # installer and inspects the uninstaller it drops on disk.
             if ($env:UNINSTALLER_SIGNING_COMPLETED -eq 'true') {
-              $signedUninstaller = Join-Path $env:RUNNER_TEMP 'uninstaller-signing\signed\orca-uninstaller.exe'
+              $signedUninstaller = Join-Path $env:RUNNER_TEMP 'uninstaller-signing\signed\alfred-uninstaller.exe'
               $receipt = "$signedUninstaller.embedded-sha256"
               if (-not (Test-Path -LiteralPath $receipt)) {
                 $failures.Add('the sign hook did not embed the signed uninstaller into the rebuilt installer')
@@ -2110,13 +2167,13 @@ jobs:
                 $actual = (Get-FileHash -LiteralPath $signedUninstaller -Algorithm SHA256).Hash.ToLowerInvariant()
                 $signature = Get-AuthenticodeSignature -FilePath $signedUninstaller
                 $subject = if ($null -eq $signature.SignerCertificate) { '<none>' } else { $signature.SignerCertificate.Subject }
-                $line = "{0,-14} {1}  <{2}>" -f $signature.Status, 'Uninstall Orca.exe (embedded)', $subject
+                $line = "{0,-14} {1}  <{2}>" -f $signature.Status, 'Uninstall Alfred.exe (embedded)', $subject
                 $report.Add($line)
                 Write-Host $line
                 if ($embedded -ne $actual) {
                   $failures.Add("the rebuilt installer embedded different uninstaller bytes than the signed one ($embedded vs $actual)")
                 } elseif ($signature.Status -ne 'Valid' -or $subject -notlike '*CN=SignPath Foundation*') {
-                  $failures.Add("not signed by SignPath Foundation: Uninstall Orca.exe ($($signature.Status), $subject)")
+                  $failures.Add("not signed by SignPath Foundation: Uninstall Alfred.exe ($($signature.Status), $subject)")
                 }
               }
             } else {
@@ -2149,7 +2206,7 @@ jobs:
               if ($required) {
                 $policyFailure = $message
               } else {
-                Write-Host "::warning::$message Fail-open until ORCA_WINDOWS_INNER_SIGNATURE_REQUIRED is 'true'."
+                Write-Host "::warning::$message Fail-open until ALFRED_WINDOWS_INNER_SIGNATURE_REQUIRED is 'true'."
               }
               Add-GateEvidence "VERDICT: FAILED — $message"
               Add-GateSummary "FAILED — $message"
@@ -2174,7 +2231,7 @@ jobs:
         if: always() && matrix.platform == 'win' && github.run_attempt == 1
         uses: actions/upload-artifact@v7
         with:
-          name: orca-windows-inner-signing-evidence-${{ needs.cut.outputs.tag }}
+          name: alfred-windows-inner-signing-evidence-${{ needs.cut.outputs.tag }}
           path: |
             inner-signing-evidence.txt
             inner-signing-list.txt
@@ -2188,7 +2245,10 @@ jobs:
           timeout_minutes: 10
           max_attempts: 3
           retry_wait_seconds: 30
-          command: gh release upload "${{ needs.cut.outputs.tag }}" "dist/orca-windows-setup.exe" "dist/orca-windows-setup.exe.blockmap" "dist/latest.yml" --clobber --repo "${{ github.repository }}"
+          command: gh release upload "${{ needs.cut.outputs.tag }}"
+            "dist/alfred-windows-setup.exe"
+            "dist/alfred-windows-setup.exe.blockmap" "dist/latest.yml" --clobber
+            --repo "${{ github.repository }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -2225,7 +2285,7 @@ jobs:
       # deletes the draft and re-cuts.
       #
       # Why this guards against: a misconfigured CI run where
-      # `ORCA_POSTHOG_WRITE_KEY` is unset or the tag fails to classify
+      # `ALFRED_POSTHOG_WRITE_KEY` is unset or the tag fails to classify
       # would otherwise produce a binary with `BUILD_IDENTITY = null` and
       # `WRITE_KEY = null`, which silently disables transport
       # (`IS_OFFICIAL_BUILD === false`) — the exact failure mode flagged
@@ -2238,7 +2298,8 @@ jobs:
       - cut
       - create-release
       - release-preflight
-    if: needs.cut.outputs.should_release == 'true'
+    if: vars.ALFRED_RELEASES_ENABLED == 'true' && (needs.cut.outputs.should_release
+      == 'true')
     # Why: SignPath requires every job in this signing workflow to be
     # GitHub-hosted. The actual mac build runs in release-mac-build.yml so
     # Blacksmith stays outside Windows artifact provenance.
@@ -2335,12 +2396,13 @@ jobs:
             --draft=false \
             --prerelease="$prerelease" \
             --repo "$GITHUB_REPOSITORY"
+    if: vars.ALFRED_RELEASES_ENABLED == 'true'
 
   post-release-e2e:
     needs:
       - cut
       - publish-release
-    if: ${{ needs.cut.outputs.tag != '' }}
+    if: vars.ALFRED_RELEASES_ENABLED == 'true' && (needs.cut.outputs.tag != '')
     runs-on: ubuntu-latest
     permissions:
       actions: write
@@ -2369,7 +2431,7 @@ jobs:
     # A release created with GITHUB_TOKEN does not reliably emit a release
     # event to other workflows. Dispatch the trusted default-branch workflow;
     # it validates and checks out the released tag before deploying.
-    if: ${{ needs.cut.outputs.tag != '' }}
+    if: vars.ALFRED_RELEASES_ENABLED == 'true' && (needs.cut.outputs.tag != '')
     runs-on: ubuntu-latest
     permissions:
       actions: write
@@ -2403,7 +2465,8 @@ jobs:
       - cut
     # Why: publish-complete-draft-releases can expose a recovered RC without
     # running the build/publish jobs; still advance the RC cask to that tag.
-    if: ${{ needs.cut.outputs.latest_published_rc_tag != '' }}
+    if: vars.ALFRED_RELEASES_ENABLED == 'true' &&
+      (needs.cut.outputs.latest_published_rc_tag != '')
     uses: ./.github/workflows/homebrew-bump.yml
     with:
       tag: ${{ needs.cut.outputs.latest_published_rc_tag }}
@@ -2413,7 +2476,8 @@ jobs:
     needs:
       - cut
       - publish-release
-    if: ${{ needs.cut.outputs.tag != '' && startsWith(needs.cut.outputs.tag, 'v') }}
+    if: vars.ALFRED_RELEASES_ENABLED == 'true' && (needs.cut.outputs.tag != '' &&
+      startsWith(needs.cut.outputs.tag, 'v'))
     uses: ./.github/workflows/homebrew-bump.yml
     with:
       tag: ${{ needs.cut.outputs.tag }}

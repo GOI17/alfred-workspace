@@ -2,25 +2,25 @@ import { describe, expect, it } from 'vitest'
 import { pickRemoteCliEnv } from './remote-cli-env'
 
 describe('pickRemoteCliEnv', () => {
-  it('forwards SSH Orca terminal and worktree context for remote CLI calls', () => {
+  it('forwards SSH Alfred terminal and worktree context for remote CLI calls', () => {
     expect(
       pickRemoteCliEnv({
-        ORCA_TERMINAL_HANDLE: 'term_ssh',
-        ORCA_WORKTREE_ID: 'repo::remote',
-        ORCA_PANE_KEY: 'pane-1',
-        ORCA_AGENT_LAUNCH_TOKEN: 'launch-secret',
-        ORCA_WORKSPACE_ID: 'workspace-1',
-        ORCA_USER_DATA_PATH: '/tmp/orca',
+        ALFRED_TERMINAL_HANDLE: 'term_ssh',
+        ALFRED_WORKTREE_ID: 'repo::remote',
+        ALFRED_PANE_KEY: 'pane-1',
+        ALFRED_AGENT_LAUNCH_TOKEN: 'launch-secret',
+        ALFRED_WORKSPACE_ID: 'workspace-1',
+        ALFRED_USER_DATA_PATH: '/tmp/alfred',
         PATH: '/usr/bin',
         SECRET_TOKEN: 'nope'
       })
     ).toEqual({
-      ORCA_TERMINAL_HANDLE: 'term_ssh',
-      ORCA_WORKTREE_ID: 'repo::remote',
-      ORCA_PANE_KEY: 'pane-1',
-      ORCA_AGENT_LAUNCH_TOKEN: 'launch-secret',
-      ORCA_WORKSPACE_ID: 'workspace-1',
-      ORCA_USER_DATA_PATH: '/tmp/orca',
+      ALFRED_TERMINAL_HANDLE: 'term_ssh',
+      ALFRED_WORKTREE_ID: 'repo::remote',
+      ALFRED_PANE_KEY: 'pane-1',
+      ALFRED_AGENT_LAUNCH_TOKEN: 'launch-secret',
+      ALFRED_WORKSPACE_ID: 'workspace-1',
+      ALFRED_USER_DATA_PATH: '/tmp/alfred',
       PATH: '/usr/bin'
     })
   })

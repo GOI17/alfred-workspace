@@ -36,7 +36,7 @@ vi.mock('../git/worktree', async (importOriginal) => ({
 
 import { isWslUncPathForCallerLinuxPath } from '../../shared/cross-platform-path'
 import { parseWslUncPath } from '../../shared/wsl-paths'
-import { OrcaRuntimeService } from './orca-runtime'
+import { AlfredRuntimeService } from './alfred-runtime'
 
 const UBUNTU = 'Ubuntu-24.04'
 const DEBIAN = 'Debian'
@@ -111,9 +111,9 @@ function scanReports(registrations: readonly Registration[]): void {
   })
 }
 
-function makeRuntime(registrations: readonly Registration[]): OrcaRuntimeService {
+function makeRuntime(registrations: readonly Registration[]): AlfredRuntimeService {
   scanReports(registrations)
-  return new OrcaRuntimeService(makeStore(registrations) as never)
+  return new AlfredRuntimeService(makeStore(registrations) as never)
 }
 
 /**
@@ -122,7 +122,7 @@ function makeRuntime(registrations: readonly Registration[]): OrcaRuntimeService
  * Mirrored rather than imported — `src/cli` is outside this file's tsconfig project.
  */
 async function selectorTheCliWouldSend(
-  runtime: OrcaRuntimeService,
+  runtime: AlfredRuntimeService,
   callerCwd: string,
   typedPath: string
 ): Promise<string> {

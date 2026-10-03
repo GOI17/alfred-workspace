@@ -1,6 +1,6 @@
 import { vi } from 'vitest'
 import type { Mock } from 'vitest'
-import type { OrcaRuntimeService } from './orca-runtime'
+import type { AlfredRuntimeService } from './alfred-runtime'
 
 // Loose on purpose: the allowlist suite asserts call arguments, never RPC signatures.
 export type MobileRpcMock = Mock<(...args: unknown[]) => unknown>
@@ -176,7 +176,7 @@ export function createMobileRpcSurfaceRuntime() {
     updateClientSettings: vi.fn(() => ({ defaultTaskSource: 'linear' }))
   }
   return {
-    runtime: runtime as unknown as OrcaRuntimeService,
+    runtime: runtime as unknown as AlfredRuntimeService,
     mocks: runtime,
     expectedCodexResetScope
   }

@@ -22,7 +22,7 @@ import {
 import {
   fetchRepoCatalogForTarget,
   filterSetupsForPrunedRepoRows,
-  filterTrustedOrcaHooksToValidRepos,
+  filterTrustedAlfredHooksToValidRepos,
   mergeFetchedRepoCatalog,
   projectCompatibilityForReconciledRepos,
   reconcileReadoptedSshWorktreeState,
@@ -113,7 +113,10 @@ export function createAllHostRepoCatalogActions(
               s.setupScriptPromptDismissedRepoIds,
               validRepoHostIdentities
             ),
-            trustedOrcaHooks: filterTrustedOrcaHooksToValidRepos(s.trustedOrcaHooks, validRepoIds)
+            trustedAlfredHooks: filterTrustedAlfredHooksToValidRepos(
+              s.trustedAlfredHooks,
+              validRepoIds
+            )
           }
         })
       }

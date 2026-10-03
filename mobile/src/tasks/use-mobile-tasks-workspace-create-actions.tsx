@@ -36,7 +36,7 @@ export function useMobileTasksWorkspaceCreateActions(model: WorkspaceSshStateMod
     setActionItem,
     setCreatingKey,
     setError,
-    setOrcaYamlTrustPrompt,
+    setAlfredYamlTrustPrompt,
     setRuntimeTaskSettings,
     setSetupPrompt,
     setWorkspaceAgent,
@@ -44,7 +44,7 @@ export function useMobileTasksWorkspaceCreateActions(model: WorkspaceSshStateMod
     setWorkspaceCreateDraft,
     taskStateHydrated,
     tasksSupported,
-    trustedOrcaHooks,
+    trustedAlfredHooks,
     workspaceDetectedAgentIds,
     workspaceLastAutoName
   } = model
@@ -129,16 +129,16 @@ export function useMobileTasksWorkspaceCreateActions(model: WorkspaceSshStateMod
           setupResolution.setupTrust &&
           setupResolution.setupTrust.contentHash !== approvedSetupContentHash &&
           !isSetupHookTrusted(
-            trustedOrcaHooks,
+            trustedAlfredHooks,
             targetRepo.id,
             setupResolution.setupTrust.contentHash
           )
         ) {
-          // Why: desktop prompts before running repo-owned orca.yaml hooks. Mobile
+          // Why: desktop prompts before running repo-owned alfred.yaml hooks. Mobile
           // stores the same trust hash in persisted UI state so either surface can
           // approve the script version for future workspace creates.
           setSetupPrompt(null)
-          setOrcaYamlTrustPrompt({
+          setAlfredYamlTrustPrompt({
             item,
             ...(repoIdOverride ? { repoIdOverride } : {}),
             setupOverride: 'run',
@@ -152,7 +152,7 @@ export function useMobileTasksWorkspaceCreateActions(model: WorkspaceSshStateMod
             repoName: targetRepo.displayName,
             scriptContent: setupResolution.setupTrust.scriptContent,
             contentHash: setupResolution.setupTrust.contentHash,
-            previouslyApproved: wasSetupHookPreviouslyApproved(trustedOrcaHooks, targetRepo.id)
+            previouslyApproved: wasSetupHookPreviouslyApproved(trustedAlfredHooks, targetRepo.id)
           })
           return
         }
@@ -287,7 +287,7 @@ export function useMobileTasksWorkspaceCreateActions(model: WorkspaceSshStateMod
       runtimeTaskSettings,
       taskStateHydrated,
       tasksSupported,
-      trustedOrcaHooks,
+      trustedAlfredHooks,
       workspaceDetectedAgentIds,
       workspaceLastAutoName
     ]

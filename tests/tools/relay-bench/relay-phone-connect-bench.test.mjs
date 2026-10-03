@@ -9,24 +9,27 @@ const encode = (offer) => Buffer.from(JSON.stringify(offer), 'utf8').toString('b
 describe('decodeOffer', () => {
   it('decodes a well-formed pairing link', () => {
     const offer = { relay: { cellUrl: 'https://cell.example', relayHostId: 'A'.repeat(16) } }
-    expect(decodeOffer(`orca://pair?code=${encode(offer)}`)).toEqual(offer)
+    expect(decodeOffer(`alfred://pair?code=${encode(offer)}`)).toEqual(offer)
   })
 
   it('ignores parameters after the code', () => {
     const offer = { deviceToken: 'token' }
-    expect(decodeOffer(`orca://pair?code=${encode(offer)}&v=2`)).toEqual(offer)
+    expect(decodeOffer(`alfred://pair?code=${encode(offer)}&v=2`)).toEqual(offer)
   })
 
   it.each([
-    [undefined, /orca:\/\/pair/],
-    ['', /orca:\/\/pair/],
-    ['https://example.com/?code=abc', /orca:\/\/pair/],
-    ['orca://pair', /no code= parameter/],
-    ['orca://pair?code=', /not base64url/],
-    ['orca://pair?code=not base64', /not base64url/],
-    [`orca://pair?code=${Buffer.from('not json').toString('base64url')}`, /did not decode to JSON/],
-    [`orca://pair?code=${Buffer.from('[1,2]').toString('base64url')}`, /offer object/],
-    [`orca://pair?code=${Buffer.from('null').toString('base64url')}`, /offer object/]
+    [undefined, /alfred:\/\/pair/],
+    ['', /alfred:\/\/pair/],
+    ['https://example.com/?code=abc', /alfred:\/\/pair/],
+    ['alfred://pair', /no code= parameter/],
+    ['alfred://pair?code=', /not base64url/],
+    ['alfred://pair?code=not base64', /not base64url/],
+    [
+      `alfred://pair?code=${Buffer.from('not json').toString('base64url')}`,
+      /did not decode to JSON/
+    ],
+    [`alfred://pair?code=${Buffer.from('[1,2]').toString('base64url')}`, /offer object/],
+    [`alfred://pair?code=${Buffer.from('null').toString('base64url')}`, /offer object/]
   ])('refuses %j', (value, message) => {
     expect(() => decodeOffer(value)).toThrow(message)
   })

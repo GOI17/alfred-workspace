@@ -59,7 +59,7 @@ describe('terminal path helpers', () => {
     it('does not treat regular URL hosts as local file paths', () => {
       expect(
         extractTerminalFileLinks(
-          'PR opened: https://github.com/stablyai/orca-marketing-website/pull/82'
+          'PR opened: https://github.com/GOI17/alfred-workspace-marketing-website/pull/82'
         )
       ).toEqual([])
     })
@@ -338,21 +338,23 @@ describe('terminal path helpers', () => {
 
   describe('plain-text file:// URIs', () => {
     it('extracts a printed file:// URI as a file link resolving to its path', () => {
-      const line = 'Report: file:///Users/dev/orca/report.html'
+      const line = 'Report: file:///Users/dev/alfred/report.html'
       const link = extractTerminalFileLinks(line).find(
-        (candidate) => candidate.displayText === 'file:///Users/dev/orca/report.html'
+        (candidate) => candidate.displayText === 'file:///Users/dev/alfred/report.html'
       )
-      expect(link).toMatchObject({ pathText: '/Users/dev/orca/report.html' })
-      expect(resolveTerminalFileLink(link!, '/Users/dev/orca')).toEqual({
-        absolutePath: '/Users/dev/orca/report.html',
+      expect(link).toMatchObject({ pathText: '/Users/dev/alfred/report.html' })
+      expect(resolveTerminalFileLink(link!, '/Users/dev/alfred')).toEqual({
+        absolutePath: '/Users/dev/alfred/report.html',
         line: null,
         column: null
       })
     })
 
     it('does not also emit a bare-path link for the URI body', () => {
-      const links = extractTerminalFileLinks('file:///Users/dev/orca/report.html')
-      expect(links.map((link) => link.displayText)).toEqual(['file:///Users/dev/orca/report.html'])
+      const links = extractTerminalFileLinks('file:///Users/dev/alfred/report.html')
+      expect(links.map((link) => link.displayText)).toEqual([
+        'file:///Users/dev/alfred/report.html'
+      ])
     })
 
     it('exposes file:// URIs to the hover candidate pass as well', () => {

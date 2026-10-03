@@ -3,10 +3,10 @@ import { getSetupScriptPromptDismissalKey } from '../../../lib/setup-script-prom
 
 export function createUiTrustActions(set: UISliceSet, _get: UISliceGet): Partial<UISlice> {
   return {
-    trustedOrcaHooks: {},
-    markOrcaHookScriptConfirmed: (repoId, kind, contentHash) =>
+    trustedAlfredHooks: {},
+    markAlfredHookScriptConfirmed: (repoId, kind, contentHash) =>
       set((s) => {
-        const existing = s.trustedOrcaHooks[repoId]
+        const existing = s.trustedAlfredHooks[repoId]
         const currentEntry = existing?.[kind]
         if (currentEntry?.contentHash === contentHash) {
           return s
@@ -15,35 +15,35 @@ export function createUiTrustActions(set: UISliceSet, _get: UISliceGet): Partial
           ...existing,
           [kind]: { contentHash, approvedAt: Date.now() }
         }
-        const next = { ...s.trustedOrcaHooks, [repoId]: nextRepo }
-        window.api.ui.set({ trustedOrcaHooks: next }).catch(console.error)
-        return { trustedOrcaHooks: next }
+        const next = { ...s.trustedAlfredHooks, [repoId]: nextRepo }
+        window.api.ui.set({ trustedAlfredHooks: next }).catch(console.error)
+        return { trustedAlfredHooks: next }
       }),
-    markOrcaHookRepoAlwaysTrusted: (repoId) =>
+    markAlfredHookRepoAlwaysTrusted: (repoId) =>
       set((s) => {
-        const existing = s.trustedOrcaHooks[repoId]
+        const existing = s.trustedAlfredHooks[repoId]
         if (existing?.all) {
           return s
         }
         const next = {
-          ...s.trustedOrcaHooks,
+          ...s.trustedAlfredHooks,
           [repoId]: {
             ...existing,
             all: { approvedAt: Date.now() }
           }
         }
-        window.api.ui.set({ trustedOrcaHooks: next }).catch(console.error)
-        return { trustedOrcaHooks: next }
+        window.api.ui.set({ trustedAlfredHooks: next }).catch(console.error)
+        return { trustedAlfredHooks: next }
       }),
-    clearOrcaHookTrustForRepo: (repoId) =>
+    clearAlfredHookTrustForRepo: (repoId) =>
       set((s) => {
-        if (!(repoId in s.trustedOrcaHooks)) {
+        if (!(repoId in s.trustedAlfredHooks)) {
           return s
         }
-        const next = { ...s.trustedOrcaHooks }
+        const next = { ...s.trustedAlfredHooks }
         delete next[repoId]
-        window.api.ui.set({ trustedOrcaHooks: next }).catch(console.error)
-        return { trustedOrcaHooks: next }
+        window.api.ui.set({ trustedAlfredHooks: next }).catch(console.error)
+        return { trustedAlfredHooks: next }
       }),
     setupScriptPromptDismissedRepoIds: [],
     dismissSetupScriptPrompt: (repoHostIdentity) =>

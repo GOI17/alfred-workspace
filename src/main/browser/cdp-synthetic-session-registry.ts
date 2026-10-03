@@ -56,14 +56,14 @@ export class CdpSyntheticSessionRegistry {
   private nextSyntheticPageSessionId(): string {
     this.nextClientSessionOrdinal += 1
     return this.nextClientSessionOrdinal === 1
-      ? 'orca-proxy-session'
-      : `orca-proxy-session-${this.nextClientSessionOrdinal}`
+      ? 'alfred-proxy-session'
+      : `alfred-proxy-session-${this.nextClientSessionOrdinal}`
   }
 
   private nextSyntheticBrowserSessionId(): string {
     this.nextClientBrowserSessionOrdinal += 1
     return this.nextClientBrowserSessionOrdinal === 1
-      ? 'orca-proxy-browser-session'
-      : `orca-proxy-browser-session-${this.nextClientBrowserSessionOrdinal}`
+      ? 'alfred-proxy-browser-session'
+      : `alfred-proxy-browser-session-${this.nextClientBrowserSessionOrdinal}`
   }
 }

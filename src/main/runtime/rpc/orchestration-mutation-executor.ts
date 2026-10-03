@@ -3,7 +3,7 @@ import {
   isDurableMutation,
   isTerminalPromptMutation
 } from '../../../shared/orchestration-rpc-contract'
-import type { OrcaRuntimeService } from '../orca-runtime'
+import type { AlfredRuntimeService } from '../alfred-runtime'
 import { OrchestrationError } from '../orchestration/orchestration-error'
 import type { RpcRequest } from './core'
 import {
@@ -47,7 +47,7 @@ type InFlightMutation = {
 export class OrchestrationMutationExecutor {
   private readonly inFlight = new Map<string, InFlightMutation>()
 
-  constructor(private readonly runtime: OrcaRuntimeService) {}
+  constructor(private readonly runtime: AlfredRuntimeService) {}
 
   async run(
     request: RpcRequest,
@@ -204,7 +204,7 @@ export class OrchestrationMutationExecutor {
             ? {
                 requestId,
                 dispatchId: recovery.dispatchId,
-                recoveryCommand: `orca orchestration worker-show --dispatch ${recovery.dispatchId} --json`
+                recoveryCommand: `alfred orchestration worker-show --dispatch ${recovery.dispatchId} --json`
               }
             : { requestId }
         )
@@ -268,10 +268,10 @@ export class OrchestrationMutationExecutor {
   }
 }
 
-const executorsByRuntime = new WeakMap<OrcaRuntimeService, OrchestrationMutationExecutor>()
+const executorsByRuntime = new WeakMap<AlfredRuntimeService, OrchestrationMutationExecutor>()
 
 export function getOrchestrationMutationExecutor(
-  runtime: OrcaRuntimeService
+  runtime: AlfredRuntimeService
 ): OrchestrationMutationExecutor {
   const existing = executorsByRuntime.get(runtime)
   if (existing) {

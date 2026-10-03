@@ -51,9 +51,9 @@ describe('convergableSkillNames', () => {
   // source, sees no work, exits 0 and writes nothing — forever.
   it('drops a skill whose lock records a revision the disk does not have', () => {
     const result = convergableSkillNames(
-      [placement('orca-linear', 1)],
-      new Map([['orca-linear', '091d9bcc']]),
-      { 'orca-linear': [PRE_STUB, STUB] }
+      [placement('alfred-linear', 1)],
+      new Map([['alfred-linear', '091d9bcc']]),
+      { 'alfred-linear': [PRE_STUB, STUB] }
     )
     expect([...result]).toEqual([])
   })
@@ -62,29 +62,29 @@ describe('convergableSkillNames', () => {
   // has simply moved ahead of what this build bundles. The update really can converge.
   it('keeps a skill whose lock matches disk even when it is outdated', () => {
     const result = convergableSkillNames(
-      [placement('orca-cli', 1)],
-      new Map([['orca-cli', 'aaaa1111']]),
-      { 'orca-cli': [revision(1, 'aaaa1111')] }
+      [placement('alfred-cli', 1)],
+      new Map([['alfred-cli', 'aaaa1111']]),
+      { 'alfred-cli': [revision(1, 'aaaa1111')] }
     )
-    expect([...result]).toEqual(['orca-cli'])
+    expect([...result]).toEqual(['alfred-cli'])
   })
 
   it('keeps a skill whose disk content matches no known revision', () => {
     const result = convergableSkillNames(
-      [placement('orca-cli', null)],
-      new Map([['orca-cli', 'aaaa1111']]),
-      { 'orca-cli': [revision(1, 'bbbb2222')] }
+      [placement('alfred-cli', null)],
+      new Map([['alfred-cli', 'aaaa1111']]),
+      { 'alfred-cli': [revision(1, 'bbbb2222')] }
     )
-    expect([...result]).toEqual(['orca-cli'])
+    expect([...result]).toEqual(['alfred-cli'])
   })
 
   it('keeps a skill with no observable placement', () => {
     const result = convergableSkillNames(
-      [placement('orca-cli', null, 'canonical-copy', null)],
-      new Map([['orca-cli', 'aaaa1111']]),
-      { 'orca-cli': [revision(1, 'aaaa1111')] }
+      [placement('alfred-cli', null, 'canonical-copy', null)],
+      new Map([['alfred-cli', 'aaaa1111']]),
+      { 'alfred-cli': [revision(1, 'aaaa1111')] }
     )
-    expect([...result]).toEqual(['orca-cli'])
+    expect([...result]).toEqual(['alfred-cli'])
   })
 
   // Why: a sidecar an agent CLI dropped beside the official files makes the folder
@@ -93,9 +93,9 @@ describe('convergableSkillNames', () => {
   // already placed this copy at the pre-stub revision; the gate must honour that.
   it('drops a stale skill whose folder holds files no revision lists', () => {
     const result = convergableSkillNames(
-      [placement('orca-linear', 1, 'canonical-copy', 'digest-with-sidecar')],
-      new Map([['orca-linear', '091d9bcc']]),
-      { 'orca-linear': [PRE_STUB, STUB] }
+      [placement('alfred-linear', 1, 'canonical-copy', 'digest-with-sidecar')],
+      new Map([['alfred-linear', '091d9bcc']]),
+      { 'alfred-linear': [PRE_STUB, STUB] }
     )
     expect([...result]).toEqual([])
   })
@@ -103,21 +103,21 @@ describe('convergableSkillNames', () => {
   // One placement still matching the lock means the command has an anchor to write.
   it('keeps a skill when any placement still matches the lock', () => {
     const result = convergableSkillNames(
-      [placement('orca-cli', 1), placement('orca-cli', 2)],
-      new Map([['orca-cli', 'aaaa1111']]),
-      { 'orca-cli': [revision(1, 'aaaa1111'), revision(2, 'f3727995')] }
+      [placement('alfred-cli', 1), placement('alfred-cli', 2)],
+      new Map([['alfred-cli', 'aaaa1111']]),
+      { 'alfred-cli': [revision(1, 'aaaa1111'), revision(2, 'f3727995')] }
     )
-    expect([...result]).toEqual(['orca-cli'])
+    expect([...result]).toEqual(['alfred-cli'])
   })
 
   // A lock hash we cannot place is not evidence the command is stuck.
   it('keeps a skill whose lock names no revision we know', () => {
     const result = convergableSkillNames(
-      [placement('orca-cli', 1)],
-      new Map([['orca-cli', 'not-a-known-tree']]),
-      { 'orca-cli': [revision(1, 'f3727995')] }
+      [placement('alfred-cli', 1)],
+      new Map([['alfred-cli', 'not-a-known-tree']]),
+      { 'alfred-cli': [revision(1, 'f3727995')] }
     )
-    expect([...result]).toEqual(['orca-cli'])
+    expect([...result]).toEqual(['alfred-cli'])
   })
 
   // Why: `diskTreeShas` silently drops placements that resolved to nothing, so a
@@ -125,11 +125,11 @@ describe('convergableSkillNames', () => {
   // unknown half could be anything, including a copy the command would converge.
   it('keeps a skill when one placement is stale but another is unidentifiable', () => {
     const result = convergableSkillNames(
-      [placement('orca-cli', 1), placement('orca-cli', null)],
-      new Map([['orca-cli', '091d9bcc']]),
-      { 'orca-cli': [PRE_STUB, STUB] }
+      [placement('alfred-cli', 1), placement('alfred-cli', null)],
+      new Map([['alfred-cli', '091d9bcc']]),
+      { 'alfred-cli': [PRE_STUB, STUB] }
     )
-    expect([...result]).toEqual(['orca-cli'])
+    expect([...result]).toEqual(['alfred-cli'])
   })
 
   // Why: copies the command never writes must not defeat the gate. An
@@ -137,9 +137,9 @@ describe('convergableSkillNames', () => {
   // placement and re-arm the unwinnable update on the drifted canonical.
   it('ignores an unidentifiable plugin-cache copy when judging the canonical', () => {
     const result = convergableSkillNames(
-      [placement('orca-linear', 1), placement('orca-linear', null, 'plugin-cache')],
-      new Map([['orca-linear', '091d9bcc']]),
-      { 'orca-linear': [PRE_STUB, STUB] }
+      [placement('alfred-linear', 1), placement('alfred-linear', null, 'plugin-cache')],
+      new Map([['alfred-linear', '091d9bcc']]),
+      { 'alfred-linear': [PRE_STUB, STUB] }
     )
     expect([...result]).toEqual([])
   })
@@ -148,26 +148,26 @@ describe('convergableSkillNames', () => {
   // the command only writes the canonical, which is still drifted.
   it('ignores a plugin-cache copy that matches the lock', () => {
     const result = convergableSkillNames(
-      [placement('orca-linear', 1), placement('orca-linear', 2, 'plugin-cache')],
-      new Map([['orca-linear', '091d9bcc']]),
-      { 'orca-linear': [PRE_STUB, STUB] }
+      [placement('alfred-linear', 1), placement('alfred-linear', 2, 'plugin-cache')],
+      new Map([['alfred-linear', '091d9bcc']]),
+      { 'alfred-linear': [PRE_STUB, STUB] }
     )
     expect([...result]).toEqual([])
   })
 
   it('judges each locked skill independently', () => {
     const result = convergableSkillNames(
-      [placement('orca-linear', 1), placement('orca-cli', 1)],
+      [placement('alfred-linear', 1), placement('alfred-cli', 1)],
       new Map([
-        ['orca-linear', '091d9bcc'],
-        ['orca-cli', 'aaaa1111']
+        ['alfred-linear', '091d9bcc'],
+        ['alfred-cli', 'aaaa1111']
       ]),
       {
-        'orca-linear': [PRE_STUB, STUB],
-        'orca-cli': [revision(1, 'aaaa1111')]
+        'alfred-linear': [PRE_STUB, STUB],
+        'alfred-cli': [revision(1, 'aaaa1111')]
       }
     )
-    expect([...result]).toEqual(['orca-cli'])
+    expect([...result]).toEqual(['alfred-cli'])
   })
   // A skill directory can legitimately be named `constructor`, and lock names come
   // straight off disk, so the snapshot lookup must not walk Object.prototype.

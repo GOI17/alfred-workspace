@@ -1,4 +1,4 @@
-import { test, expect } from './helpers/orca-app'
+import { test, expect } from './helpers/alfred-app'
 import { waitForActiveWorktree, waitForSessionReady } from './helpers/store'
 import {
   cleanupMarkdownFixture,
@@ -152,18 +152,18 @@ async function placeCaretAtHeadingStart(
 }
 
 test.describe('Markdown prose reflow', () => {
-  test.beforeEach(async ({ orcaPage }) => {
-    await orcaPage.setViewportSize({ width: 1440, height: 900 })
-    await waitForSessionReady(orcaPage)
-    await waitForActiveWorktree(orcaPage)
+  test.beforeEach(async ({ alfredPage }) => {
+    await alfredPage.setViewportSize({ width: 1440, height: 900 })
+    await waitForSessionReady(alfredPage)
+    await waitForActiveWorktree(alfredPage)
   })
 
-  test('hard-wrapped prose reflows as one document paragraph', async ({ orcaPage }, testInfo) => {
+  test('hard-wrapped prose reflows as one document paragraph', async ({ alfredPage }, testInfo) => {
     let filePath: string | null = null
 
     try {
-      filePath = await openHardWrappedFixture(orcaPage, testInfo)
-      const metrics = await getGoalParagraphMetrics(orcaPage)
+      filePath = await openHardWrappedFixture(alfredPage, testInfo)
+      const metrics = await getGoalParagraphMetrics(alfredPage)
 
       expect(metrics.paragraphCount).toBe(1)
       expect(metrics.sourceLineCount).toBe(4)
@@ -175,17 +175,17 @@ test.describe('Markdown prose reflow', () => {
   })
 
   test('deleting an inserted empty paragraph keeps hard-wrapped prose reflowing', async ({
-    orcaPage
+    alfredPage
   }, testInfo) => {
     let filePath: string | null = null
 
     try {
-      filePath = await openHardWrappedFixture(orcaPage, testInfo)
-      await placeCaretAtGoalParagraphEnd(orcaPage)
-      await orcaPage.keyboard.press('Enter')
-      await orcaPage.keyboard.press('Backspace')
+      filePath = await openHardWrappedFixture(alfredPage, testInfo)
+      await placeCaretAtGoalParagraphEnd(alfredPage)
+      await alfredPage.keyboard.press('Enter')
+      await alfredPage.keyboard.press('Backspace')
 
-      const metrics = await getGoalParagraphMetrics(orcaPage)
+      const metrics = await getGoalParagraphMetrics(alfredPage)
 
       expect(metrics.hardBreakCount).toBe(0)
       expect(metrics.paragraphCount).toBe(1)
@@ -198,19 +198,19 @@ test.describe('Markdown prose reflow', () => {
   })
 
   test('deleting slash text then the empty paragraph keeps hard-wrapped prose reflowing', async ({
-    orcaPage
+    alfredPage
   }, testInfo) => {
     let filePath: string | null = null
 
     try {
-      filePath = await openHardWrappedFixture(orcaPage, testInfo)
-      await placeCaretAtGoalParagraphEnd(orcaPage)
-      await orcaPage.keyboard.press('Enter')
-      await orcaPage.keyboard.type('/')
-      await orcaPage.keyboard.press('Backspace')
-      await orcaPage.keyboard.press('Backspace')
+      filePath = await openHardWrappedFixture(alfredPage, testInfo)
+      await placeCaretAtGoalParagraphEnd(alfredPage)
+      await alfredPage.keyboard.press('Enter')
+      await alfredPage.keyboard.type('/')
+      await alfredPage.keyboard.press('Backspace')
+      await alfredPage.keyboard.press('Backspace')
 
-      const metrics = await getGoalParagraphMetrics(orcaPage)
+      const metrics = await getGoalParagraphMetrics(alfredPage)
 
       expect(metrics.hardBreakCount).toBe(0)
       expect(metrics.paragraphCount).toBe(1)
@@ -223,16 +223,16 @@ test.describe('Markdown prose reflow', () => {
   })
 
   test('deleting the block boundary before a heading keeps hard-wrapped prose reflowing', async ({
-    orcaPage
+    alfredPage
   }, testInfo) => {
     let filePath: string | null = null
 
     try {
-      filePath = await openHardWrappedFixture(orcaPage, testInfo)
-      await placeCaretAtHeadingStart(orcaPage)
-      await orcaPage.keyboard.press('Backspace')
+      filePath = await openHardWrappedFixture(alfredPage, testInfo)
+      await placeCaretAtHeadingStart(alfredPage)
+      await alfredPage.keyboard.press('Backspace')
 
-      const metrics = await getGoalParagraphMetrics(orcaPage)
+      const metrics = await getGoalParagraphMetrics(alfredPage)
 
       expect(metrics.hardBreakCount).toBe(0)
       expect(metrics.paragraphCount).toBe(1)

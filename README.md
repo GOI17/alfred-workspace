@@ -1,63 +1,46 @@
-# Alfred Workspace
+# Alfred workspace
 
-Developed and maintained by **Alfredlabs**.
+Developed and maintained by **[Alfredlabs](https://alfredlabs.org)**.
 
-Repository: [GOI17/alfred-workspace](https://github.com/GOI17/alfred-workspace).
+[Source repository](https://github.com/GOI17/alfred-workspace)
 
-Alfred Workspace is an independent fork for working with coding agents across
-local and remote development environments, with desktop and mobile clients.
-Alfredlabs determines the product direction, development priorities, and releases.
-
-## Current status
-
-The public repository is established with its source history, initial attribution,
-and migration inventory. The application still contains inherited Orca branding,
-identifiers, and service configuration; it is not yet an independent Alfredlabs
-release. No Alfred Workspace download or hosted service is advertised here.
-
-The [fork transition](docs/alfredlabs-fork.md) records the remaining work:
-installation identities and data isolation, updates, authentication, relay,
-notifications, plugins, documentation, and distribution notices.
-
-## Product direction
-
-- Run and coordinate coding agents on the computer that owns the workspace.
-- Work with both Git worktrees and folder workspaces, locally or through remote hosts.
-- Use the mobile client to inspect and operate the host's work.
-- Develop a lightweight mobile container that receives its working interface from
-  the paired host through the existing authenticated connection, including relay.
-  This last item is ongoing development, not a shipped capability of this fork.
+Alfred workspace brings coding agents, terminals, Git worktrees, and folder
+workspaces together across local and remote development environments. It includes
+desktop and mobile clients.
 
 ## Development
 
-Use Node.js 24+ and pnpm. Read [AGENTS.md](AGENTS.md) before making changes and
-[the style guide](docs/STYLEGUIDE.md) before changing the interface.
-
-Install dependencies:
+Use Node.js 24+ and pnpm. Read [AGENTS.md](AGENTS.md) and the
+[style guide](docs/STYLEGUIDE.md) before making changes.
 
 ```sh
 pnpm install
-```
-
-For interactive desktop development, the existing command is:
-
-```sh
 pnpm dev
 ```
 
-Agent-launched apps and tests must run in the background with
-`ORCA_BACKGROUND_LAUNCH=1` and must not reveal windows or take focus. The inherited
-`ORCA_*` names and CLI commands remain compatibility identifiers during migration.
+Agent-launched apps and tests must set `ALFRED_BACKGROUND_LAUNCH=1` and must never
+reveal windows or take focus.
 
-Existing checks include `pnpm tc`, `pnpm test`, and
-`pnpm run check:code-quality:changed`. See [mobile development](mobile/README.md)
-for the inherited mobile setup. Those instructions and the rest of the historical
-documentation may still point to upstream services; they do not establish that
-Alfredlabs operates those services.
+The CLI is `alfred`; its development wrapper is `alfred-dev`. Configuration uses
+`ALFRED_*` environment variables and Alfred data directories. This is a separate
+installation identity: existing installations and saved credentials are not
+implicitly migrated or overwritten. Remote hosts and paired clients must use the
+Alfred build together.
+
+Run `pnpm tc`, `pnpm test`, and `pnpm run check:code-quality:changed` to verify changes.
+See [mobile development](mobile/README.md) for the mobile client.
+
+## Distribution and services
+
+The [main branch build](docs/reference/main-branch-builds.md) uploads development
+artifacts. Publishing and infrastructure deployment require explicit configuration;
+see [the transition notes](docs/alfredlabs-fork.md).
+
+The source uses `alfredlabs.org` and its service subdomains. These settings do not
+mean that authentication, relay, push, sharing, stores, or signed releases have
+been deployed. Configure the owned services and signing credentials before distribution.
 
 ## License and attribution
 
-The inherited code is licensed under the [MIT license](LICENSE). Original
-copyright notices remain intact. See [NOTICE.md](NOTICE.md) for provenance and
-third-party attribution. This fork is maintained independently of the original
-Orca team and does not imply its endorsement.
+The inherited [MIT license](LICENSE) and original copyright notices are preserved.
+See [NOTICE.md](NOTICE.md) for provenance and third-party attribution.

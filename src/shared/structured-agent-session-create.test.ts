@@ -18,7 +18,7 @@ function nextUuid(): string {
 function createParams(overrides: { resumeFrom?: { providerSessionId: string } } = {}) {
   return structuredAgentSessionCreateParams({
     sessionId: SESSION_ID,
-    worktree: 'id:repo-1::/repo/orca',
+    worktree: 'id:repo-1::/repo/alfred',
     agent: 'codex',
     ...overrides,
     randomUuid: nextUuid,
@@ -38,7 +38,7 @@ describe('structured agent session create params', () => {
     expect(params.envelope.payloadFingerprint).toBe(
       structuredAgentSessionCreateFingerprint({
         sessionId: SESSION_ID,
-        worktree: 'id:repo-1::/repo/orca',
+        worktree: 'id:repo-1::/repo/alfred',
         agent: 'codex',
         resumeFrom: RESUME
       })
@@ -72,11 +72,11 @@ describe('structured agent session create params', () => {
       structuredAgentSessionPayloadFingerprint({
         method: 'agentSession.create',
         sessionId: SESSION_ID,
-        fields: { worktree: 'id:repo-1::/repo/orca', agent: 'codex' }
+        fields: { worktree: 'id:repo-1::/repo/alfred', agent: 'codex' }
       })
     )
     expect(createParams().envelope.payloadFingerprint).toBe(
-      '56cb15e22414c0f62fd89d77d00d2d6a0a422f16e95edee154fb8b5bf53fbbc3'
+      '8c249a6a94bb547a6da310dc79d02025d98f2d7124e310fc02b376aeaa0fdb0c'
     )
   })
 })

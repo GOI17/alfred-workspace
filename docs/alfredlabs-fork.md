@@ -1,99 +1,60 @@
-# Alfred Workspace fork transition
+# Alfred workspace identity
 
-Alfredlabs directs and maintains **Alfred Workspace**. Its public repository is
-[`GOI17/alfred-workspace`](https://github.com/GOI17/alfred-workspace). This document records
-the initial audit, not a completed rebrand or a release-ready independent build.
+**Alfredlabs**, at [alfredlabs.org](https://alfredlabs.org), maintains Alfred workspace.
+The source repository is [GOI17/alfred-workspace](https://github.com/GOI17/alfred-workspace).
+Original authorship and licensing remain recorded in [NOTICE.md](../NOTICE.md)
+and [LICENSE](../LICENSE).
 
-The preparation branch starts from upstream commit
-`f24f38bd4105753adb0d8e24132c2fc57f80f5c6` on `origin/main`.
+## Installation and runtime identity
 
-## Established repository
+| Surface                                           | Alfred identity                   |
+| ------------------------------------------------- | --------------------------------- |
+| Product                                           | Alfred workspace                  |
+| Command / development wrapper                     | `alfred` / `alfred-dev`           |
+| Desktop application ID                            | `org.alfredlabs.workspace`        |
+| Mobile application ID                             | `org.alfredlabs.workspace.mobile` |
+| URL scheme                                        | `alfred:`                         |
+| Environment prefix                                | `ALFRED_`                         |
+| Workspace configuration                           | `alfred.yaml`                     |
+| Plugin manifest                                   | `alfred-plugin.json`              |
+| Runtime, profile, socket, and keychain namespaces | Alfred-specific names             |
 
-The public GitHub repository is independent of the upstream fork network and
-retains the source history leading to the base commit. Its default branch is
-`main`. The initial Alfredlabs changes are in commit `73c0fc9d37`.
+This is an independent installation. The rename does not read, move, or delete
+another product's data. Credentials and pairings must be set up in Alfred.
+Desktop, mobile, CLI, and remote hosts must run Alfred together; this change does
+not offer cross-product wire or persisted-data compatibility.
 
-The local checkout has its own `.git` directory. `origin` points to
-`GOI17/alfred-workspace`; `orca-source` points to the original repository for
-explicit source reads, with a disabled push URL. The default push target is
-`origin`. These settings do not alter the original Orca checkout or its worktrees.
-Inherited GitHub Actions are disabled at the repository level until their
-release and service configuration is adapted.
+The visible name, commands, internal symbols, filenames, packages owned by this
+repository, documentation, localization catalogs, and generated skill resources
+use the Alfred identity. Third-party dependency names and legal notices retain
+their actual provenance. The app icons use the same monochrome A mark.
 
-The adapted [Hourly build workflow](reference/main-branch-builds.md)
-produces development artifacts and cancels superseded builds after each merge.
-Its activation instructions preserve the boundary around inherited workflows.
+## Services and releases
 
-## Attribution and identity
+The configured namespace is `alfredlabs.org`: `login`, `relay`, `push`, and `share`
+subdomains identify the corresponding services. Existing `ALFRED_*` environment
+settings provide the service configuration overrides. DNS, TLS, OAuth registration,
+cloud projects, databases, push credentials, and service deployment still require
+provisioning; a source rename alone does not provision any of them.
 
-Keep the original [MIT license](../LICENSE), including the Lovecast Inc.
-copyright notice, and the [attribution notice](../NOTICE.md). Preserve the
-applicable licenses of vendored code, dependencies, fonts, and other assets.
-The MIT license permits modifying and distributing the code, subject to its
-notice requirements; it does not establish that a proposed product name or logo
-is available for use. Use Alfredlabs branding without implying upstream endorsement.
+Stable updates use `GOI17/alfred-workspace`. The hourly, daily, and adhoc update
+feeds use the corresponding `alfred-workspace-*` repositories, which must be
+provisioned before those channels can distribute updates. Main-branch development
+builds remain artifact-only (`--publish never`). Release and deployment workflows
+are opt-in through the `ALFRED_RELEASES_ENABLED` repository variable.
 
-Retain source history as provenance. Do not replace original authors' names or
-copyright notices with Alfredlabs. If notices for new contributions are added,
-scope them to those contributions and use their actual rights holder.
+Homebrew casks stay disabled until the first Alfred release replaces the inherited
+version and checksums. The release workflow renders fresh casks from release artifacts.
 
-Before binary distribution, verify that required notices are included and
-accessible in the desktop and mobile artifacts. A notice present only in the
-source repository is not evidence that the distributed application includes it.
+Signing requires Alfred-owned credentials. Set `ALFRED_WINDOWS_PUBLISHER` to the
+actual Windows certificate publisher when configuring signed releases. Inherited
+signing workflow integrations require their own account and certificate setup;
+do not enable publication until those integrations have been verified.
 
-## Surfaces identified in the initial audit
+## Before distribution
 
-| Surface                   | Current implementation                                                                                          | Transition required                                                                                                                                                                                                   |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public identity           | `package.json`, `README.md`, localized READMEs, `docs/site`, desktop and mobile icons                           | Set the selected product name, Alfredlabs maintenance identity, and owned support/docs links. Replace branding assets deliberately.                                                                                   |
-| Desktop installation      | `config/electron-builder.config.cjs`, `src/shared/local-build-compatibility-contract.*`                         | Use an independent application identity, CLI names, protocol scheme, installer identity, and signing configuration. Check coexistence with an installed Orca.                                                         |
-| Mobile installation       | `mobile/app.json` and native project configuration                                                              | Replace `com.stably.orca.mobile`, names, protocol scheme, icons, push credentials, and store destinations consistently.                                                                                               |
-| Updates and releases      | `src/shared/release-channel.ts`, `src/main/updater/`, prerelease feeds, `.github/workflows`                     | Use Alfredlabs release destinations. Until configured, prevent the fork from downloading or publishing upstream releases.                                                                                             |
-| Login and relay           | `src/main/orca-profiles/profile-cloud-auth-config.ts`, `cloud/apps/relay/`                                      | Replace `login.onorca.dev`, `relay.onorca.dev`, and the OAuth client with explicitly configured Alfredlabs services. Audit related hosted dependencies and credentials.                                               |
-| Push notifications        | `src/main/runtime/push/push-gateway-origin.ts`, `cloud/apps/push/`, mobile notification configuration           | Replace `push.onorca.dev` and configure credentials for the fork's application identities.                                                                                                                            |
-| Shared artifacts          | `src/main/artifacts/artifact-cloud-config.ts`, `src/shared/skill-share-link.ts`                                 | Replace `share.onorca.dev` and the upstream host allowlist with validated owned service configuration.                                                                                                                |
-| Plugins and skills        | `src/shared/plugins/plugin-marketplace.ts`, `src/main/plugins/`, `src/shared/agent-feature-install-commands.ts` | Set an independent publisher/catalog and update provenance rules together; preserve explicit third-party provenance where retained.                                                                                   |
-| Telemetry and diagnostics | `src/main/telemetry/`, `src/main/observability/`, build-time configuration                                      | Verify that no upstream write keys or collectors are enabled in fork releases. Existing telemetry is gated for official builds; inspect the actual fork artifact rather than assuming all source references transmit. |
-| Product links             | Support, downloads, changelog, update nudges, plugin kill list, onboarding                                      | Replace upstream destinations or omit unavailable services; do not invent working Alfredlabs URLs.                                                                                                                    |
-| Runtime data              | Profiles, keychain entries, sockets, daemon directories, CLI installation, workspace metadata                   | Isolate the fork's data and process identities. Provide an explicit migration path instead of silently sharing or overwriting the original installation.                                                              |
-
-Changing a domain string alone is insufficient: authentication, URL validation,
-trusted publisher checks, update signatures, and mobile identifiers depend on
-these values. Keep each change consistent across desktop, mobile, headless hosts,
-and remote execution.
-
-## Initial implementation sequence
-
-1. Use the confirmed identity: Alfred Workspace, maintained by Alfredlabs, with
-   the public repository `GOI17/alfred-workspace`.
-2. Create a separate repository and local checkout for Alfredlabs. Keep the
-   upstream preparation worktree's shared Git configuration unchanged; changing
-   its remotes would also affect sibling worktrees. Preserve upstream as a
-   read-only source in the independent checkout. Keep inherited GitHub Actions
-   disabled until publication targets and service ownership have been adapted.
-3. Establish the new application identities and owned release destinations. Keep
-   hosted functions explicitly unavailable until their own endpoints are ready,
-   rather than silently falling back to upstream production services.
-4. Replace the visible brand and documentation, preserving legal attribution and
-   historical references where they explain provenance. Do not globally replace
-   protocol strings, persisted keys, or third-party package names.
-5. Configure and verify Alfredlabs authentication, relay, and push infrastructure.
-   Disabling the upstream relay without a replacement removes remote mobile
-   access; it is not a working relay migration.
-6. Integrate the separately developed host-served mobile UI after reviewing its
-   changes. Its relay reuse must work with the fork's service configuration.
-7. Verify builds, installation coexistence, updates, required notices, and the
-   desktop/mobile/remote user flows before publishing an Alfredlabs release.
-
-## Evidence required before the first independent release
-
-- An installed fork uses its own identifiers and does not overwrite Orca data.
-- Update checks cannot install an upstream Orca release over the fork.
-- Startup, login, mobile pairing, artifact sharing, plugins, and diagnostics use
-  only intentionally configured services; unconfigured features explain that state.
-- Relay-backed mobile access works against the intended Alfredlabs deployment.
-- macOS, Linux, Windows, iOS, and Android configuration changes are checked for
-  consistency; platform checks that were not run are reported explicitly.
-- Distributed artifacts include their applicable copyright and license notices.
-
-License reference: [Open Source Initiative — MIT](https://opensource.org/license/mit).
+Verify independent installation and update behavior on macOS, Linux, and Windows;
+mobile signing and push configuration on iOS and Android; and authenticated
+pairing through the Alfred relay. Package the original MIT notice and applicable
+third-party notices with distributed binaries. Historical source references remain
+attribution, not claims that Alfredlabs authored the inherited implementation.

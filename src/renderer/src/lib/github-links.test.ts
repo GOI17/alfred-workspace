@@ -9,21 +9,21 @@ import { WORK_ITEM_LINK_QUERY_MAX_BYTES } from './work-item-link-query-bounds'
 
 describe('buildGitHubRepoUrl', () => {
   it('builds a GitHub repository URL from an owner/repo slug', () => {
-    expect(buildGitHubRepoUrl({ owner: 'stablyai', repo: 'orca' })).toBe(
-      'https://github.com/stablyai/orca'
+    expect(buildGitHubRepoUrl({ owner: 'alfredlabs', repo: 'alfred' })).toBe(
+      'https://github.com/GOI17/alfred-workspace'
     )
   })
 
   it('encodes path segments', () => {
-    expect(buildGitHubRepoUrl({ owner: 'stably ai', repo: 'orca/tools' })).toBe(
-      'https://github.com/stably%20ai/orca%2Ftools'
+    expect(buildGitHubRepoUrl({ owner: 'stably ai', repo: 'alfred/tools' })).toBe(
+      'https://github.com/stably%20ai/alfred%2Ftools'
     )
   })
 
   it('links hosted slugs to their GitHub Enterprise server', () => {
-    expect(buildGitHubRepoUrl({ owner: 'team', repo: 'orca', host: 'github.acme-corp.com' })).toBe(
-      'https://github.acme-corp.com/team/orca'
-    )
+    expect(
+      buildGitHubRepoUrl({ owner: 'team', repo: 'alfred', host: 'github.acme-corp.com' })
+    ).toBe('https://github.acme-corp.com/team/alfred')
   })
 })
 
@@ -31,8 +31,12 @@ describe('parseGitHubIssueOrPRNumber', () => {
   it('parses plain issue numbers and GitHub pull request URLs', () => {
     expect(parseGitHubIssueOrPRNumber('42')).toBe(42)
     expect(parseGitHubIssueOrPRNumber('#42')).toBe(42)
-    expect(parseGitHubIssueOrPRNumber('https://github.com/stablyai/orca/pull/123')).toBe(123)
-    expect(parseGitHubIssueOrPRNumber('https://github.com/stablyai/orca/issues/923')).toBe(923)
+    expect(parseGitHubIssueOrPRNumber('https://github.com/GOI17/alfred-workspace/pull/123')).toBe(
+      123
+    )
+    expect(parseGitHubIssueOrPRNumber('https://github.com/GOI17/alfred-workspace/issues/923')).toBe(
+      923
+    )
     expect(parseGitHubIssueOrPRNumber('https://github.my-company.net/MyOrg/my_repo/pull/395')).toBe(
       395
     )
@@ -71,8 +75,8 @@ describe('parseGitHubIssueOrPRNumber', () => {
 
 describe('parseGitHubIssueOrPRLink', () => {
   it('parses slug, number, and type for direct item URLs', () => {
-    expect(parseGitHubIssueOrPRLink('https://github.com/stablyai/orca/pull/123')).toEqual({
-      slug: { owner: 'stablyai', repo: 'orca', host: 'github.com' },
+    expect(parseGitHubIssueOrPRLink('https://github.com/GOI17/alfred-workspace/pull/123')).toEqual({
+      slug: { owner: 'alfredlabs', repo: 'alfred', host: 'github.com' },
       number: 123,
       type: 'pr'
     })
@@ -90,8 +94,10 @@ describe('parseGitHubIssueOrPRLink', () => {
       number: 395,
       type: 'pr'
     })
-    expect(parseGitHubIssueOrPRLink('https://github.com/stablyai/orca/issues/923')).toEqual({
-      slug: { owner: 'stablyai', repo: 'orca', host: 'github.com' },
+    expect(
+      parseGitHubIssueOrPRLink('https://github.com/GOI17/alfred-workspace/issues/923')
+    ).toEqual({
+      slug: { owner: 'alfredlabs', repo: 'alfred', host: 'github.com' },
       number: 923,
       type: 'issue'
     })
@@ -137,11 +143,13 @@ describe('parseGitHubIssueOrPRLink', () => {
 
 describe('normalizeGitHubLinkQuery', () => {
   it('accepts full GitHub URLs whose slug differs from the selected repo slug', () => {
-    expect(normalizeGitHubLinkQuery('https://github.com/stablyai/orca/issues/923')).toEqual({
-      query: 'https://github.com/stablyai/orca/issues/923',
+    expect(
+      normalizeGitHubLinkQuery('https://github.com/GOI17/alfred-workspace/issues/923')
+    ).toEqual({
+      query: 'https://github.com/GOI17/alfred-workspace/issues/923',
       directNumber: 923,
       directLink: {
-        slug: { owner: 'stablyai', repo: 'orca', host: 'github.com' },
+        slug: { owner: 'alfredlabs', repo: 'alfred', host: 'github.com' },
         number: 923,
         type: 'issue'
       }
@@ -149,27 +157,31 @@ describe('normalizeGitHubLinkQuery', () => {
   })
 
   it('preserves PR route intent for full GitHub URLs', () => {
-    expect(normalizeGitHubLinkQuery('https://github.com/stablyai/orca/pull/6934')).toEqual({
-      query: 'https://github.com/stablyai/orca/pull/6934',
-      directNumber: 6934,
-      directLink: {
-        slug: { owner: 'stablyai', repo: 'orca', host: 'github.com' },
-        number: 6934,
-        type: 'pr'
+    expect(normalizeGitHubLinkQuery('https://github.com/GOI17/alfred-workspace/pull/6934')).toEqual(
+      {
+        query: 'https://github.com/GOI17/alfred-workspace/pull/6934',
+        directNumber: 6934,
+        directLink: {
+          slug: { owner: 'alfredlabs', repo: 'alfred', host: 'github.com' },
+          number: 6934,
+          type: 'pr'
+        }
       }
-    })
+    )
   })
 
   it('preserves route intent for URLs with uppercase schemes', () => {
-    expect(normalizeGitHubLinkQuery('HTTPS://github.com/stablyai/orca/pull/6934')).toEqual({
-      query: 'HTTPS://github.com/stablyai/orca/pull/6934',
-      directNumber: 6934,
-      directLink: {
-        slug: { owner: 'stablyai', repo: 'orca', host: 'github.com' },
-        number: 6934,
-        type: 'pr'
+    expect(normalizeGitHubLinkQuery('HTTPS://github.com/GOI17/alfred-workspace/pull/6934')).toEqual(
+      {
+        query: 'HTTPS://github.com/GOI17/alfred-workspace/pull/6934',
+        directNumber: 6934,
+        directLink: {
+          slug: { owner: 'alfredlabs', repo: 'alfred', host: 'github.com' },
+          number: 6934,
+          type: 'pr'
+        }
       }
-    })
+    )
   })
 
   it('rejects oversized pasted link queries without echoing their content', () => {

@@ -159,11 +159,11 @@ describe('createGitHubSlice.fetchWorkItems source/error envelope', () => {
     const sourceContext = {
       kind: 'task-source' as const,
       provider: 'github' as const,
-      projectId: 'github:stablyai/orca',
+      projectId: 'github:GOI17/alfred-workspace',
       hostId: 'runtime:source-runtime' as const,
       projectHostSetupId: 'setup-1',
       repoId: 'source-runtime-repo-id',
-      providerIdentity: { provider: 'github' as const, owner: 'stablyai', repo: 'orca' }
+      providerIdentity: { provider: 'github' as const, owner: 'alfredlabs', repo: 'alfred' }
     }
 
     await store.getState().fetchWorkItems('caller-repo-id', '/server/repo', 24, 'is:open', {
@@ -202,22 +202,25 @@ describe('createGitHubSlice.fetchWorkItems source/error envelope', () => {
       hostId: 'local' as const,
       projectHostSetupId: 'setup-1',
       repoId: 'repo-1',
-      providerIdentity: { provider: 'github' as const, owner: 'acme', repo: 'orca' }
+      providerIdentity: { provider: 'github' as const, owner: 'acme', repo: 'alfred' }
     }
     const secondSourceContext = {
       ...firstSourceContext,
-      providerIdentity: { provider: 'github' as const, owner: 'stablyai', repo: 'orca' }
+      providerIdentity: { provider: 'github' as const, owner: 'alfredlabs', repo: 'alfred' }
     }
     mockApi.gh.listWorkItems
       .mockResolvedValueOnce({
         items: [{ type: 'issue', number: 1, title: 'Acme', url: 'https://example.test/1' }],
-        sources: { issues: { owner: 'acme', repo: 'orca' }, prs: { owner: 'acme', repo: 'orca' } }
+        sources: {
+          issues: { owner: 'acme', repo: 'alfred' },
+          prs: { owner: 'acme', repo: 'alfred' }
+        }
       })
       .mockResolvedValueOnce({
         items: [{ type: 'issue', number: 2, title: 'Stably', url: 'https://example.test/2' }],
         sources: {
-          issues: { owner: 'stablyai', repo: 'orca' },
-          prs: { owner: 'stablyai', repo: 'orca' }
+          issues: { owner: 'alfredlabs', repo: 'alfred' },
+          prs: { owner: 'alfredlabs', repo: 'alfred' }
         }
       })
 

@@ -28,18 +28,18 @@ export function stripRemotePaneEnvWhenHooksDisabled(
   }
   if (
     !env ||
-    (!('ORCA_PANE_KEY' in env) &&
-      !('ORCA_TAB_ID' in env) &&
-      !('ORCA_WORKTREE_ID' in env) &&
-      !('ORCA_AGENT_LAUNCH_TOKEN' in env))
+    (!('ALFRED_PANE_KEY' in env) &&
+      !('ALFRED_TAB_ID' in env) &&
+      !('ALFRED_WORKTREE_ID' in env) &&
+      !('ALFRED_AGENT_LAUNCH_TOKEN' in env))
   ) {
     return env
   }
   const stripped = { ...env }
-  delete stripped.ORCA_PANE_KEY
-  delete stripped.ORCA_TAB_ID
-  delete stripped.ORCA_WORKTREE_ID
-  delete stripped.ORCA_AGENT_LAUNCH_TOKEN
+  delete stripped.ALFRED_PANE_KEY
+  delete stripped.ALFRED_TAB_ID
+  delete stripped.ALFRED_WORKTREE_ID
+  delete stripped.ALFRED_AGENT_LAUNCH_TOKEN
   return stripped
 }
 

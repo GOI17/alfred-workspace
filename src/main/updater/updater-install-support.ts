@@ -56,12 +56,12 @@ export abstract class UpdaterInstallSupport extends UpdaterCheckState {
         { phase, version: version || null },
         {
           level: 'warn',
-          message: 'Update install deferred while hosting orca serve'
+          message: 'Update install deferred while hosting alfred serve'
         }
       )
     }
     this.sendErrorStatus(
-      'This orca serve process was not started by an update-capable supervisor. Keep it running and update Orca through its service manager.',
+      'This alfred serve process was not started by an update-capable supervisor. Keep it running and update Alfred through its service manager.',
       true
     )
     return true
@@ -86,8 +86,8 @@ export abstract class UpdaterInstallSupport extends UpdaterCheckState {
    */
   protected getPreCommitInstallFailureMessage(): string {
     return process.platform === 'darwin'
-      ? 'Could not restart to install the update. Quit and reopen Orca, then try again.'
-      : 'Could not start the update installer. Orca remains open.'
+      ? 'Could not restart to install the update. Quit and reopen Alfred, then try again.'
+      : 'Could not start the update installer. Alfred remains open.'
   }
 
   /**

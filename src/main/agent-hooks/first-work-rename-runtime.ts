@@ -6,14 +6,14 @@ import { rememberBranchRenameFailureOutput } from './branch-rename-failure-outpu
 import { renameWorktreeFolderOnFirstWork } from './first-work-folder-rename'
 import { moveWorktree } from '../git/worktree'
 import type { Store } from '../persistence'
-import type { OrcaRuntimeService } from '../runtime/orca-runtime'
+import type { AlfredRuntimeService } from '../runtime/alfred-runtime'
 
 const ENABLE_FIRST_WORK_FOLDER_RENAME = false
 
 export function firstWorkRenameDeps(
   store: Store,
   runtime: Pick<
-    OrcaRuntimeService,
+    AlfredRuntimeService,
     | 'getCommitMessageAgentEnvironmentResolvers'
     | 'notifyFolderWorkspaceChanged'
     | 'notifyBranchRenamed'
@@ -42,10 +42,10 @@ export function firstWorkRenameDeps(
         ? store.getFolderWorkspace(scope.folderWorkspaceId)?.pendingFirstAgentMessageRename === true
         : store.getWorktreeMeta(worktreeId)?.pendingFirstAgentMessageRename === true
     },
-    canRenameOrcaCreatedBranch: (worktreeId) => {
+    canRenameAlfredCreatedBranch: (worktreeId) => {
       const meta = store.getWorktreeMeta(worktreeId)
-      // Why: a user branch could coincidentally match a creature name; only Orca-stamped worktrees are safe to auto-rename.
-      return !!meta?.orcaCreationSource && meta.preserveBranchOnDelete !== true
+      // Why: a user branch could coincidentally match a creature name; only Alfred-stamped worktrees are safe to auto-rename.
+      return !!meta?.alfredCreationSource && meta.preserveBranchOnDelete !== true
     },
     setDisplayName: (worktreeId, displayName) => {
       rememberBranchRenameFailureOutput(worktreeId, null)

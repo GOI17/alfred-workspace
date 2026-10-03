@@ -391,10 +391,10 @@ describe('automation target availability', () => {
           sourceContext: {
             kind: 'task-source',
             provider: 'github',
-            projectId: 'github:stablyai/orca',
+            projectId: 'github:GOI17/alfred-workspace',
             hostId: 'local',
             repoId: 'repo-1',
-            providerIdentity: { provider: 'github', owner: 'stablyai', repo: 'orca' }
+            providerIdentity: { provider: 'github', owner: 'alfredlabs', repo: 'alfred' }
           }
         }),
         repo: makeRepo(),
@@ -417,15 +417,15 @@ describe('automation target availability', () => {
           sourceContext: {
             kind: 'task-source',
             provider: 'gitlab',
-            projectId: 'gitlab:stablyai/orca',
+            projectId: 'gitlab:GOI17/alfred-workspace',
             hostId: 'runtime:old-server',
             repoId: 'repo-1',
             providerIdentity: {
               provider: 'gitlab',
-              projectId: 'stablyai/orca',
-              namespace: 'stablyai',
-              project: 'orca',
-              webUrl: 'https://gitlab.com/stablyai/orca'
+              projectId: 'GOI17/alfred-workspace',
+              namespace: 'alfredlabs',
+              project: 'alfred',
+              webUrl: 'https://gitlab.com/GOI17/alfred-workspace'
             }
           }
         }),
