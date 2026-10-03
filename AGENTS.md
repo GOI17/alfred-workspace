@@ -67,7 +67,9 @@ Always use the primary working directory (the worktree) for all file reads and e
 
 ## Cross-Platform Support
 
-Alfred targets macOS, Linux, and Windows. Keep all platform-dependent behavior behind runtime checks:
+Alfred currently supports macOS on Apple Silicon only. Retained code also covers
+Intel Macs, Linux, and Windows; preserve its platform boundaries for future support.
+Keep all platform-dependent behavior behind runtime checks:
 
 - **Keyboard shortcuts**: Never hardcode `e.metaKey`. Use a platform check (`navigator.userAgent.includes('Mac')`) to pick `metaKey` on Mac and `ctrlKey` on Linux/Windows. Electron menu accelerators should use `CmdOrCtrl`.
 - **Shortcut labels in UI**: Display `⌘` / `⇧` on Mac and `Ctrl+` / `Shift+` on other platforms.
@@ -84,7 +86,11 @@ Alfred targets macOS, Linux, and Windows. Keep all platform-dependent behavior b
 
 ## Native Dependency Installs
 
-Ordinary `pnpm install` covers the host OS and CPU only. Before packaging for another architecture — including `pnpm build:mac`, which builds x64 and arm64 by default — run `pnpm install:release`. electron-builder only warns on a missing `extraResources` source, so the `beforePack` guard is what turns a thin install into a build failure instead of a silently broken artifact; see [`docs/reference/pnpm-install-policy.md`](./docs/reference/pnpm-install-policy.md).
+Ordinary `pnpm install` covers the host OS and CPU only. `pnpm build:mac` targets arm64.
+Before explicitly packaging for another architecture, run `pnpm install:release`.
+electron-builder only warns on a missing `extraResources` source, so the `beforePack`
+guard turns a thin install into a build failure instead of a silently broken artifact;
+see [`docs/reference/pnpm-install-policy.md`](./docs/reference/pnpm-install-policy.md).
 
 ## SSH Use Case
 

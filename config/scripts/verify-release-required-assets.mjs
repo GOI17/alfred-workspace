@@ -7,24 +7,9 @@ const API_VERSION = '2022-11-28'
 export function getRequiredReleaseAssetNames(tag) {
   const version = tag.replace(/^v/i, '')
   return [
-    'latest-linux.yml',
-    'latest-linux-arm64.yml',
     'latest-mac.yml',
-    'latest.yml',
-    'alfred-linux.AppImage',
-    'alfred-linux-arm64.AppImage',
-    `alfred-ide_${version}_amd64.deb`,
-    `alfred-ide_${version}_arm64.deb`,
-    `alfred-ide-${version}.x86_64.rpm`,
-    `alfred-ide-${version}.aarch64.rpm`,
-    'alfred-windows-setup.exe',
-    'alfred-windows-setup.exe.blockmap',
-    `Alfred-${version}-mac.zip`,
-    `Alfred-${version}-mac.zip.blockmap`,
     `Alfred-${version}-arm64-mac.zip`,
     `Alfred-${version}-arm64-mac.zip.blockmap`,
-    'alfred-macos-x64.dmg',
-    'alfred-macos-x64.dmg.blockmap',
     'alfred-macos-arm64.dmg',
     'alfred-macos-arm64.dmg.blockmap'
   ]
@@ -90,12 +75,7 @@ export async function verifyRequiredReleaseAssets({ repo, tag, token }) {
   const assetsByName = new Map(release.assets.map((asset) => [asset.name, asset]))
 
   const requiredNames = new Set(getRequiredReleaseAssetNames(tag))
-  const manifestNames = [
-    'latest-linux.yml',
-    'latest-linux-arm64.yml',
-    'latest-mac.yml',
-    'latest.yml'
-  ]
+  const manifestNames = ['latest-mac.yml']
 
   for (const manifestName of manifestNames) {
     const manifestAsset = assetsByName.get(manifestName)

@@ -44,6 +44,13 @@ const withDailyEnv = (assert) => withEnv({ ALFRED_MAC_DAILY: '1' }, assert)
 const withAdhocEnv = (assert) => withEnv({ ALFRED_MAC_ADHOC: '1' }, assert)
 
 describe('electron-builder mac channel config', () => {
+  it('packages only Apple Silicon and gives updater ZIPs a stable Alfred filename', () => {
+    expect(electronBuilderConfig.mac.target).toEqual([
+      { target: 'dmg', arch: ['arm64'] },
+      { target: 'zip', arch: ['arm64'] }
+    ])
+    expect(electronBuilderConfig.mac.artifactName).toBe('Alfred-${version}-${arch}-mac.${ext}')
+  })
   // Why: Squirrel.Mac swaps the .app in place only when the replacement carries the
   // same bundle id and a valid Developer ID signature. A hourly built on the local
   // (org.alfredlabs.workspace.local, ad-hoc) identity would be un-installable over a real

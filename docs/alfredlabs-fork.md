@@ -53,8 +53,15 @@ do not enable publication until those integrations have been verified.
 
 ## Before distribution
 
-Verify independent installation and update behavior on macOS, Linux, and Windows;
-mobile signing and push configuration on iOS and Android; and authenticated
-pairing through the Alfred relay. Package the original MIT notice and applicable
+The current supported application platform is **macOS on Apple Silicon (arm64)**.
+Intel Macs, Windows, Linux, iOS and Android are outside the current release scope.
+Platform-specific code remains in source for future work. Default macOS packaging
+and required release assets target arm64 only.
+Verify independent installation, updates and the packaged CLI on macOS, plus SSH
+and authenticated remote pairing. See the [macOS validation record](reference/macos-validation.md)
+for completed checks and release prerequisites. GitHub Actions are disabled;
+run these checks locally until automation is explicitly re-enabled.
+
+Package the original MIT notice and applicable
 third-party notices with distributed binaries. Historical source references remain
 attribution, not claims that Alfredlabs authored the inherited implementation.

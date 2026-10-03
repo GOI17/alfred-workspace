@@ -478,6 +478,7 @@ module.exports = {
     include: resolve(__dirname, 'nsis', 'alfred-installer-hooks.nsh')
   },
   mac: {
+    artifactName: 'Alfred-${version}-${arch}-mac.${ext}',
     // Why rank Alternate: Alfred joins Finder's "Open With" list for Markdown without claiming
     // LSHandlerRank ownership, so whichever editor the user already prefers stays the default.
     // Why one entry per extension: app-builder-lib globs `*.${ext}`, which an array would break.
@@ -559,11 +560,11 @@ module.exports = {
     target: [
       {
         target: 'dmg',
-        arch: ['x64', 'arm64']
+        arch: ['arm64']
       },
       {
         target: 'zip',
-        arch: ['x64', 'arm64']
+        arch: ['arm64']
       }
     ]
   },
