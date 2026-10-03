@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { MobileWebShellFrame } from './MobileWebShellFrame'
 import {
   OrcaMobileWebShellView,
   parseMobileWebShellLoadState
@@ -14,6 +14,7 @@ import type {
 import { useMobileWebShellBridge } from './use-mobile-web-shell-bridge'
 import {
   useMobileWebShellSession,
+  type MobileWebShellSessionView,
   type MobileWebShellRuntime
 } from './use-mobile-web-shell-session'
 
@@ -111,6 +112,8 @@ function DevFacts({ state }: { state: Extract<MobileWebShellSessionState, { kind
 
 export type MobileWebShellScreenProps = {
   hostId: string
+  hostName?: string
+  initialPath?: string
   runtime?: MobileWebShellRuntime
 }
 
@@ -121,10 +124,29 @@ export type MobileWebShellScreenProps = {
  * The native view is keyed on the session id, so a remount the reducer asks for is a new key and a
  * rebuilt WebView with every fence reinstalled — the view has no reload of its own by design.
  */
-export function MobileWebShellScreen({ hostId, runtime }: MobileWebShellScreenProps) {
-  const insets = useSafeAreaInsets()
-  const { state, retry, reportShellFailure } = useMobileWebShellSession({ hostId, runtime })
-  const bridge = useMobileWebShellBridge({ hostId, session: state })
+export function MobileWebShellScreen({
+  hostId,
+  hostName,
+  initialPath,
+  runtime
+}: MobileWebShellScreenProps) {
+  const session = useMobileWebShellSession({ hostId, runtime })
+  return (
+    <MobileWebShellFrame hostId={hostId} state={session.state} onReload={session.retry}>
+      <ShellContent hostId={hostId} hostName={hostName} initialPath={initialPath} {...session} />
+    </MobileWebShellFrame>
+  )
+}
+
+function ShellContent({
+  hostId,
+  hostName,
+  initialPath,
+  state,
+  retry,
+  reportShellFailure
+}: MobileWebShellSessionView & { hostId: string; hostName?: string; initialPath?: string }) {
+  const bridge = useMobileWebShellBridge({ hostId, hostName, initialPath, session: state })
 
   if (state.kind === 'wall') {
     return <ProtocolBlockScreen verdict={state.verdict} />
@@ -148,10 +170,7 @@ export function MobileWebShellScreen({ hostId, runtime }: MobileWebShellScreenPr
     return <Waiting label={state.kind === 'activating' ? 'Opening workspace' : 'Checking host'} />
   }
   return (
-    <View
-      style={[styles.shellRoot, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
-      testID="mobile-web-shell-ready"
-    >
+    <View style={styles.shellRoot} testID="mobile-web-shell-ready">
       <OrcaMobileWebShellView
         key={state.sessionId}
         ref={bridge.viewRef}

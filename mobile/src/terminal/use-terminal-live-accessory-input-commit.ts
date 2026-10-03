@@ -1,5 +1,5 @@
 import { useCallback, type RefObject } from 'react'
-import type { TextInput } from 'react-native'
+import { Platform, type TextInput } from 'react-native'
 import {
   getTerminalLiveAccessoryBytesDecision,
   getTerminalLiveAccessoryLocalEditText
@@ -89,7 +89,9 @@ export function useTerminalLiveAccessoryInputCommit({
           // Why: accessory buttons do not emit native TextInput edits, so the
           // field is edited here and the mirror diff syncs the PTY echo.
           setLiveInputCapture(editedText)
-          liveInputRef.current?.setNativeProps({ text: editedText })
+          if (Platform.OS !== 'web') {
+            liveInputRef.current?.setNativeProps({ text: editedText })
+          }
           // Preserve undefined so Android's heuristic hold still settles on its timer.
           const sent = await applyLiveInputMirror(
             activeHandle,

@@ -16,6 +16,18 @@
     {
       "file": "app/h/[hostId]/web.web.tsx",
       "reason": "The hybrid shell route opens a WebView on this very page, so on web it redirects to the host instead of nesting the shell inside itself. Its native file pulls in OrcaMobileWebShellView, whose requireNativeViewManager call runs at import and throws in a browser."
+    },
+    {
+      "file": "src/transport/host-store.web.ts",
+      "reason": "Only the selected host id and display name arrive in bridge init. No pairing credentials or endpoint storage enter the page; host edits remain native."
+    },
+    {
+      "file": "src/terminal/TerminalWebView.web.tsx",
+      "reason": "Render the existing xterm engine directly in the isolated page, keeping the existing terminal subscription and composer. No nested WebView, iframe, extra socket or eval. Native touch selection, path taps, zoom gestures and mouse reporting are not implemented."
+    },
+    {
+      "file": "app/h/_layout.web.tsx",
+      "reason": "The native host stack opens the downloaded host UI for every work route. Inside that UI the existing workspace router and tablet sidebar must render directly, without reopening the shell."
     }
   ]
 }

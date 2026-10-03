@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { open } from 'node:fs/promises'
+import { open, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { MobileWebBundleAsset } from '../../../../shared/mobile-web-bundle/manifest-contract'
 
@@ -17,12 +17,16 @@ export function resetMobileWebBundleAssetVerdictsForTests(): void {
  * then remembered. Concurrent first readers share one hash: the promise goes into the map before
  * the first await, so four parallel chunk requests for the same asset read it once, not four times.
  */
-export function verifyMobileWebBundleAsset(
+export async function verifyMobileWebBundleAsset(
   root: string,
   buildId: string,
   asset: MobileWebBundleAsset
 ): Promise<boolean> {
-  const key = `${buildId} ${asset.path}`
+  const file = await stat(join(root, asset.path))
+  const key = `${root} ${buildId} ${asset.path} ${file.ino} ${file.size} ${file.mtimeMs} ${file.ctimeMs}`
+  if (verdicts.size > 512) {
+    verdicts.clear()
+  }
   const cached = verdicts.get(key)
   if (cached) {
     return cached

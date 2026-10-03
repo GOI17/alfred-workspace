@@ -493,3 +493,4 @@ describe('terminal live input commit hook', () => {
     expect(sent).toEqual([])
   })
 })
+vi.mock('react-native', () => ({ Platform: { OS: 'ios' } }))

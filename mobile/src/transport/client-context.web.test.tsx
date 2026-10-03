@@ -1,3 +1,4 @@
+// @vitest-environment happy-dom
 import { createElement, type ReactElement } from 'react'
 import { act, create } from 'react-test-renderer'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -21,6 +22,8 @@ const INIT = {
   v: BRIDGE_PROTOCOL_VERSION,
   type: 'init',
   sessionId: 'session-a',
+  host: { id: 'host-1', name: 'Paired desktop' },
+  clientId: 'shell:page-session',
   buildId: 'build-a',
   connection: {
     state: 'connected',
@@ -115,8 +118,22 @@ describe('the page provider inside the shell', () => {
     expect(client).not.toBeNull()
     expect(context.getState('host-a')).toBe('connected')
     expect(context.getReconnectAttempt('host-a')).toBe(2)
+    expect(context.getClientId('host-a')).toBe('shell:page-session')
     expect(context.getLastConnectedAt('host-a')).toBe(1700)
     expect(context.getAllClients()).toEqual([{ hostId: 'host-a', client }])
+  })
+
+  it('asks to update an older shell without host context instead of mounting a broken workspace', () => {
+    const channel = installChannel()
+    let tree: ReturnType<typeof create> | undefined
+    act(() => {
+      tree = create(render())
+    })
+    act(() => {
+      channel.deliver({ ...INIT, host: undefined })
+    })
+    expect(screen.mounts).toBe(0)
+    expect(JSON.stringify(tree?.toJSON())).toContain('Update the mobile app')
   })
 
   it('carries a state change from the shell to the screens watching it', () => {

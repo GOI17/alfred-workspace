@@ -3,6 +3,7 @@ import { realpathSync } from 'node:fs'
 import { basename, extname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as esbuild from 'esbuild'
+import { mobileWebRouterPlugin } from './mobile-web-router-plugin.mjs'
 import {
   MOBILE_WEB_BUNDLE_ENTRYPOINT,
   hashedAsset,
@@ -24,7 +25,7 @@ const projectDir = fileURLToPath(new URL('../..', import.meta.url))
 const mobileDir = join(projectDir, 'mobile')
 const defaultAppDir = join(mobileDir, 'app')
 const entryPoint = join(mobileDir, 'web-entry', 'index.tsx')
-const defaultOutDir = join(projectDir, 'out', 'mobile-web-app')
+const defaultOutDir = join(projectDir, 'out', 'mobile-web')
 
 /**
  * Every shim the app bundle needs, each one a documented Metro/RN-Web gap. `appliesTo` reads the
@@ -32,6 +33,10 @@ const defaultOutDir = join(projectDir, 'out', 'mobile-web-app')
  * apply and a dropped option fails the named shim rather than the whole build.
  */
 export const MOBILE_WEB_APP_SHIMS = [
+  {
+    name: 'shell-router-history',
+    appliesTo: (options) => options.plugins?.includes(mobileWebRouterPlugin) === true
+  },
   {
     // react-native has no browser build; react-native-web is the whole point of Route A.
     name: 'react-native-web-alias',
@@ -134,7 +139,11 @@ export function mobileWebAppBuildOptions(routes) {
     // One React: resolve everything from mobile/node_modules, which is where the entry lives.
     nodePaths: [join(mobileDir, 'node_modules')],
     alias: { 'react-native': 'react-native-web' },
-    plugins: [routeManifestPlugin(renderMobileWebAppRouteManifest(routes)), lucideBarrelPlugin],
+    plugins: [
+      routeManifestPlugin(renderMobileWebAppRouteManifest(routes)),
+      lucideBarrelPlugin,
+      mobileWebRouterPlugin
+    ],
     resolveExtensions: [
       '.web.tsx',
       '.web.ts',
@@ -341,10 +350,13 @@ export async function buildMobileWebAppBundle({ appDir, outDir = defaultOutDir }
   // Every output is already named by its own bytes, and a name is written inside whatever imports
   // it, so hashedAsset here reproduces the name rather than choosing one.
   const scriptAsset = hashedAsset(script, 'js')
-  const written = [
+  const emittedAssets = [
     scriptAsset,
     ...[...chunks, ...images].map(({ name, bytes }) => hashedAsset(bytes, extname(name).slice(1)))
   ]
+
+  // Split routes can emit the same stylesheet; content-named assets have one manifest entry.
+  const written = [...new Map(emittedAssets.map((asset) => [asset.path, asset])).values()]
 
   // Root-absolute, unlike the Phase A bootstrap's bare relative src: this document is served at
   // every route depth (/h/<hostId>/tasks), where a relative href resolves against the route and
@@ -352,9 +364,11 @@ export async function buildMobileWebAppBundle({ appDir, outDir = defaultOutDir }
   // type="module", because the entry is esm and reaches its routes through import(). Same-origin
   // module and chunk both load under the shell's script-src 'self'; the policy is unchanged.
   const html =
-    '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8" />\n' +
-    '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />\n' +
-    '<title>Orca</title>\n</head>\n<body>\n<div id="root"></div>\n' +
+    `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8" />\n` +
+    `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />\n${written
+      .filter((asset) => asset.path.endsWith('.css'))
+      .map((asset) => `<link rel="stylesheet" href="/${asset.path}" />\n`)
+      .join('')}<title>Orca</title>\n</head>\n<body>\n<div id="root"></div>\n` +
     `<script type="module" src="/${scriptAsset.path}"></script>\n</body>\n</html>\n`
   const indexBytes = Buffer.from(html, 'utf8')
   const indexAsset = {

@@ -2,7 +2,7 @@ import type { MobileEndpointSupervisorDependencies } from './mobile-endpoint-sup
 import { DirectReturnProbe } from './mobile-direct-return-probe'
 import { RelayReconnectController } from './mobile-relay-reconnect-controller'
 import { RelayLeaseRotationTimer } from './mobile-relay-lease-rotation-timer'
-import { MobileEndpointHysteresis } from './mobile-endpoint-hysteresis'
+import { createMobileEndpointHysteresis } from './mobile-endpoint-hysteresis'
 import {
   liveRelayLeaseExpiry,
   persistRelayHost,
@@ -30,10 +30,6 @@ import {
 
 export type { MobileEndpointSupervisorDependencies } from './mobile-endpoint-supervisor-contract'
 
-const DIRECT_OBSERVATION_MS = 30_000
-const MINIMUM_DWELL_MS = 60_000
-const FAILURE_COOLDOWN_MS = 60_000
-
 export class MobileEndpointSupervisor {
   private bundle: MobileRelayCredentialBundle | null = null
   private stopped = false
@@ -43,7 +39,7 @@ export class MobileEndpointSupervisor {
   private credentialRotationInFlight = false
   private relayRotationPending = false
   private unsubscribeState: (() => void) | null = null
-  private readonly hysteresis: MobileEndpointHysteresis
+  private readonly hysteresis: ReturnType<typeof createMobileEndpointHysteresis>
   private readonly relayReconnect: RelayReconnectController
   private readonly leaseRotation: RelayLeaseRotationTimer
   private readonly logRelay: RelayRecoveryLog
@@ -57,12 +53,7 @@ export class MobileEndpointSupervisor {
     private host: HostProfile,
     private readonly dependencies: MobileEndpointSupervisorDependencies
   ) {
-    this.hysteresis = new MobileEndpointHysteresis(dependencies.now(), {
-      directSuccessesRequired: 3,
-      directObservationMs: DIRECT_OBSERVATION_MS,
-      failureCooldownMs: FAILURE_COOLDOWN_MS,
-      minimumDwellMs: MINIMUM_DWELL_MS
-    })
+    this.hysteresis = createMobileEndpointHysteresis(dependencies.now())
     this.logRelay = createRelayRecoveryLog(dependencies.now, dependencies.onLog)
     this.relayReconnect = new RelayReconnectController(dependencies, this.recoverRelay.bind(this))
     this.relayReconnect.reportRecoveryTo(logical)
@@ -117,7 +108,8 @@ export class MobileEndpointSupervisor {
     this.directProbe = new DirectReturnProbe(dependencies, {
       hysteresis: this.hysteresis,
       host: () => this.host,
-      canSchedule: () => this.isActive() && this.logical.getActivePath() === 'relay',
+      canSchedule: () =>
+        !dependencies.relayOnly && this.isActive() && this.logical.getActivePath() === 'relay',
       canAttempt: () => this.isActive() && !this.operationInFlight,
       beginOperation: () => (this.operationInFlight = true),
       migrate: (client, path, abort) => this.logical.migrateTo(client, path, undefined, abort),
@@ -179,6 +171,11 @@ export class MobileEndpointSupervisor {
       // are still loading, before the supervisor subscribes to state changes.
       await this.recoverRelay()
     } else {
+      const initial = this.dependencies.initialRelaySession
+      if (initial?.getState() === 'connected' && this.logical.getActivePath() === 'relay') {
+        this.relayReconnect.setActiveSession(initial)
+        this.leaseRotation.scheduleFromLease(initial.getResumeExpiresAt())
+      }
       this.directProbe.schedule()
       this.directGrace.arm()
     }

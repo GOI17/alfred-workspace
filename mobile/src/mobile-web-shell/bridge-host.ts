@@ -1,3 +1,9 @@
+import {
+  BridgeHostDisposedError,
+  BridgeCapExceededError,
+  BridgeReplyUndeliverableError
+} from './bridge-host-errors'
+import { bindMobileWebRequestClient } from './bridge-request-client'
 import type { RpcClient } from '../transport/rpc-client'
 import { markRpcDeliveryUnknown } from '../transport/rpc-delivery-ambiguity'
 import type { ConnectionState, RpcResponse } from '../transport/types'
@@ -48,33 +54,15 @@ export type BridgeHostOptions = {
   post: (json: string) => Promise<void>
   buildId: string
   sessionId: string
+  clientId?: string | null
+  initialPath?: string
+  host?: { id: string; name: string }
   onDiagnostic?: (diagnostic: BridgeHostDiagnostic) => void
 }
 
 export type BridgeHost = {
   receive: (json: string) => void
   dispose: () => void
-}
-
-class BridgeHostDisposedError extends Error {
-  constructor() {
-    super('the page bridge was torn down before this request answered')
-    this.name = 'BridgeHostDisposedError'
-  }
-}
-
-class BridgeCapExceededError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = 'BridgeCapExceededError'
-  }
-}
-
-class BridgeReplyUndeliverableError extends Error {
-  constructor(refusal: BridgeRefusal) {
-    super(`the reply could not be delivered to the page (${refusal})`)
-    this.name = 'BridgeReplyUndeliverableError'
-  }
 }
 
 /**
@@ -162,6 +150,9 @@ export function createBridgeHost(options: BridgeHostOptions): BridgeHost {
       sessionId,
       buildId,
       connection: snapshot(),
+      clientId: options.clientId ? `shell:${sessionId}` : null,
+      ...(options.host ? { host: options.host } : {}),
+      ...(options.initialPath ? { initialPath: options.initialPath } : {}),
       grants: {
         rpc: {
           maxPendingRequests: BRIDGE_MAX_PENDING_REQUESTS,
@@ -185,11 +176,12 @@ export function createBridgeHost(options: BridgeHostOptions): BridgeHost {
   /** The arity the page used, replayed exactly: `sendRequest(m)` and `sendRequest(m, undefined)`
    *  are different calls to the golden recorder. */
   function forwardRequest(message: RequestMessage): Promise<RpcResponse> {
+    const params = bindMobileWebRequestClient(message.params, options.clientId)
     if (message.options !== undefined) {
-      return client.sendRequest(message.method, message.params, message.options)
+      return client.sendRequest(message.method, params, message.options)
     }
     return 'params' in message
-      ? client.sendRequest(message.method, message.params)
+      ? client.sendRequest(message.method, params)
       : client.sendRequest(message.method)
   }
 
@@ -260,7 +252,11 @@ export function createBridgeHost(options: BridgeHostOptions): BridgeHost {
       return
     }
     try {
-      subscriptions.start(id, message.method, message.params)
+      subscriptions.start(
+        id,
+        message.method,
+        bindMobileWebRequestClient(message.params, options.clientId)
+      )
     } catch (error) {
       sendError(id, error)
     }

@@ -1,5 +1,4 @@
 import { shouldPresentNotificationOptIn } from '../notifications/notification-opt-in-gate'
-import { shouldPresentSessionViewOptIn } from '../session/session-view-opt-in-gate'
 
 export const MOBILE_ONBOARDING_STEPS = ['session-view', 'notifications'] as const
 export type MobileOnboardingStep = (typeof MOBILE_ONBOARDING_STEPS)[number]
@@ -13,17 +12,8 @@ export type MobileOnboardingDestination =
 
 /** Loads every outstanding decision in the order the wizard presents them. */
 export async function loadMobileOnboardingSteps(): Promise<MobileOnboardingStep[]> {
-  // Why: the wizard needs the complete plan for accurate progress dots; run the
-  // independent gates together so adding the second decision does not add latency.
-  const [showSessionView, showNotifications] = await Promise.all([
-    shouldPresentSessionViewOptIn(),
-    shouldPresentNotificationOptIn()
-  ])
-  return MOBILE_ONBOARDING_STEPS.filter(
-    (step) =>
-      (step === 'session-view' && showSessionView) ||
-      (step === 'notifications' && showNotifications)
-  )
+  // Screen preferences now belong to the host UI; notification permission remains native.
+  return (await shouldPresentNotificationOptIn()) ? ['notifications'] : []
 }
 
 /** Preserves a paired host while routing through outstanding decisions. */

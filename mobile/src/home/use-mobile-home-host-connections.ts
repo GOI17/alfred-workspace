@@ -33,7 +33,7 @@ type Setters = {
 
 function wireMobileHomeHostSubscriptions(
   entry: { hostId: string; client: RpcClient; state: ConnectionState },
-  setters: Setters
+  setters?: Setters
 ): () => void {
   let unsubscribeNotifications: (() => void) | null = null
   let unsubscribeAccounts: (() => void) | null = null
@@ -42,6 +42,9 @@ function wireMobileHomeHostSubscriptions(
     const reconnected = refetchGate.observe(state)
     if (state === 'connected') {
       unsubscribeNotifications ??= subscribeToDesktopNotifications(entry.client, entry.hostId)
+      if (!setters) {
+        return
+      }
       unsubscribeAccounts ??= entry.client.subscribe('accounts.subscribe', null, (payload) => {
         if (!payload || typeof payload !== 'object') {
           return
@@ -91,7 +94,7 @@ function wireMobileHomeHostSubscriptions(
 export function useMobileHomeHostConnections(
   hosts: HostProfile[],
   hostCatalog: HostCatalogEntry[],
-  setters: Setters
+  setters?: Setters
 ) {
   const [hostStates, setHostStates] = useState<Record<string, ConnectionState>>({})
   const [hostAttempts, setHostAttempts] = useState<Record<string, number>>({})
@@ -104,7 +107,7 @@ export function useMobileHomeHostConnections(
   })
   const primeHosts = usePrimeHosts()
   const subscriptionsRef = useRef(new Map<string, { client: RpcClient; cleanup: () => void }>())
-  const { setAccounts, setStats, setTaskProviders, setWorktreeInfo } = setters
+  const { setAccounts, setStats, setTaskProviders, setWorktreeInfo } = setters ?? {}
 
   useEffect(() => {
     if (hosts.length > 0) {
@@ -126,7 +129,10 @@ export function useMobileHomeHostConnections(
         subscriptionsRef.current.delete(hostId)
       }
     }
-    const activeSetters = { setAccounts, setStats, setTaskProviders, setWorktreeInfo }
+    const activeSetters =
+      setAccounts && setStats && setTaskProviders && setWorktreeInfo
+        ? { setAccounts, setStats, setTaskProviders, setWorktreeInfo }
+        : undefined
     for (const entry of allClients) {
       if (!subscriptionsRef.current.has(entry.hostId)) {
         subscriptionsRef.current.set(entry.hostId, {

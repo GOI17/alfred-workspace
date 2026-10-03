@@ -50,3 +50,12 @@ export class MobileEndpointHysteresis {
     return now >= this.cooldownUntil
   }
 }
+
+export function createMobileEndpointHysteresis(startedAt: number): MobileEndpointHysteresis {
+  return new MobileEndpointHysteresis(startedAt, {
+    directSuccessesRequired: 3,
+    directObservationMs: 30_000,
+    failureCooldownMs: 60_000,
+    minimumDwellMs: 60_000
+  })
+}

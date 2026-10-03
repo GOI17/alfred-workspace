@@ -116,17 +116,11 @@ describe('an install that carries a mobile web bundle', () => {
     expect(body.manifest.assets).toEqual(bundle.assets)
   })
 
-  // Read once per process: without the cache every chunk request re-parses the manifest, and the
-  // schema's refinement recomputes the buildId with a pure-JS sha256 on the event loop.
-  it('answers from the manifest it already read, without going back to disk', async () => {
-    const first = await call('mobileWeb.bundle.manifest')
+  it('refuses a manifest replaced by an incomplete rebuild instead of serving stale bytes', async () => {
+    expect((await call('mobileWeb.bundle.manifest')).ok).toBe(true)
     writeFileSync(join(bundle.root, 'manifest.json'), 'not json', 'utf8')
-
-    const second = await call('mobileWeb.bundle.manifest')
-
-    expect(errorMessage(second)).toBeUndefined()
-    expect(MobileWebBundleManifestResultSchema.parse(second.ok && second.result).manifest).toEqual(
-      MobileWebBundleManifestResultSchema.parse(first.ok && first.result).manifest
+    expect(errorMessage(await call('mobileWeb.bundle.manifest'))).toBe(
+      'mobile_web_bundle_unavailable'
     )
   })
 
@@ -260,7 +254,6 @@ describe('an install that carries a mobile web bundle', () => {
 
     rmSync(join(scratch, 'out', 'mobile-web'), { recursive: true, force: true })
     const replacement = writeSyntheticMobileWebBundle(join(scratch, 'out', 'mobile-web'), 2)
-    resetBundledMobileWebBundleCacheForTests()
     expect(replacement.buildId).not.toBe(bundle.buildId)
 
     const stale = await chunk({ buildId: bundle.buildId, path: script.path, offset: 0 })
@@ -278,11 +271,19 @@ describe('an install that carries a mobile web bundle', () => {
 
     rmSync(join(scratch, 'out', 'mobile-web'), { recursive: true, force: true })
     const replacement = writeSyntheticMobileWebBundle(join(scratch, 'out', 'mobile-web'), 8)
-    resetBundledMobileWebBundleCacheForTests()
 
     const response = await chunk({ buildId: replacement.buildId, path: 'index.html', offset: 0 })
 
     expect(errorMessage(response)).toBeUndefined()
+  })
+
+  it('invalidates a successful hash verdict after an in-place asset rewrite', async () => {
+    const asset = bundle.assets.find((entry) => entry.path === 'index.html')!
+    expect((await chunk({ buildId: bundle.buildId, path: asset.path, offset: 0 })).ok).toBe(true)
+    writeFileSync(join(bundle.root, asset.path), mobileWebBundleFiller(asset.byteLength, 99))
+    expect(
+      errorMessage(await chunk({ buildId: bundle.buildId, path: asset.path, offset: 0 }))
+    ).toBe('mobile_web_bundle_asset_changed')
   })
 
   it('refuses an asset whose bytes on disk no longer hash to the manifest', async () => {
@@ -324,23 +325,13 @@ describe('an install that carries a mobile web bundle', () => {
     expect(errorMessage(response)).toBe('mobile_web_bundle_asset_changed')
   })
 
-  // Deliberate: a packaged bundle is immutable for the life of the install, so the verdict is worth
-  // one hash per asset rather than one per 48 KiB. Restoring the bytes without restarting is a dev
-  // scenario, and it stays refused until the process does.
-  it('remembers the verdict, so one hash per asset covers every later chunk', async () => {
+  it('rechecks repaired bytes without requiring a desktop restart', async () => {
     const script = bundle.assets.find((asset) => asset.path.endsWith('.js'))!
-    const corrupted = mobileWebBundleFiller(script.byteLength, 99)
-    writeFileSync(join(bundle.root, script.path), corrupted)
+    writeFileSync(join(bundle.root, script.path), mobileWebBundleFiller(script.byteLength, 99))
     expect(
       errorMessage(await chunk({ buildId: bundle.buildId, path: script.path, offset: 0 }))
     ).toBe('mobile_web_bundle_asset_changed')
-
     writeFileSync(join(bundle.root, script.path), mobileWebBundleFiller(script.byteLength, 1))
-
-    expect(
-      errorMessage(await chunk({ buildId: bundle.buildId, path: script.path, offset: 0 }))
-    ).toBe('mobile_web_bundle_asset_changed')
-    resetMobileWebBundleAssetVerdictsForTests()
     expect((await chunk({ buildId: bundle.buildId, path: script.path, offset: 0 })).ok).toBe(true)
   })
 

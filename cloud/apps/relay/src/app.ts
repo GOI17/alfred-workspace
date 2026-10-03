@@ -17,6 +17,7 @@ import {
   type RelayRegion
 } from '@orca-cloud/relay-contract'
 import { Hono, type Context } from 'hono'
+import { cors } from 'hono/cors'
 import { SignJWT } from 'jose'
 import { z } from 'zod'
 import {
@@ -116,6 +117,13 @@ export function createRelayApp(
   }
 ): Hono {
   const app = new Hono()
+  // Browser recovery presents a bearer in the body; no cookies or ambient credentials are used.
+  app.use('/v1/resolve', cors({
+    origin: '*',
+    allowMethods: ['POST'],
+    allowHeaders: ['Content-Type'],
+    maxAge: 600
+  }))
   let regionCatalogCache:
     | { expiresAt: number; value: Awaited<ReturnType<RelayAssignmentStore['regionCatalog']>> }
     | undefined

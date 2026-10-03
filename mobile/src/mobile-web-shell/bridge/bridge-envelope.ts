@@ -255,7 +255,10 @@ const BridgeHostMessageSchema = z.union([
     sessionId: z.string().min(1),
     buildId: z.string().min(1),
     connection: BridgeConnectionSnapshotSchema,
-    grants: BridgeGrantsSchema
+    grants: BridgeGrantsSchema,
+    clientId: z.string().min(1).nullable().optional(),
+    initialPath: z.string().max(8192).optional(),
+    host: z.object({ id: z.string().min(1), name: z.string().min(1) }).optional()
   })
 ])
 

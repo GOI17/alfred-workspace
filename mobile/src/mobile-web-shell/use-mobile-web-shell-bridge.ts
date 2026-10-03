@@ -81,8 +81,10 @@ export type MobileWebShellBridgeView = {
 export function useMobileWebShellBridge(args: {
   hostId: string
   session: MobileWebShellSessionState
+  hostName?: string
+  initialPath?: string
 }): MobileWebShellBridgeView {
-  const { client } = useHostClient(args.hostId)
+  const { client, clientId } = useHostClient(args.hostId)
   const ready = args.session.kind === 'ready' ? args.session : null
   const sessionId = ready?.sessionId ?? null
   const buildId = ready?.buildId ?? null
@@ -99,6 +101,9 @@ export function useMobileWebShellBridge(args: {
       client,
       buildId,
       sessionId,
+      clientId,
+      host: { id: args.hostId, name: args.hostName ?? args.hostId },
+      initialPath: args.initialPath,
       post: (json) => {
         const mounted = viewRef.current
         return mounted === null || mounted.sessionId !== sessionId
@@ -112,7 +117,7 @@ export function useMobileWebShellBridge(args: {
       hostRef.current = null
       host.dispose()
     }
-  }, [buildId, client, sessionId])
+  }, [args.hostId, args.hostName, args.initialPath, buildId, client, clientId, sessionId])
 
   return {
     bridgeEnabled: ready !== null,

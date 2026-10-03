@@ -6,7 +6,7 @@ import { buildMobileWebBundle, isDirectInvocation } from './build-mobile-web-bun
 import { assertMobileWebBundleBuilt } from './verify-packaged-mobile-web-bundle.cjs'
 
 const projectDir = fileURLToPath(new URL('../..', import.meta.url))
-const bundleDir = join(projectDir, 'out', 'mobile-web')
+const bundleDir = join(projectDir, 'out', 'mobile-web-diagnostic')
 const sourceDir = join(projectDir, 'src', 'mobile-web')
 
 // Phase A budget, not the contract ceiling: a bootstrap page past a quarter-megabyte has stopped

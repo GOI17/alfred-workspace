@@ -134,7 +134,7 @@ export function MountedBottomDrawer({
   useEffect(() => {
     // Pinned-under sheets stay visible for size but must not ride the keyboard —
     // only the top interactive sheet owns inset/lift.
-    if (!visible || !interactive) {
+    if (!visible || !interactive || Platform.OS === 'web') {
       keyboardOffset.value = 0
       setKeyboardInset(0)
       return
@@ -194,7 +194,7 @@ export function MountedBottomDrawer({
   }, [onClose, progress])
 
   useEffect(() => {
-    if (!visible || !interactive) {
+    if (!visible || !interactive || Platform.OS === 'web') {
       return
     }
 
@@ -205,9 +205,12 @@ export function MountedBottomDrawer({
     return () => sub.remove()
   }, [visible, interactive, dismiss])
 
-  const scrollHandler = useAnimatedScrollHandler((event) => {
-    scrollOffsetY.value = Math.max(event.contentOffset.y, 0)
-  })
+  const scrollHandler = useAnimatedScrollHandler(
+    (event) => {
+      scrollOffsetY.value = Math.max(event.contentOffset.y, 0)
+    },
+    [scrollOffsetY]
+  )
 
   const scrollGesture = Gesture.Native()
   const handlePanGesture = Gesture.Pan()
@@ -283,6 +286,7 @@ export function MountedBottomDrawer({
       }
     })
 
+  // Web builds without the worklets Babel plugin need explicit shared-value dependencies.
   const drawerStyle = useAnimatedStyle(() => {
     // Why: fill mode already shrinks height by the keyboard inset and lifts via
     // marginBottom (layout). Also subtracting keyboardOffset here would double-
@@ -298,12 +302,12 @@ export function MountedBottomDrawer({
         }
       ]
     }
-  })
+  }, [progress, translateY, keyboardOffset, fillAvailable, screenHeight])
 
   const backdropStyle = useAnimatedStyle(() => {
     const dragFade = interpolate(translateY.value, [0, 300], [1, 0], Extrapolation.CLAMP)
     return { opacity: progress.value * dragFade }
-  })
+  }, [progress, translateY])
 
   // Why: the sheet renders through a full-screen native window (its own Modal
   // below, or the shared BottomDrawerModalHost) so it always covers the viewport

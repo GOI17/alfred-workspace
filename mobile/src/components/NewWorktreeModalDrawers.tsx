@@ -14,6 +14,7 @@ import type {
 } from './new-workspace-project-targets'
 import { getMobileWorkspaceRepoBadgeColor } from './new-worktree-modal-types'
 import { PickerListDrawer } from './PickerListDrawer'
+import { AddHostProjectDrawer } from './AddHostProjectDrawer'
 import { SetupHookTrustDrawer, type SetupTrustPrompt } from './SetupHookTrustDrawer'
 import { SmartWorkspaceSourceDrawer } from './SmartWorkspaceSourceDrawer'
 import type { NewWorktreeDrawerView } from './use-new-worktree-drawer-navigation'
@@ -39,6 +40,7 @@ export function NewWorktreeModalDrawers(props: {
   creating: boolean
   onSourceRepoChange: (repo: MobileWorkspaceRepo) => void
   onRepoChange: (repo: MobileWorkspaceRepo) => void
+  onProjectAdded: (repo: MobileWorkspaceRepo) => void
   onAgentChange: (agent: NewWorktreeAgentOption) => void
   onTransitionToForm: () => void
   onApproveSetupTrust: (alwaysTrust: boolean) => void
@@ -47,6 +49,12 @@ export function NewWorktreeModalDrawers(props: {
 }) {
   return (
     <>
+      <AddHostProjectDrawer
+        visible={props.visible && props.drawerView === 'addProject'}
+        client={props.client}
+        onAdded={props.onProjectAdded}
+        onClose={props.onTransitionToForm}
+      />
       <SmartWorkspaceSourceDrawer
         visible={props.visible && props.drawerView === 'source'}
         client={props.client}

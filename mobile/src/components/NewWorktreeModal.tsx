@@ -65,11 +65,12 @@ function NewWorktreeModalContent(props: NewWorktreeModalProps) {
     onCreated,
     onClose
   } = props
-  const { repos, selectedRepo, setSelectedRepo, loading } = useNewWorkspaceRepositories({
-    client,
-    hostId,
-    visible
-  })
+  const { repos, selectedRepo, setSelectedRepo, acceptAddedRepo, loading } =
+    useNewWorkspaceRepositories({
+      client,
+      hostId,
+      visible
+    })
   const navigation = useNewWorktreeDrawerNavigation(visible)
   const [note, setNote] = useState('')
   const [error, setError] = useState('')
@@ -228,6 +229,7 @@ function NewWorktreeModalContent(props: NewWorktreeModalProps) {
         onClose={onClose}
         onOpenExternalUrl={openExternalUrl}
         onOpenProject={() => openPicker('project')}
+        onAddProject={() => navigation.transitionDrawer('addProject')}
         onOpenRunTarget={() => openPicker('runTarget')}
         onOpenSource={navigation.openSourceDrawer}
         onClearError={() => setError('')}
@@ -259,6 +261,11 @@ function NewWorktreeModalContent(props: NewWorktreeModalProps) {
         creating={createSubmit.creating}
         onSourceRepoChange={(repo) => selectRepo(repo, false)}
         onRepoChange={(repo) => selectRepo(repo, true)}
+        onProjectAdded={(repo) => {
+          acceptAddedRepo(repo)
+          composer.handleClearSmartNameSelection()
+          navigation.transitionDrawer('form')
+        }}
         onAgentChange={(agent) => {
           agentSelection.setAgentOverridden(true)
           agentSelection.setSelectedAgent(agent)

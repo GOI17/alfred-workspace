@@ -1,4 +1,5 @@
 import { app, ipcMain, shell, type IpcMainInvokeEvent } from 'electron'
+import { createMobileBrowserLink, mobileBrowserEntryUrl } from '../../shared/mobile-browser-link'
 import type { RuntimeAccessGrant } from '../../shared/runtime-access-grants'
 import type { MobilePairingConnectionMode } from '../../shared/mobile-pairing-connection-mode'
 import { classifyRemotePairingHostname } from '../../shared/remote-pairing-address'
@@ -82,10 +83,21 @@ export function registerMobileHandlers(
       _event,
       args?: {
         address?: string
+        browserEntryUrl?: string
         connectionMode?: MobilePairingConnectionMode
         rotate?: boolean
       }
     ) => {
+      if (args?.browserEntryUrl !== undefined) {
+        try {
+          mobileBrowserEntryUrl(args.browserEntryUrl)
+        } catch {
+          return {
+            available: false as const,
+            guidance: 'Enter the HTTPS address of your Alfred web entry page.'
+          }
+        }
+      }
       // Why: allow the caller to specify which network interface address to
       // embed in the QR code. This supports overlay networks (Tailscale,
       // ZeroTier) where the default LAN IP isn't reachable from the phone.
@@ -127,7 +139,12 @@ export function registerMobileHandlers(
         }
       }
 
-      const qr = await (dependencies.encodePairingQr ?? encodeMobilePairingQr)(offer.pairingUrl)
+      const browserUrl = args?.browserEntryUrl
+        ? createMobileBrowserLink(args.browserEntryUrl, offer.pairingUrl)
+        : undefined
+      const qr = await (dependencies.encodePairingQr ?? encodeMobilePairingQr)(
+        browserUrl ?? offer.pairingUrl
+      )
 
       return {
         available: true as const,
@@ -135,6 +152,7 @@ export function registerMobileHandlers(
         qrSize: qr.ok ? qr.qrSize : null,
         ...(!qr.ok ? { qrError: qr.reason } : {}),
         pairingUrl: offer.pairingUrl,
+        ...(browserUrl ? { browserUrl } : {}),
         // Why: with nothing advertised the offer's endpoint is the loopback fallback, which points at
         // whichever device scans the QR — never this host. Report no endpoint so the UI omits it
         // instead of printing an address the phone can't reach.

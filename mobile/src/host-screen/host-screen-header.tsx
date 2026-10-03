@@ -1,4 +1,4 @@
-import { Pressable, Text, View } from 'react-native'
+import { Platform, Pressable, Text, View } from 'react-native'
 import {
   ChevronLeft,
   Filter,
@@ -41,15 +41,17 @@ export function HostScreenHeader({ controller }: { controller: HostScreenControl
   return (
     <View style={styles.topChrome}>
       <View style={styles.statusBar}>
-        <Pressable
-          style={styles.backButton}
-          onPress={actions.leaveHost}
-          accessibilityRole="button"
-          accessibilityLabel="Back to hosts"
-          hitSlop={8}
-        >
-          <ChevronLeft size={22} color={colors.textPrimary} />
-        </Pressable>
+        {Platform.OS !== 'web' ? (
+          <Pressable
+            style={styles.backButton}
+            onPress={actions.leaveHost}
+            accessibilityRole="button"
+            accessibilityLabel="Back to hosts"
+            hitSlop={8}
+          >
+            <ChevronLeft size={22} color={colors.textPrimary} />
+          </Pressable>
+        ) : null}
         {(() => {
           const headerVerdict = classifyConnection({
             state: connState,

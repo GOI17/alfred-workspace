@@ -19,6 +19,8 @@ import {
   createOrcaBridgePageTransport,
   readOrcaBridgePageChannel
 } from '../mobile-web-shell/bridge/orca-bridge-page-channel'
+import { setShellHost } from './host-store.web'
+import { colors, spacing, typography } from '../theme/mobile-theme'
 import type { RpcClient } from './rpc-client'
 import type { ConnectionState, HostProfile } from './types'
 import type { RpcClientContextValue } from './rpc-client-context-contract'
@@ -82,7 +84,9 @@ export function RpcClientProvider({ children }: { children: ReactNode }) {
   // Held in a ref as well as in state: the context value is built once, because `useHostClient`
   // re-acquires whenever the value's identity changes.
   const clientRef = useRef<RpcClient | null>(null)
+  const clientIdRef = useRef<string | null>(null)
   const acquiredRef = useRef<Set<string>>(new Set())
+  const [incompatible, setIncompatible] = useState(false)
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
@@ -100,6 +104,13 @@ export function RpcClientProvider({ children }: { children: ReactNode }) {
     // Nothing mounts before `init`: every member of this client throws until the shell answers,
     // and a screen that rendered first would record its first frame against a session-less client.
     const release = client.onReady(() => {
+      const host = client.getShellSession()?.host
+      if (!host) {
+        setIncompatible(true)
+        return
+      }
+      clientIdRef.current = client.getShellSession()?.clientId ?? null
+      setShellHost(host, client.getShellSession()?.initialPath)
       clientRef.current = client
       setReady(true)
     })
@@ -131,7 +142,7 @@ export function RpcClientProvider({ children }: { children: ReactNode }) {
       disconnectHostClient: () => {},
       getState: state,
       getKnownState: () => (clientRef.current === null ? null : state()),
-      getClientId: () => null,
+      getClientId: () => clientIdRef.current,
       getReconnectAttempt: () => clientRef.current?.getReconnectAttempt() ?? 0,
       getLastConnectedAt: () => clientRef.current?.getLastConnectedAt() ?? null,
       // The page reaches its host through the shell bridge, which rides whatever path the RN
@@ -155,6 +166,22 @@ export function RpcClientProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  if (incompatible) {
+    return (
+      <div
+        role="alert"
+        style={{
+          flex: 1,
+          backgroundColor: colors.bgBase,
+          color: colors.textPrimary,
+          padding: spacing.lg,
+          fontSize: typography.bodySize
+        }}
+      >
+        Update the mobile app to open this host interface. Use the native host selector to return.
+      </div>
+    )
+  }
   return <Ctx.Provider value={value}>{ready ? children : null}</Ctx.Provider>
 }
 

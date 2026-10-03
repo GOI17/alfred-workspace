@@ -204,12 +204,42 @@ async function flush(): Promise<void> {
 
 describe('the hybrid shell runner', () => {
   beforeEach(() => {
+    doubles.manifest.buildId = 'b'.repeat(64)
     doubles.manifestReads = 0
     doubles.manifestClients.length = 0
     doubles.manifestRejection = null
     doubles.fetches.length = 0
     doubles.connection = { client: {}, state: 'connected' }
     doubles.gates.hostCapabilities = [MOBILE_WEB_BUNDLE_CAPABILITY]
+  })
+
+  it('keeps a shown generation on reconnect and fetches the rebuilt UI only on explicit reload', async () => {
+    const fake = createFakeStore()
+    const mounted = await mount(fake.store)
+    const cached = activeGeneration()
+    fake.settleCacheRead(cached)
+    await flush()
+    expect(mounted.states().at(-1)).toMatchObject({ kind: 'ready', buildId: 'b'.repeat(64) })
+    doubles.manifest = { ...doubles.manifest, buildId: 'd'.repeat(64) }
+    doubles.connection = { client: {}, state: 'reconnecting' }
+    await act(async () => mounted.rerender())
+    doubles.connection = { client: {}, state: 'connected' }
+    await act(async () => mounted.rerender())
+    expect(doubles.manifestReads).toBe(1)
+    await act(async () => mounted.retry())
+    fake.settleCacheRead(cached)
+    await flush()
+    expect(doubles.manifestReads).toBe(2)
+    expect(doubles.fetches).toHaveLength(1)
+    doubles.fetches[0]?.settle({
+      manifest: doubles.manifest,
+      assets: new Map(),
+      totalBytes: 2048,
+      elapsedMs: 1
+    })
+    await flush()
+    expect(mounted.states().at(-1)).toMatchObject({ kind: 'ready', buildId: 'd'.repeat(64) })
+    await act(async () => mounted.tree.unmount())
   })
 
   it('abandons the cache read of a session that has been unmounted', async () => {

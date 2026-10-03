@@ -1,4 +1,5 @@
 import { translate } from '@/i18n/i18n'
+import { MobileBrowserAccessSection } from './MobileBrowserAccessSection'
 import type { MobileNetworkInterface } from '../settings/mobile-network-interface-selection'
 import {
   HeroFlow,
@@ -119,6 +120,7 @@ export function MobilePageContent({
       />
       <section className="mp-hero">
         <div className="mp-hero-copy">
+          <MobileBrowserAccessSection />
           {stage === null ? null : stage === 'intro' ? (
             <HeroIntro onStart={enterFlow} />
           ) : stage === 'paired' ? (

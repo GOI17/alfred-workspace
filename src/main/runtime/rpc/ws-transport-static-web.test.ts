@@ -26,6 +26,7 @@ describe('WebSocketTransport static web client', () => {
     const staticRoot = mkdtempSync(join(tmpdir(), 'ws-transport-static-'))
     mkdirSync(join(staticRoot, 'assets'))
     writeFileSync(join(staticRoot, 'web-index.html'), '<html>web</html>')
+    writeFileSync(join(staticRoot, 'mobile-browser.html'), '<html>phone</html>')
     writeFileSync(join(staticRoot, 'assets', 'app.js'), 'console.log("web")')
     const transport = createStaticTransport(staticRoot)
 
@@ -35,6 +36,13 @@ describe('WebSocketTransport static web client', () => {
     expect(indexResponse.status).toBe(200)
     expect(indexResponse.headers.get('content-type')).toContain('text/html')
     await expect(indexResponse.text()).resolves.toBe('<html>web</html>')
+
+    const mobileResponse = await fetch(
+      `http://127.0.0.1:${transport.resolvedPort}/mobile-browser.html`
+    )
+    expect(mobileResponse.status).toBe(200)
+    expect(mobileResponse.headers.get('cache-control')).toBe('no-cache')
+    await expect(mobileResponse.text()).resolves.toBe('<html>phone</html>')
 
     const assetResponse = await fetch(`http://127.0.0.1:${transport.resolvedPort}/assets/app.js`)
     expect(assetResponse.status).toBe(200)

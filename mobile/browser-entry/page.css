@@ -1,0 +1,101 @@
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+}
+body {
+  background: var(--bgBase);
+  color: var(--textPrimary);
+  font:
+    var(--body) system-ui,
+    sans-serif;
+}
+* {
+  box-sizing: border-box;
+}
+.browser-start {
+  max-width: 40rem;
+  margin: auto;
+  padding: var(--xl);
+}
+.browser-shell {
+  height: 100%;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md);
+}
+h1 {
+  font-size: var(--title);
+  margin: var(--lg) 0;
+}
+p {
+  line-height: 1.5;
+  color: var(--textSecondary);
+  margin: 0;
+}
+button,
+textarea {
+  font: inherit;
+  border: 1px solid var(--borderSubtle);
+  border-radius: var(--radius);
+  padding: var(--md);
+  color: var(--textPrimary);
+  background: var(--bgPanel);
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+button.primary {
+  background: var(--surfaceBright);
+  color: var(--bgBase);
+}
+button:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accentBlue);
+  outline-offset: 2px;
+}
+textarea {
+  min-height: 6rem;
+  width: 100%;
+  resize: vertical;
+}
+header,
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sm);
+  flex-wrap: wrap;
+}
+header {
+  padding: var(--sm);
+  padding-top: max(var(--sm), env(safe-area-inset-top));
+  border-bottom: 1px solid var(--borderSubtle);
+}
+header span {
+  flex: 1;
+}
+aside {
+  background: var(--bgRaised);
+  padding: var(--md);
+}
+aside p {
+  color: var(--statusRed);
+  margin-bottom: var(--sm);
+}
+iframe {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  border: 0;
+  background: var(--bgBase);
+}

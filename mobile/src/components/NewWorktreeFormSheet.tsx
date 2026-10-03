@@ -45,6 +45,7 @@ export function NewWorktreeFormSheet(props: {
   onClose: () => void
   onOpenExternalUrl: (url: string) => Promise<unknown>
   onOpenProject: () => void
+  onAddProject: () => void
   onOpenRunTarget: () => void
   onOpenSource: () => void
   onClearError: () => void
@@ -60,6 +61,14 @@ export function NewWorktreeFormSheet(props: {
     <BottomDrawer visible={props.visible} interactive={props.interactive} onClose={props.onClose}>
       <View style={styles.header}>
         <Text style={styles.title}>Create worktree</Text>
+        <Pressable
+          accessibilityRole="button"
+          style={styles.advancedToggle}
+          onPress={props.onAddProject}
+          disabled={props.creating || props.loading}
+        >
+          <Text style={styles.advancedText}>Add project</Text>
+        </Pressable>
       </View>
 
       {props.loading ? (
