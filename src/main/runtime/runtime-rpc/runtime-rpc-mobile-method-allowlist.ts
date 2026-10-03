@@ -189,6 +189,7 @@ export const MOBILE_RPC_METHOD_ALLOWLIST = new Set([
   'preflight.detectAgents',
   'preflight.detectRemoteAgents',
   'projectGroup.list',
+  'repo.add',
   'repo.baseRefDefault',
   'repo.gitAvailable',
   'repo.hooks',

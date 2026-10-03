@@ -5,6 +5,7 @@ import type { MobileWebShellSessionState } from './mobile-web-shell-session-cont
 
 type ScreenDependencies = {
   retry: Mock
+  alert: Mock
   reportShellFailure: Mock
   openUrl: Mock
   lifecycle: string[]
@@ -17,6 +18,7 @@ const dependencies = vi.hoisted((): ScreenDependencies => {
   Object.assign(globalThis, { __DEV__: true })
   return {
     retry: vi.fn(),
+    alert: vi.fn(),
     reportShellFailure: vi.fn(),
     openUrl: vi.fn(),
     lifecycle: [],
@@ -26,6 +28,7 @@ const dependencies = vi.hoisted((): ScreenDependencies => {
 
 vi.mock('react-native', () => ({
   ActivityIndicator: 'ActivityIndicator',
+  Alert: { alert: dependencies.alert },
   Linking: { openURL: dependencies.openUrl },
   Platform: { OS: 'ios' },
   Pressable: 'Pressable',
@@ -67,6 +70,7 @@ vi.mock('./use-mobile-web-shell-session', () => ({
 }))
 
 import { MobileWebShellScreen } from './MobileWebShellScreen'
+import { router } from 'expo-router'
 
 const BUILD_ID = 'a1b2c3d4e5f6'.repeat(5) + 'abcd'
 const DIRECTORY = '/var/mobile/Containers/Data/Caches/mobile-web/deadbeef/generations/a1b2'
@@ -118,6 +122,32 @@ describe('the hybrid shell screen', () => {
     dependencies.retry.mockReset()
     dependencies.reportShellFailure.mockReset()
     dependencies.lifecycle.length = 0
+  })
+
+  it('offers native return even on failures and asks before discarding drafts on reload', async () => {
+    const tree = await render(readyState('session'))
+    const buttons = byName(tree, 'Pressable')
+    const reload = buttons.find((node) => node.props.testID === 'mobile-web-shell-reload')
+    act(() => reload?.props.onPress())
+    expect(dependencies.retry).not.toHaveBeenCalled()
+    expect(dependencies.alert).toHaveBeenCalledWith(
+      'Reload host interface?',
+      expect.stringContaining('Unsent text'),
+      expect.any(Array)
+    )
+    const actions = dependencies.alert.mock.calls.at(-1)?.[2]
+    act(() => actions.find((action: { text: string }) => action.text === 'Reload').onPress())
+    expect(dependencies.retry).toHaveBeenCalledOnce()
+    await update(tree, { kind: 'failed', reason: 'download-failed', retriedOnce: false })
+    expect(
+      byName(tree, 'Pressable').some((node) => node.props.testID === 'mobile-web-shell-back')
+    ).toBe(true)
+    act(() =>
+      byName(tree, 'Pressable')
+        .find((node) => node.props.testID === 'mobile-web-shell-back')
+        ?.props.onPress()
+    )
+    expect(router.replace).toHaveBeenCalledWith('/')
   })
 
   it('renders the update wall for a bundle verdict, with no shell view', async () => {

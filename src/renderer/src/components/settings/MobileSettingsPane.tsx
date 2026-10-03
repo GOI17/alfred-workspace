@@ -9,6 +9,7 @@ import {
 import { translate } from '@/i18n/i18n'
 import { useAppStore } from '@/store'
 import { MobileRelayBetaNotice } from './MobileRelayBetaNotice'
+import { MobileBrowserAccessSection } from '../mobile/MobileBrowserAccessSection'
 export { getMobileSettingsPaneSearchEntries }
 
 const ORCA_IOS_APP_STORE_URL = 'https://apps.apple.com/app/orca-ide/id6766130217'
@@ -21,6 +22,7 @@ export function MobileSettingsPane(): React.JSX.Element {
 
   return (
     <div className="space-y-4">
+      <MobileBrowserAccessSection />
       <SearchableSetting
         title={translate('auto.components.settings.MobileSettingsPane.e7a3ae8c4e', 'Mobile')}
         description={translate(

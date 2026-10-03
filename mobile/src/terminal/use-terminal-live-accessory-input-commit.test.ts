@@ -250,3 +250,4 @@ describe('terminal live accessory input commit hook', () => {
     expect(result).toEqual({ kind: 'handled' })
   })
 })
+vi.mock('react-native', () => ({ Platform: { OS: 'ios' } }))

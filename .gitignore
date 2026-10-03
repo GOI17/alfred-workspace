@@ -118,6 +118,7 @@ docs/**
 !docs/reference/linux-glibc-compatibility.md
 !docs/reference/main-branch-builds.md
 !docs/reference/macos-press-and-hold.md
+!docs/reference/mobile-host-ui-preview.md
 !docs/reference/orcad-operations.md
 !docs/reference/pnpm-install-policy.md
 !docs/reference/relay-grace-time-reconfiguration.md

@@ -18,7 +18,7 @@ export function MobileHomeListHeader({ stats }: { stats: HomeStatsSummary | null
   return (
     <View>
       <View style={styles.hero}>
-        <Text style={styles.heroTitle}>Welcome back</Text>
+        <Text style={styles.heroTitle}>Choose your desktop</Text>
       </View>
       {stats ? (
         <View style={styles.statsRow}>

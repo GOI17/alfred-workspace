@@ -19,6 +19,7 @@ export function useNewWorkspaceRepositories(args: {
   selectedRepo: MobileWorkspaceRepo | null
   setSelectedRepo: (repo: MobileWorkspaceRepo | null) => void
   loading: boolean
+  acceptAddedRepo: (repo: MobileWorkspaceRepo) => void
 } {
   const { client, hostId, visible } = args
   const [initialRepos] = useState(() =>
@@ -26,6 +27,7 @@ export function useNewWorkspaceRepositories(args: {
   )
   const [repos, setRepos] = useState<MobileWorkspaceRepo[]>(initialRepos ?? [])
   const [selectedRepo, setSelectedRepo] = useState<MobileWorkspaceRepo | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
   const [loading, setLoading] = useState(initialRepos == null)
   const lastVisitedRepo = useLastVisitedWorktreeRepoId(hostId, visible)
 
@@ -79,7 +81,19 @@ export function useNewWorkspaceRepositories(args: {
     return () => {
       stale = true
     }
-  }, [visible, client, hostId])
+  }, [visible, client, hostId, refreshKey])
 
-  return { repos, selectedRepo, setSelectedRepo, loading: loading && repos.length === 0 }
+  function acceptAddedRepo(repo: MobileWorkspaceRepo) {
+    setRepos((current) => [...current.filter((item) => item.id !== repo.id), repo])
+    setSelectedRepo(repo)
+    setRefreshKey((key) => key + 1)
+  }
+
+  return {
+    repos,
+    selectedRepo,
+    setSelectedRepo,
+    acceptAddedRepo,
+    loading: loading && repos.length === 0
+  }
 }

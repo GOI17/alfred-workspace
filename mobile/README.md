@@ -2,7 +2,11 @@
 
 React Native companion app for Orca. Monitor worktrees, view terminal output, and send commands from your phone.
 
-Local development uses two processes:
+For access **without installing an app**, build with `pnpm build:desktop` and use **Mobile → Open in browser** for automatic local access. To connect a phone, host `out/mobile-browser/` over HTTPS and expand **Access from your phone** to generate its QR. Opening a pairing link connects automatically. The relay director needs the browser CORS change for endpoint recovery. No public deployment is included in this worktree. See the [reproducible browser guide](../docs/reference/mobile-host-ui-preview.md#usar-alfred-desde-el-navegador-sin-instalar-una-app) for requirements and limits.
+
+The native app pairs and selects hosts, then opens the host-served work interface (including relay, without a public Metro server). See [Host UI setup](../docs/reference/mobile-host-ui-preview.md). It requires one initial native container update.
+
+Native app development uses two processes:
 
 - Orca desktop/Electron from the repo root. This hosts the mobile WebSocket RPC server on port `6768`.
 - Expo Metro from `mobile/`. This serves the React Native app on port `8081`.

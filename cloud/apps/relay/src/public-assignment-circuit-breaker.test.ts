@@ -13,16 +13,27 @@ describe('public assignment circuit breaker', () => {
       ready: vi.fn(async () => true)
     })
 
+    const preflight = await app.request('/v1/resolve', {
+      method: 'OPTIONS', headers: { Origin: 'https://alfred.example', 'Access-Control-Request-Method': 'POST', 'Access-Control-Request-Headers': 'content-type' }
+    })
+    expect(preflight.status).toBe(204)
+    expect(preflight.headers.get('access-control-allow-origin')).toBe('*')
+    expect(preflight.headers.get('access-control-allow-methods')).toBe('POST')
+    expect(preflight.headers.get('access-control-allow-credentials')).toBeNull()
+    expect(resolveResume).not.toHaveBeenCalled()
+
     for (const path of ['/v1/assign', '/v1/resolve']) {
       const response = await app.request(path, { method: 'POST' })
       expect(response.status).toBe(503)
       expect(response.headers.get('retry-after')).toBe('5')
       expect(await response.json()).toEqual({ error: 'assignments_temporarily_unavailable' })
+      expect(response.headers.get('access-control-allow-origin')).toBe(path === '/v1/resolve' ? '*' : null)
     }
     expect(assign).not.toHaveBeenCalled()
     expect(resolveResume).not.toHaveBeenCalled()
     expect((await app.request('/health')).status).toBe(200)
     expect((await app.request('/v1/admin/drain', { method: 'POST' })).status).toBe(401)
+    expect((await app.request('/v1/admin/drain', { method: 'OPTIONS', headers: { Origin: 'https://alfred.example' } })).headers.get('access-control-allow-origin')).toBeNull()
   })
 })
 

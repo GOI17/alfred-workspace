@@ -178,6 +178,7 @@ describe('chunk reads in flight on one connection', () => {
     await settleMicrotasks()
 
     // One verification open for the four of them; the rest are the four chunk reads.
+    await vi.waitFor(() => expect(gate.opens).toBe(1))
     const opensBeforeRelease = gate.opens
     gate.release()
     await Promise.all(together)
@@ -193,7 +194,7 @@ describe('a client that disconnects while its chunk is being read', () => {
     gate.hold()
     const pending = chunk(0, { connectionId: 'conn-3', signal: controller.signal })
     await settleMicrotasks()
-    expect(gate.opens).toBe(1)
+    await vi.waitFor(() => expect(gate.opens).toBe(1))
 
     controller.abort()
     gate.release()

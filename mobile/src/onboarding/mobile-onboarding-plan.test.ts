@@ -21,8 +21,8 @@ describe('mobile onboarding plan', () => {
   })
 
   it.each([
-    [true, true, ['session-view', 'notifications']],
-    [true, false, ['session-view']],
+    [true, true, ['notifications']],
+    [true, false, []],
     [false, true, ['notifications']],
     [false, false, []]
   ] as const)(
@@ -32,7 +32,7 @@ describe('mobile onboarding plan', () => {
       vi.mocked(shouldPresentNotificationOptIn).mockResolvedValue(showNotifications)
 
       await expect(loadMobileOnboardingSteps()).resolves.toEqual(expected)
-      expect(shouldPresentSessionViewOptIn).toHaveBeenCalledOnce()
+      expect(shouldPresentSessionViewOptIn).not.toHaveBeenCalled()
       expect(shouldPresentNotificationOptIn).toHaveBeenCalledOnce()
     }
   )

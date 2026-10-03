@@ -1,11 +1,22 @@
+import type {
+  BridgeRpcClient,
+  BridgeRpcClientDiagnostic,
+  BridgeRpcClientOptions,
+  BridgeShellSession
+} from './bridge-rpc-client-contract'
+export type {
+  BridgeRpcClient,
+  BridgeRpcClientDiagnostic,
+  BridgeRpcClientOptions,
+  BridgeShellSession
+} from './bridge-rpc-client-contract'
 import type { BrowserScreencastFrame } from '../../transport/browser-screencast-protocol'
-import type { RpcClient, SendRequestOptions } from '../../transport/rpc-client'
+import type { SendRequestOptions } from '../../transport/rpc-client'
 import type { ConnectionState, ForegroundNudgeReason, RpcResponse } from '../../transport/types'
 import {
   BRIDGE_MAX_PENDING_REQUESTS,
   BRIDGE_MAX_SUBSCRIPTIONS,
-  utf8ByteLength,
-  type BridgeRefusal
+  utf8ByteLength
 } from './bridge-caps'
 import { BridgeConnectionCache } from './bridge-client-connection-cache'
 import { createBridgeInitHandshake } from './bridge-client-init-handshake'
@@ -17,16 +28,12 @@ import {
   BridgeShellReplacedError
 } from './bridge-client-errors'
 import { BridgeClientRequests } from './bridge-client-requests'
-import {
-  BridgeClientSubscriptions,
-  type BridgeStreamEndReason
-} from './bridge-client-subscriptions'
+import { BridgeClientSubscriptions } from './bridge-client-subscriptions'
 import {
   BRIDGE_PROTOCOL_VERSION,
   readBridgeHostMessage,
   type BridgeClientMessage,
   type BridgeConnectionSnapshot,
-  type BridgeGrants,
   type BridgeHostMessage
 } from './bridge-envelope'
 import { reconstructBridgeError } from './bridge-error-capture'
@@ -42,36 +49,6 @@ export {
 
 /** Base64url, and the length the envelope's id pattern requires. Base36 digits are a subset of it. */
 const BRIDGE_ID_CHARS = 22
-
-/** Nothing here is recoverable in place; each is worth a line in a log and none is retried. */
-export type BridgeRpcClientDiagnostic =
-  | { kind: 'refused'; refusal: BridgeRefusal }
-  | { kind: 'send-failed'; error: unknown }
-  | { kind: 'stream-ended'; reason: BridgeStreamEndReason }
-  | { kind: 'stream-failed'; error: unknown }
-  | { kind: 'state-out-of-order' }
-  | { kind: 'binary-frame-dropped' }
-  | { kind: 'unknown-id' }
-
-/** What `init` said this page is attached to. `grants` is what a call site checks before it posts. */
-export type BridgeShellSession = {
-  sessionId: string
-  buildId: string
-  grants: BridgeGrants
-}
-
-export type BridgeRpcClientOptions = {
-  /** Posts one frame to the shell. May throw; nothing about returning proves delivery. */
-  send: (json: string) => void
-  onMessage: (handler: (json: string) => void) => () => void
-  onDiagnostic?: (diagnostic: BridgeRpcClientDiagnostic) => void
-}
-
-export type BridgeRpcClient = RpcClient & {
-  /** Fires once `init` has landed, immediately if it already has. Mount no screen before it. */
-  onReady: (listener: () => void) => () => void
-  getShellSession: () => BridgeShellSession | null
-}
 
 /**
  * The page's `RpcClient`, which is a bridge and not a socket.
@@ -161,7 +138,14 @@ export function createBridgeRpcClient(options: BridgeRpcClientOptions): BridgeRp
       requests.closeAll(replaced)
       subscriptions.failAll(replaced.message)
     }
-    session = { sessionId: message.sessionId, buildId: message.buildId, grants: message.grants }
+    session = {
+      sessionId: message.sessionId,
+      buildId: message.buildId,
+      grants: message.grants,
+      host: message.host,
+      clientId: message.clientId,
+      initialPath: message.initialPath
+    }
     cache.prime(message.connection)
     for (const listener of readyListeners) {
       listener()

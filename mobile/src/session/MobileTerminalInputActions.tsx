@@ -1,4 +1,10 @@
-import { ActivityIndicator, Pressable, type StyleProp, type ViewStyle } from 'react-native'
+import {
+  ActivityIndicator,
+  Platform,
+  Pressable,
+  type StyleProp,
+  type ViewStyle
+} from 'react-native'
 import { ImagePlus, Mic } from 'lucide-react-native'
 import { colors } from '../theme/mobile-theme'
 
@@ -41,6 +47,9 @@ export function MobileTerminalInputActions({
   onDictationPressOut,
   onDictationCancel
 }: MobileTerminalInputActionsProps) {
+  if (Platform.OS === 'web') {
+    return null
+  }
   const dictationActive = dictation.isStarting || dictation.isRecording
   return (
     <>

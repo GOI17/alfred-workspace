@@ -88,11 +88,16 @@ function parseManifest(bundleDir) {
   if (!Array.isArray(manifest.assets) || manifest.assets.length === 0) {
     throw failure('manifest lists no assets')
   }
+  let previousPath = ''
   for (const asset of manifest.assets) {
     if (typeof asset !== 'object' || asset === null) {
       throw failure('manifest asset entry is not an object')
     }
     assertSafeRelativePath(asset.path)
+    if (asset.path <= previousPath) {
+      throw failure('assets must be sorted by path and unique')
+    }
+    previousPath = asset.path
     if (typeof asset.sha256 !== 'string' || !SHA256_PATTERN.test(asset.sha256)) {
       throw failure(`manifest asset ${asset.path} has no sha256 digest`)
     }

@@ -13,7 +13,7 @@ const ONBOARDING_STEPS = [
   },
   {
     title: "You're connected",
-    desc: 'Your desktop will appear here. Everything is encrypted end-to-end.'
+    desc: 'Your desktop opens your work interface. Pairing and connection stay on your phone.'
   }
 ]
 

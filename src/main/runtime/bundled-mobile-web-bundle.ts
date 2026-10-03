@@ -34,24 +34,16 @@ export function getBundledMobileWebBundleRoot(): string | undefined {
   return roots.find((root) => existsSync(join(root, MANIFEST_FILENAME)))
 }
 
-// Why no invalidation: the bundle is immutable for the life of the install, and an auto-update
-// replaces it only by restarting the app, so a stale entry cannot outlive the process that read it.
-// `undefined` means "not looked at yet", `null` means "looked, and this install has no bundle".
-let cachedBundle: BundledMobileWebBundle | null | undefined
+// Cache parsing, not the install: a local UI rebuild must be visible without a desktop restart.
+let cachedBundle: BundledMobileWebBundle | null = null
+let cachedManifestSource: string | undefined
+
+export function resetBundledMobileWebBundleCacheForTests(): void {
+  cachedBundle = null
+  cachedManifestSource = undefined
+}
 
 export function loadBundledMobileWebBundle(): BundledMobileWebBundle | null {
-  if (cachedBundle === undefined) {
-    cachedBundle = readBundledMobileWebBundle()
-  }
-  return cachedBundle
-}
-
-/** Tests own the process, so they own the cache; nothing in the app may call this. */
-export function resetBundledMobileWebBundleCacheForTests(): void {
-  cachedBundle = undefined
-}
-
-function readBundledMobileWebBundle(): BundledMobileWebBundle | null {
   const root = getBundledMobileWebBundleRoot()
   if (!root) {
     return null
@@ -63,6 +55,9 @@ function readBundledMobileWebBundle(): BundledMobileWebBundle | null {
   } catch (error) {
     console.warn(`[mobile-web-bundle] cannot read ${manifestPath}:`, error)
     return null
+  }
+  if (cachedBundle?.root === root && cachedManifestSource === raw) {
+    return cachedBundle
   }
   let parsed: unknown
   try {
@@ -81,5 +76,7 @@ function readBundledMobileWebBundle(): BundledMobileWebBundle | null {
     })
     return null
   }
-  return { root, manifest: manifest.data }
+  cachedManifestSource = raw
+  cachedBundle = { root, manifest: manifest.data }
+  return cachedBundle
 }

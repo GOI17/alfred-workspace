@@ -125,6 +125,9 @@ export const MOBILE_WEB_BUNDLE_METHODS = [
           params.offset,
           MOBILE_WEB_BUNDLE_CHUNK_BYTES
         )
+        if (loadBundledMobileWebBundle()?.manifest.buildId !== bundle.manifest.buildId) {
+          throw bundleError('mobile_web_bundle_build_changed')
+        }
         return {
           buildId: bundle.manifest.buildId,
           path: asset.path,

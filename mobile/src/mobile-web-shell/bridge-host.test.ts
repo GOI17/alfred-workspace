@@ -94,6 +94,7 @@ describe('init and state', () => {
       type: 'init',
       sessionId: 'session-a',
       buildId: 'build-a',
+      clientId: null,
       connection: {
         state: 'reconnecting',
         reconnectAttempt: 3,

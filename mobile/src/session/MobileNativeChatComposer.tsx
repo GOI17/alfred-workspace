@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Image,
   Keyboard,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -267,7 +268,7 @@ export function MobileNativeChatComposer({
             textAlignVertical="top"
           />
           <View style={styles.actionRow} testID="native-chat-composer-actions">
-            {onAttachImage ? (
+            {onAttachImage && Platform.OS !== 'web' ? (
               <Pressable
                 accessibilityLabel="Attach image"
                 style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
@@ -288,7 +289,7 @@ export function MobileNativeChatComposer({
               />
             ) : null}
             <View style={styles.actionSpacer} />
-            {onMicPress ? (
+            {onMicPress && Platform.OS !== 'web' ? (
               <Pressable
                 accessibilityLabel={micActive ? 'Stop dictation' : 'Dictate'}
                 style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}

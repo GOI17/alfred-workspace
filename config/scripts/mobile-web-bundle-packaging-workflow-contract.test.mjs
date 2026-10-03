@@ -155,6 +155,12 @@ describe('mobile web bundle packaging coverage', () => {
 })
 
 describe('the build scripts the census trusts', () => {
+  it('ships the real screens and leaves diagnostics in a separate output', () => {
+    expect(packageScripts['build:mobile-web']).toContain('build-mobile-web-app-bundle.mjs')
+    expect(packageScripts['build:mobile-web']).toContain('verify-mobile-web-app-bundle.mjs')
+    expect(packageScripts['build:mobile-web:app']).toBe('pnpm run build:mobile-web')
+    expect(packageScripts['build:mobile-web:diagnostic']).toContain('build-mobile-web-bundle.mjs')
+  })
   // The census only checks that a packaging job invokes one of these. If a chain stopped calling
   // build:mobile-web, every job would still look covered while packaging failed at beforePack.
   it.each(BUNDLE_PRODUCING_SCRIPTS)('%s runs build:mobile-web', (name) => {

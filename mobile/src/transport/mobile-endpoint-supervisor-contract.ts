@@ -8,6 +8,9 @@ import type { ScheduleTimer } from './timer-scheduler'
 import type { ConnectionLogSink, HostProfile } from './types'
 
 export type MobileEndpointSupervisorDependencies = {
+  /** HTTPS browser clients cannot probe an insecure LAN WebSocket. */
+  relayOnly?: boolean
+  initialRelaySession?: MobileRelayRpcSession
   openDirect: (endpoint: string) => RpcClient
   openRelay: (
     relay: MobileRelayEndpoint,

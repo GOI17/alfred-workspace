@@ -6,7 +6,7 @@ import type {
 import {
   MobileRelayCredentialBundleSchema,
   type MobileRelayCredentialBundle
-} from './mobile-relay-credential-bundle'
+} from './mobile-relay-credential-schema'
 import { hashMobileRelayCredential } from './mobile-relay-credential-hash'
 import {
   relayCredentialProvision,
