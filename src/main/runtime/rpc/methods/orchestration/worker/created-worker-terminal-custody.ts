@@ -1,4 +1,4 @@
-import type { OrcaRuntimeService } from '../../../../orca-runtime'
+import type { AlfredRuntimeService } from '../../../../alfred-runtime'
 import type { OrchestrationDb } from '../../../../orchestration/db'
 import { requireWorkerAuthority } from './worker-topology'
 
@@ -13,7 +13,7 @@ import { requireWorkerAuthority } from './worker-topology'
  * structured session, which reaches its authority in this same turn and so has no gap to close.
  */
 export function recordCreatedWorkerTerminalCustody(
-  runtime: OrcaRuntimeService,
+  runtime: AlfredRuntimeService,
   stage: { db: OrchestrationDb; dispatchId: string; worktreeId: string; terminalHandle: string },
   created: boolean
 ): void {

@@ -8,7 +8,7 @@ import {
   hasSshSourceChange,
   NATIVE_IME_SOURCE_ROUTE_IDS,
   PR_E2E_SOURCE_ROUTES,
-  selectPrE2eSpecs,
+  selectPrE2eSpecs as selectSpecs,
   SSH_SOURCE_ROUTE_IDS
 } from './pr-e2e-source-routing.mjs'
 import {
@@ -57,8 +57,8 @@ const restartSurvivalRoute = PR_E2E_SOURCE_ROUTES.find(
 describe('restart-survival E2E routing', () => {
   // Every file below carries behavior the restart spec is the only test that exercises end to end.
   it.each([
-    'src/main/runtime/orca-runtime.ts',
-    'src/main/runtime/orca-runtime-browser.ts',
+    'src/main/runtime/alfred-runtime.ts',
+    'src/main/runtime/alfred-runtime-browser.ts',
     'src/main/runtime/client-hosted-page-reconciliation-window.ts',
     'src/main/runtime/runtime-browser-client-page-adoption.ts',
     'src/main/runtime/runtime-browser-client-page-recovery.ts',
@@ -144,7 +144,7 @@ describe('PR E2E gate contract', () => {
     expect(filterStep.run).toContain('config/scripts/pr-e2e-source-routing.mjs')
     expect(filterStep.run).not.toContain('tests/playwright\\.')
     expect(
-      selectPrE2eSpecs([
+      selectSpecs([
         'tests/e2e/active-view-restart-restore.spec.ts',
         'tests/e2e/deleted.spec.ts.bak',
         'tests/e2e/global-teardown.unit.test.ts'
@@ -244,7 +244,7 @@ describe('PR E2E gate contract', () => {
   })
 
   it('maps SSH source edits onto the Docker-backed specs they can break', () => {
-    // Why: the Docker-SSH specs self-skip without ORCA_E2E_SSH_DOCKER, and the only
+    // Why: the Docker-SSH specs self-skip without ALFRED_E2E_SSH_DOCKER, and the only
     // trigger used to be "someone edited a spec" — four pane-restore regressions shipped
     // through that hole. Each mapped spec must exist, or the lane runs an empty file list.
     const sshSourceAuthorities = [
@@ -257,7 +257,7 @@ describe('PR E2E gate contract', () => {
       'src/renderer/src/components/terminal-pane/remote-runtime-'
     ]
     for (const authority of sshSourceAuthorities) {
-      expect(selectPrE2eSpecs([`${authority}routing.ts`])).toContain(
+      expect(selectSpecs([`${authority}routing.ts`])).toContain(
         'tests/e2e/ssh-docker-reconnect-pane-restore.spec.ts'
       )
     }
@@ -269,7 +269,7 @@ describe('PR E2E gate contract', () => {
       'src/renderer/src/startup/ssh-startup-reconnect.ts',
       'src/renderer/src/store/slices/ssh.ts'
     ]) {
-      expect(selectPrE2eSpecs([file]), file).toContain(
+      expect(selectSpecs([file]), file).toContain(
         'tests/e2e/ssh-docker-reconnect-pane-restore.spec.ts'
       )
     }
@@ -285,15 +285,17 @@ describe('PR E2E gate contract', () => {
       'tests/e2e/ssh-terminal-window-wake-stale-grid-repro.spec.ts'
     ]
     for (const spec of mappedSpecs) {
-      expect(selectPrE2eSpecs(['src/main/ssh/connection.ts'])).toContain(spec)
+      expect(selectSpecs(['src/main/ssh/connection.ts'])).toContain(spec)
       expect(existsSync(join(projectDir, spec)), spec).toBe(true)
       // Why: a spec that stops reading the flag would silently run without Docker.
       if (spec !== 'tests/e2e/ssh-startup-exec-readiness.spec.ts') {
-        expect(readFileSync(join(projectDir, spec), 'utf8'), spec).toContain('ORCA_E2E_SSH_DOCKER')
+        expect(readFileSync(join(projectDir, spec), 'utf8'), spec).toContain(
+          'ALFRED_E2E_SSH_DOCKER'
+        )
       }
     }
 
-    expect(selectPrE2eSpecs(['src/main/ssh/connection.test.ts'])).toEqual([])
+    expect(selectSpecs(['src/main/ssh/connection.test.ts'])).toEqual([])
 
     // Why: startup readiness is filtered out of changed-e2e, so listing it is only
     // meaningful while it still routes the dedicated Docker lane.
@@ -320,18 +322,16 @@ describe('PR E2E gate contract', () => {
       'src/shared/remote-workspace-session-projection.ts',
       'src/renderer/src/components/terminal/initial-terminal.ts'
     ]) {
-      const specs = selectPrE2eSpecs([file])
+      const specs = selectSpecs([file])
       expect(specs, file).toContain('tests/e2e/ssh-cold-activation-restore.spec.ts')
       expect(specs, file).toContain('tests/e2e/ssh-reconnect-tab-destruction.spec.ts')
     }
 
+    expect(selectSpecs(['src/renderer/src/hooks/remote-workspace-session-merge.test.ts'])).toEqual(
+      []
+    )
     expect(
-      selectPrE2eSpecs(['src/renderer/src/hooks/remote-workspace-session-merge.test.ts'])
-    ).toEqual([])
-    expect(
-      selectPrE2eSpecs([
-        'src/renderer/src/hooks/__tests__/remote-workspace-target-sync-test-harness.ts'
-      ])
+      selectSpecs(['src/renderer/src/hooks/__tests__/remote-workspace-target-sync-test-harness.ts'])
     ).toEqual([])
   })
 
@@ -382,7 +382,7 @@ describe('PR E2E gate contract', () => {
   })
 
   it('gives every Docker-gated SSH spec a lane that runs it', () => {
-    // Why this shape: the sharded lanes set no ORCA_E2E_SSH_DOCKER, so a Docker-gated spec
+    // Why this shape: the sharded lanes set no ALFRED_E2E_SSH_DOCKER, so a Docker-gated spec
     // that no runner names runs nowhere and still reports green — the silent skip this file
     // exists to prevent. Asserting reachability rather than a literal keeps that true when
     // the lanes move.
@@ -405,11 +405,11 @@ describe('PR E2E gate contract', () => {
     // "how to run me" comment without gating on it. Why a regex rather than one literal: an
     // equally-valid spelling (double quotes, or a `!==` guard) would escape a fixed-string scan
     // and the spec would silently leave the contract.
-    const dockerGateExpression = /ORCA_E2E_SSH_DOCKER\s*[!=]==\s*['"]1['"]/
+    const dockerGate = /ALFRED_E2E_SSH_DOCKER\s*[!=]==\s*['"]1['"]/
     const dockerGatedSpecs = readdirSync(join(projectDir, 'tests/e2e'))
       .filter((file) => file.endsWith('.spec.ts'))
       .map((file) => `tests/e2e/${file}`)
-      .filter((spec) => dockerGateExpression.test(readFileSync(join(projectDir, spec), 'utf8')))
+      .filter((spec) => dockerGate.test(readFileSync(join(projectDir, spec), 'utf8')))
     expect(dockerGatedSpecs.length).toBeGreaterThan(0)
 
     const unclaimed = dockerGatedSpecs.filter(
@@ -447,8 +447,8 @@ describe('PR E2E gate contract', () => {
   it('scopes the VM rollback oracle to the PR range and recipe schema authorities', () => {
     expect(rollbackStep.run).toContain('--merge-base "$BASE_SHA" "$HEAD_SHA"')
     expect(rollbackStep.run).toContain('src/shared/ephemeral-vm-recipes.ts')
-    expect(rollbackStep.run).toContain('src/shared/orca-yaml-hook-types.ts')
-    expect(selectPrE2eSpecs(['src/shared/ephemeral-vm-recipes.ts'])).toEqual([
+    expect(rollbackStep.run).toContain('src/shared/alfred-yaml-hook-types.ts')
+    expect(selectSpecs(['src/shared/ephemeral-vm-recipes.ts'])).toEqual([
       'tests/e2e/ephemeral-vm-provisioned-root.spec.ts'
     ])
   })
@@ -459,7 +459,10 @@ describe('PR E2E gate contract', () => {
         'src/renderer/src/components/tab-bar/TabBarQuickCommandsMenu.tsx',
         'tests/e2e/terminal-quick-command-pre-bind-recovery.spec.ts'
       ],
-      ['src/main/runtime/orca-runtime-files.ts', 'tests/e2e/paired-quick-open-large-tree.spec.ts'],
+      [
+        'src/main/runtime/alfred-runtime-files.ts',
+        'tests/e2e/paired-quick-open-large-tree.spec.ts'
+      ],
       [
         'src/renderer/src/runtime/sync-runtime-graph.ts',
         'tests/e2e/host-parked-pane-remote-viewer.spec.ts'
@@ -474,8 +477,8 @@ describe('PR E2E gate contract', () => {
       ]
     ]
     for (const [source, spec] of cases) {
-      expect(selectPrE2eSpecs([source]), source).toEqual([spec])
-      expect(selectPrE2eSpecs([source.replace(/\.tsx?$/, '.test.ts')]), source).toEqual([])
+      expect(selectSpecs([source]), source).toEqual([spec])
+      expect(selectSpecs([source.replace(/\.tsx?$/, '.test.ts')]), source).toEqual([])
       expect(existsSync(join(projectDir, spec)), spec).toBe(true)
     }
     const parkedSplitSpec = 'tests/e2e/terminal-parked-cli-split.spec.ts'
@@ -488,8 +491,8 @@ describe('PR E2E gate contract', () => {
       'src/renderer/src/components/terminal-pane/use-terminal-tab-cold-parking.ts',
       'src/renderer/src/hooks/ipc-events/terminal-ui-routing-ipc-bridge.ts'
     ]) {
-      expect(selectPrE2eSpecs([source]), source).toContain(parkedSplitSpec)
-      expect(selectPrE2eSpecs([source.replace(/\.ts$/, '.test.ts')]), source).not.toContain(
+      expect(selectSpecs([source]), source).toContain(parkedSplitSpec)
+      expect(selectSpecs([source.replace(/\.ts$/, '.test.ts')]), source).not.toContain(
         parkedSplitSpec
       )
     }
@@ -516,8 +519,8 @@ describe('PR E2E gate contract', () => {
       'src/renderer/src/runtime/web-session-terminal-orphan-recovery-rpc-lane.ts',
       'src/renderer/src/runtime/web-session-terminal-orphan-topology.ts'
     ]) {
-      expect(selectPrE2eSpecs([source]), source).toContain(restartContinuitySpec)
-      expect(selectPrE2eSpecs([source.replace(/\.ts$/, '.test.ts')]), source).not.toContain(
+      expect(selectSpecs([source]), source).toContain(restartContinuitySpec)
+      expect(selectSpecs([source.replace(/\.ts$/, '.test.ts')]), source).not.toContain(
         restartContinuitySpec
       )
     }
@@ -530,8 +533,8 @@ describe('PR E2E gate contract', () => {
       'src/renderer/src/components/terminal-pane/pty-connection/pane-pty-visibility-bind.ts',
       'src/renderer/src/components/terminal-pane/pty-connection/pty-input-recovery.ts'
     ]) {
-      expect(selectPrE2eSpecs([source]), source).toContain(quickCommandSpec)
-      expect(selectPrE2eSpecs([source.replace(/\.ts$/, '.test.ts')]), source).not.toContain(
+      expect(selectSpecs([source]), source).toContain(quickCommandSpec)
+      expect(selectSpecs([source.replace(/\.ts$/, '.test.ts')]), source).not.toContain(
         quickCommandSpec
       )
     }
@@ -539,28 +542,26 @@ describe('PR E2E gate contract', () => {
       'src/main/ipc/rg-availability.ts',
       'src/shared/ripgrep-process-availability.ts'
     ]) {
-      expect(selectPrE2eSpecs([source]), source).toEqual([
+      expect(selectSpecs([source]), source).toEqual([
         'tests/e2e/paired-quick-open-large-tree.spec.ts'
       ])
     }
     expect(
-      selectPrE2eSpecs([
-        'src/main/runtime/orca-runtime-files.ts',
+      selectSpecs([
+        'src/main/runtime/alfred-runtime-files.ts',
         'tests/e2e/paired-quick-open-large-tree.spec.ts'
       ])
     ).toEqual(['tests/e2e/paired-quick-open-large-tree.spec.ts'])
-    expect(selectPrE2eSpecs(['src/renderer/src/components/FileExplorer.tsx'])).toEqual([])
+    expect(selectSpecs(['src/renderer/src/components/FileExplorer.tsx'])).toEqual([])
     expect(
-      selectPrE2eSpecs([
-        'src/renderer/src/components/terminal-pane/remote-runtime-pty-transport.ts'
-      ])
+      selectSpecs(['src/renderer/src/components/terminal-pane/remote-runtime-pty-transport.ts'])
     ).toContain('tests/e2e/paired-remote-terminal-materialization-reconnect.spec.ts')
     expect(
-      selectPrE2eSpecs([
+      selectSpecs([
         'src/renderer/src/components/terminal-pane/remote-runtime-pty-transport-test-harness.ts'
       ])
     ).not.toContain('tests/e2e/paired-remote-terminal-materialization-reconnect.spec.ts')
-    expect(selectPrE2eSpecs(['src/main/ipc/pty.ts'])).not.toContain(
+    expect(selectSpecs(['src/main/ipc/pty.ts'])).not.toContain(
       'tests/e2e/paired-remote-terminal-materialization-reconnect.spec.ts'
     )
   })
@@ -636,11 +637,11 @@ describe('PR E2E gate contract', () => {
     // Why this shape: a spec gated on a native-IME env var that no runner sets is a skip that
     // reports as a pass. This repo already carries such specs; the point is that they are named
     // as gaps rather than counted as coverage.
-    const nativeGateExpression = /ORCA_E2E_NATIVE_(?:IBUS_HANGUL|MACOS_KOREAN)\s*[!=]==\s*['"]1['"]/
+    const nativeGate = /ALFRED_E2E_NATIVE_(?:IBUS_HANGUL|MACOS_KOREAN)\s*[!=]==\s*['"]1['"]/
     const nativeGatedSpecs = readdirSync(join(projectDir, 'tests/e2e'))
       .filter((file) => file.endsWith('.spec.ts'))
       .map((file) => `tests/e2e/${file}`)
-      .filter((spec) => nativeGateExpression.test(readFileSync(join(projectDir, spec), 'utf8')))
+      .filter((spec) => nativeGate.test(readFileSync(join(projectDir, spec), 'utf8')))
     expect(nativeGatedSpecs.length).toBeGreaterThan(0)
 
     // The macOS spec needs a native input source; PR and scheduled IME lanes use Linux.
@@ -701,7 +702,7 @@ describe('PR E2E gate contract', () => {
     expect(changedRun.run).toContain('. != "tests/e2e/terminal-ibus-hangul-native.spec.ts"')
     // Why it still has to be routed: the dedicated lane is selected by the same route, so the
     // spec appearing in test_files is how a spec-only edit reaches the real-IME lane at all.
-    expect(selectPrE2eSpecs(['src/shared/terminal-unicode-provider.ts'])).toContain(
+    expect(selectSpecs(['src/shared/terminal-unicode-provider.ts'])).toContain(
       'tests/e2e/terminal-ibus-hangul-native.spec.ts'
     )
   })

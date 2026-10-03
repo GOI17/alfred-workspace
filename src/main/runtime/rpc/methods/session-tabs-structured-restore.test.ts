@@ -1,7 +1,9 @@
+import { getDefaultRuntimeClientSettings } from '../../runtime-client-settings-test-fixture'
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi, type Mock } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
-import type { OrcaRuntimeService } from '../../orca-runtime'
+import type { AlfredRuntimeService } from '../../alfred-runtime'
 import { STRUCTURED_AGENT_SESSION_RUNTIME_CAPABILITY } from '../../../../shared/protocol-version'
 import { SESSION_TAB_METHODS } from './session-tabs'
 import { visibleSnapshot } from './session-tabs-snapshot.test-fixture'
@@ -10,13 +12,16 @@ function makeRequest(method: string, params?: unknown): RpcRequest {
   return { id: 'req-1', authToken: 'tok', method, params }
 }
 
-function makeRuntime(experimentalStructuredNativeChat: boolean): OrcaRuntimeService {
-  return {
+function makeRuntime(experimentalStructuredNativeChat: boolean): AlfredRuntimeService {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
-    getClientSettings: vi.fn(() => ({ experimentalStructuredNativeChat })),
+    getClientSettings: vi.fn(() => ({
+      ...getDefaultRuntimeClientSettings(),
+      experimentalStructuredNativeChat
+    })),
     restoreStructuredAgentSessionTabs: vi.fn(),
     listMobileSessionTabs: vi.fn().mockResolvedValue(visibleSnapshot())
-  } as unknown as OrcaRuntimeService
+  })
 }
 
 describe('structured session tab restoration follows one rule for every caller', () => {

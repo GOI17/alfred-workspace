@@ -1,3 +1,6 @@
+import { createPersistenceStoreTestDouble } from './persistence/persistence-store-test-double'
+import { createSshGitProviderTestDouble } from './providers/ssh-git-provider-test-double'
+import { getDefaultSettings } from '../shared/constants'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -19,13 +22,13 @@ import {
 import { adoptProvisionedRootSshCheckout } from './provisioned-root-ssh-adoption'
 
 const connectionId = 'runtime-ssh-test'
-const projectRoot = '/workspace/orca'
+const projectRoot = '/workspace/alfred'
 
 describe('adoptProvisionedRootSshCheckout', () => {
   let userDataPath: string
 
   beforeEach(() => {
-    userDataPath = mkdtempSync(join(tmpdir(), 'orca-provisioned-root-'))
+    userDataPath = mkdtempSync(join(tmpdir(), 'alfred-provisioned-root-'))
     resetSshProviderAuthorities()
   })
 
@@ -100,7 +103,7 @@ describe('adoptProvisionedRootSshCheckout', () => {
     )
   })
 
-  it('rejects a recipe checkout on a branch Orca did not request', async () => {
+  it('rejects a recipe checkout on a branch Alfred did not request', async () => {
     seedRuntime(userDataPath, projectRoot)
     registerSshGitProvider(connectionId, {
       listWorktrees: vi
@@ -302,23 +305,26 @@ describe('adoptProvisionedRootSshCheckout', () => {
   })
 
   it('compares Windows checkout roots using runtime path semantics', async () => {
-    const windowsRoot = 'C:\\Workspace\\Orca'
+    const windowsRoot = 'C:\\Workspace\\Alfred'
     seedRuntime(userDataPath, windowsRoot)
-    registerSshGitProvider(connectionId, {
-      listWorktrees: vi.fn().mockResolvedValue([gitWorktree('c:/workspace/orca/')]),
-      exec: sparseCheckoutProbe(false)
-    } as never)
+    registerSshGitProvider(
+      connectionId,
+      createSshGitProviderTestDouble({
+        listWorktrees: vi.fn().mockResolvedValue([gitWorktree('c:/workspace/alfred/')]),
+        exec: sparseCheckoutProbe(false)
+      })
+    )
     const { store } = makeStore()
 
     const result = await adoptProvisionedRootSshCheckout({
       userDataPath,
-      request: request('C:/WORKSPACE/ORCA'),
-      repo: repo('c:\\workspace\\orca'),
+      request: request('C:/WORKSPACE/ALFRED'),
+      repo: repo('c:\\workspace\\alfred'),
       store,
       isRepoCurrent: () => true
     })
 
-    expect(result.worktree.path).toBe('c:/workspace/orca/')
+    expect(result.worktree.path).toBe('c:/workspace/alfred/')
   })
 
   it('rejects sparse checkout enabled in the remote Git config', async () => {
@@ -368,7 +374,7 @@ function seedRuntime(userDataPath: string, root: string): void {
       checkoutMode: 'provisioned-root',
       connection: {
         type: 'ssh',
-        target: { label: 'Sandbox', host: '127.0.0.1', port: 22, username: 'orca' },
+        target: { label: 'Sandbox', host: '127.0.0.1', port: 22, username: 'alfred' },
         projectRoot: root
       }
     }
@@ -379,7 +385,7 @@ function repo(path: string): Repo {
   return {
     id: 'repo-1',
     path,
-    displayName: 'orca',
+    displayName: 'alfred',
     badgeColor: '#000000',
     addedAt: 1,
     connectionId,
@@ -409,7 +415,7 @@ function gitWorktree(path: string, overrides: Partial<GitWorktreeInfo> = {}): Gi
   }
 }
 
-function sparseCheckoutProbe(enabled: boolean): ReturnType<typeof vi.fn> {
+function sparseCheckoutProbe(enabled: boolean) {
   return vi.fn().mockResolvedValue({ stdout: `${enabled}\n`, stderr: '' })
 }
 
@@ -431,10 +437,14 @@ function makeStore(): {
     ...updates
   }))
   return {
-    store: {
-      getSettings: () => ({ nestWorkspaces: false, workspaceDir: '.orca/worktrees' }),
+    store: createPersistenceStoreTestDouble({
+      getSettings: () => ({
+        ...getDefaultSettings('/tmp'),
+        nestWorkspaces: false,
+        workspaceDir: '.alfred/worktrees'
+      }),
       setWorktreeMeta
-    } as unknown as Store,
+    }),
     setWorktreeMeta
   }
 }

@@ -1,3 +1,5 @@
+import { makeAutomation, makeRun } from '../../../../shared/automation-test-fixtures'
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 /**
  * The runtime end of the list contract: an old client that sends no params must
  * keep receiving the authority's complete list through the legacy field while
@@ -6,7 +8,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { eraseRpcMethods, type RpcContext, type RpcRequest } from '../core'
 import { RpcDispatcher } from '../dispatcher'
-import type { OrcaRuntimeService } from '../../orca-runtime'
 import { AUTOMATION_METHODS } from './automations'
 import { AUTOMATION_OWNER_FENCING_RUNTIME_CAPABILITY } from '../../../../shared/protocol-version'
 
@@ -20,29 +21,29 @@ function method(name: string) {
 
 function runtimeStub() {
   return {
-    listAutomations: vi.fn(() => [{ id: 'a1' }, { id: 'a2' }]),
+    listAutomations: vi.fn(() => [makeAutomation({ id: 'a1' }), makeAutomation({ id: 'a2' })]),
     listAutomationsForScope: vi.fn((params?: { selector?: { kind: string } }) =>
       params?.selector
         ? {
-            automations: [{ id: 'a1' }],
-            items: [{ automationId: 'a1', selector: { kind: 'self' } }],
+            automations: [makeAutomation({ id: 'a1' })],
+            items: [{ automationId: 'a1', selector: { kind: 'self' as const } }],
             orphanCount: 2
           }
         : {
-            automations: [{ id: 'a1' }, { id: 'a2' }],
+            automations: [makeAutomation({ id: 'a1' }), makeAutomation({ id: 'a2' })],
             items: [
-              { automationId: 'a1', selector: { kind: 'self' } },
-              { automationId: 'a2', selector: { kind: 'orphan', issue: 'missing' } }
+              { automationId: 'a1', selector: { kind: 'self' as const } },
+              { automationId: 'a2', selector: { kind: 'orphan' as const, issue: 'missing' } }
             ],
             orphanCount: 1
           }
     ),
     listAutomationRuns: vi.fn(() => []),
-    showAutomation: vi.fn(() => ({ id: 'a1' })),
+    showAutomation: vi.fn(() => makeAutomation({ id: 'a1' })),
     automationOwnerPrecondition: vi.fn(() => SSH_OWNER),
-    updateAutomation: vi.fn(async () => ({ id: 'a1' })),
+    updateAutomation: vi.fn(async () => makeAutomation({ id: 'a1' })),
     deleteAutomation: vi.fn(() => ({ removed: true, id: 'a1' })),
-    runAutomationNow: vi.fn(async () => ({ id: 'run-1' }))
+    runAutomationNow: vi.fn(async () => makeRun({ id: 'run-1' }))
   }
 }
 
@@ -59,18 +60,18 @@ async function invoke(
     throw parsed?.error
   }
   return await target.handler(parsed.data, {
-    runtime: runtime as unknown as OrcaRuntimeService,
+    runtime: createRuntimeServiceTestDouble(runtime),
     ...context
-  } as RpcContext)
+  })
 }
 
-const SSH_OWNER = { selector: { kind: 'ssh', targetId: 'ssh-1', targetGeneration: 7 } }
+const SSH_OWNER = { selector: { kind: 'ssh', targetId: 'ssh-1', targetGeneration: 7 } } as const
 
 describe('automation.list', () => {
   it('answers a parameterless request with owner metadata and the legacy field', async () => {
     const runtime = runtimeStub()
     expect(await invoke('automation.list', undefined, runtime)).toMatchObject({
-      automations: [{ id: 'a1' }, { id: 'a2' }],
+      automations: [makeAutomation({ id: 'a1' }), makeAutomation({ id: 'a2' })],
       items: [{ automationId: 'a1' }, { automationId: 'a2' }]
     })
     expect(runtime.listAutomationsForScope).toHaveBeenCalledWith({})
@@ -79,15 +80,17 @@ describe('automation.list', () => {
   it('treats an empty object the same as no params', async () => {
     const runtime = runtimeStub()
     expect(await invoke('automation.list', {}, runtime)).toMatchObject({
-      automations: [{ id: 'a1' }, { id: 'a2' }],
+      automations: [makeAutomation({ id: 'a1' }), makeAutomation({ id: 'a2' })],
       items: [{ automationId: 'a1' }, { automationId: 'a2' }]
     })
   })
 
   it('answers a scoped request with items and the orphan count', async () => {
     const runtime = runtimeStub()
-    const result = await invoke('automation.list', { selector: { kind: 'self' } }, runtime)
-    expect(runtime.listAutomationsForScope).toHaveBeenCalledWith({ selector: { kind: 'self' } })
+    const result = await invoke('automation.list', { selector: { kind: 'self' as const } }, runtime)
+    expect(runtime.listAutomationsForScope).toHaveBeenCalledWith({
+      selector: { kind: 'self' as const }
+    })
     expect(result).toMatchObject({ orphanCount: 2, items: [{ automationId: 'a1' }] })
   })
 
@@ -109,7 +112,10 @@ describe('automation.list from a client that sends literal null params', () => {
   it('answers with the complete authority list, not an invalid-argument error', async () => {
     const runtime = runtimeStub()
     const dispatcher = new RpcDispatcher({
-      runtime: { ...runtime, getRuntimeId: () => 'test-runtime' } as unknown as OrcaRuntimeService,
+      runtime: createRuntimeServiceTestDouble({
+        ...runtime,
+        getRuntimeId: () => 'test-runtime'
+      }),
       methods: AUTOMATION_METHODS
     })
     const request: RpcRequest = {
@@ -121,7 +127,9 @@ describe('automation.list from a client that sends literal null params', () => {
 
     const response = await dispatcher.dispatch(request)
 
-    expect(response).toMatchObject({ result: { automations: [{ id: 'a1' }, { id: 'a2' }] } })
+    expect(response).toMatchObject({
+      result: { automations: [makeAutomation({ id: 'a1' }), makeAutomation({ id: 'a2' })] }
+    })
     expect(runtime.listAutomationsForScope).toHaveBeenCalledWith({})
   })
 })
@@ -144,7 +152,7 @@ describe('owner preconditions', () => {
   it('returns the projected owner beside the automation on show', async () => {
     const runtime = runtimeStub()
     expect(await invoke('automation.show', { id: 'a1' }, runtime)).toEqual({
-      automation: { id: 'a1' },
+      automation: makeAutomation({ id: 'a1' }),
       owner: SSH_OWNER
     })
   })
@@ -153,7 +161,7 @@ describe('owner preconditions', () => {
     const runtime = runtimeStub()
     runtime.automationOwnerPrecondition.mockReturnValue(null as never)
     expect(await invoke('automation.show', { id: 'a1' }, runtime)).toEqual({
-      automation: { id: 'a1' }
+      automation: makeAutomation({ id: 'a1' })
     })
   })
 
@@ -165,14 +173,14 @@ describe('owner preconditions', () => {
         id: 'a1',
         updates: { enabled: false },
         expectedOwner: SSH_OWNER,
-        destination: { selector: { kind: 'self' } }
+        destination: { selector: { kind: 'self' as const } }
       },
       runtime
     )
     expect(runtime.updateAutomation).toHaveBeenCalledWith(
       'a1',
       expect.objectContaining({ enabled: false }),
-      { expectedOwner: SSH_OWNER, destination: { selector: { kind: 'self' } } }
+      { expectedOwner: SSH_OWNER, destination: { selector: { kind: 'self' as const } } }
     )
   })
 
@@ -180,16 +188,16 @@ describe('owner preconditions', () => {
     const runtime = runtimeStub()
     await invoke(
       'automation.delete',
-      { id: 'a1', expectedOwner: { selector: { kind: 'orphan' } } },
+      { id: 'a1', expectedOwner: { selector: { kind: 'orphan' as const } } },
       runtime
     )
     expect(runtime.deleteAutomation).toHaveBeenCalledWith('a1', {
-      selector: { kind: 'orphan' }
+      selector: { kind: 'orphan' as const }
     })
     await expect(
       invoke(
         'automation.update',
-        { id: 'a1', updates: {}, destination: { selector: { kind: 'orphan' } } },
+        { id: 'a1', updates: {}, destination: { selector: { kind: 'orphan' as const } } },
         runtime
       )
     ).rejects.toBeTruthy()

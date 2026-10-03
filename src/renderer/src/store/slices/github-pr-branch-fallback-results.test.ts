@@ -1,3 +1,4 @@
+import { makeRepo as completeMakeRepo } from '../../../../shared/repo-test-fixture'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { _clearGitHubPRRefreshStartedEntriesForTest } from '../github/request-coordination'
 import {
@@ -7,7 +8,7 @@ import {
   mockApi,
   resetRemoteRuntimeMocks
 } from './github-slice-test-harness'
-import type { AppState } from '../types'
+
 import { getHostedReviewCacheKey } from './hosted-review-cache-identity'
 
 describe('createGitHubSlice.fetchPRForBranch', () => {
@@ -33,14 +34,14 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
     const cachedPR = makePR({ number: 12 })
 
     store.setState({
-      repos: [{ id: 'repo-1', path: repoPath, name: 'repo', kind: 'git' }],
+      repos: [completeMakeRepo({ id: 'repo-1', path: repoPath, displayName: 'repo', kind: 'git' })],
       prCache: {
         [`repo-1::${branch}`]: {
           data: cachedPR,
           fetchedAt: 1
         }
       }
-    } as unknown as Partial<AppState>)
+    })
     mockApi.gh.refreshPRNow.mockResolvedValueOnce({
       kind: 'upstream-error',
       errorType: 'network',
@@ -65,7 +66,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
       const hostedReviewCacheKey = getHostedReviewCacheKey(repoPath, branch, null, repoId)
 
       store.setState({
-        repos: [{ id: repoId, path: repoPath, name: 'repo', kind: 'git' }],
+        repos: [completeMakeRepo({ id: repoId, path: repoPath, displayName: 'repo', kind: 'git' })],
         prCache: {
           [`${repoId}::${branch}`]: {
             data: cachedPR,
@@ -79,7 +80,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
               number: 12,
               title: 'Visible cached PR',
               state,
-              url: 'https://github.com/acme/orca/pull/12',
+              url: 'https://github.com/acme/alfred/pull/12',
               status: 'pending',
               updatedAt: '2026-03-28T00:00:00Z',
               mergeable: 'UNKNOWN'
@@ -88,7 +89,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
             linkedReviewHintKey: 'github:12'
           }
         }
-      } as unknown as Partial<AppState>)
+      })
       mockApi.gh.refreshPRNow.mockResolvedValueOnce({ kind: 'no-pr', fetchedAt: 2 })
 
       await expect(
@@ -125,7 +126,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
     const hostedReviewCacheKey = getHostedReviewCacheKey(repoPath, branch, null, repoId)
 
     store.setState({
-      repos: [{ id: repoId, path: repoPath, name: 'repo', kind: 'git' }],
+      repos: [completeMakeRepo({ id: repoId, path: repoPath, displayName: 'repo', kind: 'git' })],
       prCache: {
         [`${repoId}::${branch}`]: {
           data: cachedPR,
@@ -139,7 +140,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
             number: 12,
             title: 'Visible open PR',
             state: 'open',
-            url: 'https://github.com/acme/orca/pull/12',
+            url: 'https://github.com/acme/alfred/pull/12',
             status: 'pending',
             updatedAt: '2026-03-28T00:00:00Z',
             mergeable: 'UNKNOWN'
@@ -148,7 +149,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
           linkedReviewHintKey: 'github:12'
         }
       }
-    } as unknown as Partial<AppState>)
+    })
     mockApi.gh.refreshPRNow.mockResolvedValueOnce({
       kind: 'found',
       pr: mergedPR,
@@ -188,7 +189,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
     })
 
     store.setState({
-      repos: [{ id: repoId, path: repoPath, name: 'repo', kind: 'git' }],
+      repos: [completeMakeRepo({ id: repoId, path: repoPath, displayName: 'repo', kind: 'git' })],
       worktreesByRepo: {
         [repoId]: [
           makePRRefreshWorktree({
@@ -205,7 +206,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
           fetchedAt: 1
         }
       }
-    } as unknown as Partial<AppState>)
+    })
     mockApi.gh.refreshPRNow.mockResolvedValueOnce({ kind: 'no-pr', fetchedAt: 2 })
 
     await expect(
@@ -239,7 +240,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
     })
 
     store.setState({
-      repos: [{ id: repoId, path: repoPath, name: 'repo', kind: 'git' }],
+      repos: [completeMakeRepo({ id: repoId, path: repoPath, displayName: 'repo', kind: 'git' })],
       worktreesByRepo: {
         [repoId]: [
           makePRRefreshWorktree({
@@ -256,7 +257,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
           fetchedAt: 1
         }
       }
-    } as unknown as Partial<AppState>)
+    })
     mockApi.gh.refreshPRNow.mockResolvedValueOnce({ kind: 'no-pr', fetchedAt: 2 })
 
     await expect(
@@ -341,15 +342,15 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
     })
 
     store.setState({
-      repos: [{ id: repoId, path: repoPath, name: 'repo', kind: 'git' }],
-      worktreesByRepo: testCase.worktreesByRepo,
+      repos: [completeMakeRepo({ id: repoId, path: repoPath, displayName: 'repo', kind: 'git' })],
+      worktreesByRepo: { 'repo-1': testCase.worktreesByRepo['repo-1'] ?? [] },
       prCache: {
         [`${repoId}::${branch}`]: {
           data: cachedPR,
           fetchedAt: 1
         }
       }
-    } as unknown as Partial<AppState>)
+    })
     mockApi.gh.refreshPRNow.mockResolvedValueOnce({ kind: 'no-pr', fetchedAt: 2 })
 
     await expect(
@@ -375,7 +376,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
     const pr = makePR({ number: 44, title: 'Hosted review fallback PR' })
 
     store.setState({
-      repos: [{ id: repoId, path: repoPath, name: 'repo', kind: 'git' }],
+      repos: [completeMakeRepo({ id: repoId, path: repoPath, displayName: 'repo', kind: 'git' })],
       prCache: {
         [`${repoId}::${branch}`]: {
           data: null,
@@ -389,7 +390,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
             number: 44,
             title: 'Hosted review fallback PR',
             state: 'open',
-            url: 'https://github.com/acme/orca/pull/44',
+            url: 'https://github.com/acme/alfred/pull/44',
             status: 'pending',
             updatedAt: '2026-03-28T00:00:00Z',
             mergeable: 'UNKNOWN'
@@ -398,7 +399,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
           linkedReviewHintKey: 'github:44'
         }
       }
-    } as unknown as Partial<AppState>)
+    })
     mockApi.gh.refreshPRNow.mockResolvedValueOnce({
       kind: 'found',
       pr,
@@ -431,7 +432,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
     const hostedReviewCacheKey = getHostedReviewCacheKey(repoPath, branch, null, repoId)
 
     store.setState({
-      repos: [{ id: repoId, path: repoPath, name: 'repo', kind: 'git' }],
+      repos: [completeMakeRepo({ id: repoId, path: repoPath, displayName: 'repo', kind: 'git' })],
       prCache: {
         [`${repoId}::${branch}`]: {
           data: null,
@@ -445,7 +446,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
             number: 44,
             title: 'Stale hosted-review PR',
             state: 'open',
-            url: 'https://github.com/acme/orca/pull/44',
+            url: 'https://github.com/acme/alfred/pull/44',
             status: 'pending',
             updatedAt: '2026-03-28T00:00:00Z',
             mergeable: 'UNKNOWN'
@@ -454,7 +455,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
           linkedReviewHintKey: 'github:44'
         }
       }
-    } as unknown as Partial<AppState>)
+    })
     mockApi.gh.refreshPRNow.mockResolvedValueOnce({ kind: 'no-pr', fetchedAt: 2 })
 
     await expect(
@@ -485,7 +486,7 @@ describe('createGitHubSlice.fetchPRForBranch', () => {
           fetchedAt: 1
         }
       }
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().applyGitHubPRRefreshEvent({
       sequence: 1,

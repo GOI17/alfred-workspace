@@ -184,7 +184,11 @@ function renderPane(isActive = true): ReturnType<typeof render> {
 }
 
 function addressBar(): HTMLInputElement {
-  return document.querySelector('[data-orca-browser-address-bar]') as HTMLInputElement
+  const input = document.querySelector('[data-alfred-browser-address-bar]')
+  if (!(input instanceof HTMLInputElement)) {
+    throw new Error('Browser address bar not found')
+  }
+  return input
 }
 
 describe('RemoteBrowserPagePane address bar parity', () => {

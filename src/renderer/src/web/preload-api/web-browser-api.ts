@@ -27,20 +27,19 @@ export function createBrowserApi(): NonNullable<Partial<PreloadApi>['browser']> 
     onNavigationUpdate: () => noopUnsubscribe,
     onActivateView: () => noopUnsubscribe,
     onPaneFocus: () => noopUnsubscribe,
-    onOpenLinkInOrcaTab: () => noopUnsubscribe,
+    onOpenLinkInAlfredTab: () => noopUnsubscribe,
+    onWebAuthnAccountRequest: () => noopUnsubscribe,
+    onWebAuthnAccountRequestClosed: () => noopUnsubscribe,
+    respondWebAuthnAccount: () => Promise.resolve(false),
+    identityGet: () => Promise.resolve(null),
+    identitySet: () => Promise.resolve(null),
     cancelDownload: () => Promise.resolve(false),
-    setGrabMode: () =>
+    setGrabMode: () => Promise.resolve({ ok: false, reason: 'not-ready' }),
+    awaitGrabSelection: ({ opId }) =>
       Promise.resolve({
-        ok: false,
-        error: translate(
-          'auto.web.web.preload.api.31bea294d5',
-          'Grab mode is unavailable in the web client.'
-        )
-      }),
-    awaitGrabSelection: () =>
-      Promise.resolve({
-        ok: false,
-        error: translate(
+        opId,
+        kind: 'error',
+        reason: translate(
           'auto.web.web.preload.api.31bea294d5',
           'Grab mode is unavailable in the web client.'
         )
@@ -49,7 +48,7 @@ export function createBrowserApi(): NonNullable<Partial<PreloadApi>['browser']> 
     captureSelectionScreenshot: () =>
       Promise.resolve({
         ok: false,
-        error: translate(
+        reason: translate(
           'auto.web.web.preload.api.8dfcb7a351',
           'Selection screenshots are unavailable in the web client.'
         )
@@ -57,7 +56,7 @@ export function createBrowserApi(): NonNullable<Partial<PreloadApi>['browser']> 
     extractHoverPayload: () =>
       Promise.resolve({
         ok: false,
-        error: translate(
+        reason: translate(
           'auto.web.web.preload.api.275a776357',
           'Hover extraction is unavailable in the web client.'
         )
@@ -73,8 +72,7 @@ export function createBrowserApi(): NonNullable<Partial<PreloadApi>['browser']> 
     sessionImportCookies: () =>
       Promise.resolve({
         ok: false,
-        summary: null,
-        error: translate(
+        reason: translate(
           'auto.web.web.preload.api.67ec964791',
           'Cookie import is unavailable in the web client.'
         )
@@ -87,15 +85,14 @@ export function createBrowserApi(): NonNullable<Partial<PreloadApi>['browser']> 
     sessionImportFromBrowser: () =>
       Promise.resolve({
         ok: false,
-        summary: null,
-        error: translate(
+        reason: translate(
           'auto.web.web.preload.api.67ec964791',
           'Cookie import is unavailable in the web client.'
         )
       }),
     sessionClearDefaultCookies: () => Promise.resolve(false),
     notifyActiveTabChanged: () => Promise.resolve(false)
-  } as unknown as NonNullable<Partial<PreloadApi>['browser']>
+  }
 }
 
 export function createEmulatorApi(): NonNullable<Partial<PreloadApi>['emulator']> {
@@ -105,6 +102,10 @@ export function createEmulatorApi(): NonNullable<Partial<PreloadApi>['emulator']
     startFrameStream: () => Promise.reject(new Error('Mobile emulator is unavailable on web.')),
     stopFrameStream: () => Promise.resolve(),
     onFrameStreamFrame: () => noopUnsubscribe,
-    onFrameStreamError: () => noopUnsubscribe
-  } as unknown as NonNullable<Partial<PreloadApi>['emulator']>
+    onFrameStreamError: () => noopUnsubscribe,
+    startVideoStream: () => Promise.reject(new Error('Mobile emulator is unavailable on web.')),
+    stopVideoStream: () => Promise.resolve(),
+    onVideoStreamMeta: () => noopUnsubscribe,
+    onVideoStreamFrame: () => noopUnsubscribe
+  }
 }

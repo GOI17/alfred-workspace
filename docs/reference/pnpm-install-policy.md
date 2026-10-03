@@ -5,9 +5,10 @@ and CPU only. This applies to local development and root-project CI jobs,
 including jobs using `.github/actions/install-node-dependencies`. Mobile and
 cloud projects with their own workspace configuration are separate.
 
-The one cross-target build in the repo is macOS: `pnpm build:mac` and the four
-macOS packaging workflows produce both x64 and arm64 artifacts from an arm64
-runner. Before packaging for another architecture, widen the CPU set:
+The supported macOS build, `pnpm build:mac`, now produces arm64 artifacts only.
+The retained GitHub workflows are disabled and include historical cross-platform
+build definitions; they do not define the current support scope. Before explicitly
+packaging an unsupported architecture for development, widen the CPU set:
 
 ```sh
 pnpm install:release
@@ -37,7 +38,7 @@ from `pnpm install:release`, the Windows addon does not (see below).
 
 Windows packaging requires a Windows host. `@vscode/windows-process-tree` is an
 `os: win32` npm addon, so it is installed only where that matches;
-`@orca/windows-registry` is a workspace package that links on every host, but
+`@alfred/windows-registry` is a workspace package that links on every host, but
 its native binary is still compiled only on Windows. Both are compiled only by
 the Windows-only rebuild in `config/scripts/rebuild-native-deps.mjs`
 (`allowBuilds` in `pnpm-workspace.yaml` keeps pnpm itself from running node-gyp

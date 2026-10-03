@@ -1,4 +1,4 @@
-import { test, expect } from './helpers/orca-app'
+import { test, expect } from './helpers/alfred-app'
 import { getAllWorktreeIds, waitForActiveWorktree, waitForSessionReady } from './helpers/store'
 import { pressShortcut } from './helpers/shortcuts'
 import { worktreeRow } from './worktree-row-locators'
@@ -28,18 +28,18 @@ async function createIsolatedWorktree(
 test.describe('Worktree Delete Shortcut', () => {
   let createdWorktreeId: string | null = null
 
-  test.beforeEach(async ({ orcaPage }) => {
-    await waitForSessionReady(orcaPage)
-    await waitForActiveWorktree(orcaPage)
+  test.beforeEach(async ({ alfredPage }) => {
+    await waitForSessionReady(alfredPage)
+    await waitForActiveWorktree(alfredPage)
   })
 
-  test.afterEach(async ({ orcaPage }) => {
+  test.afterEach(async ({ alfredPage }) => {
     if (!createdWorktreeId) {
       return
     }
     const worktreeId = createdWorktreeId
     createdWorktreeId = null
-    await orcaPage
+    await alfredPage
       .evaluate(async (id) => {
         const state = window.__store?.getState()
         await state?.removeWorktree(
@@ -51,22 +51,22 @@ test.describe('Worktree Delete Shortcut', () => {
   })
 
   test('deletes the hovered worktree after Mod+Shift+Backspace confirmation', async ({
-    orcaPage
+    alfredPage
   }) => {
-    createdWorktreeId = await createIsolatedWorktree(orcaPage)
+    createdWorktreeId = await createIsolatedWorktree(alfredPage)
     const worktreeId = createdWorktreeId
-    const row = worktreeRow(orcaPage, worktreeId)
+    const row = worktreeRow(alfredPage, worktreeId)
     await expect(row).toBeVisible()
 
     await row.hover()
-    await pressShortcut(orcaPage, 'Backspace', { shift: true })
+    await pressShortcut(alfredPage, 'Backspace', { shift: true })
 
-    const dialog = orcaPage.getByRole('dialog')
+    const dialog = alfredPage.getByRole('dialog')
     await expect(dialog).toBeVisible()
     await dialog.getByRole('button', { name: 'Delete Workspace', exact: true }).click()
 
     await expect
-      .poll(async () => getAllWorktreeIds(orcaPage), {
+      .poll(async () => getAllWorktreeIds(alfredPage), {
         timeout: 15_000,
         message: 'hovered worktree was not removed by the delete shortcut'
       })

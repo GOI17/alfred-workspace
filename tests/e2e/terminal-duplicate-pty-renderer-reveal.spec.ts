@@ -3,15 +3,15 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import type { ElectronApplication, Page } from '@stablyai/playwright-test'
 import type { TerminalLayoutSnapshot } from '../../src/shared/terminal-tab-types'
-import { DEFAULT_LOCAL_ORCA_PROFILE_ID } from '../../src/shared/orca-profiles'
-import { test, expect } from './helpers/orca-app'
+import { DEFAULT_LOCAL_ALFRED_PROFILE_ID } from '../../src/shared/alfred-profiles'
+import { test, expect } from './helpers/alfred-app'
 import {
   findMarkerFrame,
   readActiveScreen,
   readRenderedAltScreenFrame,
   type ActiveScreen
 } from './helpers/alt-screen-frame'
-import { attachRepoAndOpenTerminal, createRestartSession } from './helpers/orca-restart'
+import { attachRepoAndOpenTerminal, createRestartSession } from './helpers/alfred-restart'
 import { stageNodeScriptForTerminal } from './helpers/run-node-script-in-terminal'
 import {
   execInTerminal,
@@ -60,7 +60,7 @@ setInterval(() => {
 }
 
 function persistedDataPath(userDataDir: string): string {
-  return path.join(userDataDir, 'profiles', DEFAULT_LOCAL_ORCA_PROFILE_ID, 'orca-data.json')
+  return path.join(userDataDir, 'profiles', DEFAULT_LOCAL_ALFRED_PROFILE_ID, 'alfred-data.json')
 }
 
 function seedDuplicatePtyOwnership(userDataDir: string): void {

@@ -57,14 +57,14 @@ describe('gh exec deadline', () => {
       // spawned, spinning, and never reporting an exit.
       spawnMock.mockReturnValue(child)
 
-      const pending = ghExecFileAsync(['api', '--include', 'user/starred/stablyai/orca'], {
+      const pending = ghExecFileAsync(['api', '--include', 'user/starred/GOI17/alfred-workspace'], {
         timeout: 15_000
       })
       const rejection = expect(pending).rejects.toThrow('timed out')
       await vi.waitFor(() => expect(spawnMock).toHaveBeenCalledOnce())
 
       // The child must be its own group leader, or the signal below would go to
-      // whatever group it inherited — Orca's own.
+      // whatever group it inherited — Alfred's own.
       expect(spawnMock.mock.calls[0][2].detached).toBe(true)
       expect(processKillMock).not.toHaveBeenCalled()
 
@@ -83,14 +83,17 @@ describe('gh exec deadline', () => {
       return child
     })
 
-    const result = await ghExecFileAsync(['api', '--include', 'user/starred/stablyai/orca'], {
-      timeout: 15_000
-    })
+    const result = await ghExecFileAsync(
+      ['api', '--include', 'user/starred/GOI17/alfred-workspace'],
+      {
+        timeout: 15_000
+      }
+    )
 
     expect(result.stdout).toContain('204 No Content')
     const [command, args, options] = spawnMock.mock.calls[0]
     expect(command).toBe('gh')
-    expect(args).toEqual(['api', '--include', 'user/starred/stablyai/orca'])
+    expect(args).toEqual(['api', '--include', 'user/starred/GOI17/alfred-workspace'])
     expect(options.windowsHide).toBe(true)
     expect(options.stdio).toEqual(['pipe', 'pipe', 'pipe'])
     expect(options.shell).toBe(false)
@@ -104,7 +107,10 @@ describe('gh exec deadline', () => {
     })
 
     await expect(
-      ghExecFileAsync(['api', 'repos/stablyai/orca/issues'], { timeout: 15_000, maxBuffer: 8 })
+      ghExecFileAsync(['api', 'repos/GOI17/alfred-workspace/issues'], {
+        timeout: 15_000,
+        maxBuffer: 8
+      })
     ).rejects.toThrow('more than 8 bytes')
   })
 })

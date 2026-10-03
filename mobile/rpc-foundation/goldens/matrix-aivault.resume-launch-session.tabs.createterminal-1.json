@@ -4,55 +4,16 @@
   "namedDeltas": [],
   "runnerVersion": 1,
   "baseline": "b4dfad0a8ba4e15976ec06b9d38994b6a31e1643",
-  "lockfileSha256": "4568633356187895ccda8e2ff83245c37d5621832c69e268733733b6947971e3",
-  "recorderSha256": "f67c2f5b753d2a4f572599f6861fae8e6e917fe89ac75b58288f8e84be609d86",
-  "adapterSha256": "2f43211e4084c0493bd02ec98868acf53a4c748f89a70cd9657c9c3ee87b12fb",
-  "scenarioSha256": "f721ab4438c4183927ce5ebc5fd6f1f18414701a5fa3b2807c359785829962a3",
+  "lockfileSha256": "6dc9405f6240556235cc8c897075c4dab1e8f5f8f1cf571c8eafdb496d3da818",
+  "recorderSha256": "96c80e2da6f1dbc42aad4f355811aa0e88e121b01243422126e7d08bd0ea57e2",
+  "adapterSha256": "a3e576282aa47b0d22e4670cfd2b1f9d6df315b9fe37b472eda138bceeb74bc8",
+  "scenarioSha256": "d03918dfdb5f296579b841969712aca7575c656eeb4b4fbd35cd2fc5c88804a6",
   "platform": "darwin",
   "scenarioVersion": 1,
   "projectionVersion": 2,
   "goldenFormatVersion": 5,
   "values": {
-    "0bce25f5646d": {
-      "name": "session.tabs.createTerminal#1",
-      "ordinal": 2,
-      "json": "{\"id\":\"frame-1\",\"deviceToken\":\"recording-device\",\"method\":\"session.tabs.createTerminal\",\"params\":{\"worktree\":\"id:workspace-1\",\"env\":{\"ORCA_RESUME\":\"1\"},\"envToDelete\":[\"CODEX_HOME\"],\"launchAgent\":\"codex\",\"clientMutationId\":\"resume-mutation-1\",\"activate\":false,\"select\":true,\"navigation\":\"caller\"}}"
-    },
-    "133463600de6": {
-      "failure": "Failed to create terminal",
-      "launched": "unlaunched"
-    },
-    "30ec57518c05": {
-      "status": "rejected",
-      "startedAt": 0,
-      "settledAt": 0,
-      "error": {
-        "category": "Error",
-        "message": "Failed to create terminal",
-        "isRpcDeliveryUnknown": false
-      }
-    },
-    "32a7c0ae7918": {
-      "status": "rejected",
-      "startedAt": 0,
-      "settledAt": 0,
-      "error": {
-        "category": "Error",
-        "message": "outer refused",
-        "isRpcDeliveryUnknown": false
-      }
-    },
-    "400d946a183d": {
-      "failure": {
-        "$rpc": "null"
-      },
-      "launched": {
-        "id": "tab-9",
-        "terminal": "terminal-9",
-        "title": "codex"
-      }
-    },
-    "41a658e859b8": {
+    "071bfb853d77": {
       "name": "session.tabs.createTerminal#1",
       "ordinal": 1,
       "args": [
@@ -66,47 +27,7 @@
             "activate": false,
             "clientMutationId": "resume-mutation-1",
             "env": {
-              "ORCA_RESUME": "1"
-            },
-            "envToDelete": ["CODEX_HOME"],
-            "launchAgent": "codex",
-            "navigation": "caller",
-            "select": true,
-            "worktree": "id:workspace-1"
-          }
-        },
-        {
-          "name": "options",
-          "value": {
-            "timeoutMs": 30000
-          }
-        }
-      ],
-      "settlement": {
-        "status": "fulfilled",
-        "startedAt": 0,
-        "settledAt": 0,
-        "value": {
-          "id": "frame-1",
-          "ok": true
-        }
-      }
-    },
-    "4593130c572f": {
-      "name": "session.tabs.createTerminal#1",
-      "ordinal": 1,
-      "args": [
-        {
-          "name": "method",
-          "value": "session.tabs.createTerminal"
-        },
-        {
-          "name": "params",
-          "value": {
-            "activate": false,
-            "clientMutationId": "resume-mutation-1",
-            "env": {
-              "ORCA_RESUME": "1"
+              "ALFRED_RESUME": "1"
             },
             "envToDelete": ["CODEX_HOME"],
             "launchAgent": "codex",
@@ -130,13 +51,16 @@
           "id": "frame-1",
           "ok": true,
           "result": {
-            "error": "inner refused",
-            "ok": false
+            "$rpc": "null"
           }
         }
       }
     },
-    "47254074ef8b": {
+    "133463600de6": {
+      "failure": "Failed to create terminal",
+      "launched": "unlaunched"
+    },
+    "1e380b858182": {
       "name": "session.tabs.createTerminal#1",
       "ordinal": 1,
       "args": [
@@ -150,7 +74,68 @@
             "activate": false,
             "clientMutationId": "resume-mutation-1",
             "env": {
-              "ORCA_RESUME": "1"
+              "ALFRED_RESUME": "1"
+            },
+            "envToDelete": ["CODEX_HOME"],
+            "launchAgent": "codex",
+            "navigation": "caller",
+            "select": true,
+            "worktree": "id:workspace-1"
+          }
+        },
+        {
+          "name": "options",
+          "value": {
+            "timeoutMs": 30000
+          }
+        }
+      ],
+      "settlement": {
+        "status": "rejected",
+        "startedAt": 0,
+        "settledAt": 0,
+        "error": {
+          "category": "Error",
+          "message": "",
+          "isRpcDeliveryUnknown": true
+        }
+      }
+    },
+    "30ec57518c05": {
+      "status": "rejected",
+      "startedAt": 0,
+      "settledAt": 0,
+      "error": {
+        "category": "Error",
+        "message": "Failed to create terminal",
+        "isRpcDeliveryUnknown": false
+      }
+    },
+    "32a7c0ae7918": {
+      "status": "rejected",
+      "startedAt": 0,
+      "settledAt": 0,
+      "error": {
+        "category": "Error",
+        "message": "outer refused",
+        "isRpcDeliveryUnknown": false
+      }
+    },
+    "38bd146eaddb": {
+      "name": "session.tabs.createTerminal#1",
+      "ordinal": 1,
+      "args": [
+        {
+          "name": "method",
+          "value": "session.tabs.createTerminal"
+        },
+        {
+          "name": "params",
+          "value": {
+            "activate": false,
+            "clientMutationId": "resume-mutation-1",
+            "env": {
+              "ALFRED_RESUME": "1"
             },
             "envToDelete": ["CODEX_HOME"],
             "launchAgent": "codex",
@@ -180,6 +165,16 @@
         }
       }
     },
+    "400d946a183d": {
+      "failure": {
+        "$rpc": "null"
+      },
+      "launched": {
+        "id": "tab-9",
+        "terminal": "terminal-9",
+        "title": "codex"
+      }
+    },
     "478ad4afe83e": {
       "status": "rejected",
       "startedAt": 0,
@@ -190,70 +185,11 @@
         "isRpcDeliveryUnknown": false
       }
     },
-    "53623411feb6": {
-      "name": "session.tabs.createTerminal#1",
-      "ordinal": 1,
-      "args": [
-        {
-          "name": "method",
-          "value": "session.tabs.createTerminal"
-        },
-        {
-          "name": "params",
-          "value": {
-            "activate": false,
-            "clientMutationId": "resume-mutation-1",
-            "env": {
-              "ORCA_RESUME": "1"
-            },
-            "envToDelete": ["CODEX_HOME"],
-            "launchAgent": "codex",
-            "navigation": "caller",
-            "select": true,
-            "worktree": "id:workspace-1"
-          }
-        },
-        {
-          "name": "options",
-          "value": {
-            "timeoutMs": 30000
-          }
-        }
-      ],
-      "settlement": {
-        "status": "fulfilled",
-        "startedAt": 0,
-        "settledAt": 0,
-        "value": {
-          "error": {
-            "code": "refused",
-            "message": ""
-          },
-          "id": "frame-1",
-          "ok": false
-        }
-      }
-    },
     "54558214b507": {
       "failure": "Unknown method",
       "launched": "unlaunched"
     },
-    "6e79da536ca9": {
-      "status": "fulfilled",
-      "startedAt": 0,
-      "settledAt": 0,
-      "value": {
-        "id": "tab-9",
-        "terminal": "terminal-9",
-        "title": "codex"
-      }
-    },
-    "7d9e7036f3d0": {
-      "name": "terminal.send#1",
-      "ordinal": 4,
-      "json": "{\"id\":\"frame-2\",\"deviceToken\":\"recording-device\",\"method\":\"terminal.send\",\"params\":{\"terminal\":\"terminal-9\",\"text\":\"codex resume rollout\",\"enter\":true}}"
-    },
-    "7e87236eeb8a": {
+    "6346482e8ec6": {
       "name": "session.tabs.createTerminal#1",
       "ordinal": 1,
       "args": [
@@ -267,7 +203,7 @@
             "activate": false,
             "clientMutationId": "resume-mutation-1",
             "env": {
-              "ORCA_RESUME": "1"
+              "ALFRED_RESUME": "1"
             },
             "envToDelete": ["CODEX_HOME"],
             "launchAgent": "codex",
@@ -289,16 +225,27 @@
         "settledAt": 0,
         "error": {
           "category": "Error",
-          "message": "",
+          "message": "transport failure",
           "isRpcDeliveryUnknown": true
         }
       }
     },
-    "84a5c9365ee8": {
-      "failure": "The host sent a reply this app could not read (session.tabs.createTerminal)",
-      "launched": "unlaunched"
+    "6e79da536ca9": {
+      "status": "fulfilled",
+      "startedAt": 0,
+      "settledAt": 0,
+      "value": {
+        "id": "tab-9",
+        "terminal": "terminal-9",
+        "title": "codex"
+      }
     },
-    "919c7f3e8c27": {
+    "7d9e7036f3d0": {
+      "name": "terminal.send#1",
+      "ordinal": 4,
+      "json": "{\"id\":\"frame-2\",\"deviceToken\":\"recording-device\",\"method\":\"terminal.send\",\"params\":{\"terminal\":\"terminal-9\",\"text\":\"codex resume rollout\",\"enter\":true}}"
+    },
+    "82497b70f110": {
       "name": "session.tabs.createTerminal#1",
       "ordinal": 1,
       "args": [
@@ -312,7 +259,7 @@
             "activate": false,
             "clientMutationId": "resume-mutation-1",
             "env": {
-              "ORCA_RESUME": "1"
+              "ALFRED_RESUME": "1"
             },
             "envToDelete": ["CODEX_HOME"],
             "launchAgent": "codex",
@@ -344,7 +291,11 @@
         }
       }
     },
-    "9d457a90f569": {
+    "84a5c9365ee8": {
+      "failure": "The host sent a reply this app could not read (session.tabs.createTerminal)",
+      "launched": "unlaunched"
+    },
+    "8a1a18c60ab8": {
       "name": "session.tabs.createTerminal#1",
       "ordinal": 1,
       "args": [
@@ -358,7 +309,7 @@
             "activate": false,
             "clientMutationId": "resume-mutation-1",
             "env": {
-              "ORCA_RESUME": "1"
+              "ALFRED_RESUME": "1"
             },
             "envToDelete": ["CODEX_HOME"],
             "launchAgent": "codex",
@@ -375,17 +326,20 @@
         }
       ],
       "settlement": {
-        "status": "rejected",
+        "status": "fulfilled",
         "startedAt": 0,
         "settledAt": 0,
-        "error": {
-          "category": "Error",
-          "message": "transport failure",
-          "isRpcDeliveryUnknown": true
+        "value": {
+          "error": {
+            "code": "refused",
+            "message": ""
+          },
+          "id": "frame-1",
+          "ok": false
         }
       }
     },
-    "a67829619e64": {
+    "90768600c4ba": {
       "name": "session.tabs.createTerminal#1",
       "ordinal": 1,
       "args": [
@@ -399,7 +353,7 @@
             "activate": false,
             "clientMutationId": "resume-mutation-1",
             "env": {
-              "ORCA_RESUME": "1"
+              "ALFRED_RESUME": "1"
             },
             "envToDelete": ["CODEX_HOME"],
             "launchAgent": "codex",
@@ -433,17 +387,7 @@
         }
       }
     },
-    "a947768bc0ed": {
-      "status": "rejected",
-      "startedAt": 0,
-      "settledAt": 0,
-      "error": {
-        "category": "Error",
-        "message": "transport failure",
-        "isRpcDeliveryUnknown": true
-      }
-    },
-    "b0e4a76fd545": {
+    "9cfedb3308ff": {
       "name": "session.tabs.createTerminal#1",
       "ordinal": 1,
       "args": [
@@ -457,7 +401,7 @@
             "activate": false,
             "clientMutationId": "resume-mutation-1",
             "env": {
-              "ORCA_RESUME": "1"
+              "ALFRED_RESUME": "1"
             },
             "envToDelete": ["CODEX_HOME"],
             "launchAgent": "codex",
@@ -481,10 +425,26 @@
           "id": "frame-1",
           "ok": true,
           "result": {
-            "$rpc": "null"
+            "error": "inner refused",
+            "ok": false
           }
         }
       }
+    },
+    "a947768bc0ed": {
+      "status": "rejected",
+      "startedAt": 0,
+      "settledAt": 0,
+      "error": {
+        "category": "Error",
+        "message": "transport failure",
+        "isRpcDeliveryUnknown": true
+      }
+    },
+    "b8ff649bd055": {
+      "name": "session.tabs.createTerminal#1",
+      "ordinal": 2,
+      "json": "{\"id\":\"frame-1\",\"deviceToken\":\"recording-device\",\"method\":\"session.tabs.createTerminal\",\"params\":{\"worktree\":\"id:workspace-1\",\"env\":{\"ALFRED_RESUME\":\"1\"},\"envToDelete\":[\"CODEX_HOME\"],\"launchAgent\":\"codex\",\"clientMutationId\":\"resume-mutation-1\",\"activate\":false,\"select\":true,\"navigation\":\"caller\"}}"
     },
     "b948e8307e81": {
       "status": "rejected",
@@ -504,6 +464,90 @@
         "category": "Error",
         "message": "",
         "isRpcDeliveryUnknown": true
+      }
+    },
+    "c82221214167": {
+      "name": "session.tabs.createTerminal#1",
+      "ordinal": 1,
+      "args": [
+        {
+          "name": "method",
+          "value": "session.tabs.createTerminal"
+        },
+        {
+          "name": "params",
+          "value": {
+            "activate": false,
+            "clientMutationId": "resume-mutation-1",
+            "env": {
+              "ALFRED_RESUME": "1"
+            },
+            "envToDelete": ["CODEX_HOME"],
+            "launchAgent": "codex",
+            "navigation": "caller",
+            "select": true,
+            "worktree": "id:workspace-1"
+          }
+        },
+        {
+          "name": "options",
+          "value": {
+            "timeoutMs": 30000
+          }
+        }
+      ],
+      "settlement": {
+        "status": "fulfilled",
+        "startedAt": 0,
+        "settledAt": 0,
+        "value": {
+          "error": {
+            "code": "method_not_found",
+            "message": "Unknown method"
+          },
+          "id": "frame-1",
+          "ok": false
+        }
+      }
+    },
+    "cb338e6735a3": {
+      "name": "session.tabs.createTerminal#1",
+      "ordinal": 1,
+      "args": [
+        {
+          "name": "method",
+          "value": "session.tabs.createTerminal"
+        },
+        {
+          "name": "params",
+          "value": {
+            "activate": false,
+            "clientMutationId": "resume-mutation-1",
+            "env": {
+              "ALFRED_RESUME": "1"
+            },
+            "envToDelete": ["CODEX_HOME"],
+            "launchAgent": "codex",
+            "navigation": "caller",
+            "select": true,
+            "worktree": "id:workspace-1"
+          }
+        },
+        {
+          "name": "options",
+          "value": {
+            "timeoutMs": 30000
+          }
+        }
+      ],
+      "settlement": {
+        "status": "fulfilled",
+        "startedAt": 0,
+        "settledAt": 0,
+        "value": {
+          "id": "frame-1",
+          "ok": true
+        }
       }
     },
     "cceac9bcb36d": {
@@ -552,7 +596,11 @@
       "failure": "outer refused",
       "launched": "unlaunched"
     },
-    "f0411f7ef116": {
+    "f1f50b49b8de": {
+      "failure": "",
+      "launched": "unlaunched"
+    },
+    "f3c7fd04abf8": {
       "name": "session.tabs.createTerminal#1",
       "ordinal": 1,
       "args": [
@@ -566,7 +614,7 @@
             "activate": false,
             "clientMutationId": "resume-mutation-1",
             "env": {
-              "ORCA_RESUME": "1"
+              "ALFRED_RESUME": "1"
             },
             "envToDelete": ["CODEX_HOME"],
             "launchAgent": "codex",
@@ -594,54 +642,6 @@
           }
         }
       }
-    },
-    "f1f50b49b8de": {
-      "failure": "",
-      "launched": "unlaunched"
-    },
-    "fec16432436b": {
-      "name": "session.tabs.createTerminal#1",
-      "ordinal": 1,
-      "args": [
-        {
-          "name": "method",
-          "value": "session.tabs.createTerminal"
-        },
-        {
-          "name": "params",
-          "value": {
-            "activate": false,
-            "clientMutationId": "resume-mutation-1",
-            "env": {
-              "ORCA_RESUME": "1"
-            },
-            "envToDelete": ["CODEX_HOME"],
-            "launchAgent": "codex",
-            "navigation": "caller",
-            "select": true,
-            "worktree": "id:workspace-1"
-          }
-        },
-        {
-          "name": "options",
-          "value": {
-            "timeoutMs": 30000
-          }
-        }
-      ],
-      "settlement": {
-        "status": "fulfilled",
-        "startedAt": 0,
-        "settledAt": 0,
-        "value": {
-          "error": {
-            "code": "method_not_found",
-            "message": "Unknown method"
-          },
-          "id": "frame-1",
-          "ok": false
-        }
-      }
     }
   },
   "recording": {
@@ -650,8 +650,8 @@
       {
         "id": "aivault-resume-launch-sent.normal:resumed",
         "observation": {
-          "sender": ["a67829619e64", "cceac9bcb36d"],
-          "payloads": ["0bce25f5646d", "7d9e7036f3d0"],
+          "sender": ["90768600c4ba", "cceac9bcb36d"],
+          "payloads": ["b8ff649bd055", "7d9e7036f3d0"],
           "settlements": {
             "full": "6e79da536ca9"
           },
@@ -662,8 +662,8 @@
       {
         "id": "aivault-resume-launch-sent.result-absent:resumed",
         "observation": {
-          "sender": ["41a658e859b8"],
-          "payloads": ["0bce25f5646d"],
+          "sender": ["cb338e6735a3"],
+          "payloads": ["b8ff649bd055"],
           "settlements": {
             "full": "478ad4afe83e"
           },
@@ -674,8 +674,8 @@
       {
         "id": "aivault-resume-launch-sent.result-null:resumed",
         "observation": {
-          "sender": ["b0e4a76fd545"],
-          "payloads": ["0bce25f5646d"],
+          "sender": ["071bfb853d77"],
+          "payloads": ["b8ff649bd055"],
           "settlements": {
             "full": "478ad4afe83e"
           },
@@ -686,8 +686,8 @@
       {
         "id": "aivault-resume-launch-sent.inner-ok-missing:resumed",
         "observation": {
-          "sender": ["f0411f7ef116"],
-          "payloads": ["0bce25f5646d"],
+          "sender": ["f3c7fd04abf8"],
+          "payloads": ["b8ff649bd055"],
           "settlements": {
             "full": "478ad4afe83e"
           },
@@ -698,8 +698,8 @@
       {
         "id": "aivault-resume-launch-sent.inner-false-string-error:resumed",
         "observation": {
-          "sender": ["4593130c572f"],
-          "payloads": ["0bce25f5646d"],
+          "sender": ["9cfedb3308ff"],
+          "payloads": ["b8ff649bd055"],
           "settlements": {
             "full": "478ad4afe83e"
           },
@@ -710,8 +710,8 @@
       {
         "id": "aivault-resume-launch-sent.inner-false-object-error:resumed",
         "observation": {
-          "sender": ["919c7f3e8c27"],
-          "payloads": ["0bce25f5646d"],
+          "sender": ["82497b70f110"],
+          "payloads": ["b8ff649bd055"],
           "settlements": {
             "full": "478ad4afe83e"
           },
@@ -722,8 +722,8 @@
       {
         "id": "aivault-resume-launch-sent.outer-refused:resumed",
         "observation": {
-          "sender": ["47254074ef8b"],
-          "payloads": ["0bce25f5646d"],
+          "sender": ["38bd146eaddb"],
+          "payloads": ["b8ff649bd055"],
           "settlements": {
             "full": "32a7c0ae7918"
           },
@@ -734,8 +734,8 @@
       {
         "id": "aivault-resume-launch-sent.outer-refused-no-message:resumed",
         "observation": {
-          "sender": ["53623411feb6"],
-          "payloads": ["0bce25f5646d"],
+          "sender": ["8a1a18c60ab8"],
+          "payloads": ["b8ff649bd055"],
           "settlements": {
             "full": "30ec57518c05"
           },
@@ -746,8 +746,8 @@
       {
         "id": "aivault-resume-launch-sent.method-not-found:resumed",
         "observation": {
-          "sender": ["fec16432436b"],
-          "payloads": ["0bce25f5646d"],
+          "sender": ["c82221214167"],
+          "payloads": ["b8ff649bd055"],
           "settlements": {
             "full": "b948e8307e81"
           },
@@ -758,8 +758,8 @@
       {
         "id": "aivault-resume-launch-sent.transport-rejection:resumed",
         "observation": {
-          "sender": ["9d457a90f569"],
-          "payloads": ["0bce25f5646d"],
+          "sender": ["6346482e8ec6"],
+          "payloads": ["b8ff649bd055"],
           "settlements": {
             "full": "a947768bc0ed"
           },
@@ -770,8 +770,8 @@
       {
         "id": "aivault-resume-launch-sent.transport-rejection-no-message:resumed",
         "observation": {
-          "sender": ["7e87236eeb8a"],
-          "payloads": ["0bce25f5646d"],
+          "sender": ["1e380b858182"],
+          "payloads": ["b8ff649bd055"],
           "settlements": {
             "full": "c7584e82c72f"
           },

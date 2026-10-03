@@ -4,7 +4,7 @@
  *   1. Cmd/Ctrl+W -> "Stop running command?" dialog (cancelled, tab survives).
  *   2. X click    -> the same dialog, and the tab is still there behind it.
  */
-import { test, expect } from './helpers/orca-app'
+import { test, expect } from './helpers/alfred-app'
 import type { Page } from '@stablyai/playwright-test'
 import {
   waitForSessionReady,
@@ -34,22 +34,22 @@ function closeDialogTitle(page: Page) {
 test.describe.configure({ mode: 'serial' })
 
 test('the tab X button applies the same running-process confirmation as Cmd+W', async ({
-  orcaPage
+  alfredPage
 }) => {
   test.setTimeout(120_000)
-  await waitForSessionReady(orcaPage)
-  await waitForActiveWorktree(orcaPage)
-  await ensureTerminalVisible(orcaPage)
-  const hasPaneManager = await waitForActiveTerminalManager(orcaPage, 30_000)
+  await waitForSessionReady(alfredPage)
+  await waitForActiveWorktree(alfredPage)
+  await ensureTerminalVisible(alfredPage)
+  const hasPaneManager = await waitForActiveTerminalManager(alfredPage, 30_000)
     .then(() => true)
     .catch(() => false)
   test.skip(!hasPaneManager, 'Electron automation never mounted the live TerminalPane manager.')
-  await waitForPaneCount(orcaPage, 1, 30_000)
+  await waitForPaneCount(alfredPage, 1, 30_000)
 
-  const ptyId = await waitForActivePanePtyId(orcaPage)
-  await execInTerminal(orcaPage, ptyId, 'echo repro-10142-ready')
-  await waitForTerminalOutput(orcaPage, 'repro-10142-ready', 20_000)
-  await execInTerminal(orcaPage, ptyId, 'sleep 300')
+  const ptyId = await waitForActivePanePtyId(alfredPage)
+  await execInTerminal(alfredPage, ptyId, 'echo repro-10142-ready')
+  await waitForTerminalOutput(alfredPage, 'repro-10142-ready', 20_000)
+  await execInTerminal(alfredPage, ptyId, 'sleep 300')
   // Only press close once `sleep` is the foreground process; otherwise the probe
   // legitimately sees an idle shell and closing is correct. `hasChildProcesses` alone is
   // not enough: macOS spawns the shell under `login`, so a still-initialising terminal
@@ -57,33 +57,33 @@ test('the tab X button applies the same running-process confirmation as Cmd+W', 
   await expect
     .poll(
       async () =>
-        (await orcaPage.evaluate((id) => window.api.pty.inspectProcess(id), ptyId))
+        (await alfredPage.evaluate((id) => window.api.pty.inspectProcess(id), ptyId))
           .foregroundProcess,
       { timeout: 20_000, message: 'sleep 300 never became the foreground process' }
     )
     .toBe('sleep')
 
-  const busyTabId = (await getActiveTabId(orcaPage))!
-  const busyTab = orcaPage.locator(`${SORTABLE_TAB}[data-tab-id="${busyTabId}"]`).first()
+  const busyTabId = (await getActiveTabId(alfredPage))!
+  const busyTab = alfredPage.locator(`${SORTABLE_TAB}[data-tab-id="${busyTabId}"]`).first()
 
   // 1. Keyboard close prompts.
-  await focusActiveTerminalInput(orcaPage)
-  await orcaPage.keyboard.press(process.platform === 'darwin' ? 'Meta+w' : 'Control+w')
-  await expect(closeDialogTitle(orcaPage)).toBeVisible({ timeout: 15_000 })
-  await orcaPage.getByRole('button', { name: /^Cancel$/ }).click()
-  await expect(closeDialogTitle(orcaPage)).toBeHidden()
+  await focusActiveTerminalInput(alfredPage)
+  await alfredPage.keyboard.press(process.platform === 'darwin' ? 'Meta+w' : 'Control+w')
+  await expect(closeDialogTitle(alfredPage)).toBeVisible({ timeout: 15_000 })
+  await alfredPage.getByRole('button', { name: /^Cancel$/ }).click()
+  await expect(closeDialogTitle(alfredPage)).toBeHidden()
   await expect(busyTab).toBeVisible()
-  const tabsBefore = await countRenderedTabs(orcaPage)
+  const tabsBefore = await countRenderedTabs(alfredPage)
 
   // 2. Same tab, same running child, mouse close.
   await busyTab.hover()
   await busyTab.getByRole('button', { name: /^Close tab /i }).click()
-  await orcaPage.waitForTimeout(1_500)
+  await alfredPage.waitForTimeout(1_500)
 
   expect(
     {
-      confirmDialogVisible: await closeDialogTitle(orcaPage).isVisible(),
-      tabStillPresent: (await countRenderedTabs(orcaPage)) === tabsBefore
+      confirmDialogVisible: await closeDialogTitle(alfredPage).isVisible(),
+      tabStillPresent: (await countRenderedTabs(alfredPage)) === tabsBefore
     },
     'X-button close must apply the same running-process confirmation as Cmd+W'
   ).toEqual({ confirmDialogVisible: true, tabStillPresent: true })

@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 // Why: git.diff, git.branchDiff and git.commitDiff all return a GitDiffResult, so capping only the
 // first would leave the other two able to kill a remote socket.
 import { describe, expect, it, vi } from 'vitest'
@@ -8,8 +9,8 @@ import {
 import { assertGitDiffWithinTransportBudget } from '../../../../shared/git-diff-transport-budget'
 import type { GitDiffResult } from '../../../../shared/git-diff-compare-types'
 import type { GlobalSettings } from '../../../../shared/global-settings-types'
-import type { OrcaRuntimeService } from '../../orca-runtime'
-import { RuntimeGitCommands, type ResolvedRuntimeGitWorktree } from '../../orca-runtime-git'
+import type { AlfredRuntimeService } from '../../alfred-runtime'
+import { RuntimeGitCommands, type ResolvedRuntimeGitWorktree } from '../../alfred-runtime-git'
 import type { RpcRequest, RpcResponse } from '../core'
 import { RpcDispatcher } from '../dispatcher'
 import { GIT_METHODS } from './git'
@@ -55,9 +56,9 @@ const CASES: readonly { method: string; runtimeMethod: string; params: Record<st
     }
   ]
 
-/** Stands in for orca-runtime-git.ts, which enforces the budget it is handed as its last argument. */
-function stubRuntime(runtimeMethod: string): OrcaRuntimeService {
-  return {
+/** Stands in for alfred-runtime-git.ts, which enforces the budget it is handed as its last argument. */
+function stubRuntime(runtimeMethod: string): AlfredRuntimeService {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
     [runtimeMethod]: vi.fn(async (...args: unknown[]) => {
       const maxContentBytes = args.at(-1)
@@ -66,10 +67,10 @@ function stubRuntime(runtimeMethod: string): OrcaRuntimeService {
         typeof maxContentBytes === 'number' ? maxContentBytes : undefined
       )
     })
-  } as unknown as OrcaRuntimeService
+  })
 }
 
-function budgetArgument(runtime: OrcaRuntimeService, runtimeMethod: string): unknown {
+function budgetArgument(runtime: AlfredRuntimeService, runtimeMethod: string): unknown {
   const spy = (runtime as unknown as Record<string, ReturnType<typeof vi.fn>>)[runtimeMethod]!
   return spy.mock.calls[0]!.at(-1)
 }
@@ -79,7 +80,7 @@ function makeRequest(method: string, params: Record<string, unknown>): RpcReques
 }
 
 async function dispatchRemote(
-  runtime: OrcaRuntimeService,
+  runtime: AlfredRuntimeService,
   method: string,
   params: Record<string, unknown>,
   clientKind: 'mobile' | 'runtime'
@@ -165,9 +166,11 @@ describe('remote git diff transport budget', () => {
       }),
       getRuntimeSettings: () => ({}) as GlobalSettings
     })
-    const runtime = Object.assign(commands, {
-      getRuntimeId: () => 'test-runtime'
-    }) as unknown as OrcaRuntimeService
+    const runtime = createRuntimeServiceTestDouble(
+      Object.assign(commands, {
+        getRuntimeId: () => 'test-runtime'
+      })
+    )
 
     const response = await dispatchRemote(runtime, 'git.diff', CASES[0]!.params, 'mobile')
 

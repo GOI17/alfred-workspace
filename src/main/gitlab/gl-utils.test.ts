@@ -83,12 +83,12 @@ describe('gitlab project ref resolution', () => {
 
   it('keeps getProjectRef origin-based', async () => {
     gitExecFileAsyncMock.mockResolvedValueOnce({
-      stdout: 'git@gitlab.com:fork/orca.git\n'
+      stdout: 'git@gitlab.com:fork/alfred.git\n'
     })
 
     await expect(getProjectRef('/repo')).resolves.toEqual({
       host: 'gitlab.com',
-      path: 'fork/orca'
+      path: 'fork/alfred'
     })
     expect(gitExecFileAsyncMock).toHaveBeenCalledWith(['remote', 'get-url', 'origin'], {
       cwd: '/repo',
@@ -98,27 +98,27 @@ describe('gitlab project ref resolution', () => {
 
   it('prefers upstream for issue project ref resolution', async () => {
     mockGitRemoteCommands({
-      origin: 'git@gitlab.com:fork/orca.git\n',
-      upstream: 'git@gitlab.com:stablyai/orca.git\n'
+      origin: 'git@gitlab.com:fork/alfred.git\n',
+      upstream: 'git@gitlab.com:GOI17/alfred-workspace.git\n'
     })
 
     await expect(getIssueProjectRef('/repo')).resolves.toEqual({
       host: 'gitlab.com',
-      path: 'stablyai/orca'
+      path: 'GOI17/alfred-workspace'
     })
     expect(gitRemoteGetUrlCalls('upstream')).toHaveLength(1)
   })
 
   it('does not spawn git remote get-url upstream on an origin-only clone', async () => {
-    mockGitRemoteCommands({ origin: 'git@gitlab.com:fork/orca.git\n' })
+    mockGitRemoteCommands({ origin: 'git@gitlab.com:fork/alfred.git\n' })
 
     await expect(getIssueProjectRef('/repo')).resolves.toEqual({
       host: 'gitlab.com',
-      path: 'fork/orca'
+      path: 'fork/alfred'
     })
     await expect(getIssueProjectRef('/repo')).resolves.toEqual({
       host: 'gitlab.com',
-      path: 'fork/orca'
+      path: 'fork/alfred'
     })
     expect(gitRemoteListCalls()).toHaveLength(1)
     expect(gitRemoteGetUrlCalls('upstream')).toHaveLength(0)
@@ -127,13 +127,13 @@ describe('gitlab project ref resolution', () => {
 
   it('falls back to origin when upstream is present but non-GitLab', async () => {
     mockGitRemoteCommands({
-      origin: 'git@gitlab.com:fork/orca.git\n',
-      upstream: 'git@example.com:stablyai/orca.git\n'
+      origin: 'git@gitlab.com:fork/alfred.git\n',
+      upstream: 'git@example.com:GOI17/alfred-workspace.git\n'
     })
 
     await expect(getIssueProjectRef('/repo')).resolves.toEqual({
       host: 'gitlab.com',
-      path: 'fork/orca'
+      path: 'fork/alfred'
     })
     expect(gitRemoteGetUrlCalls('upstream')).toHaveLength(1)
     expect(gitRemoteGetUrlCalls('origin')).toHaveLength(1)
@@ -141,39 +141,39 @@ describe('gitlab project ref resolution', () => {
 
   it('does not mix origin and upstream cache entries for the same repo path', async () => {
     mockGitRemoteCommands({
-      origin: 'git@gitlab.com:fork/orca.git\n',
-      upstream: 'git@gitlab.com:stablyai/orca.git\n'
+      origin: 'git@gitlab.com:fork/alfred.git\n',
+      upstream: 'git@gitlab.com:GOI17/alfred-workspace.git\n'
     })
 
     await expect(getProjectRef('/repo')).resolves.toEqual({
       host: 'gitlab.com',
-      path: 'fork/orca'
+      path: 'fork/alfred'
     })
     await expect(getIssueProjectRef('/repo')).resolves.toEqual({
       host: 'gitlab.com',
-      path: 'stablyai/orca'
+      path: 'GOI17/alfred-workspace'
     })
   })
 
   it('keeps local host and local WSL project-ref cache entries separate for the same path', async () => {
     gitExecFileAsyncMock
-      .mockResolvedValueOnce({ stdout: 'git@gitlab.com:host/orca.git\n' })
-      .mockResolvedValueOnce({ stdout: 'git@gitlab.com:wsl/orca.git\n' })
+      .mockResolvedValueOnce({ stdout: 'git@gitlab.com:host/alfred.git\n' })
+      .mockResolvedValueOnce({ stdout: 'git@gitlab.com:wsl/alfred.git\n' })
 
     await expect(getProjectRef('/repo')).resolves.toEqual({
       host: 'gitlab.com',
-      path: 'host/orca'
+      path: 'host/alfred'
     })
     await expect(getProjectRef('/repo', undefined, null, { wslDistro: 'Ubuntu' })).resolves.toEqual(
       {
         host: 'gitlab.com',
-        path: 'wsl/orca'
+        path: 'wsl/alfred'
       }
     )
     await expect(getProjectRef('/repo', undefined, null, { wslDistro: 'Ubuntu' })).resolves.toEqual(
       {
         host: 'gitlab.com',
-        path: 'wsl/orca'
+        path: 'wsl/alfred'
       }
     )
 
@@ -215,12 +215,12 @@ describe('gitlab project ref resolution', () => {
   })
 
   it('resolves project refs through the SSH git provider for connected repos', async () => {
-    sshExecMock.mockResolvedValueOnce({ stdout: 'git@gitlab.com:remote/orca.git\n', stderr: '' })
+    sshExecMock.mockResolvedValueOnce({ stdout: 'git@gitlab.com:remote/alfred.git\n', stderr: '' })
     registerSshGitProvider('conn-1', { exec: sshExecMock } as never)
 
     await expect(getProjectRefForRemote('/repo', 'origin', undefined, 'conn-1')).resolves.toEqual({
       host: 'gitlab.com',
-      path: 'remote/orca'
+      path: 'remote/alfred'
     })
 
     expect(sshExecMock).toHaveBeenCalledWith(['remote', 'get-url', 'origin'], '/repo', {
@@ -231,7 +231,7 @@ describe('gitlab project ref resolution', () => {
 
   it('bounds cached project refs for distinct repo paths', async () => {
     gitExecFileAsyncMock.mockResolvedValue({
-      stdout: 'git@gitlab.com:stablyai/orca.git\n',
+      stdout: 'git@gitlab.com:GOI17/alfred-workspace.git\n',
       stderr: ''
     })
 
@@ -246,39 +246,39 @@ describe('gitlab project ref resolution', () => {
     await expect(getProjectRefForRemote('/repo', 'origin', undefined, 'conn-1')).resolves.toBeNull()
 
     sshExecMock.mockResolvedValueOnce({
-      stdout: 'git@gitlab.com:remote/orca.git\n',
+      stdout: 'git@gitlab.com:remote/alfred.git\n',
       stderr: ''
     })
     registerSshGitProvider('conn-1', { exec: sshExecMock } as never)
 
     await expect(getProjectRefForRemote('/repo', 'origin', undefined, 'conn-1')).resolves.toEqual({
       host: 'gitlab.com',
-      path: 'remote/orca'
+      path: 'remote/alfred'
     })
   })
 
   it('does not cache transient SSH exec failures as permanent null project refs', async () => {
     sshExecMock
       .mockRejectedValueOnce(new Error('ssh tunnel not ready'))
-      .mockResolvedValueOnce({ stdout: 'git@gitlab.com:remote/orca.git\n', stderr: '' })
+      .mockResolvedValueOnce({ stdout: 'git@gitlab.com:remote/alfred.git\n', stderr: '' })
     registerSshGitProvider('conn-1', { exec: sshExecMock } as never)
 
     await expect(getProjectRefForRemote('/repo', 'origin', undefined, 'conn-1')).resolves.toBeNull()
     await expect(getProjectRefForRemote('/repo', 'origin', undefined, 'conn-1')).resolves.toEqual({
       host: 'gitlab.com',
-      path: 'remote/orca'
+      path: 'remote/alfred'
     })
   })
 
   it('does not cache a local probe killed on its deadline as a definitive miss', async () => {
     gitExecFileAsyncMock
       .mockRejectedValueOnce(new Error('git timed out.'))
-      .mockResolvedValueOnce({ stdout: 'git@gitlab.com:fork/orca.git\n' })
+      .mockResolvedValueOnce({ stdout: 'git@gitlab.com:fork/alfred.git\n' })
 
     await expect(getProjectRef('/repo')).resolves.toBeNull()
     await expect(getProjectRef('/repo')).resolves.toEqual({
       host: 'gitlab.com',
-      path: 'fork/orca'
+      path: 'fork/alfred'
     })
     expect(gitExecFileAsyncMock).toHaveBeenCalledTimes(2)
   })
@@ -294,12 +294,12 @@ describe('gitlab project ref resolution', () => {
 
     // Nothing watches `.git/config`, and SSH/WSL repos have no file to watch, so
     // a remote configured after the miss is only visible once the negative ages out.
-    gitExecFileAsyncMock.mockResolvedValue({ stdout: 'git@gitlab.com:fork/orca.git\n' })
+    gitExecFileAsyncMock.mockResolvedValue({ stdout: 'git@gitlab.com:fork/alfred.git\n' })
     vi.setSystemTime(1_000_000 + NEGATIVE_ENTRY_TTL_MS + 1)
 
     await expect(getProjectRef('/repo')).resolves.toEqual({
       host: 'gitlab.com',
-      path: 'fork/orca'
+      path: 'fork/alfred'
     })
     expect(gitExecFileAsyncMock).toHaveBeenCalledTimes(2)
   })
@@ -307,35 +307,35 @@ describe('gitlab project ref resolution', () => {
   it('keeps a resolved project ref past the negative interval', async () => {
     vi.useFakeTimers()
     vi.setSystemTime(1_000_000)
-    gitExecFileAsyncMock.mockResolvedValue({ stdout: 'git@gitlab.com:fork/orca.git\n' })
+    gitExecFileAsyncMock.mockResolvedValue({ stdout: 'git@gitlab.com:fork/alfred.git\n' })
 
     await expect(getProjectRef('/repo')).resolves.toEqual({
       host: 'gitlab.com',
-      path: 'fork/orca'
+      path: 'fork/alfred'
     })
     vi.setSystemTime(1_000_000 + NEGATIVE_ENTRY_TTL_MS * 10)
     await expect(getProjectRef('/repo')).resolves.toEqual({
       host: 'gitlab.com',
-      path: 'fork/orca'
+      path: 'fork/alfred'
     })
 
     expect(gitExecFileAsyncMock).toHaveBeenCalledTimes(1)
   })
 
   it('re-resolves a self-hosted remote once glab auth knows its host', async () => {
-    gitExecFileAsyncMock.mockResolvedValue({ stdout: 'git@gitlab.internal:team/orca.git\n' })
+    gitExecFileAsyncMock.mockResolvedValue({ stdout: 'git@gitlab.internal:team/alfred.git\n' })
     glabExecFileAsyncMock.mockRejectedValue(new Error('not authenticated'))
 
     await expect(getProjectRefForRemote('/repo', 'origin', ['gitlab.com'])).resolves.toBeNull()
     await expect(
       getProjectRefForRemote('/repo', 'origin', ['gitlab.com', 'gitlab.internal'])
-    ).resolves.toEqual({ host: 'gitlab.internal', path: 'team/orca' })
+    ).resolves.toEqual({ host: 'gitlab.internal', path: 'team/alfred' })
   })
 
   it('asks glab about an unauthenticated host once per interval, not once per repo', async () => {
     vi.useFakeTimers()
     vi.setSystemTime(1_000_000)
-    gitExecFileAsyncMock.mockResolvedValue({ stdout: 'git@github.com:team/orca.git\n' })
+    gitExecFileAsyncMock.mockResolvedValue({ stdout: 'git@github.com:team/alfred.git\n' })
     glabExecFileAsyncMock.mockRejectedValue(new Error('not authenticated'))
 
     // Expiring project-ref negatives must not turn the hosted-review poll into a
@@ -354,13 +354,13 @@ describe('gitlab project ref resolution', () => {
 
   it('does not serve a project ref resolved on a retired SSH connection', async () => {
     sshExecMock
-      .mockResolvedValueOnce({ stdout: 'git@gitlab.com:before/orca.git\n', stderr: '' })
-      .mockResolvedValueOnce({ stdout: 'git@gitlab.com:after/orca.git\n', stderr: '' })
+      .mockResolvedValueOnce({ stdout: 'git@gitlab.com:before/alfred.git\n', stderr: '' })
+      .mockResolvedValueOnce({ stdout: 'git@gitlab.com:after/alfred.git\n', stderr: '' })
     registerSshGitProvider('conn-1', { exec: sshExecMock } as never)
 
     await expect(getProjectRefForRemote('/repo', 'origin', undefined, 'conn-1')).resolves.toEqual({
       host: 'gitlab.com',
-      path: 'before/orca'
+      path: 'before/alfred'
     })
 
     // A reconnect can swap the execution host under the same connection id.
@@ -369,7 +369,7 @@ describe('gitlab project ref resolution', () => {
 
     await expect(getProjectRefForRemote('/repo', 'origin', undefined, 'conn-1')).resolves.toEqual({
       host: 'gitlab.com',
-      path: 'after/orca'
+      path: 'after/alfred'
     })
     expect(sshExecMock).toHaveBeenCalledTimes(2)
   })
@@ -409,12 +409,12 @@ describe('resolveIssueSource', () => {
 
   it("'auto' + upstream exists → upstream, fellBack=false", async () => {
     mockGitRemoteCommands({
-      origin: 'git@gitlab.com:fork/orca.git\n',
-      upstream: 'git@gitlab.com:stablyai/orca.git\n'
+      origin: 'git@gitlab.com:fork/alfred.git\n',
+      upstream: 'git@gitlab.com:GOI17/alfred-workspace.git\n'
     })
 
     await expect(resolveIssueSource('/repo', 'auto')).resolves.toEqual({
-      source: { host: 'gitlab.com', path: 'stablyai/orca' },
+      source: { host: 'gitlab.com', path: 'GOI17/alfred-workspace' },
       fellBack: false
     })
     expect(gitRemoteGetUrlCalls('upstream')).toHaveLength(1)
@@ -422,12 +422,12 @@ describe('resolveIssueSource', () => {
 
   it("'auto' + no gitlab upstream → origin, fellBack=false", async () => {
     mockGitRemoteCommands({
-      origin: 'git@gitlab.com:solo/orca.git\n',
-      upstream: 'git@example.com:stablyai/orca.git\n'
+      origin: 'git@gitlab.com:solo/alfred.git\n',
+      upstream: 'git@example.com:GOI17/alfred-workspace.git\n'
     })
 
     await expect(resolveIssueSource('/repo', 'auto')).resolves.toEqual({
-      source: { host: 'gitlab.com', path: 'solo/orca' },
+      source: { host: 'gitlab.com', path: 'solo/alfred' },
       fellBack: false
     })
   })
@@ -435,21 +435,21 @@ describe('resolveIssueSource', () => {
   it("'upstream' + no upstream remote → origin, fellBack=true", async () => {
     gitExecFileAsyncMock
       .mockRejectedValueOnce(new Error('fatal: No such remote'))
-      .mockResolvedValueOnce({ stdout: 'git@gitlab.com:solo/orca.git\n' })
+      .mockResolvedValueOnce({ stdout: 'git@gitlab.com:solo/alfred.git\n' })
 
     await expect(resolveIssueSource('/repo', 'upstream')).resolves.toEqual({
-      source: { host: 'gitlab.com', path: 'solo/orca' },
+      source: { host: 'gitlab.com', path: 'solo/alfred' },
       fellBack: true
     })
   })
 
   it("'origin' + upstream exists → origin (ignores upstream), fellBack=false", async () => {
     gitExecFileAsyncMock.mockResolvedValueOnce({
-      stdout: 'git@gitlab.com:fork/orca.git\n'
+      stdout: 'git@gitlab.com:fork/alfred.git\n'
     })
 
     await expect(resolveIssueSource('/repo', 'origin')).resolves.toEqual({
-      source: { host: 'gitlab.com', path: 'fork/orca' },
+      source: { host: 'gitlab.com', path: 'fork/alfred' },
       fellBack: false
     })
     expect(gitExecFileAsyncMock).toHaveBeenCalledTimes(1)
@@ -461,12 +461,12 @@ describe('resolveIssueSource', () => {
 
   it('undefined preference is treated identically to auto', async () => {
     mockGitRemoteCommands({
-      origin: 'git@gitlab.com:fork/orca.git\n',
-      upstream: 'git@gitlab.com:stablyai/orca.git\n'
+      origin: 'git@gitlab.com:fork/alfred.git\n',
+      upstream: 'git@gitlab.com:GOI17/alfred-workspace.git\n'
     })
 
     await expect(resolveIssueSource('/repo', undefined)).resolves.toEqual({
-      source: { host: 'gitlab.com', path: 'stablyai/orca' },
+      source: { host: 'gitlab.com', path: 'GOI17/alfred-workspace' },
       fellBack: false
     })
   })

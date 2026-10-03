@@ -3,7 +3,7 @@
  */
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import type * as GitUsernameModule from '../git/git-username'
-import { OrcaRuntimeService } from './orca-runtime'
+import { AlfredRuntimeService } from './alfred-runtime'
 
 vi.mock('../git/worktree', () => ({
   listWorktrees: vi.fn().mockResolvedValue([
@@ -88,7 +88,7 @@ const store = {
 }
 
 /** Reclaim clears protected retention maps that no public reader exposes. */
-class ObservableRuntime extends OrcaRuntimeService {
+class ObservableRuntime extends AlfredRuntimeService {
   get restoreTimers(): typeof this.pendingRestoreTimers {
     return this.pendingRestoreTimers
   }

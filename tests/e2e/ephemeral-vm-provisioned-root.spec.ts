@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { chmodSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { homedir, tmpdir } from 'node:os'
 import path from 'node:path'
-import { expect, test } from './helpers/orca-app'
+import { expect, test } from './helpers/alfred-app'
 import { ensureDockerSshRelayImage } from './helpers/docker-ssh-relay-image'
 import {
   cleanupDockerSshRelayTarget,
@@ -18,24 +18,24 @@ import { ensureTerminalVisible, waitForSessionReady } from './helpers/store'
 test.use({ seedTestRepo: false })
 
 test('adopts a recipe-provisioned SSH root without creating a linked worktree', async ({
-  orcaPage
+  alfredPage
 }, testInfo) => {
   test.setTimeout(240_000)
   let target: DockerSshRelayTarget | null = null
-  const sourceRepo = mkdtempSync(path.join(tmpdir(), 'orca-provisioned-root-source-'))
+  const sourceRepo = mkdtempSync(path.join(tmpdir(), 'alfred-provisioned-root-source-'))
   try {
     ensureDockerSshRelayImage(process.cwd())
     target = startDockerSshRelayTarget(testInfo)
     const expectedRefHead = seedRecipeRepo(sourceRepo, target)
-    await waitForSessionReady(orcaPage)
-    const sourceRepoId = await addRecipeRepo(orcaPage, sourceRepo)
+    await waitForSessionReady(alfredPage)
+    const sourceRepoId = await addRecipeRepo(alfredPage, sourceRepo)
 
-    await openSidebarWorkspaceComposer(orcaPage)
-    const dialog = orcaPage.getByRole('dialog', { name: /Create (Workspace|Worktree)/i })
+    await openSidebarWorkspaceComposer(alfredPage)
+    const dialog = alfredPage.getByRole('dialog', { name: /Create (Workspace|Worktree)/i })
     await expect(dialog).toBeVisible()
     await dialog.getByRole('combobox', { name: 'Run on' }).click()
-    await orcaPage.getByRole('option', { name: /Per-Workspace Environment/ }).click()
-    await orcaPage
+    await alfredPage.getByRole('option', { name: /Per-Workspace Environment/ }).click()
+    await alfredPage
       .getByRole('listbox', { name: 'Per-Workspace Environment' })
       .getByText('Docker provisioned root', { exact: true })
       .click()
@@ -43,17 +43,17 @@ test('adopts a recipe-provisioned SSH root without creating a linked worktree', 
     const workspaceName = `provisioned-root-${Date.now()}`
     await dialog.getByPlaceholder(/Type a name/i).fill(workspaceName)
     await dialog.getByRole('button', { name: /Create (Workspace|Worktree)/i }).click()
-    const trustDialog = orcaPage.getByRole('dialog', { name: /Run VM recipe/ })
+    const trustDialog = alfredPage.getByRole('dialog', { name: /Run VM recipe/ })
     await expect(trustDialog).toBeVisible()
     await trustDialog.getByRole('button', { name: 'Run hooks' }).click()
 
     await expect(dialog).toBeHidden({ timeout: 60_000 })
-    await expect(orcaPage.getByRole('option', { name: new RegExp(workspaceName) })).toBeVisible({
+    await expect(alfredPage.getByRole('option', { name: new RegExp(workspaceName) })).toBeVisible({
       timeout: 60_000
     })
-    await ensureTerminalVisible(orcaPage)
+    await ensureTerminalVisible(alfredPage)
 
-    const adopted = await orcaPage.evaluate(
+    const adopted = await alfredPage.evaluate(
       ({ sourceRepoId, workspaceName }) => {
         const state = window.__store!.getState()
         return Object.values(state.worktreesByRepo)
@@ -89,10 +89,10 @@ test('adopts a recipe-provisioned SSH root without creating a linked worktree', 
       )
     ).toBe(expectedRefHead)
 
-    const removeDialog = orcaPage.getByRole('dialog', { name: 'Remove Project' })
-    const removeMenuItem = orcaPage.getByRole('menuitem', { name: 'Remove Project from Orca' })
+    const removeDialog = alfredPage.getByRole('dialog', { name: 'Remove Project' })
+    const removeMenuItem = alfredPage.getByRole('menuitem', { name: 'Remove Project from Alfred' })
     await expect(async () => {
-      await orcaPage
+      await alfredPage
         .getByRole('option', { name: new RegExp(workspaceName) })
         .click({ button: 'right' })
       await expect(removeMenuItem).toBeVisible({ timeout: 1_000 })
@@ -106,7 +106,7 @@ test('adopts a recipe-provisioned SSH root without creating a linked worktree', 
     await expect
       .poll(
         () =>
-          orcaPage.evaluate(
+          alfredPage.evaluate(
             (repoId) => window.__store!.getState().repos.some((repo) => repo.id === repoId),
             adopted!.repoId
           ),
@@ -143,13 +143,13 @@ function seedRecipeRepo(repoPath: string, target: DockerSshRelayTarget): string 
     createScript,
     `#!/usr/bin/env bash
 set -euo pipefail
-[ "\${ORCA_RECIPE_RESULT_SCHEMA_VERSION:-}" = 2 ]
-[ -n "\${ORCA_REPO_URL:-}" ]
-[ -n "\${ORCA_REPO_REF:-}" ]
-[ -n "\${ORCA_REPO_REF_HEAD:-}" ]
-[ -n "\${ORCA_REPO_BRANCH:-}" ]
-${docker} exec ${shellQuote(target.containerName)} git -C ${shellQuote(DOCKER_SSH_RELAY_REMOTE_REPO_PATH)} cat-file -e "$ORCA_REPO_REF_HEAD^{commit}"
-${docker} exec ${shellQuote(target.containerName)} git -C ${shellQuote(DOCKER_SSH_RELAY_REMOTE_REPO_PATH)} checkout -B "$ORCA_REPO_BRANCH" "$ORCA_REPO_REF_HEAD" >&2
+[ "\${ALFRED_RECIPE_RESULT_SCHEMA_VERSION:-}" = 2 ]
+[ -n "\${ALFRED_REPO_URL:-}" ]
+[ -n "\${ALFRED_REPO_REF:-}" ]
+[ -n "\${ALFRED_REPO_REF_HEAD:-}" ]
+[ -n "\${ALFRED_REPO_BRANCH:-}" ]
+${docker} exec ${shellQuote(target.containerName)} git -C ${shellQuote(DOCKER_SSH_RELAY_REMOTE_REPO_PATH)} cat-file -e "$ALFRED_REPO_REF_HEAD^{commit}"
+${docker} exec ${shellQuote(target.containerName)} git -C ${shellQuote(DOCKER_SSH_RELAY_REMOTE_REPO_PATH)} checkout -B "$ALFRED_REPO_BRANCH" "$ALFRED_REPO_REF_HEAD" >&2
 node -e 'console.log(JSON.stringify({schemaVersion:2,checkoutMode:"provisioned-root",connection:{type:"ssh",projectRoot:process.argv[1],target:{label:"Docker provisioned root",host:process.argv[2],port:Number(process.argv[3]),username:"root",identityFile:process.argv[4],identitiesOnly:true}}}))' ${shellQuote(DOCKER_SSH_RELAY_REMOTE_REPO_PATH)} ${shellQuote(target.host)} ${target.port} ${shellQuote(target.identityFile)}
 `
   )
@@ -164,7 +164,7 @@ ${docker} rm -f ${shellQuote(target.containerName)} >/dev/null
   chmodSync(createScript, 0o755)
   chmodSync(destroyScript, 0o755)
   writeFileSync(
-    path.join(repoPath, 'orca.yaml'),
+    path.join(repoPath, 'alfred.yaml'),
     `environmentRecipes:
   - id: docker-provisioned-root
     name: Docker provisioned root
@@ -175,10 +175,14 @@ ${docker} rm -f ${shellQuote(target.containerName)} >/dev/null
   )
   execFileSync('git', ['init'], { cwd: repoPath })
   execFileSync('git', ['config', 'user.email', 'e2e@test.local'], { cwd: repoPath })
-  execFileSync('git', ['config', 'user.name', 'Orca E2E'], { cwd: repoPath })
-  execFileSync('git', ['remote', 'add', 'origin', 'https://github.com/stablyai/orca.git'], {
-    cwd: repoPath
-  })
+  execFileSync('git', ['config', 'user.name', 'Alfred E2E'], { cwd: repoPath })
+  execFileSync(
+    'git',
+    ['remote', 'add', 'origin', 'https://github.com/GOI17/alfred-workspace.git'],
+    {
+      cwd: repoPath
+    }
+  )
   execFileSync('git', ['add', '.'], { cwd: repoPath })
   execFileSync('git', ['commit', '-m', 'seed recipe'], { cwd: repoPath })
   const expectedRefHead = execFileSync('git', ['rev-parse', 'HEAD'], {

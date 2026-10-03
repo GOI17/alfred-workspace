@@ -31,12 +31,15 @@ if (!bucketMatch) {
 }
 const BUCKET_MS = Number(bucketMatch[1].replaceAll('_', ''))
 
-const ITERATIONS = Number.parseInt(process.env.ORCA_AGENT_PROJECTION_BENCH_ITERATIONS ?? '400', 10)
-const WARMUP = Number.parseInt(process.env.ORCA_AGENT_PROJECTION_BENCH_WARMUP ?? '60', 10)
+const ITERATIONS = Number.parseInt(
+  process.env.ALFRED_AGENT_PROJECTION_BENCH_ITERATIONS ?? '400',
+  10
+)
+const WARMUP = Number.parseInt(process.env.ALFRED_AGENT_PROJECTION_BENCH_WARMUP ?? '60', 10)
 
 for (const [name, value] of [
-  ['ORCA_AGENT_PROJECTION_BENCH_ITERATIONS', ITERATIONS],
-  ['ORCA_AGENT_PROJECTION_BENCH_WARMUP', WARMUP]
+  ['ALFRED_AGENT_PROJECTION_BENCH_ITERATIONS', ITERATIONS],
+  ['ALFRED_AGENT_PROJECTION_BENCH_WARMUP', WARMUP]
 ]) {
   if (!Number.isInteger(value) || value <= 0) {
     throw new Error(`${name} must be a positive integer, received ${value}`)

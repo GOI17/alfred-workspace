@@ -1,6 +1,6 @@
 import { useAppStore } from '@/store'
-import { ORCA_BROWSER_PARTITION } from '../../../../../shared/constants'
-import { getOrcaProfileBrowserDefaultPartition } from '../../../../../shared/orca-profiles'
+import { ALFRED_BROWSER_PARTITION } from '../../../../../shared/constants'
+import { getAlfredProfileBrowserDefaultPartition } from '../../../../../shared/alfred-profiles'
 
 export function useBrowserPageWebviewPartition({
   sessionProfileId,
@@ -10,9 +10,9 @@ export function useBrowserPageWebviewPartition({
   sessionPartition: string | null
 }): string {
   const browserSessionProfiles = useAppStore((s) => s.browserSessionProfiles)
-  const activeOrcaProfileId = useAppStore((s) => s.activeOrcaProfileId)
-  const fallbackBrowserPartition = activeOrcaProfileId
-    ? getOrcaProfileBrowserDefaultPartition(activeOrcaProfileId)
+  const activeAlfredProfileId = useAppStore((s) => s.activeAlfredProfileId)
+  const fallbackBrowserPartition = activeAlfredProfileId
+    ? getAlfredProfileBrowserDefaultPartition(activeAlfredProfileId)
     : null
   const defaultSessionProfile = browserSessionProfiles.find((p) => p.id === 'default') ?? null
   const sessionProfile = sessionProfileId
@@ -23,6 +23,6 @@ export function useBrowserPageWebviewPartition({
     sessionProfile?.partition ??
     defaultSessionProfile?.partition ??
     fallbackBrowserPartition ??
-    ORCA_BROWSER_PARTITION
+    ALFRED_BROWSER_PARTITION
   )
 }

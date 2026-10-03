@@ -120,8 +120,8 @@ describe('sendMobileNativeChatMessage', () => {
     const client = {
       sendRequest: vi
         .fn()
-        .mockRejectedValue(new Error('Timed out while connecting to the remote Orca runtime.'))
-    } as unknown as RpcClient
+        .mockRejectedValue(new Error('Timed out while connecting to the remote Alfred runtime.'))
+    }
 
     await expect(
       sendMobileNativeChatMessageWithOutcome({ client, terminal: 'term', text: 'hello' })

@@ -93,7 +93,7 @@ const AUTOMATIONS = [
 async function makeRuntime() {
   mkdirSync(testState.dir, { recursive: true })
   writeFileSync(
-    join(testState.dir, 'orca-data.json'),
+    join(testState.dir, 'alfred-data.json'),
     JSON.stringify({
       ...getDefaultPersistedState(testState.dir),
       repos: REPOS,
@@ -107,8 +107,8 @@ async function makeRuntime() {
   const { Store, initDataPath } = await import('../persistence')
   initDataPath()
   const store = new Store()
-  const { OrcaRuntimeService } = await import('./orca-runtime')
-  const runtime = new OrcaRuntimeService(store as never)
+  const { AlfredRuntimeService } = await import('./alfred-runtime')
+  const runtime = new AlfredRuntimeService(store)
   const published: AutomationsChangedPayload[] = []
   vi.spyOn(runtime, 'notifyAutomationsChanged').mockImplementation(
     (payload: AutomationsChangedPayload = {}) => {
@@ -120,7 +120,7 @@ async function makeRuntime() {
 
 beforeEach(() => {
   testState.dir = mkdtempSync(join(tmpdir(), 'automation-publish-'))
-  // Why: the store resolves orca-data.json through the app environment, so the
+  // Why: the store resolves alfred-data.json through the app environment, so the
   // suite's fixture directory must be what `userData` answers with.
   installFakeAppEnvironment({
     getPath: (name) => (name === 'userData' ? testState.dir : tmpdir())

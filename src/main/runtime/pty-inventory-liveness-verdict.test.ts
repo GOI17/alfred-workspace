@@ -1,5 +1,6 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
-import { OrcaRuntimeService } from './orca-runtime'
+import { AlfredRuntimeService } from './alfred-runtime'
 import { getDefaultWorkspaceSession } from '../../shared/constants'
 import { SSH_EXIT_UNCONFIRMED_REASON } from '../../shared/pty-liveness-verdict'
 
@@ -44,8 +45,8 @@ function makeStore() {
 function makeRuntimeMissingFromInventory(
   hasPty: () => boolean | null,
   listProcesses: () => Promise<{ id: string; worktreeId: string }[]> = vi.fn(async () => [])
-): OrcaRuntimeService {
-  const runtime = new OrcaRuntimeService(makeStore() as never)
+): AlfredRuntimeService {
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
   runtime.setPtyController({
     write: () => true,
     kill: () => true,
@@ -203,7 +204,7 @@ describe('inventory sweep liveness verdicts', () => {
   })
 
   it('retains unresolved verdicts for every still-addressable PTY', () => {
-    const runtime = new OrcaRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
     for (let index = 0; index < 257; index += 1) {
       const ptyId = `ssh:conn-1@@relay-${index}`
       runtime.registerPty(ptyId, WORKTREE_ID, 'conn-1')
@@ -219,7 +220,7 @@ describe('inventory sweep liveness verdicts', () => {
   it('bounds detached verdicts while preserving every still-addressable one', () => {
     // Eviction classifies by CURRENT addressability, so churn cannot push an active PTY's verdict
     // out: only ids that no record, handle, or leaf still names are candidates.
-    const runtime = new OrcaRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
     for (let index = 0; index < 400; index += 1) {
       const ptyId = `ssh:conn-1@@churn-${index}`
       runtime.registerPty(ptyId, WORKTREE_ID, 'conn-1')

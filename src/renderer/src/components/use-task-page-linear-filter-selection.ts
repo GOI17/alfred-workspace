@@ -18,7 +18,7 @@ import { buildLinearIssueWorkspaceAttachmentIndex } from '@/lib/linear-issue-wor
 import {
   collectLinkedLinearIssueRefsFromWorktrees,
   linkedLinearIssueRefsSignature
-} from '@/components/task-page-linear-in-orca-issues'
+} from '@/components/task-page-linear-in-alfred-issues'
 export function useTaskPageLinearFilterSelection(model: TaskPageLinearListSelectionPreludeModel) {
   const {
     allWorktrees,
@@ -116,7 +116,7 @@ export function useTaskPageLinearFilterSelection(model: TaskPageLinearListSelect
     () => buildLinearIssueWorkspaceAttachmentIndex(linearAttachmentWorkspaces),
     [linearAttachmentWorkspaces]
   )
-  const inOrcaLinkedLinearRefs = useMemo(
+  const inAlfredLinkedLinearRefs = useMemo(
     () =>
       collectLinkedLinearIssueRefsFromWorktrees(linearAttachmentWorkspaces, {
         workspaceId: selectedLinearWorkspaceId,
@@ -124,35 +124,25 @@ export function useTaskPageLinearFilterSelection(model: TaskPageLinearListSelect
       }),
     [linearAttachmentWorkspaces, linearStatus.workspaces, selectedLinearWorkspaceId]
   )
-  const inOrcaLinkedLinearRefsSignature = useMemo(
-    () => linkedLinearIssueRefsSignature(inOrcaLinkedLinearRefs),
-    [inOrcaLinkedLinearRefs]
+  const inAlfredLinkedLinearRefsSignature = useMemo(
+    () => linkedLinearIssueRefsSignature(inAlfredLinkedLinearRefs),
+    [inAlfredLinkedLinearRefs]
   )
-  const inOrcaLinkedLinearRefsRef = useRef(inOrcaLinkedLinearRefs)
-  // Keep latest linked refs for the in-orca loader without re-running it on identity churn.
+  const inAlfredLinkedLinearRefsRef = useRef(inAlfredLinkedLinearRefs)
+  // Keep latest linked refs for the in-alfred loader without re-running it on identity churn.
   useEffect(() => {
-    inOrcaLinkedLinearRefsRef.current = inOrcaLinkedLinearRefs
-  }, [inOrcaLinkedLinearRefs])
-  const nextModel = model as typeof model & {
-    linearAttributePrimaryTeam: typeof linearAttributePrimaryTeam
-    applyLinearAttributeFilter: typeof applyLinearAttributeFilter
-    linearSearchActive: typeof linearSearchActive
-    showLinearAttributeFilters: typeof showLinearAttributeFilters
-    linearAttachmentWorkspaces: typeof linearAttachmentWorkspaces
-    linearIssueAttachmentIndex: typeof linearIssueAttachmentIndex
-    inOrcaLinkedLinearRefs: typeof inOrcaLinkedLinearRefs
-    inOrcaLinkedLinearRefsSignature: typeof inOrcaLinkedLinearRefsSignature
-    inOrcaLinkedLinearRefsRef: typeof inOrcaLinkedLinearRefsRef
-  }
-  nextModel.linearAttributePrimaryTeam = linearAttributePrimaryTeam
-  nextModel.applyLinearAttributeFilter = applyLinearAttributeFilter
-  nextModel.linearSearchActive = linearSearchActive
-  nextModel.showLinearAttributeFilters = showLinearAttributeFilters
-  nextModel.linearAttachmentWorkspaces = linearAttachmentWorkspaces
-  nextModel.linearIssueAttachmentIndex = linearIssueAttachmentIndex
-  nextModel.inOrcaLinkedLinearRefs = inOrcaLinkedLinearRefs
-  nextModel.inOrcaLinkedLinearRefsSignature = inOrcaLinkedLinearRefsSignature
-  nextModel.inOrcaLinkedLinearRefsRef = inOrcaLinkedLinearRefsRef
-  return nextModel
+    inAlfredLinkedLinearRefsRef.current = inAlfredLinkedLinearRefs
+  }, [inAlfredLinkedLinearRefs])
+  return Object.assign(model, {
+    linearAttributePrimaryTeam,
+    applyLinearAttributeFilter,
+    linearSearchActive,
+    showLinearAttributeFilters,
+    linearAttachmentWorkspaces,
+    linearIssueAttachmentIndex,
+    inAlfredLinkedLinearRefs,
+    inAlfredLinkedLinearRefsSignature,
+    inAlfredLinkedLinearRefsRef
+  })
 }
 export type TaskPageLinearFilterSelectionModel = ReturnType<typeof useTaskPageLinearFilterSelection>

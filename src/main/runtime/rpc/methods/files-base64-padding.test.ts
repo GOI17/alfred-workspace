@@ -1,5 +1,5 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
-import type { OrcaRuntimeService } from '../../orca-runtime'
 import { RpcDispatcher } from '../dispatcher'
 import { FILE_MUTATION_METHODS } from './files-mutation-methods'
 
@@ -26,10 +26,10 @@ describe.each([
     ['AAA', true]
   ])('validates %j before writing (accepted: %s)', async (contentBase64, accepted) => {
     const write = vi.fn().mockResolvedValue({ ok: true })
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       [runtimeMethod]: write
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: FILE_MUTATION_METHODS })
 
     const response = await dispatcher.dispatch({

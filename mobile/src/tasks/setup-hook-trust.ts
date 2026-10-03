@@ -1,4 +1,4 @@
-import type { PersistedTrustedOrcaHooks } from '../../../src/shared/orca-yaml-hook-types'
+import type { PersistedTrustedAlfredHooks } from '../../../src/shared/alfred-yaml-hook-types'
 import type { RpcClient } from '../transport/rpc-client'
 import { taskUiStateWrite } from './mobile-task-runtime-operations'
 
@@ -8,7 +8,7 @@ export type SetupHookTrust = {
 }
 
 export function isSetupHookTrusted(
-  trust: PersistedTrustedOrcaHooks,
+  trust: PersistedTrustedAlfredHooks,
   repoId: string,
   contentHash: string
 ): boolean {
@@ -17,19 +17,19 @@ export function isSetupHookTrusted(
 }
 
 export function wasSetupHookPreviouslyApproved(
-  trust: PersistedTrustedOrcaHooks,
+  trust: PersistedTrustedAlfredHooks,
   repoId: string
 ): boolean {
   return Boolean(trust[repoId]?.setup?.contentHash)
 }
 
-export function trustedOrcaHooksWithSetupApproval(args: {
-  trust: PersistedTrustedOrcaHooks
+export function trustedAlfredHooksWithSetupApproval(args: {
+  trust: PersistedTrustedAlfredHooks
   repoId: string
   contentHash: string
   alwaysTrust: boolean
   approvedAt?: number
-}): PersistedTrustedOrcaHooks {
+}): PersistedTrustedAlfredHooks {
   const approvedAt = args.approvedAt ?? Date.now()
   const existing = args.trust[args.repoId]
   const nextRepo = args.alwaysTrust
@@ -40,14 +40,14 @@ export function trustedOrcaHooksWithSetupApproval(args: {
 
 export async function persistSetupHookTrustApproval(args: {
   client: RpcClient
-  trust: PersistedTrustedOrcaHooks
+  trust: PersistedTrustedAlfredHooks
   repoId: string
   contentHash: string
   alwaysTrust: boolean
-}): Promise<PersistedTrustedOrcaHooks> {
-  const next = trustedOrcaHooksWithSetupApproval(args)
+}): Promise<PersistedTrustedAlfredHooks> {
+  const next = trustedAlfredHooksWithSetupApproval(args)
   taskUiStateWrite.interpret(
-    await taskUiStateWrite.request(args.client, { trustedOrcaHooks: next })
+    await taskUiStateWrite.request(args.client, { trustedAlfredHooks: next })
   )
   return next
 }

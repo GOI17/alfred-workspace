@@ -1,5 +1,5 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
-import type { OrcaRuntimeService } from '../../orca-runtime'
 import type { RpcRequest } from '../core'
 import { RpcDispatcher } from '../dispatcher'
 import { TERMINAL_METHODS } from './terminal'
@@ -15,14 +15,14 @@ function request(params: unknown): RpcRequest {
 
 describe('terminal focus navigation authority', () => {
   it('denies implicit paired focus while preserving local and explicit host focus', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'runtime-1',
       focusTerminal: vi.fn().mockResolvedValue({
         handle: 'term-1',
         tabId: 'tab-1',
         worktreeId: 'wt-1'
       })
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: TERMINAL_METHODS })
 
     await dispatcher.dispatchStreaming(request({ terminal: 'term-1' }), () => {}, {
@@ -55,10 +55,10 @@ describe('terminal focus navigation authority', () => {
   })
 
   it('rejects client fanout targets that terminal focus cannot honor', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'runtime-1',
       focusTerminal: vi.fn()
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: TERMINAL_METHODS })
 
     const response = await dispatcher.dispatch(

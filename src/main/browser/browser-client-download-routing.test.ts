@@ -50,13 +50,14 @@ function environment(input: {
         hostLabel: input.environmentId
       })
       return {
+        id: 'test-request',
         ok: true,
         result: {
           accepted: true,
-          workspaceRelativePath: `.orca/browser-downloads/${input.environmentId}.bin`
+          workspaceRelativePath: `.alfred/browser-downloads/${input.environmentId}.bin`
         },
-        _meta: {}
-      } as never
+        _meta: { runtimeId: 'runtime-test' }
+      }
     }
   })
   const page = pageOf(input.environmentId)

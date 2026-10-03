@@ -4,10 +4,10 @@
   "namedDeltas": [],
   "runnerVersion": 1,
   "baseline": "b4dfad0a8ba4e15976ec06b9d38994b6a31e1643",
-  "lockfileSha256": "4568633356187895ccda8e2ff83245c37d5621832c69e268733733b6947971e3",
-  "recorderSha256": "f67c2f5b753d2a4f572599f6861fae8e6e917fe89ac75b58288f8e84be609d86",
+  "lockfileSha256": "6dc9405f6240556235cc8c897075c4dab1e8f5f8f1cf571c8eafdb496d3da818",
+  "recorderSha256": "96c80e2da6f1dbc42aad4f355811aa0e88e121b01243422126e7d08bd0ea57e2",
   "adapterSha256": "595a3eb2994d0596b9fcd0707b175b4e978625053dfbc5c541b0350c0cbfb524",
-  "scenarioSha256": "318fab8c1efb1786bbdaea7f13b769952c1ce463bc5504dca6a9f545e905b7c9",
+  "scenarioSha256": "6625d505324b18d0a3651d3d49bbf3784b266c520019dae6ae2ccdfdf214e571",
   "platform": "darwin",
   "scenarioVersion": 1,
   "projectionVersion": 2,
@@ -112,20 +112,20 @@
     "cf9c28129225": {
       "disposed": false
     },
+    "ddbf93523d08": {
+      "name": "device-store.setItem",
+      "ordinal": 3,
+      "value": {
+        "key": "alfred:pushDismissalWatermarks:v1",
+        "value": "[{\"key\":\"[\\\"Yw3NKWbEM2aRElRI\\\",\\\"epoch-1\\\",\\\"note-1\\\"]\",\"seq\":7,\"expiresAt\":1767312000000}]"
+      }
+    },
     "eb79a9b3682a": {
       "status": "fulfilled",
       "startedAt": 0,
       "settledAt": 0,
       "value": {
         "$rpc": "undefined"
-      }
-    },
-    "fa03fdca3d1d": {
-      "name": "device-store.setItem",
-      "ordinal": 3,
-      "value": {
-        "key": "orca:pushDismissalWatermarks:v1",
-        "value": "[{\"key\":\"[\\\"Yw3NKWbEM2aRElRI\\\",\\\"epoch-1\\\",\\\"note-1\\\"]\",\"seq\":7,\"expiresAt\":1767312000000}]"
       }
     }
   },
@@ -153,7 +153,7 @@
             "catchup": "eb79a9b3682a"
           },
           "state": "cf9c28129225",
-          "effects": ["fa03fdca3d1d", "6cfa895b17c4"]
+          "effects": ["ddbf93523d08", "6cfa895b17c4"]
         }
       }
     ]

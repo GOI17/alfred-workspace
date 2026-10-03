@@ -1,3 +1,4 @@
+import { makeRepo as completeMakeRepo } from '../../../../shared/repo-test-fixture'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getDefaultSettings } from '../../../../shared/constants'
 import type { GitHubWorkItem } from '../../../../shared/github/work-item-types'
@@ -77,19 +78,18 @@ function makeLinearIssue(overrides: Partial<LinearIssue> = {}): LinearIssue {
     id: 'lin-1',
     identifier: 'ORC-1',
     title: 'Fix task flow',
-    url: 'https://linear.app/orca/issue/ORC-1/fix-task-flow',
+    url: 'https://linear.app/alfred/issue/ORC-1/fix-task-flow',
     state: { name: 'Todo', type: 'unstarted', color: '#999' },
     priority: 0,
     estimate: null,
-    assignee: null,
+    assignee: undefined,
     labels: [],
     labelIds: [],
-    team: { id: 'team-1', name: 'Orca', key: 'ORC' },
+    team: { id: 'team-1', name: 'Alfred', key: 'ORC' },
     workspaceId: 'workspace-1',
     updatedAt: '2026-05-30T00:00:00.000Z',
-    createdAt: '2026-05-30T00:00:00.000Z',
     ...overrides
-  } as LinearIssue
+  }
 }
 
 function makeJiraIssue(overrides: Partial<JiraIssue> = {}): JiraIssue {
@@ -100,7 +100,7 @@ function makeJiraIssue(overrides: Partial<JiraIssue> = {}): JiraIssue {
     url: 'https://example.atlassian.net/browse/ORC-1',
     siteId: 'site-1',
     siteName: 'Example Jira',
-    project: { id: '10000', key: 'ORC', name: 'Orca', siteId: 'site-1' },
+    project: { id: '10000', key: 'ORC', name: 'Alfred', siteId: 'site-1' },
     issueType: { id: '10001', name: 'Bug' },
     status: { id: '1', name: 'Todo', categoryKey: 'new', categoryName: 'To Do' },
     labels: [],
@@ -156,14 +156,14 @@ describe('createUISlice settings navigation', () => {
 
     store.setState({
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo-1',
           path: '/repo',
           displayName: 'Repo',
           badgeColor: 'blue',
           addedAt: 1,
           kind: 'git'
-        }
+        })
       ],
       settings: {
         visibleTaskProviders: ['linear'],
@@ -174,7 +174,7 @@ describe('createUISlice settings navigation', () => {
       preflightStatus: { glab: { installed: false } } as AppState['preflightStatus'],
       prefetchWorkItems,
       prefetchLinearIssues
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().openTaskPage()
 
@@ -204,14 +204,14 @@ describe('createUISlice settings navigation', () => {
 
     store.setState({
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo-1',
           path: '/repo',
           displayName: 'Repo',
           badgeColor: 'blue',
           addedAt: 1,
           kind: 'git'
-        }
+        })
       ],
       settings: {
         visibleTaskProviders: ['github'],
@@ -219,7 +219,7 @@ describe('createUISlice settings navigation', () => {
         defaultTaskViewPreset: 'all'
       } as unknown as AppState['settings'],
       prefetchWorkItems
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().openTaskPage({
       taskSource: 'github',
@@ -256,7 +256,7 @@ describe('createUISlice settings navigation', () => {
       } as unknown as AppState['settings'],
       linearStatus: { connected: true } as AppState['linearStatus'],
       prefetchLinearIssues
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().openTaskPage({
       taskSource: 'linear',
@@ -367,7 +367,7 @@ describe('createUISlice page navigation history', () => {
   it('records provider-depth interactions for direct Tasks detail opens', () => {
     const store = createUIStore()
     const recordFeatureInteraction = vi.fn()
-    store.setState({ recordFeatureInteraction } as Partial<AppState>)
+    store.setState({ recordFeatureInteraction })
     const workItem = makeGitHubWorkItem()
     const linearIssue = makeLinearIssue()
     const jiraIssue = makeJiraIssue()
@@ -392,7 +392,7 @@ describe('createUISlice page navigation history', () => {
       hostId: 'ssh:devbox',
       projectHostSetupId: 'setup-1',
       repoId: 'repo-remote',
-      providerIdentity: { provider: 'github', owner: 'stablyai', repo: 'orca' }
+      providerIdentity: { provider: 'github', owner: 'alfredlabs', repo: 'alfred' }
     }
 
     store.getState().openTaskPage({
@@ -491,7 +491,7 @@ describe('createUISlice page navigation history', () => {
   it('can suppress the Tasks surface interaction for in-page provider navigation', () => {
     const store = createUIStore()
     const recordFeatureInteraction = vi.fn()
-    store.setState({ recordFeatureInteraction } as Partial<AppState>)
+    store.setState({ recordFeatureInteraction })
     const workItem = makeGitHubWorkItem()
     const linearIssue = makeLinearIssue()
     const jiraIssue = makeJiraIssue()

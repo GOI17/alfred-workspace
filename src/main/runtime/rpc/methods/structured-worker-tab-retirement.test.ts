@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 /**
  * Every structured-worker settlement has to retire the chat tab the worker start published.
  *
@@ -9,7 +10,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { setStructuredAgentSessionHost } from '../../../native-chat/agent-session-wire/structured-agent-session-registry'
-import { OrcaRuntimeService } from '../../orca-runtime'
+import { AlfredRuntimeService } from '../../alfred-runtime'
 import type { OrchestrationDb } from '../../orchestration/db'
 import type { WorkerTerminalResourceRow } from '../../orchestration/worker-terminal-ownership'
 import {
@@ -76,10 +77,10 @@ type RuntimeInternals = {
 }
 
 async function runtimeShowingStructuredTab(): Promise<{
-  runtime: OrcaRuntimeService
+  runtime: AlfredRuntimeService
   emit: ReturnType<typeof vi.fn>
 }> {
-  const runtime = new OrcaRuntimeService()
+  const runtime = new AlfredRuntimeService()
   const internal = runtime as unknown as RuntimeInternals
   internal.ensureStructuredAgentSessionHost = async () => undefined
   internal.notifyMessageArrived = vi.fn()
@@ -98,7 +99,7 @@ async function runtimeShowingStructuredTab(): Promise<{
   return { runtime, emit }
 }
 
-async function structuredTabIds(runtime: OrcaRuntimeService): Promise<string[]> {
+async function structuredTabIds(runtime: AlfredRuntimeService): Promise<string[]> {
   const snapshot = await runtime.listMobileSessionTabs(`id:${WORKTREE}`)
   return snapshot.tabs.map((tab) => tab.id)
 }
@@ -160,12 +161,12 @@ describe('structured worker stop retires the chat tab', () => {
   it('cannot turn a proven stop into a retained one when the prune throws', async () => {
     installHost()
     const identity = registerIdentity()
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       forgetStructuredSessionMail: vi.fn(),
       retireStructuredAgentSessionTabFromSnapshot: vi.fn(() => {
         throw new Error('snapshot is wedged')
       })
-    } as unknown as OrcaRuntimeService
+    })
 
     await expect(stopStructuredWorker(identity, 'd1', runtime)).resolves.toEqual({
       stopped: true,
@@ -277,12 +278,12 @@ describe('structured worker release retires the chat tab', () => {
 
     await expect(
       completeWorkerTerminalRelease({
-        runtime: {
+        runtime: createRuntimeServiceTestDouble({
           ensureStructuredAgentSessionHost: async () => {},
           notifyMessageArrived: vi.fn(),
           forgetStructuredSessionMail: vi.fn(),
           retireStructuredAgentSessionTabFromSnapshot: vi.fn()
-        } as unknown as OrcaRuntimeService,
+        }),
         db,
         dispatchId: 'd2',
         resource
@@ -296,7 +297,7 @@ describe('structured worker release retires the chat tab', () => {
 describe('structured worker discard retires the chat tab', () => {
   it('prunes the tab a half-started worker published', async () => {
     const { close } = installHost()
-    const runtime = new OrcaRuntimeService()
+    const runtime = new AlfredRuntimeService()
     const internal = runtime as unknown as RuntimeInternals
     internal.ensureStructuredAgentSessionHost = async () => undefined
     let createdSessionId = ''

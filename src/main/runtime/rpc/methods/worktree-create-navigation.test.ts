@@ -1,7 +1,7 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
-import type { OrcaRuntimeService } from '../../orca-runtime'
 import { WORKTREE_METHODS } from './worktree'
 
 const repo = {
@@ -30,12 +30,12 @@ describe('worktree.create navigation authority', () => {
   ] as const)(
     'resolves create activation from the paired %s client kind',
     async (clientKind, expected) => {
-      const runtime = {
+      const runtime = createRuntimeServiceTestDouble({
         getRuntimeId: () => 'test-runtime',
         dedupeWorktreeCreate: passthroughDedupe,
         showRepo: vi.fn().mockResolvedValue(repo),
         createManagedWorktree: vi.fn().mockResolvedValue({ worktree: { id: 'wt-1' } })
-      } as unknown as OrcaRuntimeService
+      })
       const dispatcher = new RpcDispatcher({ runtime, methods: WORKTREE_METHODS })
 
       await dispatcher.dispatchStreaming(
@@ -54,12 +54,12 @@ describe('worktree.create navigation authority', () => {
     // Why: an old CLI cannot send `navigation`, but it pairs as a runtime device. Without the
     // cliProvenanceRequest marker it would resolve to 'caller' and `--activate` would reveal
     // nothing anywhere — strictly worse than the pre-fix behavior for that version skew.
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       dedupeWorktreeCreate: passthroughDedupe,
       showRepo: vi.fn().mockResolvedValue(repo),
       createManagedWorktree: vi.fn().mockResolvedValue({ worktree: { id: 'wt-1' } })
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: WORKTREE_METHODS })
 
     await dispatcher.dispatchStreaming(
@@ -79,12 +79,12 @@ describe('worktree.create navigation authority', () => {
   })
 
   it('still scopes a desktop create that carries no CLI marker', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       dedupeWorktreeCreate: passthroughDedupe,
       showRepo: vi.fn().mockResolvedValue(repo),
       createManagedWorktree: vi.fn().mockResolvedValue({ worktree: { id: 'wt-1' } })
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: WORKTREE_METHODS })
 
     await dispatcher.dispatchStreaming(
@@ -99,12 +99,12 @@ describe('worktree.create navigation authority', () => {
   })
 
   it('honors an explicit follow navigation on create', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       dedupeWorktreeCreate: passthroughDedupe,
       showRepo: vi.fn().mockResolvedValue(repo),
       createManagedWorktree: vi.fn().mockResolvedValue({ worktree: { id: 'wt-1' } })
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: WORKTREE_METHODS })
 
     await dispatcher.dispatchStreaming(
@@ -124,12 +124,12 @@ describe('worktree.create navigation authority', () => {
   })
 
   it('keeps an explicit all-surface reveal from a paired caller', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       dedupeWorktreeCreate: passthroughDedupe,
       showRepo: vi.fn().mockResolvedValue(repo),
       createManagedWorktree: vi.fn().mockResolvedValue({ worktree: { id: 'wt-1' } })
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: WORKTREE_METHODS })
 
     await dispatcher.dispatchStreaming(

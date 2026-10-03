@@ -93,30 +93,30 @@ export const RELAY_OPS_ENVIRONMENTS: Record<RelayOpsEnvironmentId, RelayOpsEnvir
   production: {
     id: 'production',
     label: 'Production',
-    project: 'onorca-cloud',
+    project: 'onalfred-cloud',
     region: 'us-central1',
-    directorOrigin: 'https://relay.onorca.dev',
-    authOrigin: 'https://login.onorca.dev',
-    directorService: 'orca-cloud-relay',
-    authService: 'orca-cloud-auth',
-    sqlInstance: 'orca-cloud-auth-db',
-    migPrefix: 'orca-cloud-relay-gce-',
-    certificateName: 'orca-cloud-relay-gce',
-    cells: durableCells('production', 'relay.onorca.dev')
+    directorOrigin: 'https://relay.alfredlabs.org',
+    authOrigin: 'https://login.alfredlabs.org',
+    directorService: 'alfred-cloud-relay',
+    authService: 'alfred-cloud-auth',
+    sqlInstance: 'alfred-cloud-auth-db',
+    migPrefix: 'alfred-cloud-relay-gce-',
+    certificateName: 'alfred-cloud-relay-gce',
+    cells: durableCells('production', 'relay.alfredlabs.org')
   },
   staging: {
     id: 'staging',
     label: 'Staging',
-    project: 'onorca-cloud-staging',
+    project: 'onalfred-cloud-staging',
     region: 'us-central1',
-    directorOrigin: 'https://relay-staging.onorca.dev',
-    authOrigin: 'https://auth-staging.onorca.dev',
-    directorService: 'orca-cloud-relay-staging',
-    authService: 'orca-cloud-auth-staging',
-    sqlInstance: 'orca-cloud-staging-auth-db',
-    migPrefix: 'orca-cloud-staging-relay-gce-',
-    certificateName: 'orca-cloud-staging-relay-gce',
-    cells: durableCells('staging', 'relay-staging.onorca.dev')
+    directorOrigin: 'https://relay-staging.alfredlabs.org',
+    authOrigin: 'https://auth-staging.alfredlabs.org',
+    directorService: 'alfred-cloud-relay-staging',
+    authService: 'alfred-cloud-auth-staging',
+    sqlInstance: 'alfred-cloud-staging-auth-db',
+    migPrefix: 'alfred-cloud-staging-relay-gce-',
+    certificateName: 'alfred-cloud-staging-relay-gce',
+    cells: durableCells('staging', 'relay-staging.alfredlabs.org')
   }
 }
 

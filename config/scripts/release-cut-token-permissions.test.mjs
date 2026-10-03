@@ -190,7 +190,9 @@ describe('release-cut token permissions', () => {
   })
 
   it('keeps fork, tag, and reusable-workflow boundaries explicit', () => {
-    expect(workflow.jobs.cut.if).toBe("github.repository == 'stablyai/orca'")
+    expect(workflow.jobs.cut.if).toBe(
+      "vars.ALFRED_RELEASES_ENABLED == 'true' && (github.repository == 'GOI17/alfred-workspace')"
+    )
     expect(checkoutRef(workflow.jobs.cut)).toBe(
       "${{ github.event_name == 'schedule' && 'main' || inputs.ref }}"
     )
@@ -198,7 +200,9 @@ describe('release-cut token permissions', () => {
     for (const [jobName] of releaseTagExecutionJobs(workflow)) {
       if (!PUBLISH_TAG_JOBS.has(jobName)) {
         expect(workflow.jobs[jobName].needs).toBe('cut')
-        expect(workflow.jobs[jobName].if).toBe("needs.cut.outputs.should_release == 'true'")
+        expect(workflow.jobs[jobName].if).toBe(
+          "vars.ALFRED_RELEASES_ENABLED == 'true' && (needs.cut.outputs.should_release == 'true')"
+        )
       }
     }
     for (const jobName of REUSABLE_CALL_JOBS) {
@@ -207,7 +211,9 @@ describe('release-cut token permissions', () => {
     }
 
     const macWorkflow = readWorkflow('.github/workflows/release-mac-build.yml')
-    expect(macWorkflow.jobs['build-mac'].if).toBe("github.repository == 'stablyai/orca'")
+    expect(macWorkflow.jobs['build-mac'].if).toBe(
+      "vars.ALFRED_RELEASES_ENABLED == 'true' && (github.repository == 'GOI17/alfred-workspace')"
+    )
     expect(checkoutRef(macWorkflow.jobs['build-mac'])).toBe('refs/tags/${{ inputs.tag }}')
 
     const e2eWorkflow = readWorkflow('.github/workflows/e2e.yml')

@@ -1,3 +1,4 @@
+import { makePR as fixtureMakePR } from '../../../../shared/github/pr-test-fixture'
 // @vitest-environment happy-dom
 
 import { act, createElement } from 'react'
@@ -25,7 +26,7 @@ vi.mock('@/runtime/runtime-rpc-client', () => ({
   assertRuntimeEnvironmentCapability: runtimeRpcMocks.assertRuntimeEnvironmentCapability
 }))
 
-const prRepo = { host: 'github.com', owner: 'stablyai', repo: 'orca-sta1015-sandbox' }
+const prRepo = { host: 'github.com', owner: 'alfredlabs', repo: 'alfred-sta1015-sandbox' }
 const review: HostedReviewActionInfo = {
   provider: 'github',
   number: 1015,
@@ -167,7 +168,7 @@ describe('useHostedReviewActions', () => {
     expect(runtimeRpcMocks.assertRuntimeEnvironmentCapability).toHaveBeenCalledWith(
       'env-1',
       'github.markPRReadyForReview',
-      expect.stringContaining('newer Orca server')
+      expect.stringContaining('newer Alfred server')
     )
     expect(runtimeRpcMocks.callRuntimeRpc).toHaveBeenCalledWith(
       { kind: 'environment', environmentId: 'env-1' },
@@ -223,7 +224,7 @@ describe('useHostedReviewActions', () => {
     expect(runtimeRpcMocks.assertRuntimeEnvironmentCapability).toHaveBeenCalledWith(
       'env-1',
       'gitlab.updateMR.readyForReview.v1',
-      expect.stringContaining('newer Orca server')
+      expect.stringContaining('newer Alfred server')
     )
     expect(runtimeRpcMocks.callRuntimeRpc).toHaveBeenCalledWith(
       { kind: 'environment', environmentId: 'env-1' },
@@ -236,7 +237,7 @@ describe('useHostedReviewActions', () => {
   })
 
   it('confirms the downstack merge scope before merging a registered stack', async () => {
-    const stackedPR = {
+    const stackedPR = fixtureMakePR({
       ...githubPR,
       stack: {
         number: 51,
@@ -248,7 +249,7 @@ describe('useHostedReviewActions', () => {
             position: 1,
             number: 1014,
             title: 'Models',
-            url: 'https://github.com/stablyai/orca/pull/1014',
+            url: 'https://github.com/GOI17/alfred-workspace/pull/1014',
             state: 'open',
             checksStatus: 'success',
             mergeable: 'MERGEABLE'
@@ -257,7 +258,7 @@ describe('useHostedReviewActions', () => {
             position: 2,
             number: 1015,
             title: 'API',
-            url: 'https://github.com/stablyai/orca/pull/1015',
+            url: 'https://github.com/GOI17/alfred-workspace/pull/1015',
             state: 'open',
             checksStatus: 'success',
             mergeable: 'MERGEABLE'
@@ -266,14 +267,14 @@ describe('useHostedReviewActions', () => {
             position: 3,
             number: 1016,
             title: 'UI',
-            url: 'https://github.com/stablyai/orca/pull/1016',
+            url: 'https://github.com/GOI17/alfred-workspace/pull/1016',
             state: 'open',
             checksStatus: 'success',
             mergeable: 'MERGEABLE'
           }
         ]
       }
-    } as PRInfo
+    })
     await renderHook(makeRepo(), undefined, stackedPR)
 
     await act(async () => {
@@ -290,7 +291,7 @@ describe('useHostedReviewActions', () => {
   })
 
   it('describes merge-queue stack behavior without promising atomicity or a method', async () => {
-    const stackedPR = {
+    const stackedPR = fixtureMakePR({
       ...githubPR,
       mergeQueueRequired: true,
       stack: {
@@ -303,7 +304,7 @@ describe('useHostedReviewActions', () => {
             position: 1,
             number: 1014,
             title: 'Models',
-            url: 'https://github.com/stablyai/orca/pull/1014',
+            url: 'https://github.com/GOI17/alfred-workspace/pull/1014',
             state: 'open',
             checksStatus: 'success',
             mergeable: 'MERGEABLE'
@@ -312,14 +313,14 @@ describe('useHostedReviewActions', () => {
             position: 2,
             number: 1015,
             title: 'API',
-            url: 'https://github.com/stablyai/orca/pull/1015',
+            url: 'https://github.com/GOI17/alfred-workspace/pull/1015',
             state: 'open',
             checksStatus: 'success',
             mergeable: 'MERGEABLE'
           }
         ]
       }
-    } as PRInfo
+    })
     await renderHook(makeRepo(), undefined, stackedPR)
 
     await act(async () => {

@@ -10,7 +10,7 @@ import { DEFAULT_MOBILE_WORKSPACE_STATUSES } from './mobile-workspace-statuses'
 // Regression guard for "host page shows lots of worktrees, repo shows only a
 // few". The removed getHostScopedWorktrees filtered the list to worktrees whose
 // repoId appeared in the repo.list result — a map keyed by repo DISPLAY NAME.
-// Same-named repos on different hosts (a local "orca" and a runtime "orca")
+// Same-named repos on different hosts (a local "alfred" and a runtime "alfred")
 // collapsed to one id, so every worktree under the other id vanished. These
 // tests assert the user-visible outcome — every worktree from worktree.ps stays
 // in the list — regardless of repo.list contents or desktop host scope, so they
@@ -24,7 +24,7 @@ function worktree(repoId: string, id: string, repo = repoId): Worktree {
     repo,
     branch: `feature/${id}`,
     displayName: id,
-    path: `/tmp/orca/${repoId}/${id}`,
+    path: `/tmp/alfred/${repoId}/${id}`,
     liveTerminalCount: 0,
     hasAttachedPty: false,
     preview: '',
@@ -77,25 +77,25 @@ describe('every worktree stays visible regardless of repo.list contents', () => 
   it('shows worktrees whose repoId is missing from repo.list', () => {
     // repo.list only echoes one of the repos the worktrees belong to.
     const worktrees = [
-      worktree('orca-local', 'a'),
-      worktree('orca-local', 'b'),
-      worktree('orca-runtime', 'c')
+      worktree('alfred-local', 'a'),
+      worktree('alfred-local', 'b'),
+      worktree('alfred-runtime', 'c')
     ]
-    const repoIdsByName = new Map([['orca-runtime', 'orca-runtime']])
+    const repoIdsByName = new Map([['alfred-runtime', 'alfred-runtime']])
 
     expect(visibleWorktreeIds(worktrees, repoIdsByName)).toEqual(['a', 'b', 'c'])
   })
 
   it('shows every worktree when the same repo name maps to two host-specific ids', () => {
-    // The exact trigger: a local "orca" and a runtime "orca". repo.list returns
+    // The exact trigger: a local "alfred" and a runtime "alfred". repo.list returns
     // both under the same displayName; a name-keyed map keeps only the last id.
     const worktrees = [
-      worktree('orca-local', 'local-1', 'orca'),
-      worktree('orca-local', 'local-2', 'orca'),
-      worktree('orca-runtime', 'runtime-1', 'orca')
+      worktree('alfred-local', 'local-1', 'alfred'),
+      worktree('alfred-local', 'local-2', 'alfred'),
+      worktree('alfred-runtime', 'runtime-1', 'alfred')
     ]
-    // Name-keyed map collapses "orca" to a single id, as the host screen builds it.
-    const repoIdsByName = new Map([['orca', 'orca-runtime']])
+    // Name-keyed map collapses "alfred" to a single id, as the host screen builds it.
+    const repoIdsByName = new Map([['alfred', 'alfred-runtime']])
 
     expect(visibleWorktreeIds(worktrees, repoIdsByName)).toEqual([
       'local-1',

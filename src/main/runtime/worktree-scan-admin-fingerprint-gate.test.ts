@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 // The fingerprint's own behaviour is covered against real Git in repo-worktree-admin-fingerprint.test.ts.
 // This suite pins the cache wiring: when the probe may skip a `git worktree list`, and when it may not.
 // Also listed in pr.yml's Windows boundary step, so the gate's repo-path handling stays honest there.
@@ -38,10 +39,10 @@ vi.mock('./repo-worktree-admin-fingerprint', () => ({
 }))
 
 import {
-  OrcaRuntimeService,
+  AlfredRuntimeService,
   WORKTREE_SCAN_ADMIN_FINGERPRINT_TIMEOUT_MS,
   WORKTREE_SCAN_ADMIN_RECONCILE_INTERVAL_MS
-} from './orca-runtime'
+} from './alfred-runtime'
 import { RESOLVED_WORKTREE_REPO_TIMEOUT_MS } from './repo-worktree-row-resolution'
 import { canonicalWorktreeIdentity } from '../../shared/worktree/identity'
 
@@ -127,12 +128,12 @@ type RuntimeInternals = { listResolvedWorktrees: () => Promise<unknown> }
 function makeRuntime(
   options: { connectionId?: string; repoCount?: number; repoPath?: string } = {}
 ): {
-  runtime: OrcaRuntimeService
+  runtime: AlfredRuntimeService
   list: () => Promise<unknown>
   store: ReturnType<typeof makeStore>
 } {
   const store = makeStore(options)
-  const runtime = new OrcaRuntimeService(store as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
   return {
     runtime,
     list: () => (runtime as unknown as RuntimeInternals).listResolvedWorktrees(),
@@ -599,7 +600,9 @@ describe('scoped explicit worktree-id resolution', () => {
   }
 
   it('scans only the owning repo for an id: selector on a cold cache', async () => {
-    const runtime = new OrcaRuntimeService(makeStore({ repoCount: 10 }) as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(makeStore({ repoCount: 10 }))
+    )
     const resolve = (selector: string): Promise<{ id: string }> =>
       (
         runtime as unknown as { resolveWorktreeSelector: (s: string) => Promise<{ id: string }> }
@@ -611,7 +614,9 @@ describe('scoped explicit worktree-id resolution', () => {
     expect(scannedRepoPaths()).toEqual([REPO_PATH])
   })
   it('resolves an exact canonical identity without relying on the mutable locator', async () => {
-    const runtime = new OrcaRuntimeService(makeStore({ repoCount: 10 }) as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(makeStore({ repoCount: 10 }))
+    )
     const resolve = (selector: string): Promise<{ id: string }> =>
       (
         runtime as unknown as { resolveWorktreeSelector: (s: string) => Promise<{ id: string }> }
@@ -628,7 +633,9 @@ describe('scoped explicit worktree-id resolution', () => {
   })
 
   it('still finds worktrees in other repos through the fleet path', async () => {
-    const runtime = new OrcaRuntimeService(makeStore({ repoCount: 10 }) as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(makeStore({ repoCount: 10 }))
+    )
     const resolve = (selector: string): Promise<{ id: string }> =>
       (
         runtime as unknown as { resolveWorktreeSelector: (s: string) => Promise<{ id: string }> }
@@ -642,7 +649,9 @@ describe('scoped explicit worktree-id resolution', () => {
   })
 
   it('keeps cross-repo selectors on the fleet path so ambiguity still throws', async () => {
-    const runtime = new OrcaRuntimeService(makeStore({ repoCount: 10 }) as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(makeStore({ repoCount: 10 }))
+    )
     const resolve = (selector: string): Promise<unknown> =>
       (
         runtime as unknown as { resolveWorktreeSelector: (s: string) => Promise<unknown> }
@@ -654,7 +663,9 @@ describe('scoped explicit worktree-id resolution', () => {
   })
 
   it('falls back to the fleet path when the id names no registered repo', async () => {
-    const runtime = new OrcaRuntimeService(makeStore({ repoCount: 10 }) as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(makeStore({ repoCount: 10 }))
+    )
     const resolve = (selector: string): Promise<unknown> =>
       (
         runtime as unknown as { resolveWorktreeSelector: (s: string) => Promise<unknown> }

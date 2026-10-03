@@ -1,14 +1,15 @@
+import { createRuntimeServiceTestDouble } from '../runtime-service-test-double'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { OrcaRuntimeService } from '../orca-runtime'
+import type { AlfredRuntimeService } from '../alfred-runtime'
 import type { RpcRequest } from './core'
 import { RpcDispatcher } from './dispatcher'
 import { TERMINAL_METHODS } from './methods/terminal'
 
-function stubRuntime(overrides: Partial<OrcaRuntimeService>): OrcaRuntimeService {
-  return {
+function stubRuntime(overrides: Partial<AlfredRuntimeService>): AlfredRuntimeService {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
     ...overrides
-  } as OrcaRuntimeService
+  })
 }
 
 function guardedSendRequest(): RpcRequest {

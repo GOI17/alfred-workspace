@@ -8,13 +8,13 @@ export const AGENT_HOOK_METHODS = [
     params: PrepareCodexForWslPaneParams,
     handler: async (params, { runtime, clientKind }) => {
       if (clientKind !== undefined) {
-        throw new Error('Codex hook preparation is only available to the local Orca CLI.')
+        throw new Error('Codex hook preparation is only available to the local Alfred CLI.')
       }
       const settings = runtime.getClientSettings()
       return await prepareManagedWslCodexHomeBeforeShellLaunch({
         env: {
           CODEX_HOME: params.codexHome,
-          ORCA_CODEX_HOME: params.orcaCodexHome,
+          ALFRED_CODEX_HOME: params.alfredCodexHome,
           WSL_DISTRO_NAME: params.wslDistro
         },
         hooksEnabled:

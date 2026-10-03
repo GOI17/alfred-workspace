@@ -1,4 +1,4 @@
-import { expect } from './orca-app'
+import { expect } from './alfred-app'
 import type { PairedElectronClient } from './paired-electron-client'
 import { focusActiveTerminalInput, getTerminalContent, waitForActivePanePtyId } from './terminal'
 

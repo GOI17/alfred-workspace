@@ -1,12 +1,15 @@
+import { createAppStateTestDouble } from '../store/app-state-test-double'
+import { makeRepo as completeMakeRepo } from '../../../shared/repo-test-fixture'
+import { getDefaultSettings as completeGetDefaultSettings } from '../../../shared/constants'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AppState } from '@/store/types'
-import type { PersistedTrustedOrcaHooks } from '../../../shared/orca-yaml-hook-types'
+import type { PersistedTrustedAlfredHooks } from '../../../shared/alfred-yaml-hook-types'
 import {
   __resetTrustPromptChainForTests,
   ensureHooksConfirmed,
   readAndConfirmRuntimeIssueCommand
 } from './ensure-hooks-confirmed'
-import { hashOrcaHookScript } from './orca-hook-trust'
+import { hashAlfredHookScript } from './alfred-hook-trust'
 import {
   createCompatibleRuntimeStatusResponseIfNeeded,
   type RuntimeEnvironmentCallRequest
@@ -43,15 +46,15 @@ function createTestState(overrides?: Partial<AppState>): {
   pending: PendingPrompt[]
 } {
   const pending: PendingPrompt[] = []
-  const trust: PersistedTrustedOrcaHooks = {}
-  const state = {
-    trustedOrcaHooks: trust,
-    repos: [{ id: 'repo-1', displayName: 'Repo One' }],
-    openModal: (modal: string, data: Record<string, unknown>) => {
+  const trust: PersistedTrustedAlfredHooks = {}
+  const state = createAppStateTestDouble({
+    trustedAlfredHooks: trust,
+    repos: [completeMakeRepo({ id: 'repo-1', displayName: 'Repo One' })],
+    openModal: (modal: string, data: Record<string, unknown> = {}) => {
       pending.push({ modal, data, resolve: data.onResolve as (d: 'run' | 'skip') => void })
     },
     ...overrides
-  } as unknown as AppState
+  })
   return { state, pending }
 }
 
@@ -76,8 +79,8 @@ describe('ensureHooksConfirmed', () => {
   it('short-circuits to run when the persisted content hash matches the current script', async () => {
     const { state, pending } = createTestState()
     const script = 'pnpm install'
-    const hash = await hashOrcaHookScript(script)
-    state.trustedOrcaHooks['repo-1'] = {
+    const hash = await hashAlfredHookScript(script)
+    state.trustedAlfredHooks['repo-1'] = {
       setup: { contentHash: hash, approvedAt: 1 }
     }
     hooksCheckMock.mockResolvedValue({
@@ -94,8 +97,8 @@ describe('ensureHooksConfirmed', () => {
 
   it('re-prompts when the script content differs from the persisted hash', async () => {
     const { state, pending } = createTestState()
-    const staleHash = await hashOrcaHookScript('old script')
-    state.trustedOrcaHooks['repo-1'] = {
+    const staleHash = await hashAlfredHookScript('old script')
+    state.trustedAlfredHooks['repo-1'] = {
       setup: { contentHash: staleHash, approvedAt: 1 }
     }
     hooksCheckMock.mockResolvedValue({
@@ -109,7 +112,7 @@ describe('ensureHooksConfirmed', () => {
     await vi.waitFor(() => expect(pending).toHaveLength(1))
     expect(pending[0].data.scriptContent).toBe('new script')
     // The dialog uses this flag to tell the user we're re-prompting *because*
-    // orca.yaml changed, not because they've never approved this hook.
+    // alfred.yaml changed, not because they've never approved this hook.
     expect(pending[0].data.previouslyApproved).toBe(true)
 
     pending[0].resolve('run')
@@ -137,7 +140,7 @@ describe('ensureHooksConfirmed', () => {
     const expectedContent =
       'pnpm install\n\n# defaultTabs[1] Server\npnpm dev\n\n# defaultTabs[3]\ncodex'
     expect(pending[0].data.scriptContent).toBe(expectedContent)
-    expect(pending[0].data.contentHash).toBe(await hashOrcaHookScript(expectedContent))
+    expect(pending[0].data.contentHash).toBe(await hashAlfredHookScript(expectedContent))
 
     pending[0].resolve('skip')
     await expect(promise).resolves.toBe('skip')
@@ -179,7 +182,7 @@ describe('ensureHooksConfirmed', () => {
 
   it('returns run without inspecting hooks when the repo is always trusted', async () => {
     const { state, pending } = createTestState()
-    state.trustedOrcaHooks['repo-1'] = {
+    state.trustedAlfredHooks['repo-1'] = {
       all: { approvedAt: 1 }
     }
     hooksCheckMock.mockRejectedValue(new Error('boom'))
@@ -207,15 +210,15 @@ describe('ensureHooksConfirmed', () => {
 
   it('checks SSH repo hooks through local IPC even when a runtime is focused', async () => {
     const { state, pending } = createTestState({
-      settings: { activeRuntimeEnvironmentId: 'env-1' },
+      settings: { ...completeGetDefaultSettings('/tmp'), activeRuntimeEnvironmentId: 'env-1' },
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo-1',
           displayName: 'Repo One',
           connectionId: 'ssh-1'
-        }
+        })
       ]
-    } as unknown as Partial<AppState>)
+    })
     hooksCheckMock.mockResolvedValue({
       hasHooks: true,
       hooks: { scripts: {} },
@@ -231,13 +234,17 @@ describe('ensureHooksConfirmed', () => {
 
   it('inspects the requested host when duplicate repo ids exist', async () => {
     const { state } = createTestState({
-      settings: { activeRuntimeEnvironmentId: 'env-1' },
-      trustedOrcaHooks: { 'repo-1': { all: { approvedAt: 1 } } },
+      settings: { ...completeGetDefaultSettings('/tmp'), activeRuntimeEnvironmentId: 'env-1' },
+      trustedAlfredHooks: { 'repo-1': { all: { approvedAt: 1 } } },
       repos: [
-        { id: 'repo-1', displayName: 'Runtime', executionHostId: 'runtime:env-1' },
-        { id: 'repo-1', displayName: 'SSH', connectionId: 'ssh-1' }
+        completeMakeRepo({
+          id: 'repo-1',
+          displayName: 'Runtime',
+          executionHostId: 'runtime:env-1'
+        }),
+        completeMakeRepo({ id: 'repo-1', displayName: 'SSH', connectionId: 'ssh-1' })
       ]
-    } as unknown as Partial<AppState>)
+    })
     hooksCheckMock.mockResolvedValue({
       hasHooks: true,
       hooks: { scripts: {} },
@@ -253,15 +260,18 @@ describe('ensureHooksConfirmed', () => {
 
   it('checks runtime-owned repo hooks through the repo owner runtime', async () => {
     const { state, pending } = createTestState({
-      settings: { activeRuntimeEnvironmentId: 'focused-env' },
+      settings: {
+        ...completeGetDefaultSettings('/tmp'),
+        activeRuntimeEnvironmentId: 'focused-env'
+      },
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo-1',
           displayName: 'Repo One',
           executionHostId: 'runtime:owner-env'
-        }
+        })
       ]
-    } as unknown as Partial<AppState>)
+    })
     runtimeEnvironmentCallMock.mockResolvedValue({
       id: 'rpc-hooks',
       ok: true,
@@ -286,10 +296,10 @@ describe('ensureHooksConfirmed', () => {
     expect(pending).toHaveLength(0)
   })
 
-  it('does not prompt for orca.yaml when the repo uses local commands only', async () => {
+  it('does not prompt for alfred.yaml when the repo uses local commands only', async () => {
     const { state, pending } = createTestState({
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo-1',
           path: '/repo-1',
           displayName: 'Repo One',
@@ -300,9 +310,9 @@ describe('ensureHooksConfirmed', () => {
             commandSourcePolicy: 'local-only',
             scripts: { setup: 'echo local', archive: '' }
           }
-        }
+        })
       ]
-    } as Partial<AppState>)
+    })
     hooksCheckMock.mockResolvedValue({
       hasHooks: true,
       hooks: { scripts: { setup: 'echo shared' } },
@@ -316,10 +326,10 @@ describe('ensureHooksConfirmed', () => {
     expect(pending).toHaveLength(0)
   })
 
-  it('does not prompt for orca.yaml when local commands are the implicit default', async () => {
+  it('does not prompt for alfred.yaml when local commands are the implicit default', async () => {
     const { state, pending } = createTestState({
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo-1',
           path: '/repo-1',
           displayName: 'Repo One',
@@ -329,9 +339,9 @@ describe('ensureHooksConfirmed', () => {
             mode: 'auto',
             scripts: { setup: 'echo local', archive: '' }
           }
-        }
+        })
       ]
-    } as Partial<AppState>)
+    })
     hooksCheckMock.mockResolvedValue({
       hasHooks: true,
       hooks: { scripts: { setup: 'echo shared' } },
@@ -381,10 +391,10 @@ describe('ensureHooksConfirmed', () => {
   it('forwards the explicit host to issueCommand inspection when repo ids collide', async () => {
     const { state } = createTestState({
       repos: [
-        { id: 'repo-1', displayName: 'Local Row' },
-        { id: 'repo-1', displayName: 'SSH Row', connectionId: 'server' }
+        completeMakeRepo({ id: 'repo-1', displayName: 'Local Row' }),
+        completeMakeRepo({ id: 'repo-1', displayName: 'SSH Row', connectionId: 'server' })
       ]
-    } as unknown as Partial<AppState>)
+    })
     readIssueCommandMock.mockResolvedValue({
       source: 'local',
       sharedContent: null,
@@ -401,10 +411,10 @@ describe('ensureHooksConfirmed', () => {
   it('approves and returns the exact issue-command bytes from one host-qualified read', async () => {
     const { state, pending } = createTestState({
       repos: [
-        { id: 'repo-1', displayName: 'Local Row' },
-        { id: 'repo-1', displayName: 'SSH Row', connectionId: 'server' }
+        completeMakeRepo({ id: 'repo-1', displayName: 'Local Row' }),
+        completeMakeRepo({ id: 'repo-1', displayName: 'SSH Row', connectionId: 'server' })
       ]
-    } as unknown as Partial<AppState>)
+    })
     readIssueCommandMock
       .mockResolvedValueOnce({
         status: 'ok',
@@ -442,12 +452,16 @@ describe('ensureHooksConfirmed', () => {
 
   it('does not reuse repo-wide trust across duplicate execution hosts', async () => {
     const { state, pending } = createTestState({
-      trustedOrcaHooks: { 'repo-1': { all: { approvedAt: 1 } } },
+      trustedAlfredHooks: { 'repo-1': { all: { approvedAt: 1 } } },
       repos: [
-        { id: 'repo-1', displayName: 'Runtime', executionHostId: 'runtime:env-1' },
-        { id: 'repo-1', displayName: 'SSH', connectionId: 'server' }
+        completeMakeRepo({
+          id: 'repo-1',
+          displayName: 'Runtime',
+          executionHostId: 'runtime:env-1'
+        }),
+        completeMakeRepo({ id: 'repo-1', displayName: 'SSH', connectionId: 'server' })
       ]
-    } as unknown as Partial<AppState>)
+    })
     readIssueCommandMock.mockResolvedValue({
       status: 'ok',
       source: 'shared',
@@ -523,7 +537,7 @@ describe('ensureHooksConfirmed', () => {
       repoName: 'Repo One',
       scriptKind: 'setup',
       scriptContent: 'pnpm install',
-      contentHash: await hashOrcaHookScript('pnpm install'),
+      contentHash: await hashAlfredHookScript('pnpm install'),
       previouslyApproved: false
     })
 

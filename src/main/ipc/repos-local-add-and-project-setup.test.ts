@@ -83,7 +83,7 @@ describe('repos:add + repos:clone', () => {
     expect(result).toHaveProperty('repo.displayName', 'inf-오케스트레이터')
   })
 
-  it('inherits global non-Orca visibility while retaining the mixed-version safety marker', async () => {
+  it('inherits global non-Alfred visibility while retaining the mixed-version safety marker', async () => {
     const result = await handlers.get('repos:add')!(null, { path: '/tmp/from-add', kind: 'git' })
 
     expect(mockStore.addRepo).toHaveBeenCalledWith(
@@ -232,12 +232,12 @@ describe('repos:add + repos:clone', () => {
     }
     const existingProject = { id: 'repo:repo-setup-enterprise', displayName: 'Existing' }
     const selectedProject = {
-      id: 'github:github.acme-corp.com/acme/orca',
+      id: 'github:github.acme-corp.com/acme/alfred',
       displayName: 'Enterprise project',
       providerIdentity: {
         provider: 'github',
         owner: 'acme',
-        repo: 'orca',
+        repo: 'alfred',
         host: 'github.acme-corp.com'
       }
     }
@@ -271,7 +271,7 @@ describe('repos:add + repos:clone', () => {
     expect(mockStore.updateRepo).toHaveBeenNthCalledWith(1, existing.id, {
       upstream: {
         owner: 'acme',
-        repo: 'orca',
+        repo: 'alfred',
         host: 'github.acme-corp.com'
       }
     })
@@ -294,12 +294,12 @@ describe('repos:add + repos:clone', () => {
       return repo
         ? [
             {
-              id: 'github:github.acme.test/acme/orca',
-              displayName: 'Orca',
+              id: 'github:github.acme.test/acme/alfred',
+              displayName: 'Alfred',
               providerIdentity: {
                 provider: 'github',
                 owner: 'acme',
-                repo: 'orca',
+                repo: 'alfred',
                 host: 'github.acme.test'
               }
             }
@@ -308,24 +308,24 @@ describe('repos:add + repos:clone', () => {
     })
 
     const result = await handlers.get('projectHostSetups:setupExistingFolder')!(null, {
-      projectId: 'github:github.acme.test/acme/orca',
+      projectId: 'github:github.acme.test/acme/alfred',
       projectProviderIdentity: {
         provider: 'github',
         owner: 'acme',
-        repo: 'orca',
+        repo: 'alfred',
         host: 'github.acme.test'
       },
       hostId: 'local',
-      path: '/tmp/orca-local',
+      path: '/tmp/alfred-local',
       kind: 'git'
     })
 
     expect(added[0]?.upstream).toEqual({
       owner: 'acme',
-      repo: 'orca',
+      repo: 'alfred',
       host: 'github.acme.test'
     })
-    expect(result).toHaveProperty('project.id', 'github:github.acme.test/acme/orca')
+    expect(result).toHaveProperty('project.id', 'github:github.acme.test/acme/alfred')
   })
 
   it('rolls back a new repo when the supplied identity does not match the project', async () => {
@@ -335,8 +335,8 @@ describe('repos:add + repos:clone', () => {
 
     await expect(
       handlers.get('projectHostSetups:setupExistingFolder')!(null, {
-        projectId: 'github:acme/orca',
-        projectProviderIdentity: { provider: 'github', owner: 'other', repo: 'orca' },
+        projectId: 'github:acme/alfred',
+        projectProviderIdentity: { provider: 'github', owner: 'other', repo: 'alfred' },
         hostId: 'local',
         path: '/tmp/mismatched-project',
         kind: 'git'

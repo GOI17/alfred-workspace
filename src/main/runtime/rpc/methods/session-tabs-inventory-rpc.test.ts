@@ -1,7 +1,8 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
-import { OrcaRuntimeService } from '../../orca-runtime'
+import { AlfredRuntimeService } from '../../alfred-runtime'
 import { SESSION_TABS_AUTHORITATIVE_INVENTORY_RUNTIME_CAPABILITY } from '../../../../shared/protocol-version'
 import type { RuntimeMobileSessionTabsResult } from '../../../../shared/runtime-types'
 import { SESSION_TAB_METHODS } from './session-tabs'
@@ -14,7 +15,7 @@ function makeRequest(method: string, params?: unknown): RpcRequest {
 describe('session tabs inventory RPC methods', () => {
   it('withholds an old-client list until the host inventory is authoritative', async () => {
     let resolveInventory!: (value: { snapshots: []; authoritative: true }) => void
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       supportsAuthoritativeSessionTabsInventory: vi.fn(() => true),
       listAllMobileSessionTabsInventory: vi.fn(
@@ -23,7 +24,7 @@ describe('session tabs inventory RPC methods', () => {
             resolveInventory = resolve
           })
       )
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
     const messages: string[] = []
 
@@ -48,7 +49,7 @@ describe('session tabs inventory RPC methods', () => {
   // (e.g. one configured-but-disconnected SSH host) without a second collect.
   it('serves a capable client an unlabeled list when the census fails', async () => {
     const legacyListAll = vi.fn()
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       supportsAuthoritativeSessionTabsInventory: vi.fn(() => true),
       listAllMobileSessionTabsInventory: vi.fn(async () => ({
@@ -65,7 +66,7 @@ describe('session tabs inventory RPC methods', () => {
         ]
       })),
       listAllMobileSessionTabs: legacyListAll
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
     const messages: string[] = []
 
@@ -86,14 +87,14 @@ describe('session tabs inventory RPC methods', () => {
 
   it('propagates disconnect errors to legacy clients', async () => {
     const legacyListAll = vi.fn()
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       supportsAuthoritativeSessionTabsInventory: vi.fn(() => true),
       listAllMobileSessionTabsInventory: vi.fn(async () => {
         throw new Error('client_disconnected')
       }),
       listAllMobileSessionTabs: legacyListAll
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
     const messages: string[] = []
 
@@ -111,14 +112,14 @@ describe('session tabs inventory RPC methods', () => {
   })
 
   it('labels an authoritative inventory only for a client that negotiated it', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       supportsAuthoritativeSessionTabsInventory: vi.fn(() => true),
       listAllMobileSessionTabsInventory: vi.fn(async () => ({
         snapshots: [],
         authoritative: true as const
       }))
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
     const messages: string[] = []
 
@@ -136,7 +137,7 @@ describe('session tabs inventory RPC methods', () => {
 
   it('serves an old client the degraded scan when terminal liveness cannot be proven', async () => {
     const legacyListAll = vi.fn()
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       supportsAuthoritativeSessionTabsInventory: vi.fn(() => true),
       listAllMobileSessionTabsInventory: vi.fn(async () => ({
@@ -153,7 +154,7 @@ describe('session tabs inventory RPC methods', () => {
         ]
       })),
       listAllMobileSessionTabs: legacyListAll
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
     const messages: string[] = []
 
@@ -176,11 +177,11 @@ describe('session tabs inventory RPC methods', () => {
       }
       return { snapshots: [] }
     })
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       supportsAuthoritativeSessionTabsInventory: vi.fn(() => true),
       listAllMobileSessionTabsInventory: inventory
-    } as unknown as OrcaRuntimeService
+    })
     const controller = new AbortController()
     controller.abort()
 
@@ -200,7 +201,7 @@ describe('session tabs inventory RPC methods', () => {
       snapshot: RuntimeMobileSessionTabsResult,
       changeSequence: number
     ) => void)[] = []
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       supportsAuthoritativeSessionTabsInventory: vi.fn(() => true),
       listAllMobileSessionTabsInventoryWithChangeSequence: vi.fn(
@@ -221,7 +222,7 @@ describe('session tabs inventory RPC methods', () => {
       ),
       registerSubscriptionCleanup: vi.fn(),
       cleanupSubscription: vi.fn()
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
     const messages: string[] = []
 
@@ -308,7 +309,7 @@ describe('session tabs inventory RPC methods', () => {
       snapshot: RuntimeMobileSessionTabsResult,
       changeSequence: number
     ) => void)[] = []
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       supportsAuthoritativeSessionTabsInventory: vi.fn(() => true),
       listAllMobileSessionTabsInventoryWithChangeSequence: vi.fn(
@@ -325,7 +326,7 @@ describe('session tabs inventory RPC methods', () => {
       ),
       registerSubscriptionCleanup: vi.fn(),
       cleanupSubscription: vi.fn()
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
     const messages: string[] = []
     const snapshot = (snapshotVersion: number): RuntimeMobileSessionTabsResult => ({
@@ -359,13 +360,13 @@ describe('session tabs inventory RPC methods', () => {
   })
 
   it('does no subscription work for an already-cancelled stream', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       supportsAuthoritativeSessionTabsInventory: vi.fn(() => true),
       listAllMobileSessionTabsInventory: vi.fn(),
       onMobileSessionTabsChanged: vi.fn(),
       registerSubscriptionCleanup: vi.fn()
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
     const controller = new AbortController()
     const messages: string[] = []
@@ -388,7 +389,7 @@ describe('session tabs inventory RPC methods', () => {
   })
 
   it('aborts and removes a publication waiter when the stream is cleaned up', async () => {
-    const runtime = new OrcaRuntimeService()
+    const runtime = new AlfredRuntimeService()
     runtime.attachWindow(1)
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
     const messages: string[] = []

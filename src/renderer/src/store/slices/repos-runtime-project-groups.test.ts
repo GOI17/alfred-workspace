@@ -27,48 +27,48 @@ beforeEach(() => {
 describe('repo slice runtime project groups', () => {
   it('keeps runtime copies of a grouped canonical project in the same project group', async () => {
     const gitRemoteIdentity = {
-      canonicalKey: 'github.com/stablyai/orca',
+      canonicalKey: 'github.com/GOI17/alfred-workspace',
       remoteName: 'origin',
-      remoteUrl: 'https://github.com/stablyai/orca.git'
+      remoteUrl: 'https://github.com/GOI17/alfred-workspace.git'
     }
-    const localOrca: Repo = {
-      id: 'local-orca',
-      path: '/Users/alice/stably/orca',
-      displayName: 'orca',
+    const localAlfred: Repo = {
+      id: 'local-alfred',
+      path: '/Users/alice/stably/alfred',
+      displayName: 'alfred',
       badgeColor: '#000',
       addedAt: 1,
       executionHostId: 'local',
       gitRemoteIdentity,
-      projectGroupId: 'group-orca'
+      projectGroupId: 'group-alfred'
     }
-    const runtimeOrca: Repo = {
-      id: 'runtime-orca',
-      path: '/vercel/sandbox/orca',
-      displayName: 'orca',
+    const runtimeAlfred: Repo = {
+      id: 'runtime-alfred',
+      path: '/vercel/sandbox/alfred',
+      displayName: 'alfred',
       badgeColor: '#111',
       addedAt: 2,
       gitRemoteIdentity
     }
     runtimeEnvironmentCall.mockResolvedValue({
-      id: 'rpc-runtime-orca',
+      id: 'rpc-runtime-alfred',
       ok: true,
-      result: { repos: [runtimeOrca] },
+      result: { repos: [runtimeAlfred] },
       _meta: { runtimeId: 'runtime-remote' }
     })
     const store = createTestStore()
     store.setState({
       settings: { activeRuntimeEnvironmentId: 'env-1' } as never,
-      repos: [localOrca]
+      repos: [localAlfred]
     })
 
     await store.getState().fetchRepos()
 
     expect(store.getState().repos).toEqual([
-      localOrca,
+      localAlfred,
       {
-        ...runtimeOrca,
+        ...runtimeAlfred,
         executionHostId: 'runtime:env-1',
-        projectGroupId: 'group-orca'
+        projectGroupId: 'group-alfred'
       }
     ])
   })

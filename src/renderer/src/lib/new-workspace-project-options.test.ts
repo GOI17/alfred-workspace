@@ -20,17 +20,17 @@ function repo(id: string, overrides: Partial<Repo> = {}): Repo {
     displayName: id,
     badgeColor: '#111111',
     addedAt: 1,
-    upstream: { owner: 'stablyai', repo: 'orca' },
+    upstream: { owner: 'alfredlabs', repo: 'alfred' },
     ...overrides
   }
 }
 
 function project(overrides: Partial<Project> = {}): Project {
   return {
-    id: 'github:stablyai/orca',
-    displayName: 'orca',
+    id: 'github:GOI17/alfred-workspace',
+    displayName: 'alfred',
     badgeColor: '#111111',
-    providerIdentity: { provider: 'github', owner: 'stablyai', repo: 'orca' },
+    providerIdentity: { provider: 'github', owner: 'alfredlabs', repo: 'alfred' },
     sourceRepoIds: ['local-repo', 'ssh-repo'],
     createdAt: 1,
     updatedAt: 1,
@@ -41,11 +41,11 @@ function project(overrides: Partial<Project> = {}): Project {
 function setup(overrides: Partial<ProjectHostSetup>): ProjectHostSetup {
   return {
     id: overrides.id ?? 'local-setup',
-    projectId: overrides.projectId ?? 'github:stablyai/orca',
+    projectId: overrides.projectId ?? 'github:GOI17/alfred-workspace',
     hostId: overrides.hostId ?? 'local',
     repoId: overrides.repoId ?? 'local-repo',
-    path: overrides.path ?? '/tmp/orca',
-    displayName: overrides.displayName ?? 'orca',
+    path: overrides.path ?? '/tmp/alfred',
+    displayName: overrides.displayName ?? 'alfred',
     setupState: overrides.setupState ?? 'ready',
     setupMethod: overrides.setupMethod ?? 'legacy-repo',
     createdAt: 1,
@@ -83,12 +83,12 @@ describe('buildNewWorkspaceProjectOptions', () => {
 
     expect(options).toEqual([
       {
-        id: 'github:stablyai/orca',
+        id: 'github:GOI17/alfred-workspace',
         kind: 'project',
-        projectId: 'github:stablyai/orca',
-        displayName: 'orca',
+        projectId: 'github:GOI17/alfred-workspace',
+        displayName: 'alfred',
         badgeColor: '#111111',
-        detail: 'stablyai/orca'
+        detail: 'GOI17/alfred-workspace'
       }
     ])
   })
@@ -108,7 +108,7 @@ describe('buildNewWorkspaceProjectOptions', () => {
       eligibleRepos: [repo('local-repo'), repo('other-repo')]
     })
 
-    expect(options.map((option) => option.id)).toEqual(['github:stablyai/orca'])
+    expect(options.map((option) => option.id)).toEqual(['github:GOI17/alfred-workspace'])
   })
 
   it('excludes projects configured only on removed hosts', () => {
@@ -136,7 +136,10 @@ describe('buildNewWorkspaceProjectOptions', () => {
     })
 
     expect(options).toEqual([
-      expect.objectContaining({ id: 'github:stablyai/orca', detail: 'stablyai/orca' })
+      expect.objectContaining({
+        id: 'github:GOI17/alfred-workspace',
+        detail: 'GOI17/alfred-workspace'
+      })
     ])
   })
 
@@ -395,11 +398,11 @@ describe('buildNewWorkspaceProjectOptions', () => {
     const options: NewWorkspaceProjectOption[] = [
       {
         kind: 'project',
-        id: 'orca',
-        projectId: 'orca',
-        displayName: 'Orca',
+        id: 'alfred',
+        projectId: 'alfred',
+        displayName: 'Alfred',
         badgeColor: '#111111',
-        detail: 'stablyai/orca'
+        detail: 'GOI17/alfred-workspace'
       },
       {
         kind: 'project',
@@ -407,12 +410,14 @@ describe('buildNewWorkspaceProjectOptions', () => {
         projectId: 'docs',
         displayName: 'Docs',
         badgeColor: '#222222',
-        detail: 'stablyai/docs'
+        detail: 'alfredlabs/docs'
       }
     ]
 
     expect(searchNewWorkspaceProjectOptions(options, 'docs')).toEqual([options[1]])
-    expect(searchNewWorkspaceProjectOptions(options, 'stablyai/orca')).toEqual([options[0]])
+    expect(searchNewWorkspaceProjectOptions(options, 'GOI17/alfred-workspace')).toEqual([
+      options[0]
+    ])
   })
 
   it('rejects oversized pasted searches before reading project options', () => {
@@ -440,10 +445,10 @@ describe('buildNewWorkspaceProjectOptions', () => {
 describe('buildNewWorkspaceFolderSourceOptions', () => {
   it('keeps concrete source repos separate even when they are the same logical project', () => {
     const options = buildNewWorkspaceFolderSourceOptions([
-      repo('local-repo', { displayName: 'orca', path: '/tmp/orca' }),
+      repo('local-repo', { displayName: 'alfred', path: '/tmp/alfred' }),
       repo('ssh-repo', {
-        displayName: 'orca',
-        path: '/srv/orca',
+        displayName: 'alfred',
+        path: '/srv/alfred',
         connectionId: 'ssh:builder'
       })
     ])
@@ -452,7 +457,7 @@ describe('buildNewWorkspaceFolderSourceOptions', () => {
       'folder-source:local-repo',
       'folder-source:ssh-repo'
     ])
-    expect(options.map((option) => option.detail).sort()).toEqual(['/srv/orca', '/tmp/orca'])
+    expect(options.map((option) => option.detail).sort()).toEqual(['/srv/alfred', '/tmp/alfred'])
     expect(getRepoIdFromNewWorkspaceFolderSourceOptionId('folder-source:ssh-repo')).toBe('ssh-repo')
   })
 })
@@ -478,7 +483,7 @@ describe('buildNewWorkspaceCreateTargetOptions', () => {
     })
 
     expect(options.map((option) => option.id).sort()).toEqual([
-      'github:stablyai/orca',
+      'github:GOI17/alfred-workspace',
       'project-group:folder-group'
     ])
     expect(options.find((option) => option.id === 'project-group:folder-group')).toMatchObject({

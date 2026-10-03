@@ -1,7 +1,8 @@
+import { createRuntimeServiceTestDouble } from '../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from './dispatcher'
 import type { RpcRequest } from './core'
-import type { OrcaRuntimeService } from '../orca-runtime'
+import type { AlfredRuntimeService } from '../alfred-runtime'
 import { TERMINAL_METHODS } from './methods/terminal'
 import { createSubscriptionRegistryDouble } from './subscription-registry-test-double'
 import type { RuntimeTerminalWait } from '../../../shared/runtime-types'
@@ -12,8 +13,8 @@ import {
   decodeTerminalStreamText
 } from '../../../shared/terminal-stream-protocol'
 
-function stubRuntime(overrides: Partial<OrcaRuntimeService> = {}): OrcaRuntimeService {
-  return {
+function stubRuntime(overrides: Partial<AlfredRuntimeService> = {}): AlfredRuntimeService {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
     subscribeToPtyExit: vi.fn(() => vi.fn()),
     // Why: subscribe streams register as remote view subscribers for Phase-5
@@ -21,7 +22,7 @@ function stubRuntime(overrides: Partial<OrcaRuntimeService> = {}): OrcaRuntimeSe
     registerRemoteTerminalViewSubscriber: () => () => {},
     requestRendererTerminalTabMount: () => false,
     ...overrides
-  } as OrcaRuntimeService
+  })
 }
 
 const makeRequest = (method: string, params?: unknown): RpcRequest => ({

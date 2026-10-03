@@ -1,5 +1,6 @@
+import { createRuntimeStoreTestDouble } from '../runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
-import { OrcaRuntimeService } from '../orca-runtime'
+import { AlfredRuntimeService } from '../alfred-runtime'
 import { LEGACY_RUN_ID, OrchestrationDb } from './db'
 import { DISPATCH_CIRCUIT_BREAK_FAILURES } from './db/dispatch-context/dispatch-circuit-breaker'
 import { makePaneKey } from '../../../shared/stable-pane-id'
@@ -45,11 +46,11 @@ function makeStore() {
 }
 
 function makeRuntimeWithTwoPanes(): {
-  runtime: OrcaRuntimeService
+  runtime: AlfredRuntimeService
   workerHandle: string
   coordinatorHandle: string
 } {
-  const runtime = new OrcaRuntimeService(makeStore() as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
   runtime.setPtyController({
     spawn: vi.fn(async () => ({ id: 'never' })),
     write: vi.fn(() => true),

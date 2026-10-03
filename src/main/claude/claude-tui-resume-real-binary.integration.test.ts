@@ -1,3 +1,4 @@
+import { agentSessionRecordFixture } from '../../shared/agent-session-record.test-fixture'
 import { spawnSync } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
@@ -57,7 +58,7 @@ async function installCaptureHook(
       "process.stdin.on('data', (chunk) => { input += chunk })",
       "process.stdin.on('end', () => {",
       '  const payload = JSON.parse(input)',
-      '  payload.launchToken = process.env.ORCA_AGENT_LAUNCH_TOKEN',
+      '  payload.launchToken = process.env.ALFRED_AGENT_LAUNCH_TOKEN',
       '  appendFileSync(process.argv[2], `${JSON.stringify(payload)}\\n`)',
       '})',
       ''
@@ -130,7 +131,7 @@ function spawnResumeTui(args: string[], env: Record<string, string>): RunningTui
 
 function structuredIdentity(providerSessionId: string): AgentSessionJournalIdentity {
   return {
-    sessionId: 'orca-real-claude-resume',
+    sessionId: 'alfred-real-claude-resume',
     workspaceId: 'workspace-real',
     hostId: 'local',
     agent: 'claude',
@@ -170,7 +171,7 @@ afterEach(async () => {
 
 describe.skipIf(!claudeAuthenticated)('real Claude TUI resume proof', () => {
   it('resumes a product-created structured session and proves its exact child', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'orca-claude-tui-resume-'))
+    const root = await mkdtemp(join(tmpdir(), 'alfred-claude-tui-resume-'))
     roots.push(root)
     const { eventsPath, settingsPath } = await installCaptureHook(root)
     const providerSessionId = randomUUID()
@@ -204,13 +205,13 @@ describe.skipIf(!claudeAuthenticated)('real Claude TUI resume proof', () => {
       })
       await expect(
         adapter.dispatch({
-          sessionId: 'orca-real-claude-resume',
+          sessionId: 'alfred-real-claude-resume',
           clientMessageId: 'real-product-turn',
           fence: 1,
           body: {
             kind: 'message',
             role: 'user',
-            blocks: [{ type: 'text', text: 'Reply only with ORCA_RESUME_READY.' }]
+            blocks: [{ type: 'text', text: 'Reply only with ALFRED_RESUME_READY.' }]
           }
         })
       ).resolves.toEqual({ state: 'admitted' })
@@ -225,10 +226,16 @@ describe.skipIf(!claudeAuthenticated)('real Claude TUI resume proof', () => {
       expect(started.session_id).toBe(providerSessionId)
       await adapter.closeAll()
 
-      const record = {
-        sessionId: 'orca-real-claude-resume',
+      const record: AgentSessionRecord = {
+        ...agentSessionRecordFixture(),
+        sessionId: 'alfred-real-claude-resume',
         provider: 'claude',
-        location: { workspaceId: 'workspace-real' },
+        location: {
+          executionHostId: 'local',
+          wslDistro: null,
+          workspaceKind: 'folder',
+          workspaceId: 'workspace-real'
+        },
         accountHome: { variable: 'CLAUDE_CONFIG_DIR', path: claudeConfigDir },
         providerHandleChain: [
           {
@@ -239,7 +246,7 @@ describe.skipIf(!claudeAuthenticated)('real Claude TUI resume proof', () => {
             observedAt: 1
           }
         ]
-      } as AgentSessionRecord
+      }
       const launch = await createClaudeTuiResumeLaunchBuilder({
         resolveWorkspacePath: async () => process.cwd(),
         resolveCommand: () => command,

@@ -8,7 +8,7 @@ import {
   sendClientGuestKeyboardInput,
   sendClientGuestPointerInput
 } from './helpers/client-hosted-browser-observer'
-import { expect, test } from './helpers/orca-app'
+import { expect, test } from './helpers/alfred-app'
 import {
   createRuntimeDesktopPairingOffer,
   launchPairedElectronClient,
@@ -159,7 +159,7 @@ function remoteTerminalHandle(ptyId: string): string {
 
 test('opens a paired-runtime terminal link on its owning host', async ({
   electronApp,
-  orcaPage,
+  alfredPage,
   testRepoPath
 }, testInfo) => {
   test.setTimeout(240_000)
@@ -167,15 +167,15 @@ test('opens a paired-runtime terminal link on its owning host', async ({
   let client: PairedElectronClient | null = null
   let observerActive = false
   try {
-    await waitForSessionReady(orcaPage)
-    await waitForActiveWorktree(orcaPage)
-    await ensureTerminalVisible(orcaPage)
-    await waitForActiveTerminalManager(orcaPage)
-    const hostPtyId = await waitForActivePanePtyId(orcaPage)
-    await execInTerminal(orcaPage, hostPtyId, `printf '%s\\n' ${JSON.stringify(fixture.url)}`)
-    await waitForTerminalOutput(orcaPage, fixture.url)
+    await waitForSessionReady(alfredPage)
+    await waitForActiveWorktree(alfredPage)
+    await ensureTerminalVisible(alfredPage)
+    await waitForActiveTerminalManager(alfredPage)
+    const hostPtyId = await waitForActivePanePtyId(alfredPage)
+    await execInTerminal(alfredPage, hostPtyId, `printf '%s\\n' ${JSON.stringify(fixture.url)}`)
+    await waitForTerminalOutput(alfredPage, fixture.url)
 
-    const offer = await createRuntimeDesktopPairingOffer(orcaPage)
+    const offer = await createRuntimeDesktopPairingOffer(alfredPage)
     client = await launchPairedElectronClient(offer, testInfo, 'Remote terminal browser link')
     const page = client.page
     const worktreeId = await expect
@@ -236,9 +236,11 @@ test('opens a paired-runtime terminal link on its owning host', async ({
     await expect(
       actionPopover.getByRole('button').filter({ hasText: 'System Browser' })
     ).toBeVisible()
-    const orcaBrowserAction = actionPopover.getByRole('button').filter({ hasText: 'Orca Browser' })
-    await expect(orcaBrowserAction).toBeVisible()
-    await orcaBrowserAction.click()
+    const alfredBrowserAction = actionPopover
+      .getByRole('button')
+      .filter({ hasText: 'Alfred Browser' })
+    await expect(alfredBrowserAction).toBeVisible()
+    await alfredBrowserAction.click()
 
     const identity = await expect
       .poll(

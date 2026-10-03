@@ -1,12 +1,9 @@
-import type { OrcaRuntimeService } from '../orca-runtime'
+import type { AlfredRuntimeService } from '../alfred-runtime'
 
 export function routeDispatcherClientHostedBrowserRpc(
-  runtime: OrcaRuntimeService,
+  runtime: AlfredRuntimeService,
   method: string,
   params: unknown
 ) {
-  const candidate = runtime as OrcaRuntimeService & {
-    routeClientHostedBrowserRpc?: OrcaRuntimeService['routeClientHostedBrowserRpc']
-  }
-  return candidate.routeClientHostedBrowserRpc?.(method, params) ?? { handled: false as const }
+  return runtime.routeClientHostedBrowserRpc?.(method, params) ?? { handled: false as const }
 }

@@ -1,5 +1,6 @@
+import { createRuntimeStoreTestDouble } from '../runtime/runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
-import { OrcaRuntimeService } from '../runtime/orca-runtime'
+import { AlfredRuntimeService } from '../runtime/alfred-runtime'
 import { HEADLESS_RUNTIME_WINDOW_ID } from '../../shared/runtime-types'
 import { createRuntimeAutomationRunTerminalObserver } from './runtime-terminal-run-observer'
 import type { AutomationRun } from '../../shared/automations-types'
@@ -7,17 +8,17 @@ import type { Repo } from '../../shared/repo-types'
 
 const repo: Repo = {
   id: 'repo-1',
-  path: '/tmp/orca',
-  displayName: 'orca',
+  path: '/tmp/alfred',
+  displayName: 'alfred',
   badgeColor: 'blue',
   addedAt: 1,
-  kind: 'git'
+  kind: 'git' as const
 }
 
 const TAB_ID = 'tab-1'
 const LEAF_ID = '11111111-2222-4333-8444-555555555555'
 const PANE_KEY = `${TAB_ID}:${LEAF_ID}`
-const WORKTREE_ID = '/tmp/orca::wt1'
+const WORKTREE_ID = '/tmp/alfred::wt1'
 
 function makeStore() {
   return {
@@ -31,7 +32,7 @@ function makeStore() {
       branchPrefix: '',
       branchPrefixCustom: ''
     })),
-    getAllWorktreeMeta: vi.fn(() => new Map()),
+    getAllWorktreeMeta: vi.fn(() => ({})),
     getWorktreeMeta: vi.fn(),
     setWorktreeMeta: vi.fn(),
     removeWorktreeMeta: vi.fn(),
@@ -52,7 +53,7 @@ const retainedRun = {
  */
 describe('resolving an automation run terminal across startup states', () => {
   it('cannot answer for any pane while no graph has published', () => {
-    const runtime = new OrcaRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
     const observer = createRuntimeAutomationRunTerminalObserver(runtime)
 
     expect(observer.resolveRunTerminal(retainedRun)).toBeNull()
@@ -61,7 +62,7 @@ describe('resolving an automation run terminal across startup states', () => {
   it('still cannot answer once an explicitly empty headless graph publishes', () => {
     // Serve publishes exactly this graph before arming automations, so leaves are
     // empty there too — serve is not saved by graph ordering alone.
-    const runtime = new OrcaRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
     runtime.syncWindowGraph(HEADLESS_RUNTIME_WINDOW_ID, { tabs: [], leaves: [] })
     const observer = createRuntimeAutomationRunTerminalObserver(runtime)
 
@@ -71,7 +72,7 @@ describe('resolving an automation run terminal across startup states', () => {
   it('answers from an adopted PTY bound to the pane, with no leaves at all', () => {
     // What serve's pre-start refreshRestoredOrchestrationAuthority produces: a
     // ptysById record carrying the restored paneKey, never a leaf.
-    const runtime = new OrcaRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
     runtime.syncWindowGraph(HEADLESS_RUNTIME_WINDOW_ID, { tabs: [], leaves: [] })
     runtime.registerPty('pty-1', WORKTREE_ID, null, { tabId: TAB_ID, leafId: LEAF_ID })
     const observer = createRuntimeAutomationRunTerminalObserver(runtime)
@@ -80,7 +81,7 @@ describe('resolving an automation run terminal across startup states', () => {
   })
 
   it('answers only after the pane binds, so an early lookup is not a lost terminal', () => {
-    const runtime = new OrcaRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
     const observer = createRuntimeAutomationRunTerminalObserver(runtime)
 
     expect(observer.resolveRunTerminal(retainedRun)).toBeNull()

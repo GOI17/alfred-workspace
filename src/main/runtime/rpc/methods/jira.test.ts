@@ -1,7 +1,7 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
-import type { OrcaRuntimeService } from '../../orca-runtime'
 import { JIRA_METHODS } from './jira'
 
 function makeRequest(method: string, params?: unknown): RpcRequest {
@@ -10,7 +10,7 @@ function makeRequest(method: string, params?: unknown): RpcRequest {
 
 describe('jira RPC methods', () => {
   it('routes Jira account methods to the runtime server', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       jiraStatus: vi.fn().mockResolvedValue({ connected: true, viewer: null }),
       jiraReadStatus: vi.fn().mockResolvedValue({ connected: true, viewer: null }),
@@ -18,7 +18,7 @@ describe('jira RPC methods', () => {
       jiraConnect: vi.fn().mockResolvedValue({ ok: true, viewer: { displayName: 'Ada' } }),
       jiraSelectSite: vi.fn().mockResolvedValue({ connected: true, viewer: null }),
       jiraDisconnect: vi.fn().mockResolvedValue({ ok: true })
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: JIRA_METHODS })
 
     await dispatcher.dispatch(makeRequest('jira.status'))
@@ -47,7 +47,7 @@ describe('jira RPC methods', () => {
   })
 
   it('routes Jira issue queries and mutations to the runtime server', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       jiraSearchIssues: vi.fn().mockResolvedValue([{ key: 'ABC-1' }]),
       jiraListIssues: vi.fn().mockResolvedValue([{ key: 'ABC-2' }]),
@@ -57,7 +57,7 @@ describe('jira RPC methods', () => {
       jiraUpdateIssue: vi.fn().mockResolvedValue({ ok: true }),
       jiraAddIssueComment: vi.fn().mockResolvedValue({ ok: true, id: 'comment-1' }),
       jiraIssueComments: vi.fn().mockResolvedValue([{ id: 'comment-2' }])
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: JIRA_METHODS })
     const summaryController = new AbortController()
 
@@ -133,10 +133,10 @@ describe('jira RPC methods', () => {
   })
 
   it('requires an explicit site for isolated Jira summary reads', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       jiraLookupIssueSummary: vi.fn()
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: JIRA_METHODS })
 
     await expect(
@@ -147,10 +147,10 @@ describe('jira RPC methods', () => {
 
   it('streams Jira image-bearing payloads in bounded JSON chunks', async () => {
     const description = `![shot](data:image/png;base64,${'a'.repeat(300_000)})`
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       jiraGetIssue: vi.fn().mockResolvedValue({ key: 'ABC-3', description })
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: JIRA_METHODS })
     const replies: string[] = []
 
@@ -169,7 +169,7 @@ describe('jira RPC methods', () => {
   })
 
   it('routes Jira metadata requests to the runtime server', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       jiraListProjects: vi.fn().mockResolvedValue([{ id: 'project-1' }]),
       jiraListIssueTypes: vi.fn().mockResolvedValue([{ id: 'type-1' }]),
@@ -181,7 +181,7 @@ describe('jira RPC methods', () => {
       jiraGetProjectStatusOrder: vi.fn().mockResolvedValue({
         statusIdsByColumn: [['status-1']]
       })
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: JIRA_METHODS })
 
     await dispatcher.dispatch(makeRequest('jira.listProjects', { siteId: 'all' }))

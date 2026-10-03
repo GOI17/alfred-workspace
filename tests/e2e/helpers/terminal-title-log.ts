@@ -2,17 +2,14 @@ import type { Page } from '@stablyai/playwright-test'
 
 export async function installRendererTitleLog(page: Page): Promise<void> {
   await page.evaluate(() => {
-    const w = window as unknown as {
-      __orcaE2eTitleLog?: string[]
-      __orcaE2eTitleUnsubscribe?: () => void
-    }
+    const w = window
     const store = window.__store
     if (!store) {
       throw new Error('window.__store is not available')
     }
 
-    w.__orcaE2eTitleUnsubscribe?.()
-    w.__orcaE2eTitleLog = []
+    w.__alfredE2eTitleUnsubscribe?.()
+    w.__alfredE2eTitleLog = []
 
     const recordTitles = (): void => {
       const state = store.getState()
@@ -25,7 +22,7 @@ export async function installRendererTitleLog(page: Page): Promise<void> {
 
       for (const title of [...paneTitles, ...tabTitles]) {
         if (typeof title === 'string') {
-          w.__orcaE2eTitleLog!.push(title)
+          w.__alfredE2eTitleLog!.push(title)
         }
       }
     }
@@ -33,13 +30,21 @@ export async function installRendererTitleLog(page: Page): Promise<void> {
     // Why: shell prompts can immediately overwrite OSC titles. Logging every
     // renderer title state lets tests assert transient title frames landed.
     recordTitles()
-    w.__orcaE2eTitleUnsubscribe = store.subscribe(recordTitles)
+    w.__alfredE2eTitleUnsubscribe = store.subscribe(recordTitles)
   })
 }
 
 export async function getRendererTitleLog(page: Page): Promise<string[]> {
   return page.evaluate(() => {
-    const w = window as unknown as { __orcaE2eTitleLog?: string[] }
-    return w.__orcaE2eTitleLog ?? []
+    const w = window
+    return w.__alfredE2eTitleLog ?? []
   })
+}
+
+declare global {
+  // oxlint-disable-next-line typescript/consistent-type-definitions -- Window declarations must merge with the DOM library.
+  interface Window {
+    __alfredE2eTitleLog?: string[]
+    __alfredE2eTitleUnsubscribe?: () => void
+  }
 }

@@ -4,10 +4,10 @@
   "namedDeltas": [],
   "runnerVersion": 1,
   "baseline": "b4dfad0a8ba4e15976ec06b9d38994b6a31e1643",
-  "lockfileSha256": "4568633356187895ccda8e2ff83245c37d5621832c69e268733733b6947971e3",
-  "recorderSha256": "f67c2f5b753d2a4f572599f6861fae8e6e917fe89ac75b58288f8e84be609d86",
-  "adapterSha256": "c2eed306311a844cd6f2f84b6513c0a1182f86a5e3cace434385b8287c80d7c5",
-  "scenarioSha256": "662c3e04e31bce5757f09f91e3e3739fb9d57767b7443be4dc936705b64b1432",
+  "lockfileSha256": "6dc9405f6240556235cc8c897075c4dab1e8f5f8f1cf571c8eafdb496d3da818",
+  "recorderSha256": "96c80e2da6f1dbc42aad4f355811aa0e88e121b01243422126e7d08bd0ea57e2",
+  "adapterSha256": "2f5277c712ffab680b2b851ea97c218b76d8f1ecba2752f498fd2edd2a41dbde",
+  "scenarioSha256": "bedcfcf24abbe9ee9e947dad1a63452bf1b2f9c452c605716f366c690e36e53b",
   "platform": "darwin",
   "scenarioVersion": 1,
   "projectionVersion": 2,
@@ -25,7 +25,17 @@
         "$rpc": "null"
       }
     },
-    "2142af96648c": {
+    "33e3b949d4c5": {
+      "creating": {
+        "$rpc": "null"
+      },
+      "error": "",
+      "settings": {
+        "defaultTuiAgent": "codex",
+        "disabledTuiAgents": []
+      }
+    },
+    "3760d4af7d78": {
       "name": "worktree.create#1",
       "ordinal": 6,
       "args": [
@@ -44,7 +54,7 @@
             "name": "orc-1",
             "repo": "id:repo-1",
             "setupDecision": "inherit",
-            "startupDraft": "https://linear.app/orca/issue/ORC-1"
+            "startupDraft": "https://linear.app/alfred/issue/ORC-1"
           }
         },
         {
@@ -68,16 +78,6 @@
             }
           }
         }
-      }
-    },
-    "33e3b949d4c5": {
-      "creating": {
-        "$rpc": "null"
-      },
-      "error": "",
-      "settings": {
-        "defaultTuiAgent": "codex",
-        "disabledTuiAgents": []
       }
     },
     "41a2214deb19": {
@@ -105,6 +105,11 @@
         "status": "pending",
         "startedAt": 0
       }
+    },
+    "6539bb2095cc": {
+      "name": "worktree.create#1",
+      "ordinal": 7,
+      "json": "{\"id\":\"frame-2\",\"deviceToken\":\"recording-device\",\"method\":\"worktree.create\",\"params\":{\"repo\":\"id:repo-1\",\"name\":\"orc-1\",\"displayName\":\"ORC-1 Recorded issue\",\"displayNameKind\":\"generated\",\"linkedLinearIssue\":\"ORC-1\",\"setupDecision\":\"inherit\",\"activate\":true,\"startupDraft\":\"https://linear.app/alfred/issue/ORC-1\",\"createdWithAgent\":\"claude\"}}"
     },
     "7abdfe20af50": {
       "creating": "linear:1",
@@ -173,11 +178,6 @@
         "$rpc": "null"
       }
     },
-    "e0423a9e6995": {
-      "name": "worktree.create#1",
-      "ordinal": 7,
-      "json": "{\"id\":\"frame-2\",\"deviceToken\":\"recording-device\",\"method\":\"worktree.create\",\"params\":{\"repo\":\"id:repo-1\",\"name\":\"orc-1\",\"displayName\":\"ORC-1 Recorded issue\",\"displayNameKind\":\"generated\",\"linkedLinearIssue\":\"ORC-1\",\"setupDecision\":\"inherit\",\"activate\":true,\"startupDraft\":\"https://linear.app/orca/issue/ORC-1\",\"createdWithAgent\":\"claude\"}}"
-    },
     "e0a8ee1f3c00": {
       "name": "creatingKey",
       "ordinal": 1,
@@ -231,8 +231,8 @@
       {
         "id": "created",
         "observation": {
-          "sender": ["8ac371cf7234", "2142af96648c"],
-          "payloads": ["975f2ff9a730", "e0423a9e6995"],
+          "sender": ["8ac371cf7234", "3760d4af7d78"],
+          "payloads": ["975f2ff9a730", "6539bb2095cc"],
           "settlements": {
             "mount": "eb79a9b3682a",
             "submit": "eb79a9b3682a"

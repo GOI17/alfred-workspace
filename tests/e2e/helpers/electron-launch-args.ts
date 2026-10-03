@@ -1,12 +1,16 @@
 import { dirname } from 'node:path'
 
-export function getOrcaElectronLaunchArgs(mainPath: string, headful: boolean): string[] {
+export function getElectronKeychainIsolationArgs(): string[] {
+  // Disposable profiles must never prompt for the developer's system keychain.
+  return process.platform === 'darwin' ? ['--password-store=basic', '--use-mock-keychain'] : []
+}
+
+export function getAlfredElectronLaunchArgs(mainPath: string, headful: boolean): string[] {
   // Launch through package.json so app version and resource paths match a packaged app.
   const appPath = dirname(dirname(dirname(mainPath)))
   // Isolated macOS profiles must not invoke the system keychain UI. Without
   // these Chromium switches startup can block before the first renderer target.
-  const keychainArgs =
-    process.platform === 'darwin' ? ['--password-store=basic', '--use-mock-keychain'] : []
+  const keychainArgs = getElectronKeychainIsolationArgs()
   if (process.platform === 'darwin') {
     // Crash tests must not block later launches on AppKit's saved-window recovery dialog.
     return [...keychainArgs, appPath, '-ApplePersistenceIgnoreState', 'YES']

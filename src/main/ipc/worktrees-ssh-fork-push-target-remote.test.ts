@@ -1,9 +1,9 @@
+import { createSshGitProviderTestDouble } from '../providers/ssh-git-provider-test-double'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { validateGitExecArgs } from '../../relay/git-exec-validator'
 import { getSshGitProviderMock, getActiveMultiplexerMock } from './worktrees-test-module-mocks'
 import { handlers, setupWorktreeHandlers, store } from './worktrees-test-harness'
 import { materializeWorktreePushTargetRemoteSsh } from './worktree-remote'
-import type { SshGitProvider } from '../providers/ssh-git-provider'
 
 vi.mock('electron', async () =>
   (await import('./worktrees-test-module-mocks')).electronModuleMock()
@@ -110,7 +110,7 @@ describe('registerWorktreeHandlers', () => {
     const exec = vi.fn().mockImplementation(async (args: string[]) => {
       validateGitExecArgs(args)
       if (args[0] === 'remote' && args[1] === 'get-url') {
-        return { stdout: 'git@github.com:stablyai/orca.git\n', stderr: '' }
+        return { stdout: 'git@github.com:GOI17/alfred-workspace.git\n', stderr: '' }
       }
       if (args[0] === 'remote' && args.length === 1) {
         return { stdout: 'origin\n', stderr: '' }
@@ -146,31 +146,31 @@ describe('registerWorktreeHandlers', () => {
       name: 'contributor-fix',
       branchNameOverride: 'contributor/fix',
       pushTarget: {
-        remoteName: 'pr-contributor-orca',
+        remoteName: 'pr-contributor-alfred',
         branchName: 'contributor/fix',
-        remoteUrl: 'https://github.com/contributor/orca.git'
+        remoteUrl: 'https://github.com/contributor/alfred.git'
       }
     })
 
     expect(exec).not.toHaveBeenCalledWith(
-      ['remote', 'add', 'pr-contributor-orca', 'https://github.com/contributor/orca.git'],
+      ['remote', 'add', 'pr-contributor-alfred', 'https://github.com/contributor/alfred.git'],
       '/remote/repo'
     )
     // fetchRemoteTrackingRef IS called once here, but for create's unrelated
     // base-ref refresh (origin/main) -- not for the fork remote, which defers.
     expect(provider.fetchRemoteTrackingRef).not.toHaveBeenCalledWith(
       '/remote/repo',
-      'pr-contributor-orca',
+      'pr-contributor-alfred',
       'contributor/fix',
-      'refs/remotes/pr-contributor-orca/contributor/fix'
+      'refs/remotes/pr-contributor-alfred/contributor/fix'
     )
     expect(store.setWorktreeMeta).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({
         pushTarget: {
-          remoteName: 'pr-contributor-orca',
+          remoteName: 'pr-contributor-alfred',
           branchName: 'contributor/fix',
-          remoteUrl: 'https://github.com/contributor/orca.git'
+          remoteUrl: 'https://github.com/contributor/alfred.git'
         }
       })
     )
@@ -191,31 +191,31 @@ describe('registerWorktreeHandlers', () => {
       return { stdout: '', stderr: '' }
     })
     const fetchRemoteTrackingRef = vi.fn().mockResolvedValue(undefined)
-    const markRemoteOrcaCreated = vi.fn().mockResolvedValue(undefined)
+    const markRemoteAlfredCreated = vi.fn().mockResolvedValue(undefined)
     const target = {
-      remoteName: 'pr-contributor-orca',
+      remoteName: 'pr-contributor-alfred',
       branchName: 'contributor/fix',
-      remoteUrl: 'https://github.com/contributor/orca.git'
+      remoteUrl: 'https://github.com/contributor/alfred.git'
     }
 
     const result = await materializeWorktreePushTargetRemoteSsh(
-      { exec, fetchRemoteTrackingRef, markRemoteOrcaCreated } as unknown as SshGitProvider,
+      createSshGitProviderTestDouble({ exec, fetchRemoteTrackingRef, markRemoteAlfredCreated }),
       '/remote/repo',
       target
     )
 
     expect(result).toEqual({ ...target, remoteCreated: true })
     expect(exec).toHaveBeenCalledWith(
-      ['remote', 'add', 'pr-contributor-orca', 'https://github.com/contributor/orca.git'],
+      ['remote', 'add', 'pr-contributor-alfred', 'https://github.com/contributor/alfred.git'],
       '/remote/repo'
     )
     expect(fetchRemoteTrackingRef).toHaveBeenCalledWith(
       '/remote/repo',
-      'pr-contributor-orca',
+      'pr-contributor-alfred',
       'contributor/fix',
-      'refs/remotes/pr-contributor-orca/contributor/fix'
+      'refs/remotes/pr-contributor-alfred/contributor/fix'
     )
-    expect(markRemoteOrcaCreated).toHaveBeenCalledWith('/remote/repo', 'pr-contributor-orca')
+    expect(markRemoteAlfredCreated).toHaveBeenCalledWith('/remote/repo', 'pr-contributor-alfred')
   })
 
   // The relay-upgrade-messaging, fetch-failure rollback, and sibling-remote-preserved

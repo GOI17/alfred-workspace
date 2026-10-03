@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 /**
  * A worker start that fails AFTER its structured session exists is the fourth settlement path.
  *
@@ -9,7 +10,6 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { setStructuredAgentSessionHost } from '../../../native-chat/agent-session-wire/structured-agent-session-registry'
-import type { OrcaRuntimeService } from '../../orca-runtime'
 import type { OrchestrationDb } from '../../orchestration/db'
 import { structuredWorkerIdentities } from '../../structured-worker-identity'
 
@@ -85,15 +85,35 @@ function installHost() {
 
 function fakes() {
   const retireStructuredAgentSessionTabFromSnapshot = vi.fn(() => true)
-  const runtime = {
-    showTerminal: async () => ({ worktreeId: WORKTREE }),
+  const runtime = createRuntimeServiceTestDouble({
+    showTerminal: async () => ({
+      ptyId: null,
+      worktreePath: '/repo',
+      branch: 'main',
+      tabId: 'tab-worker',
+      leafId: 'leaf-worker',
+      title: null,
+      writable: false,
+      lastOutputAt: null,
+      preview: '',
+      paneRuntimeId: 1,
+      rendererGraphEpoch: 0,
+      handle: 'term-worker',
+      connected: true,
+      worktreeId: WORKTREE
+    }),
     showManagedTerminalWorkspace: async () => ({ id: WORKTREE }),
     getNestedWorkerMaxDepth: () => 3,
     getRuntimeId: () => 'epoch-1',
     ensureStructuredAgentSessionHost: async () => {},
-    getTerminalOrchestrationCliCommand: () => 'orca',
+    getTerminalOrchestrationCliCommand: () => 'alfred',
     getStructuredAgentSessionCreateSupport: async () => ({ supported: true }),
     getOrchestrationDispatchAuthority: () => ({
+      runtimeId: 'epoch-1',
+      terminalHandle: 'term-worker',
+      ptyId: 'pty-worker',
+      worktreeId: WORKTREE,
+      launchTokenHash: null,
       paneKey: 'pane',
       processIncarnation: 'structured:x',
       hostScope: { kind: 'local', hostId: 'local' }
@@ -103,7 +123,7 @@ function fakes() {
     getTerminalProcessIncarnation: vi.fn(() => 'inc_1'),
     getTerminalPaneKey: vi.fn(() => 'pane_1'),
     retireStructuredAgentSessionTabFromSnapshot
-  } as unknown as OrcaRuntimeService
+  })
   const db = {
     createStartingWorkerDispatch: () => ({
       dispatch: { id: 'd_fail', depth: 0 },

@@ -1,18 +1,19 @@
+import { makeRepo as fixtureMakeRepo } from '../../../shared/repo-test-fixture'
 import { describe, expect, it } from 'vitest'
 import type { ProjectHostSetup } from '../../../shared/project-types'
 import type { Repo } from '../../../shared/repo-types'
 import { mergeProjectHostSetupCompatibilityState } from './project-host-compatibility'
 
-const PROJECT_ID = 'github:acme/orca'
+const PROJECT_ID = 'github:acme/alfred'
 
 function repo(overrides: Partial<Repo> & Pick<Repo, 'id'>): Repo {
-  return {
+  return fixtureMakeRepo({
     path: `/src/${overrides.id}`,
-    displayName: 'orca',
+    displayName: 'alfred',
     addedAt: 1,
-    upstream: { owner: 'acme', repo: 'orca' },
+    upstream: { owner: 'acme', repo: 'alfred' },
     ...overrides
-  } as Repo
+  })
 }
 
 function pendingSetup(overrides: Partial<ProjectHostSetup> = {}): ProjectHostSetup {
@@ -22,13 +23,13 @@ function pendingSetup(overrides: Partial<ProjectHostSetup> = {}): ProjectHostSet
     hostId: 'ssh:devbox',
     repoId: '',
     path: '',
-    displayName: 'orca',
+    displayName: 'alfred',
     setupState: 'not-set-up',
-    setupMethod: 'pending',
+    setupMethod: 'imported-existing-folder',
     createdAt: 1,
     updatedAt: 1,
     ...overrides
-  } as ProjectHostSetup
+  }
 }
 
 describe('mergeProjectHostSetupCompatibilityState', () => {

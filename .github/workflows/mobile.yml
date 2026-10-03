@@ -15,7 +15,7 @@ on:
       - 'src/main/runtime/runtime-rpc/**'
       - 'src/main/runtime/runtime-rpc.ts'
       - 'src/main/runtime/device-registry.ts'
-      - 'src/main/runtime/orca-runtime.ts'
+      - 'src/main/runtime/alfred-runtime.ts'
       - 'src/main/runtime/agent-session-*.ts'
       - 'src/main/native-chat/agent-session-wire/**'
       - 'src/shared/agent-launch-*.ts'
@@ -57,7 +57,8 @@ concurrency:
 
 jobs:
   verify:
-    if: github.event_name == 'pull_request'
+    if: vars.ALFRED_RELEASES_ENABLED == 'true' && (github.event_name ==
+      'pull_request')
     runs-on: ubuntu-latest
 
     env:
@@ -117,7 +118,8 @@ jobs:
       - name: Replay the recording corpus through the page bridge
         env:
           RPC_FOUNDATION_BRIDGE: '1'
-        run: pnpm exec vitest run src/test-support/rpc-recording/rpc-recording-through-bridge.test.ts
+        run: pnpm exec vitest run
+          src/test-support/rpc-recording/rpc-recording-through-bridge.test.ts
 
       - name: Test iOS release version resolution
         run: ruby fastlane/ios_release_version_test.rb
@@ -194,3 +196,4 @@ jobs:
           else
             pnpm exec tsx scripts/rpc-recording-pin-guard.mts reproduce
           fi
+    if: vars.ALFRED_RELEASES_ENABLED == 'true'

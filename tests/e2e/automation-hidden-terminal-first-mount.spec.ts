@@ -1,4 +1,4 @@
-import { test, expect } from './helpers/orca-app'
+import { test, expect } from './helpers/alfred-app'
 import {
   ensureTerminalVisible,
   getActiveWorktreeId,
@@ -58,14 +58,14 @@ async function mainSnapshotContains(
 
 test.describe('Automation hidden terminal first mount', () => {
   test('background-mounted hidden worktree replays startup output on the first visible mount', async ({
-    orcaPage
+    alfredPage
   }) => {
-    await waitForSessionReady(orcaPage)
-    const firstWorktreeId = await waitForActiveWorktree(orcaPage)
-    await ensureTerminalVisible(orcaPage)
-    await waitForActiveTerminalManager(orcaPage, 30_000)
+    await waitForSessionReady(alfredPage)
+    const firstWorktreeId = await waitForActiveWorktree(alfredPage)
+    await ensureTerminalVisible(alfredPage)
+    await waitForActiveTerminalManager(alfredPage, 30_000)
 
-    const secondWorktreeId = (await getAllWorktreeIds(orcaPage)).find(
+    const secondWorktreeId = (await getAllWorktreeIds(alfredPage)).find(
       (id) => id !== firstWorktreeId
     )
     test.skip(!secondWorktreeId, 'background first-mount repro needs the seeded secondary worktree')
@@ -75,7 +75,7 @@ test.describe('Automation hidden terminal first mount', () => {
 
     const runId = Date.now()
     const marker = `AUTO_FIRST_MOUNT_${runId}`
-    const hiddenTabId = await orcaPage.evaluate(
+    const hiddenTabId = await alfredPage.evaluate(
       ({ worktreeId, marker, eventName }) => {
         const store = window.__store
         if (!store) {
@@ -112,23 +112,23 @@ test.describe('Automation hidden terminal first mount', () => {
       }
     )
 
-    const hiddenPtyId = await waitForHiddenTabPtyId(orcaPage, hiddenTabId)
+    const hiddenPtyId = await waitForHiddenTabPtyId(alfredPage, hiddenTabId)
     await expect
-      .poll(() => mainSnapshotContains(orcaPage, hiddenPtyId, marker), {
+      .poll(() => mainSnapshotContains(alfredPage, hiddenPtyId, marker), {
         timeout: 20_000,
         message: 'Hidden automation terminal did not buffer startup output while off-screen'
       })
       .toBe(true)
 
-    await switchToWorktree(orcaPage, secondWorktreeId)
+    await switchToWorktree(alfredPage, secondWorktreeId)
     await expect
-      .poll(() => getActiveWorktreeId(orcaPage), {
+      .poll(() => getActiveWorktreeId(alfredPage), {
         timeout: 10_000,
         message: 'Hidden worktree did not become active for first-mount verification'
       })
       .toBe(secondWorktreeId)
 
-    await orcaPage.evaluate((tabId) => {
+    await alfredPage.evaluate((tabId) => {
       const store = window.__store
       if (!store) {
         throw new Error('Store unavailable')
@@ -138,11 +138,11 @@ test.describe('Automation hidden terminal first mount', () => {
       state.setActiveTabType('terminal')
     }, hiddenTabId)
 
-    await ensureTerminalVisible(orcaPage)
-    await waitForActiveTerminalManager(orcaPage, 30_000)
+    await ensureTerminalVisible(alfredPage)
+    await waitForActiveTerminalManager(alfredPage, 30_000)
 
     await expect
-      .poll(async () => (await getTerminalContent(orcaPage)).includes(marker), {
+      .poll(async () => (await getTerminalContent(alfredPage)).includes(marker), {
         timeout: 10_000,
         message: 'First visible mount did not replay the hidden automation terminal output'
       })

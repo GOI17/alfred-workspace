@@ -1,5 +1,8 @@
+import type { TuiAgent } from '../../../../shared/tui-agent'
+import { getDefaultRuntimeClientSettings } from '../../runtime-client-settings-test-fixture'
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { OrcaRuntimeService } from '../../orca-runtime'
+import type { AlfredRuntimeService } from '../../alfred-runtime'
 import { eraseRpcMethods, isStreamingMethod, type RpcContext } from '../core'
 
 const { installForRuntimeHomeSerializedMock, realpathMock } = vi.hoisted(() => ({
@@ -18,9 +21,9 @@ import {
   recordManagedWslCodexHome
 } from '../../../codex/managed-wsl-codex-home-registry'
 
-const LINUX_HOME = '/home/jin/.local/share/orca/codex-runtime-home/home'
+const LINUX_HOME = '/home/jin/.local/share/alfred/codex-runtime-home/home'
 const RUNTIME_HOME =
-  '\\\\wsl.localhost\\Ubuntu-24.04\\home\\jin\\.local\\share\\orca\\codex-runtime-home\\home'
+  '\\\\wsl.localhost\\Ubuntu-24.04\\home\\jin\\.local\\share\\alfred\\codex-runtime-home\\home'
 
 function prepareMethod() {
   const method = eraseRpcMethods(AGENT_HOOK_METHODS).find(
@@ -32,13 +35,17 @@ function prepareMethod() {
   return method
 }
 
-function runtimeWithSettings(enabled = true, disabledTuiAgents: string[] = []): OrcaRuntimeService {
-  return {
+function runtimeWithSettings(
+  enabled = true,
+  disabledTuiAgents: TuiAgent[] = []
+): AlfredRuntimeService {
+  return createRuntimeServiceTestDouble({
     getClientSettings: vi.fn(() => ({
+      ...getDefaultRuntimeClientSettings(),
       agentStatusHooksEnabled: enabled,
       disabledTuiAgents
     }))
-  } as unknown as OrcaRuntimeService
+  })
 }
 
 describe('agent hook RPC methods', () => {
@@ -56,7 +63,7 @@ describe('agent hook RPC methods', () => {
     const method = prepareMethod()
     const params = method.params!.parse({
       codexHome: LINUX_HOME,
-      orcaCodexHome: LINUX_HOME,
+      alfredCodexHome: LINUX_HOME,
       wslDistro: 'Ubuntu-24.04'
     })
 
@@ -67,14 +74,14 @@ describe('agent hook RPC methods', () => {
     })
   })
 
-  it.each([
+  it.each<[boolean, TuiAgent[]]>([
     [false, []],
     [true, ['codex']]
   ])('does not install when hooks are disabled (%s, %j)', async (enabled, disabledTuiAgents) => {
     const method = prepareMethod()
     const params = method.params!.parse({
-      codexHome: '/home/jin/.local/share/orca/codex-runtime-home/home',
-      orcaCodexHome: '/home/jin/.local/share/orca/codex-runtime-home/home',
+      codexHome: '/home/jin/.local/share/alfred/codex-runtime-home/home',
+      alfredCodexHome: '/home/jin/.local/share/alfred/codex-runtime-home/home',
       wslDistro: 'Ubuntu-24.04'
     })
 
@@ -87,8 +94,8 @@ describe('agent hook RPC methods', () => {
   it.each(['runtime', 'mobile'] as const)('rejects non-local %s callers', async (clientKind) => {
     const method = prepareMethod()
     const params = method.params!.parse({
-      codexHome: '/home/jin/.local/share/orca/codex-runtime-home/home',
-      orcaCodexHome: '/home/jin/.local/share/orca/codex-runtime-home/home',
+      codexHome: '/home/jin/.local/share/alfred/codex-runtime-home/home',
+      alfredCodexHome: '/home/jin/.local/share/alfred/codex-runtime-home/home',
       wslDistro: 'Ubuntu-24.04'
     })
 
@@ -97,7 +104,7 @@ describe('agent hook RPC methods', () => {
         runtime: runtimeWithSettings(),
         clientKind
       } as RpcContext)
-    ).rejects.toThrow(/only available to the local Orca CLI/)
+    ).rejects.toThrow(/only available to the local Alfred CLI/)
     expect(installForRuntimeHomeSerializedMock).not.toHaveBeenCalled()
   })
 
@@ -105,8 +112,8 @@ describe('agent hook RPC methods', () => {
     installForRuntimeHomeSerializedMock.mockRejectedValue(new Error('install failed'))
     const method = prepareMethod()
     const params = method.params!.parse({
-      codexHome: '/home/jin/.local/share/orca/codex-runtime-home/home',
-      orcaCodexHome: '/home/jin/.local/share/orca/codex-runtime-home/home',
+      codexHome: '/home/jin/.local/share/alfred/codex-runtime-home/home',
+      alfredCodexHome: '/home/jin/.local/share/alfred/codex-runtime-home/home',
       wslDistro: 'Ubuntu-24.04'
     })
 
@@ -123,7 +130,7 @@ describe('agent hook RPC methods', () => {
     const method = prepareMethod()
     const params = method.params!.parse({
       codexHome: LINUX_HOME,
-      orcaCodexHome: LINUX_HOME,
+      alfredCodexHome: LINUX_HOME,
       wslDistro: 'Ubuntu-24.04'
     })
 
@@ -136,8 +143,8 @@ describe('agent hook RPC methods', () => {
 
     expect(() =>
       method.params!.parse({
-        codexHome: '/home/jin/.local/share/orca/codex-runtime-home/home',
-        orcaCodexHome: '/home/jin/.local/share/orca/codex-runtime-home/home',
+        codexHome: '/home/jin/.local/share/alfred/codex-runtime-home/home',
+        alfredCodexHome: '/home/jin/.local/share/alfred/codex-runtime-home/home',
         wslDistro: 'Ubuntu\\..\\host'
       })
     ).toThrow()

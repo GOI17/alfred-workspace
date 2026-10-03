@@ -63,13 +63,13 @@ function addSshHost(): void {
 function addSshProject(): void {
   const repo = {
     id: SSH_REPO_ID,
-    displayName: 'orca',
-    path: '/repos/orca',
+    displayName: 'alfred',
+    path: '/repos/alfred',
     badgeColor: '#222222',
     addedAt: 1,
     worktreeBaseRef: 'main',
     connectionId: SSH_TARGET_ID
-  } as Repo
+  }
   mocks.state.repos = [...(mocks.state.repos as Repo[]), repo]
   mocks.repoMap.set(SSH_REPO_ID, repo)
   // Without a ready setup on that host the project has no run context, and a
@@ -81,8 +81,8 @@ function addSshProject(): void {
       projectId: 'project-ssh',
       hostId: `ssh:${SSH_TARGET_ID}`,
       repoId: SSH_REPO_ID,
-      path: '/repos/orca',
-      displayName: 'orca',
+      path: '/repos/alfred',
+      displayName: 'alfred',
       setupState: 'ready',
       setupMethod: 'legacy-repo',
       createdAt: 1,
@@ -95,13 +95,13 @@ function addSshProject(): void {
 function addCollidingRuntimeProject(): void {
   const repo = {
     id: REPO_ID,
-    displayName: 'orca on m4-air',
-    path: '/repos/orca',
+    displayName: 'alfred on m4-air',
+    path: '/repos/alfred',
     badgeColor: '#111111',
     addedAt: 1,
     worktreeBaseRef: 'main',
     executionHostId: `runtime:${RUNTIME_ID}`
-  } as Repo
+  }
   mocks.state.repos = [...(mocks.state.repos as Repo[]), repo]
   mocks.state.projectHostSetups = [
     ...(mocks.state.projectHostSetups as ProjectHostSetup[]),
@@ -110,8 +110,8 @@ function addCollidingRuntimeProject(): void {
       projectId: 'project-runtime-collision',
       hostId: `runtime:${RUNTIME_ID}`,
       repoId: REPO_ID,
-      path: '/repos/orca',
-      displayName: 'orca on m4-air',
+      path: '/repos/alfred',
+      displayName: 'alfred on m4-air',
       setupState: 'ready',
       setupMethod: 'legacy-repo',
       createdAt: 1,

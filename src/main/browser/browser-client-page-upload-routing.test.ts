@@ -12,11 +12,11 @@ import {
 } from './browser-client-upload-staging'
 import type { BrowserRoutePageGuestIdentity } from './browser-route-page-authority'
 
-const partition = `persist:orca-browser-v1-${'a'.repeat(64)}`
+const partition = `persist:alfred-browser-v1-${'a'.repeat(64)}`
 let stagingRoot = ''
 
 beforeEach(async () => {
-  stagingRoot = await realpath(await mkdtemp(path.join(tmpdir(), 'orca-upload-routing-')))
+  stagingRoot = await realpath(await mkdtemp(path.join(tmpdir(), 'alfred-upload-routing-')))
 })
 
 afterEach(async () => {
@@ -87,11 +87,14 @@ function createHarness(
   const releaseRouteSession = vi.fn(() => {})
   const releaseNetworkRoute = vi.fn(async () => {})
   const executor = new BrowserClientPageCommandExecutor({
-    orcaProfileId: 'orca-profile-a',
+    alfredProfileId: 'alfred-profile-a',
+    storageScope: 'test',
     authorityConnectionIdentity: 'authority-a',
+    legacyAuthorityConnectionIdentity: 'authority-a',
     retainNetworkRoute: async () => ({
       key: 'execution-a',
       executionHostIdentity: 'execution-record-a',
+      legacyExecutionHostIdentity: 'execution-record-a',
       proxyEndpoint: { host: '127.0.0.1' as const, port: 43123 },
       release: releaseNetworkRoute
     }),
@@ -120,7 +123,7 @@ function createHarness(
     guestBinding: { bind: () => {}, release: () => {} },
     fileChannel: options.fileChannel,
     uploadStaging
-  } as never)
+  })
   return {
     executor,
     executeAutomation,

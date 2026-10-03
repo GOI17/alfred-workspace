@@ -1,5 +1,5 @@
 import type { RuntimeTerminalSend } from '../../../../../../shared/runtime-terminal-contracts'
-import type { OrcaRuntimeService } from '../../../../orca-runtime'
+import type { AlfredRuntimeService } from '../../../../alfred-runtime'
 import { buildDispatchPreamble } from '../../../../orchestration/preamble'
 import { sendStructuredWorkerPreamble } from '../../orchestration-structured-worker-session'
 import type { createStructuredWorkerSessionForWorktree } from './worker-topology'
@@ -14,7 +14,7 @@ type StructuredSession = Awaited<ReturnType<typeof createStructuredWorkerSession
  * structured turn either is acknowledged or throws.
  */
 export async function deliverWorkerDispatchPreamble(args: {
-  runtime: OrcaRuntimeService
+  runtime: AlfredRuntimeService
   structuredSession: StructuredSession
   terminalHandle: string
   dispatchId: string

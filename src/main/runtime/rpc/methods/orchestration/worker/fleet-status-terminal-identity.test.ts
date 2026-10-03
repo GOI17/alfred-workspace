@@ -1,7 +1,8 @@
+import { createRuntimeServiceTestDouble } from '../../../../runtime-service-test-double'
 import { describe, expect, it } from 'vitest'
-import type { OrcaRuntimeService } from '../../../../orca-runtime'
+import type { AlfredRuntimeService } from '../../../../alfred-runtime'
 import type { OrchestrationDb } from '../../../../orchestration/db'
-import { OrcaRuntimeWithGetOrchestrationDispatchAuthority } from '../../../../orca-runtime-get-orchestration-dispatch-authority'
+import { AlfredRuntimeWithGetOrchestrationDispatchAuthority } from '../../../../alfred-runtime-get-orchestration-dispatch-authority'
 import { toAgentStatusIpcPayload } from '../../../../../agent-hooks/server/server-status-identity'
 import type { EnrichedAgentHookEventPayload } from '../../../../../agent-hooks/server/server-types'
 import type { AgentStatusOrchestrationContext } from '../../../../../../shared/agent-status-types'
@@ -35,7 +36,7 @@ function createRuntime(args: {
   incarnationForHandle?: string | null
   /** The pane the hook row was published for, when a remint moved the agent off `PANE_KEY`. */
   rowPaneKey?: string
-}): OrcaRuntimeService {
+}): AlfredRuntimeService {
   const rowPaneKey = args.rowPaneKey ?? PANE_KEY
   const host = {
     getAgentStatusSnapshotFn: () => [hookRowAsPublished(rowPaneKey)],
@@ -48,13 +49,13 @@ function createRuntime(args: {
     // These cases drive the current-identity resolution; ingest-time capture has its own suite.
     readObservedAgentStatusPaneIdentityFn: () => ({ kind: 'unobserved' }) as const
   }
-  return {
+  return createRuntimeServiceTestDouble({
     // Drive the shipping accessor, not a copy of it: the identity loss was in this method.
     getOrchestrationFleetAgentStatusSnapshot: () =>
-      OrcaRuntimeWithGetOrchestrationDispatchAuthority.prototype.getOrchestrationFleetAgentStatusSnapshot.call(
+      AlfredRuntimeWithGetOrchestrationDispatchAuthority.prototype.getOrchestrationFleetAgentStatusSnapshot.call(
         host as never
       )
-  } as unknown as OrcaRuntimeService
+  })
 }
 
 function createDb(): OrchestrationDb {

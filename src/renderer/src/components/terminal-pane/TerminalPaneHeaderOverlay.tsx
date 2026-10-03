@@ -109,15 +109,17 @@ export default function TerminalPaneHeaderOverlay({
     'Split Terminal Right'
   )
 
+  const overlayStyle: CSSProperties & { '--alfred-pane-title-bg': string } = {
+    display: terminalContentVisible ? undefined : 'none',
+    '--alfred-pane-title-bg': paneTitleBackground,
+    ...hiddenStartupStyle
+  }
+
   return (
     <div
       className="pane-title-overlay-layer"
       data-pane-title-surface={titleUsesLightSurface ? 'light' : 'dark'}
-      style={{
-        display: terminalContentVisible ? undefined : 'none',
-        ['--orca-pane-title-bg' as string]: paneTitleBackground,
-        ...hiddenStartupStyle
-      }}
+      style={overlayStyle}
     >
       {panes.map((pane) => {
         const title = paneTitles[pane.id]

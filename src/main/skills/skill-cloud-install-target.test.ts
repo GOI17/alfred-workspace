@@ -1,11 +1,12 @@
+import { createRuntimeServiceTestDouble } from '../runtime/runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
-import type { OrcaRuntimeService } from '../runtime/orca-runtime'
+import type { AlfredRuntimeService } from '../runtime/alfred-runtime'
 import { classifySkillCloudInstallTarget } from './skill-cloud-install-target'
 
-function runtime(usesSsh: boolean): OrcaRuntimeService {
-  return {
+function runtime(usesSsh: boolean): AlfredRuntimeService {
+  return createRuntimeServiceTestDouble({
     skillInstallDestinationUsesSsh: vi.fn().mockResolvedValue(usesSsh)
-  } as unknown as OrcaRuntimeService
+  })
 }
 
 describe('classifySkillCloudInstallTarget', () => {

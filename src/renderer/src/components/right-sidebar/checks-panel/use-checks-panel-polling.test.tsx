@@ -1,3 +1,4 @@
+import { makePR } from '../../../../../shared/github/pr-test-fixture'
 // @vitest-environment happy-dom
 
 import { act, cleanup, renderHook } from '@testing-library/react'
@@ -45,11 +46,11 @@ function createModel(overrides: Partial<PollingInput> = {}): PollingInput {
     isCurrentAsyncResult: () => true,
     isPanelVisible: true,
     pollIntervalRef: { current: 30_000 },
-    pr: {
+    pr: makePR({
       number: 42,
       headSha: 'head-1',
-      prRepo: { owner: 'orca', repo: 'app', host: 'github.com' }
-    } as NonNullable<PollingInput['pr']>,
+      prRepo: { owner: 'alfred', repo: 'app', host: 'github.com' }
+    }),
     prCacheKey: 'cache',
     prNumber: 42,
     prevChecksRef: { current: '' },

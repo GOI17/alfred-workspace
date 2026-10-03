@@ -1,5 +1,6 @@
+import { createRuntimeServiceTestDouble } from '../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
-import type { OrcaRuntimeService } from '../orca-runtime'
+import type { AlfredRuntimeService } from '../alfred-runtime'
 import type { RpcRequest } from './core'
 import { RpcDispatcher } from './dispatcher'
 import { TERMINAL_METHODS } from './methods/terminal'
@@ -8,11 +9,11 @@ function makeRequest(params: unknown): RpcRequest {
   return { id: 'request', authToken: 'token', method: 'terminal.send', params }
 }
 
-function makeRuntime(overrides: Partial<OrcaRuntimeService>): OrcaRuntimeService {
-  return {
+function makeRuntime(overrides: Partial<AlfredRuntimeService>): AlfredRuntimeService {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
     ...overrides
-  } as OrcaRuntimeService
+  })
 }
 
 describe('terminal agent prompt send RPC', () => {
@@ -38,7 +39,7 @@ describe('terminal agent prompt send RPC', () => {
         text: 'review this change',
         enter: true,
         agentPrompt: true,
-        client: { id: 'orca-cli', type: 'desktop' }
+        client: { id: 'alfred-cli', type: 'desktop' }
       })
     )
 
@@ -73,7 +74,7 @@ describe('terminal agent prompt send RPC', () => {
         text: 'echo x',
         enter: true,
         agentPrompt: true,
-        client: { id: 'orca-cli', type: 'desktop' }
+        client: { id: 'alfred-cli', type: 'desktop' }
       })
     )
 
@@ -106,7 +107,7 @@ describe('terminal agent prompt send RPC', () => {
         terminal: 'terminal-1',
         text: 'echo x',
         enter: true,
-        client: { id: 'orca-cli', type: 'desktop' }
+        client: { id: 'alfred-cli', type: 'desktop' }
       }),
       { signal: controller.signal }
     )

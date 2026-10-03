@@ -25,7 +25,7 @@ the existing packaging scripts and identity; the remaining independent-fork
 installation and update work is tracked in [the fork transition](../alfredlabs-fork.md).
 The workflow uploads Actions artifacts with `--publish never` and does not need
 upstream signing secrets or release-repository access. The upstream release jobs
-remain restricted to `stablyai/orca`; Alfred Workspace uses its own artifact job
+remain restricted to `GOI17/alfred-workspace`; Alfred Workspace uses its own artifact job
 inside the same Hourly workflow.
 
 ## Activation

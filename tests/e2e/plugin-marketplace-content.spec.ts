@@ -12,7 +12,7 @@ import { pathToFileURL } from 'node:url'
 import { promisify } from 'node:util'
 import type { Page, TestInfo } from '@stablyai/playwright-test'
 import { expect, test } from '@stablyai/playwright-test'
-import { createRestartSession } from './helpers/orca-restart'
+import { createRestartSession } from './helpers/alfred-restart'
 
 const execFileAsync = promisify(execFile)
 
@@ -48,9 +48,9 @@ async function commitRepository(
     repository,
     [
       '-c',
-      'user.name=Orca Test',
+      'user.name=Alfred Test',
       '-c',
-      'user.email=orca-test@example.invalid',
+      'user.email=alfred-test@example.invalid',
       'commit',
       '--quiet',
       '-m',
@@ -85,7 +85,7 @@ async function configureFixtureGit(home: string, repositories: string): Promise<
   }
   const repositoryBaseUrl = pathToFileURL(`${repositories}${sep}`).href
   const entries = [
-    [`url.${repositoryBaseUrl}.insteadOf`, 'https://github.com/stablyai/'],
+    [`url.${repositoryBaseUrl}.insteadOf`, 'https://github.com/alfredlabs/'],
     ['protocol.file.allow', 'always'],
     ['commit.gpgSign', 'false'],
     ['tag.gpgSign', 'false'],
@@ -98,7 +98,7 @@ async function configureFixtureGit(home: string, repositories: string): Promise<
 }
 
 async function createMarketplaceFixture(): Promise<MarketplaceFixture> {
-  const root = await mkdtemp(join(tmpdir(), 'orca-marketplace-e2e-'))
+  const root = await mkdtemp(join(tmpdir(), 'alfred-marketplace-e2e-'))
   const repositories = join(root, 'repositories')
   const home = join(root, 'home')
   await mkdir(repositories, { recursive: true })
@@ -106,40 +106,40 @@ async function createMarketplaceFixture(): Promise<MarketplaceFixture> {
   const gitEnvironment = await configureFixtureGit(home, repositories)
   await copyLaunchPlugin(
     repositories,
-    'orca-portuguese',
-    'stablyai.orca-portuguese',
+    'alfred-portuguese',
+    'alfredlabs.alfred-portuguese',
     gitEnvironment
   )
   await copyLaunchPlugin(
     repositories,
-    'orca-multipass-recipes',
-    'stablyai.orca-multipass-recipes',
+    'alfred-multipass-recipes',
+    'alfredlabs.alfred-multipass-recipes',
     gitEnvironment
   )
   await copyLaunchPlugin(
     repositories,
-    'orca-navigation-shortcuts',
-    'stablyai.orca-navigation-shortcuts',
+    'alfred-navigation-shortcuts',
+    'alfredlabs.alfred-navigation-shortcuts',
     gitEnvironment
   )
 
-  const marketplaceRepository = join(repositories, 'orca-plugins.git')
+  const marketplaceRepository = join(repositories, 'alfred-plugins.git')
   await mkdir(marketplaceRepository, { recursive: true })
   await writeFile(
-    join(marketplaceRepository, 'orca-marketplace.json'),
+    join(marketplaceRepository, 'alfred-marketplace.json'),
     `${JSON.stringify(
       {
-        name: 'Orca Plugins',
-        owner: 'stablyai',
+        name: 'Alfred Plugins',
+        owner: 'alfredlabs',
         plugins: [
-          ['stablyai.orca-portuguese', 'orca-portuguese', 'languages'],
-          ['stablyai.orca-multipass-recipes', 'orca-multipass-recipes', 'vm-recipes'],
-          ['stablyai.orca-navigation-shortcuts', 'orca-navigation-shortcuts', 'keybindings']
+          ['alfredlabs.alfred-portuguese', 'alfred-portuguese', 'languages'],
+          ['alfredlabs.alfred-multipass-recipes', 'alfred-multipass-recipes', 'vm-recipes'],
+          ['alfredlabs.alfred-navigation-shortcuts', 'alfred-navigation-shortcuts', 'keybindings']
         ].map(([id, repository, category]) => ({
           id,
           source: {
             kind: 'git',
-            url: `https://github.com/stablyai/${repository}.git`,
+            url: `https://github.com/alfredlabs/${repository}.git`,
             ref: 'v1.0.0'
           },
           categories: [category]
@@ -180,7 +180,7 @@ async function installMarketplacePluginThroughUi(
   await expect(listing).toBeVisible()
   await listing.getByRole('button', { name: 'Install' }).click()
   const preview = page.getByRole('dialog', { name: pluginName })
-  await expect(preview).toContainText('Official · stablyai')
+  await expect(preview).toContainText('Official · alfredlabs')
   await preview.getByRole('button', { name: 'Install plugin' }).click()
   const consent = page.getByRole('dialog', { name: consentDialogName })
   await expect(consent).toBeVisible()
@@ -204,7 +204,7 @@ async function enableInstalledPluginThroughUi(
 }
 
 async function applyInstalledLanguage(page: Page): Promise<void> {
-  const languageId = 'plugin:stablyai.orca-portuguese/pt-BR'
+  const languageId = 'plugin:alfredlabs.alfred-portuguese/pt-BR'
   await page.evaluate(() => {
     const state = window.__store?.getState()
     if (!state) {
@@ -215,7 +215,9 @@ async function applyInstalledLanguage(page: Page): Promise<void> {
   await expect(page.locator('[data-settings-section="appearance"]')).toBeVisible()
   await page.evaluate(() => window.__store?.setState({ settingsSearchQuery: 'Language' }))
   await page.getByRole('combobox', { name: 'Language' }).click()
-  await page.getByRole('option', { name: 'pt-BR — stablyai.orca-portuguese', exact: true }).click()
+  await page
+    .getByRole('option', { name: 'pt-BR — alfredlabs.alfred-portuguese', exact: true })
+    .click()
   await expect
     .poll(() => page.evaluate(() => window.__store?.getState().settings?.uiLanguage))
     .toBe(languageId)
@@ -239,10 +241,13 @@ async function runMarketplaceJourney(page: Page): Promise<void> {
     .toMatchObject({
       sources: [expect.objectContaining({ official: true, stale: false })],
       listings: expect.arrayContaining([
-        expect.objectContaining({ pluginKey: 'stablyai.orca-portuguese', official: true }),
-        expect.objectContaining({ pluginKey: 'stablyai.orca-multipass-recipes', official: true }),
+        expect.objectContaining({ pluginKey: 'alfredlabs.alfred-portuguese', official: true }),
         expect.objectContaining({
-          pluginKey: 'stablyai.orca-navigation-shortcuts',
+          pluginKey: 'alfredlabs.alfred-multipass-recipes',
+          official: true
+        }),
+        expect.objectContaining({
+          pluginKey: 'alfredlabs.alfred-navigation-shortcuts',
           official: true
         })
       ])
@@ -250,19 +255,19 @@ async function runMarketplaceJourney(page: Page): Promise<void> {
 
   await installMarketplacePluginThroughUi(
     page,
-    'stablyai.orca-portuguese',
+    'alfredlabs.alfred-portuguese',
     'Português do Brasil',
     'Review plugin'
   )
   await installMarketplacePluginThroughUi(
     page,
-    'stablyai.orca-multipass-recipes',
+    'alfredlabs.alfred-multipass-recipes',
     'Multipass VM Recipes',
     'Review plugin content'
   )
   await enableInstalledPluginThroughUi(
     page,
-    'stablyai.orca-navigation-shortcuts',
+    'alfredlabs.alfred-navigation-shortcuts',
     'Review plugin content'
   )
 

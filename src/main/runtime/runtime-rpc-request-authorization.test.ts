@@ -1,12 +1,13 @@
+import { createRuntimeServiceTestDouble } from './runtime-service-test-double'
 import { mkdtempSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
-import { OrcaRuntimeService } from './orca-runtime'
+import { AlfredRuntimeService } from './alfred-runtime'
 import { OrchestrationDb } from './orchestration/db'
 import { readRuntimeMetadata } from './runtime-metadata'
-import { OrcaRuntimeRpcServer } from './runtime-rpc'
+import { AlfredRuntimeRpcServer } from './runtime-rpc'
 import { DeviceRegistry } from './device-registry'
 import { sendRequest, withCurrentOrchestrationContract } from './runtime-rpc-test-harness'
 
@@ -26,15 +27,15 @@ vi.mock('../git/worktree', () => {
   }
 })
 
-describe('OrcaRuntimeRpcServer', () => {
+describe('AlfredRuntimeRpcServer', () => {
   it('rejects WebSocket requests whose request token differs from the authenticated channel token', async () => {
-    const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-rpc-'))
-    const runtime = {
+    const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
+    const runtime = createRuntimeServiceTestDouble({
       configureNotificationDismissalStore: () => {},
       getRuntimeId: () => 'test-runtime',
       getStatus: vi.fn().mockResolvedValue({ graphStatus: 'ok' })
-    } as unknown as OrcaRuntimeService
-    const server = new OrcaRuntimeRpcServer({ runtime, userDataPath, enableWebSocket: false })
+    })
+    const server = new AlfredRuntimeRpcServer({ runtime, userDataPath, enableWebSocket: false })
     server['deviceRegistry'] = new DeviceRegistry(userDataPath)
     const channelDevice = server['deviceRegistry']!.addDevice('phone', 'mobile')
     const requestDevice = server['deviceRegistry']!.addDevice('cli', 'runtime')
@@ -63,11 +64,11 @@ describe('OrcaRuntimeRpcServer', () => {
   })
 
   it('isolates mutation replay by the authenticated paired device across reconnects', async () => {
-    const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-rpc-'))
-    const runtime = new OrcaRuntimeService()
+    const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
+    const runtime = new AlfredRuntimeService()
     const db = new OrchestrationDb(':memory:')
     runtime.setOrchestrationDb(db)
-    const server = new OrcaRuntimeRpcServer({ runtime, userDataPath, enableWebSocket: false })
+    const server = new AlfredRuntimeRpcServer({ runtime, userDataPath, enableWebSocket: false })
     server['deviceRegistry'] = new DeviceRegistry(userDataPath)
     const firstDevice = server['deviceRegistry']!.addDevice('first-cli', 'runtime')
     const secondDevice = server['deviceRegistry']!.addDevice('second-cli', 'runtime')
@@ -131,11 +132,11 @@ describe('OrcaRuntimeRpcServer', () => {
   })
 
   it('keeps authenticated paired callers attached to existing federated workers', async () => {
-    const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-rpc-'))
-    const runtime = new OrcaRuntimeService()
+    const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
+    const runtime = new AlfredRuntimeService()
     const db = new OrchestrationDb(':memory:')
     runtime.setOrchestrationDb(db)
-    const server = new OrcaRuntimeRpcServer({ runtime, userDataPath, enableWebSocket: false })
+    const server = new AlfredRuntimeRpcServer({ runtime, userDataPath, enableWebSocket: false })
     server['deviceRegistry'] = new DeviceRegistry(userDataPath)
     const device = server['deviceRegistry']!.addDevice('existing-cli', 'runtime')
     const existingFingerprint = createHash('sha256').update(device.token).digest('hex')
@@ -182,14 +183,14 @@ describe('OrcaRuntimeRpcServer', () => {
   })
 
   it('rejects unpaired terminal creates before runtime dispatch', async () => {
-    const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-rpc-'))
+    const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
     const createMobileSessionTerminal = vi.fn()
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       configureNotificationDismissalStore: () => {},
       getRuntimeId: () => 'test-runtime',
       createMobileSessionTerminal
-    } as unknown as OrcaRuntimeService
-    const server = new OrcaRuntimeRpcServer({ runtime, userDataPath, enableWebSocket: false })
+    })
+    const server = new AlfredRuntimeRpcServer({ runtime, userDataPath, enableWebSocket: false })
     server['deviceRegistry'] = new DeviceRegistry(userDataPath)
     const replies: Record<string, unknown>[] = []
     const send = async (id: string, deviceToken?: string): Promise<void> => {
@@ -224,14 +225,14 @@ describe('OrcaRuntimeRpcServer', () => {
   })
 
   it('allows runtime-scoped WebSocket tokens to use the full RPC surface', async () => {
-    const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-rpc-'))
+    const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
     const pushRuntimeGit = vi.fn().mockResolvedValue({ ok: true })
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       configureNotificationDismissalStore: () => {},
       getRuntimeId: () => 'test-runtime',
       pushRuntimeGit
-    } as unknown as OrcaRuntimeService
-    const server = new OrcaRuntimeRpcServer({ runtime, userDataPath, enableWebSocket: false })
+    })
+    const server = new AlfredRuntimeRpcServer({ runtime, userDataPath, enableWebSocket: false })
     server['deviceRegistry'] = new DeviceRegistry(userDataPath)
     const runtimeDevice = server['deviceRegistry']!.addDevice('cli', 'runtime')
     const replies: Record<string, unknown>[] = []
@@ -252,9 +253,9 @@ describe('OrcaRuntimeRpcServer', () => {
   })
 
   it('serves status.get for authenticated callers', async () => {
-    const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-rpc-'))
-    const runtime = new OrcaRuntimeService()
-    const server = new OrcaRuntimeRpcServer({ runtime, userDataPath })
+    const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
+    const runtime = new AlfredRuntimeService()
+    const server = new AlfredRuntimeRpcServer({ runtime, userDataPath })
 
     await server.start()
 
@@ -278,9 +279,9 @@ describe('OrcaRuntimeRpcServer', () => {
   })
 
   it('stamps the authenticated device scope onto status.get for WebSocket clients', async () => {
-    const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-rpc-'))
-    const runtime = new OrcaRuntimeService()
-    const server = new OrcaRuntimeRpcServer({ runtime, userDataPath, enableWebSocket: false })
+    const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
+    const runtime = new AlfredRuntimeService()
+    const server = new AlfredRuntimeRpcServer({ runtime, userDataPath, enableWebSocket: false })
     server['deviceRegistry'] = new DeviceRegistry(userDataPath)
     const mobile = server['deviceRegistry']!.addDevice('phone', 'mobile')
     const runtimeDevice = server['deviceRegistry']!.addDevice('browser', 'runtime')
@@ -318,9 +319,9 @@ describe('OrcaRuntimeRpcServer', () => {
   })
 
   it('rejects requests with the wrong auth token', async () => {
-    const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-rpc-'))
-    const runtime = new OrcaRuntimeService()
-    const server = new OrcaRuntimeRpcServer({ runtime, userDataPath })
+    const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
+    const runtime = new AlfredRuntimeService()
+    const server = new AlfredRuntimeRpcServer({ runtime, userDataPath })
 
     await server.start()
 
@@ -343,9 +344,9 @@ describe('OrcaRuntimeRpcServer', () => {
   })
 
   it('rejects malformed requests before dispatch', async () => {
-    const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-rpc-'))
-    const runtime = new OrcaRuntimeService()
-    const server = new OrcaRuntimeRpcServer({ runtime, userDataPath })
+    const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
+    const runtime = new AlfredRuntimeService()
+    const server = new AlfredRuntimeRpcServer({ runtime, userDataPath })
 
     await server.start()
 

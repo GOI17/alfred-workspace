@@ -1,9 +1,10 @@
+import { makeRepo as completeMakeRepo } from '../../../../shared/repo-test-fixture'
 // Why this file exists: a paired client's WorktreeMeta for a runtime host is exempt from
 // gcStaleWorktreeMeta (it skips any row that is not local on both the repo and the meta's hostId),
 // and `forgetPersistedWorktreeMetaForRemovals` used to bail for every non-SSH host. So the client
 // kept a row per remote worktree it had ever seen and dropped none (#17776).
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { AppState } from '../types'
+
 import { makeWorktree } from './worktrees-slice-test-fixtures'
 import { makeDetectedResult } from './worktrees-detected-listing-fixtures'
 import {
@@ -20,25 +21,25 @@ const HOST_ID = 'runtime:env-1'
 const worktree = (path: string) =>
   makeWorktree({ id: `${REPO_ID}::${path}`, repoId: REPO_ID, path, hostId: HOST_ID })
 
-const live = worktree('/home/orca/live')
-const deletedOnHost = worktree('/home/orca/deleted')
+const live = worktree('/home/alfred/live')
+const deletedOnHost = worktree('/home/alfred/deleted')
 
 function seedClientWithBothRows(): ReturnType<typeof createTestStore> {
   const store = createTestStore()
   store.setState({
     settings: { activeRuntimeEnvironmentId: 'env-1' } as never,
     repos: [
-      {
+      completeMakeRepo({
         id: REPO_ID,
-        path: '/home/orca/repo',
+        path: '/home/alfred/repo',
         displayName: 'Runtime Repo',
         badgeColor: '#000',
         addedAt: 0,
         executionHostId: HOST_ID
-      }
+      })
     ],
     worktreesByRepo: { [REPO_ID]: [live, deletedOnHost] }
-  } as Partial<AppState>)
+  })
   return store
 }
 

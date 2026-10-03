@@ -1,3 +1,4 @@
+import { makeWorktree as fixtureMakeWorktree } from '../../../../shared/worktree/worktree-test-fixture'
 /**
  * STA-4343: the Space Manager's ORDINARY delete must route to the row's host.
  *
@@ -25,33 +26,48 @@ import {
   toWorktreeDeleteIdentities
 } from '../sidebar/worktree-delete-request'
 
-const SHARED_ID = 'repo-1::/work/orca'
+const SHARED_ID = 'repo-1::/work/alfred'
 const LOCAL: ExecutionHostId = 'local'
 const SSH: ExecutionHostId = 'ssh:build-box'
 
 function spaceRow(executionHostId: ExecutionHostId): WorkspaceSpaceWorktree {
   return {
+    repoId: 'repo-1',
+    repoDisplayName: 'Alfred',
+    repoPath: '/work',
+    branch: 'feature',
+    isMainWorktree: false,
+    isRemote: executionHostId !== 'local',
+    isSparse: false,
+    lastActivityAt: 0,
+    error: null,
+    scannedAt: 1,
+    reclaimableBytes: 1,
+    skippedEntryCount: 0,
+    topLevelItems: [],
+    omittedTopLevelItemCount: 0,
+    omittedTopLevelSizeBytes: 0,
     worktreeId: SHARED_ID,
     executionHostId,
-    displayName: 'orca',
-    path: '/work/orca',
+    displayName: 'alfred',
+    path: '/work/alfred',
     status: 'ok',
     canDelete: true,
     sizeBytes: 1
-  } as WorkspaceSpaceWorktree
+  }
 }
 
 function storeRow(hostId: ExecutionHostId): Worktree {
-  return {
+  return fixtureMakeWorktree({
     id: SHARED_ID,
     // A Space row has no instanceId; the store row does, and that is the one
     // the confirmed-target check compares against.
     instanceId: `instance-${hostId}`,
     repoId: 'repo-1',
-    path: '/work/orca',
+    path: '/work/alfred',
     isMainWorktree: false,
     hostId
-  } as Worktree
+  })
 }
 
 const localStoreRow = storeRow(LOCAL)

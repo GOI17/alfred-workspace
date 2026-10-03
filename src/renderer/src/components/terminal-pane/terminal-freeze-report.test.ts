@@ -69,11 +69,7 @@ describe('terminal freeze report', () => {
     const { installTerminalFreezeReport, buildTerminalFreezeReport } =
       await import('./terminal-freeze-report')
     installTerminalFreezeReport()
-    const installed = (
-      globalThis.window as unknown as {
-        __orcaTerminalFreezeReport?: () => Promise<unknown>
-      }
-    ).__orcaTerminalFreezeReport
+    const installed = globalThis.window.__alfredTerminalFreezeReport
     expect(installed).toBe(buildTerminalFreezeReport)
   })
 })

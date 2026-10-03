@@ -5,7 +5,7 @@
  * The renderer half of the chain lives in tests/e2e/host-guest-paint-retention-remote-viewer.
  */
 import { describe, expect, it, vi } from 'vitest'
-import type { OrcaRuntimeService } from './orca-runtime'
+
 import {
   createScreencastHarness,
   HARNESS_PAGE_ID as PAGE
@@ -50,8 +50,19 @@ describe('browser screencast remote viewer signal', () => {
     const { runtime, subscribe } = createScreencastHarness()
     const browserRemoteViewersChanged = vi.fn()
     runtime.setNotifier({
+      sleepWorktree: vi.fn(),
+      terminalFitOverrideChanged: vi.fn(),
+      terminalDriverChanged: vi.fn(),
+      worktreesChanged: vi.fn(),
+      reposChanged: vi.fn(),
+      activateWorktree: vi.fn(),
+      createTerminal: vi.fn(),
+      closeTerminal: vi.fn(),
+      splitTerminal: vi.fn(),
+      renameTerminal: vi.fn(),
+      focusTerminal: vi.fn(),
       browserRemoteViewersChanged
-    } as unknown as Parameters<OrcaRuntimeService['setNotifier']>[0])
+    })
 
     const first = subscribe({ connectionId: 'conn-a', clientKind: 'runtime' })
     await first.streaming()

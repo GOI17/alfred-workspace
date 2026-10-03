@@ -1,10 +1,11 @@
+import { z } from 'zod'
 import { describe, expect, it, vi } from 'vitest'
 import { spawnMock } from './pty-ipc-mock-registry'
 import { setupPtyIpcSuite } from './pty-ipc-test-harness'
 import { createHash } from 'node:crypto'
 import { delimiter } from 'node:path'
 import { makePaneKey } from '../../shared/stable-pane-id'
-import { OrcaRuntimeService } from '../runtime/orca-runtime'
+import { AlfredRuntimeService } from '../runtime/alfred-runtime'
 import { ClaudeAgentTeamsService } from '../runtime/claude-agent-teams-service'
 import {
   clearPaneSpawnReservation,
@@ -41,7 +42,7 @@ vi.mock('../telemetry/client', () =>
 vi.mock('../telemetry/classify-error', () =>
   import('./pty-ipc-mock-registry').then((m) => m.classifyErrorModuleMock())
 )
-vi.mock('../cli/linux-terminal-orca-cli-shim', () =>
+vi.mock('../cli/linux-terminal-alfred-cli-shim', () =>
   import('./pty-ipc-mock-registry').then((m) => m.linuxCliShimModuleMock())
 )
 vi.mock('../memory/pty-registry', () =>
@@ -60,7 +61,7 @@ vi.mock('../codex/codex-state-db-backfill-recovery', () =>
 describe('registerPtyHandlers', () => {
   const { handlers, mainWindow, mainWindowIpcEvent } = setupPtyIpcSuite()
 
-  it('injects ORCA_TERMINAL_HANDLE for non-local PTY providers', async () => {
+  it('injects ALFRED_TERMINAL_HANDLE for non-local PTY providers', async () => {
     const spawn = vi.fn(async () => ({ id: 'remote-pty' }))
     registerSshPtyProvider('ssh-1', {
       spawn,
@@ -102,7 +103,7 @@ describe('registerPtyHandlers', () => {
       expect.objectContaining({
         env: expect.objectContaining({
           EXISTING: '1',
-          ORCA_TERMINAL_HANDLE: 'term_remote'
+          ALFRED_TERMINAL_HANDLE: 'term_remote'
         })
       })
     )
@@ -120,10 +121,10 @@ describe('registerPtyHandlers', () => {
         env: {
           CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS: '1',
           PATH: `/tmp/fresh-agent-teams${delimiter}/usr/bin`,
-          TMUX: '/tmp/orca-claude-agent-teams/team-fresh,0,1',
+          TMUX: '/tmp/alfred-claude-agent-teams/team-fresh,0,1',
           TMUX_PANE: '%1',
-          ORCA_AGENT_TEAMS_TEAM_ID: 'team-fresh',
-          ORCA_AGENT_TEAMS_TOKEN: 'fresh-token'
+          ALFRED_AGENT_TEAMS_TEAM_ID: 'team-fresh',
+          ALFRED_AGENT_TEAMS_TOKEN: 'fresh-token'
         }
       })),
       registerPreAllocatedHandleForPty: vi.fn(),
@@ -135,52 +136,56 @@ describe('registerPtyHandlers', () => {
     }
 
     registerPtyHandlers(mainWindow as never, runtime as never)
-    const result = (await handlers.get('pty:spawn')!(mainWindowIpcEvent, {
-      cols: 80,
-      rows: 24,
-      cwd: '/repo',
-      command: 'claude --teammate-mode auto --resume claude-session',
-      tabId: 'tab-1',
-      leafId,
-      worktreeId: 'wt-1',
-      env: {
-        ORCA_PANE_KEY: `tab-1:${leafId}`,
-        ORCA_TAB_ID: 'tab-1',
-        ORCA_WORKTREE_ID: 'wt-1',
-        CLAUDE_PROFILE: 'captured',
-        PATH: `/tmp/stale-agent-teams${delimiter}/usr/bin`,
-        TMUX: '/tmp/orca-claude-agent-teams/team-stale,0,1',
-        ORCA_AGENT_TEAMS_TEAM_ID: 'team-stale',
-        ORCA_AGENT_TEAMS_TOKEN: 'stale-token',
-        TERM_PROGRAM: 'Orca'
-      },
-      launchConfig: {
-        agentCommand: 'claude --teammate-mode auto',
-        agentArgs: '',
-        agentEnv: {
-          CLAUDE_PROFILE: 'captured',
-          ORCA_AGENT_TEAMS_TEAM_ID: 'team-stale',
-          ORCA_AGENT_TEAMS_TOKEN: 'stale-token'
-        }
-      },
-      launchAgent: 'claude'
-    })) as { launchConfig?: { agentEnv: Record<string, string> } }
+    const result = z
+      .object({ launchConfig: z.object({ agentEnv: z.record(z.string(), z.string()) }).optional() })
+      .parse(
+        await handlers.get('pty:spawn')!(mainWindowIpcEvent, {
+          cols: 80,
+          rows: 24,
+          cwd: '/repo',
+          command: 'claude --teammate-mode auto --resume claude-session',
+          tabId: 'tab-1',
+          leafId,
+          worktreeId: 'wt-1',
+          env: {
+            ALFRED_PANE_KEY: `tab-1:${leafId}`,
+            ALFRED_TAB_ID: 'tab-1',
+            ALFRED_WORKTREE_ID: 'wt-1',
+            CLAUDE_PROFILE: 'captured',
+            PATH: `/tmp/stale-agent-teams${delimiter}/usr/bin`,
+            TMUX: '/tmp/alfred-claude-agent-teams/team-stale,0,1',
+            ALFRED_AGENT_TEAMS_TEAM_ID: 'team-stale',
+            ALFRED_AGENT_TEAMS_TOKEN: 'stale-token',
+            TERM_PROGRAM: 'Alfred'
+          },
+          launchConfig: {
+            agentCommand: 'claude --teammate-mode auto',
+            agentArgs: '',
+            agentEnv: {
+              CLAUDE_PROFILE: 'captured',
+              ALFRED_AGENT_TEAMS_TEAM_ID: 'team-stale',
+              ALFRED_AGENT_TEAMS_TOKEN: 'stale-token'
+            }
+          },
+          launchAgent: 'claude'
+        })
+      )
 
     const spawnOptions = spawnMock.mock.calls.at(-1)?.[2] as { env: Record<string, string> }
     expect(runtime.prepareClaudeAgentTeamsLeaderForHandle).toHaveBeenCalledWith({
       handle: 'term_agent_teams',
       baseEnv: expect.objectContaining({
         CLAUDE_PROFILE: 'captured',
-        ORCA_AGENT_TEAMS_TEAM_ID: 'team-stale'
+        ALFRED_AGENT_TEAMS_TEAM_ID: 'team-stale'
       })
     })
     expect(spawnOptions.env).toMatchObject({
       CLAUDE_PROFILE: 'captured',
       CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS: '1',
-      ORCA_TERMINAL_HANDLE: 'term_agent_teams',
-      ORCA_AGENT_TEAMS_TEAM_ID: 'team-fresh',
-      ORCA_AGENT_TEAMS_TOKEN: 'fresh-token',
-      TMUX: '/tmp/orca-claude-agent-teams/team-fresh,0,1',
+      ALFRED_TERMINAL_HANDLE: 'term_agent_teams',
+      ALFRED_AGENT_TEAMS_TEAM_ID: 'team-fresh',
+      ALFRED_AGENT_TEAMS_TOKEN: 'fresh-token',
+      TMUX: '/tmp/alfred-claude-agent-teams/team-fresh,0,1',
       TMUX_PANE: '%1'
     })
     expect(spawnOptions.env.PATH.split(delimiter)[0]).toBe('/tmp/fresh-agent-teams')
@@ -188,9 +193,9 @@ describe('registerPtyHandlers', () => {
     expect(result.launchConfig?.agentEnv).toMatchObject({
       CLAUDE_PROFILE: 'captured',
       CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS: '1',
-      ORCA_AGENT_TEAMS_TEAM_ID: 'team-fresh',
-      ORCA_AGENT_TEAMS_TOKEN: 'fresh-token',
-      TMUX: '/tmp/orca-claude-agent-teams/team-fresh,0,1'
+      ALFRED_AGENT_TEAMS_TEAM_ID: 'team-fresh',
+      ALFRED_AGENT_TEAMS_TOKEN: 'fresh-token',
+      TMUX: '/tmp/alfred-claude-agent-teams/team-fresh,0,1'
     })
     expect(runtime.registerPreAllocatedHandleForPty).toHaveBeenCalledWith(
       expect.any(String),
@@ -288,33 +293,35 @@ describe('registerPtyHandlers', () => {
       expectedToken: null
     }
   ])('binds only $label from renderer pty:spawn to runtime authority', async (testCase) => {
-    const runtime = new OrcaRuntimeService()
+    const runtime = new AlfredRuntimeService()
     registerPtyHandlers(mainWindow as never, runtime)
     const worktreeId = 'repo-1::/tmp/renderer-authority'
     const tabId = 'tab-renderer-authority'
     const leafId = '99999999-9999-4999-8999-999999999999'
     const paneKey = makePaneKey(tabId, leafId)
 
-    const result = (await handlers.get('pty:spawn')!(mainWindowIpcEvent, {
-      cols: 80,
-      rows: 24,
-      cwd: '/tmp/renderer-authority',
-      command: 'claude',
-      worktreeId,
-      tabId,
-      leafId,
-      env: {
-        ORCA_PANE_KEY: paneKey,
-        ORCA_TAB_ID: tabId,
-        ORCA_WORKTREE_ID: worktreeId,
-        ORCA_AGENT_LAUNCH_TOKEN: testCase.envLaunchToken
-      },
-      ...(testCase.launchToken ? { launchToken: testCase.launchToken } : {}),
-      ...(testCase.hasLaunchConfig
-        ? { launchConfig: { agentCommand: 'claude', agentArgs: '', agentEnv: {} } }
-        : {}),
-      ...(testCase.launchAgent ? { launchAgent: testCase.launchAgent } : {})
-    })) as { id: string; incarnationId: string }
+    const result = z.object({ id: z.string(), incarnationId: z.string() }).parse(
+      await handlers.get('pty:spawn')!(mainWindowIpcEvent, {
+        cols: 80,
+        rows: 24,
+        cwd: '/tmp/renderer-authority',
+        command: 'claude',
+        worktreeId,
+        tabId,
+        leafId,
+        env: {
+          ALFRED_PANE_KEY: paneKey,
+          ALFRED_TAB_ID: tabId,
+          ALFRED_WORKTREE_ID: worktreeId,
+          ALFRED_AGENT_LAUNCH_TOKEN: testCase.envLaunchToken
+        },
+        ...(testCase.launchToken ? { launchToken: testCase.launchToken } : {}),
+        ...(testCase.hasLaunchConfig
+          ? { launchConfig: { agentCommand: 'claude', agentArgs: '', agentEnv: {} } }
+          : {}),
+        ...(testCase.launchAgent ? { launchAgent: testCase.launchAgent } : {})
+      })
+    )
 
     const handle = runtime.preAllocateHandleForPty(result.id)
     const authority = runtime.getOrchestrationDispatchAuthority(handle)
@@ -377,8 +384,8 @@ describe('registerPtyHandlers', () => {
       prepareClaudeAgentTeamsLeaderForHandle: vi.fn(async () => ({
         env: {
           CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS: '1',
-          ORCA_AGENT_TEAMS_TEAM_ID: 'team-fresh',
-          ORCA_AGENT_TEAMS_TOKEN: 'fresh-token'
+          ALFRED_AGENT_TEAMS_TEAM_ID: 'team-fresh',
+          ALFRED_AGENT_TEAMS_TOKEN: 'fresh-token'
         }
       })),
       registerPreAllocatedHandleForPty: vi.fn(),
@@ -399,9 +406,9 @@ describe('registerPtyHandlers', () => {
       leafId,
       worktreeId: 'wt-1',
       env: {
-        ORCA_PANE_KEY: `tab-1:${leafId}`,
-        ORCA_TAB_ID: 'tab-1',
-        ORCA_WORKTREE_ID: 'wt-1'
+        ALFRED_PANE_KEY: `tab-1:${leafId}`,
+        ALFRED_TAB_ID: 'tab-1',
+        ALFRED_WORKTREE_ID: 'wt-1'
       },
       launchConfig: {
         agentCommand: 'claude',
@@ -457,24 +464,32 @@ describe('registerPtyHandlers', () => {
     const worktreeId = 'repo-1::/tmp/reattach'
 
     registerPtyHandlers(mainWindow as never, runtime as never)
-    const result = (await handlers.get('pty:spawn')!(mainWindowIpcEvent, {
-      cols: 80,
-      rows: 24,
-      connectionId: 'ssh-reattach-1',
-      worktreeId,
-      tabId,
-      leafId,
-      env: {
-        ORCA_PANE_KEY: makePaneKey(tabId, leafId),
-        ORCA_TAB_ID: tabId,
-        ORCA_WORKTREE_ID: worktreeId
-      },
-      launchConfig: {
-        agentCommand: 'codex --model gpt-5',
-        agentArgs: '--model gpt-5',
-        agentEnv: { CODEX_PROFILE: 'captured' }
-      }
-    })) as { id: string; isReattach?: boolean; launchConfig?: unknown }
+    const result = z
+      .object({
+        id: z.string(),
+        isReattach: z.boolean().optional(),
+        launchConfig: z.unknown().optional()
+      })
+      .parse(
+        await handlers.get('pty:spawn')!(mainWindowIpcEvent, {
+          cols: 80,
+          rows: 24,
+          connectionId: 'ssh-reattach-1',
+          worktreeId,
+          tabId,
+          leafId,
+          env: {
+            ALFRED_PANE_KEY: makePaneKey(tabId, leafId),
+            ALFRED_TAB_ID: tabId,
+            ALFRED_WORKTREE_ID: worktreeId
+          },
+          launchConfig: {
+            agentCommand: 'codex --model gpt-5',
+            agentArgs: '--model gpt-5',
+            agentEnv: { CODEX_PROFILE: 'captured' }
+          }
+        })
+      )
 
     expect(result).toMatchObject({ id: 'ssh-reattach', isReattach: true })
     expect(result.launchConfig).toBeUndefined()
@@ -527,7 +542,7 @@ describe('registerPtyHandlers', () => {
 
     const spawnCall = spawnMock.mock.calls.at(-1)!
     const env = spawnCall[2].env as Record<string, string>
-    expect(env.ORCA_TERMINAL_HANDLE).toBe('term_expected')
+    expect(env.ALFRED_TERMINAL_HANDLE).toBe('term_expected')
     expect(runtime.preAllocateHandleForPty).not.toHaveBeenCalled()
     expect(runtime.registerPreAllocatedHandleForPty).toHaveBeenCalledWith(
       expect.any(String),
@@ -549,7 +564,7 @@ describe('registerPtyHandlers', () => {
           teams.createLaunchEnv({
             leaderHandle: args.handle,
             baseEnv: args.baseEnv ?? {},
-            shimDir: '/tmp/orca-agent-teams-shim',
+            shimDir: '/tmp/alfred-agent-teams-shim',
             shimBin: null
           })
       ),
@@ -574,7 +589,7 @@ describe('registerPtyHandlers', () => {
       command: 'claude --teammate-mode auto',
       tabId: 'tab-1',
       leafId,
-      env: { ORCA_PANE_KEY: `tab-1:${leafId}`, ORCA_TAB_ID: 'tab-1' },
+      env: { ALFRED_PANE_KEY: `tab-1:${leafId}`, ALFRED_TAB_ID: 'tab-1' },
       launchConfig: { agentCommand: 'claude --teammate-mode auto', agentArgs: '', agentEnv: {} },
       launchAgent: 'claude'
     }
@@ -614,7 +629,7 @@ describe('registerPtyHandlers', () => {
           teams.createLaunchEnv({
             leaderHandle: args.handle,
             baseEnv: args.baseEnv ?? {},
-            shimDir: '/tmp/orca-agent-teams-shim',
+            shimDir: '/tmp/alfred-agent-teams-shim',
             shimBin: null
           })
       ),
@@ -643,7 +658,7 @@ describe('registerPtyHandlers', () => {
         tabId: 'tab-1',
         leafId,
         worktreeId: 'wt-1',
-        env: { ORCA_PANE_KEY: `tab-1:${leafId}`, ORCA_TAB_ID: 'tab-1' },
+        env: { ALFRED_PANE_KEY: `tab-1:${leafId}`, ALFRED_TAB_ID: 'tab-1' },
         launchConfig: { agentCommand: 'claude --teammate-mode auto', agentArgs: '', agentEnv: {} },
         launchAgent: 'claude'
       })

@@ -11,7 +11,7 @@ import {
 
 type WslShellPreflightEnvironment = {
   CODEX_HOME?: string
-  ORCA_CODEX_HOME?: string
+  ALFRED_CODEX_HOME?: string
   WSL_DISTRO_NAME?: string
 }
 
@@ -26,11 +26,11 @@ export function resolveManagedWslCodexShellPreflightTarget(
   env: WslShellPreflightEnvironment
 ): ManagedWslCodexShellPreflightTarget | null {
   const codexHome = env.CODEX_HOME?.trim()
-  const orcaCodexHome = env.ORCA_CODEX_HOME?.trim()
+  const alfredCodexHome = env.ALFRED_CODEX_HOME?.trim()
   const wslDistro = env.WSL_DISTRO_NAME?.trim()
   if (
     !codexHome ||
-    codexHome !== orcaCodexHome ||
+    codexHome !== alfredCodexHome ||
     !wslDistro ||
     /[\\/\r\n]/.test(wslDistro) ||
     !isAbsolutePosixPathWithoutDotSegments(codexHome)

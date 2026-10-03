@@ -1,3 +1,5 @@
+import { getDefaultRuntimeClientSettings } from './runtime-client-settings-test-fixture'
+import { createRuntimeServiceTestDouble } from './runtime-service-test-double'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -12,7 +14,7 @@ import type {
   ClaudeStreamJsonLaunch,
   openClaudeStreamJsonConnection
 } from '../claude/claude-stream-json-connection'
-import { claudeSessionIdForOrcaSession } from '../claude/claude-structured-launch-resolution'
+import { claudeSessionIdForAlfredSession } from '../claude/claude-structured-launch-resolution'
 import {
   CLAUDE_SPAWN_TOKEN_ENV,
   claudeProviderHandleLink
@@ -23,7 +25,6 @@ import type {
   StructuredAgentSessionHandoffTransport,
   StructuredTuiOwner
 } from '../native-chat/agent-session-wire/structured-agent-session-handoff-types'
-import type { OrcaRuntimeService } from './orca-runtime'
 import type { RpcRequest, RpcResponse } from './rpc/core'
 import type { ClaudeStructuredAuthPolicy } from '../claude-accounts/claude-structured-auth-policy'
 import { RpcDispatcher } from './rpc/dispatcher'
@@ -35,7 +36,7 @@ import {
 } from './structured-agent-session-runtime'
 
 const SESSION = 'claude-integration-1'
-const PROVIDER_SESSION = claudeSessionIdForOrcaSession(SESSION)
+const PROVIDER_SESSION = claudeSessionIdForAlfredSession(SESSION)
 const WORKSPACE = 'workspace-claude'
 // Why 'runtime': this file exercises the Claude structured integration over agentSession.*, not the
 // mobile surface — nothing here asserts anything mobile-specific, and its sibling integration
@@ -189,13 +190,13 @@ function createIntentParams() {
 function ensureParams(fence: number) {
   const params = {
     location: {
-      executionHostId: 'local',
+      executionHostId: 'local' as const,
       wslDistro: null,
       workspaceId: WORKSPACE,
       workspaceKind: 'git-worktree' as const
     },
     provider: 'claude' as const,
-    agent: 'claude',
+    agent: 'claude' as const,
     accountHome: { variable: 'CLAUDE_CONFIG_DIR' as const, path: join(root, 'claude-home') },
     runtimeKind: 'native' as const,
     providerHandle: {
@@ -320,7 +321,7 @@ beforeEach(async () => {
     ANTHROPIC_AUTH_TOKEN: 'configured-token',
     ANTHROPIC_BASE_URL: 'https://gateway.example.test'
   }
-  root = await mkdtemp(join(tmpdir(), 'orca-claude-structured-integration-'))
+  root = await mkdtemp(join(tmpdir(), 'alfred-claude-structured-integration-'))
   transcriptPath = join(root, 'claude-home', 'projects', 'workspace', `${PROVIDER_SESSION}.jsonl`)
   await mkdir(join(root, 'claude-home', 'projects', 'workspace'), { recursive: true })
   resolveSessionFilePath.mockResolvedValue(transcriptPath)
@@ -391,11 +392,16 @@ beforeEach(async () => {
   }
   const runtime = {
     getRuntimeId: () => 'runtime-1',
-    getClientSettings: () => ({ experimentalStructuredNativeChat: true }),
+    getClientSettings: () => ({
+      ...getDefaultRuntimeClientSettings(),
+      experimentalStructuredNativeChat: true
+    }),
     getStructuredAgentSessionCreateSupport: async () => ({ supported: true }),
-    resolveStructuredAgentSessionCreateIntent: async (input: { envelope: unknown }) => ({
+    resolveStructuredAgentSessionCreateIntent: async (input: {
+      envelope: { sessionId: string; clientOperationId: string }
+    }) => ({
       ...ensureParams(1),
-      envelope: input.envelope,
+      envelope: { expectedRuntimeFence: null, payloadFingerprint: '', ...input.envelope },
       providerHandle: undefined
     }),
     publishStructuredAgentSessionTab: vi.fn(),
@@ -418,7 +424,7 @@ beforeEach(async () => {
     cleanupSubscriptionsByPrefix: () => {}
   }
   dispatcher = new RpcDispatcher({
-    runtime: runtime as unknown as OrcaRuntimeService,
+    runtime: createRuntimeServiceTestDouble(runtime),
     methods: STRUCTURED_AGENT_SESSION_METHODS
   })
 })
@@ -601,7 +607,7 @@ describe('a structured Claude session over agentSession.*', () => {
     )
 
     // A background task can wake Claude after the preceding dispatch settled.
-    // This assistant frame opens the provider-owned turn without an Orca send
+    // This assistant frame opens the provider-owned turn without an Alfred send
     // echo; Stop must target that frame's id rather than the settled user row.
     claude.live().handlers.onMessage?.({
       type: 'assistant',

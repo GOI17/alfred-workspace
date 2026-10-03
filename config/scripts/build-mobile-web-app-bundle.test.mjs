@@ -60,7 +60,7 @@ function allScriptSource({ script, chunks }) {
 }
 
 async function withScratch(run) {
-  const scratch = await mkdtemp(join(tmpdir(), 'orca-mobile-web-app-test-'))
+  const scratch = await mkdtemp(join(tmpdir(), 'alfred-mobile-web-app-test-'))
   try {
     return await run(scratch)
   } finally {

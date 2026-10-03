@@ -11,7 +11,7 @@ describe('SetupScriptPromptCardShell', () => {
       <TooltipProvider>
         <SetupScriptPromptCardShell
           repoBadgeColor="blue"
-          repoDisplayName="orca"
+          repoDisplayName="alfred"
           isInspectionError={false}
           sharedSetupIgnored={false}
           isPackageManagerSuggestion={false}

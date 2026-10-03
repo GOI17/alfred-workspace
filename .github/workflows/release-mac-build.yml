@@ -23,7 +23,8 @@ concurrency:
 
 jobs:
   build-mac:
-    if: github.repository == 'stablyai/orca'
+    if: vars.ALFRED_RELEASES_ENABLED == 'true' && (github.repository ==
+      'GOI17/alfred-workspace')
     # Why: this workflow is outside the SignPath signing run, so Blacksmith
     # cannot enter Windows artifact provenance while mac notarization gets the
     # faster runner.
@@ -125,9 +126,9 @@ jobs:
           # Why: Vite's web build crossed Node's default old-space ceiling on
           # the macOS release runner, leaving v1.4.2-rc.8 as an incomplete draft.
           NODE_OPTIONS: --max-old-space-size=4096
-          ORCA_BUILD_IDENTITY: ${{ steps.tag-classify.outputs.identity }}
-          ORCA_DIAGNOSTICS_TOKEN_URL: https://www.onorca.dev/diagnostics/token
-          ORCA_POSTHOG_WRITE_KEY: ${{ secrets.ORCA_POSTHOG_WRITE_KEY }}
+          ALFRED_BUILD_IDENTITY: ${{ steps.tag-classify.outputs.identity }}
+          ALFRED_DIAGNOSTICS_TOKEN_URL: https://alfredlabs.org/diagnostics/token
+          ALFRED_POSTHOG_WRITE_KEY: ${{ secrets.ALFRED_POSTHOG_WRITE_KEY }}
 
       - name: Gate runtime file-watcher process isolation
         run: |
@@ -148,7 +149,9 @@ jobs:
           timeout_minutes: 45
           max_attempts: 3
           retry_wait_seconds: 30
-          command: node config/scripts/ensure-native-runtime.mjs --runtime=electron && ORCA_MAC_RELEASE=1 pnpm exec electron-builder --config config/electron-builder.config.cjs --mac --publish always
+          command: node config/scripts/ensure-native-runtime.mjs --runtime=electron &&
+            ALFRED_MAC_RELEASE=1 pnpm exec electron-builder --config
+            config/electron-builder.config.cjs --mac --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_LINK: ${{ secrets.MAC_CERTS }}

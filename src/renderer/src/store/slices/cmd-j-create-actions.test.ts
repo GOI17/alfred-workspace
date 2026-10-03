@@ -21,11 +21,10 @@ vi.mock('@/lib/focus-terminal-tab-surface', () => ({
 }))
 
 vi.mock('@/lib/web-client-location', () => ({
-  isWebClientLocation: () =>
-    Boolean((globalThis as { __ORCA_WEB_CLIENT__?: boolean }).__ORCA_WEB_CLIENT__)
+  isWebClientLocation: () => Boolean(globalThis.__ALFRED_WEB_CLIENT__)
 }))
 
-const pairedWebFlag = globalThis as { __ORCA_WEB_CLIENT__?: boolean }
+const pairedWebFlag = globalThis
 
 function browserCapableRuntimeStatus(
   environmentId: string
@@ -59,13 +58,13 @@ function seedActiveWorkspace(store: ReturnType<typeof createTestStore>): void {
 
 describe('Cmd+J lifted creation actions', () => {
   beforeEach(() => {
-    pairedWebFlag.__ORCA_WEB_CLIENT__ = true
+    pairedWebFlag.__ALFRED_WEB_CLIENT__ = true
     createWebRuntimeSessionBrowserTabMock.mockReset()
     createWebRuntimeSessionTerminalMock.mockReset()
   })
 
   afterEach(() => {
-    delete pairedWebFlag.__ORCA_WEB_CLIENT__
+    delete pairedWebFlag.__ALFRED_WEB_CLIENT__
   })
 
   it('rejects without a local browser fallback when paired-web creation fails', async () => {
@@ -249,7 +248,7 @@ describe('Cmd+J lifted creation actions', () => {
   })
 
   it('creates desktop remote-server terminal tabs through the owning runtime', async () => {
-    delete pairedWebFlag.__ORCA_WEB_CLIENT__
+    delete pairedWebFlag.__ALFRED_WEB_CLIENT__
     createWebRuntimeSessionTerminalMock.mockResolvedValue(false)
     const store = createTestStore()
     seedActiveWorkspace(store)
@@ -280,7 +279,7 @@ describe('Cmd+J lifted creation actions', () => {
   })
 
   it('fails terminal creation closed for duplicate repo IDs owned by different HUBs', async () => {
-    delete pairedWebFlag.__ORCA_WEB_CLIENT__
+    delete pairedWebFlag.__ALFRED_WEB_CLIENT__
     const store = createTestStore()
     seedActiveWorkspace(store)
     store.setState({
@@ -301,7 +300,7 @@ describe('Cmd+J lifted creation actions', () => {
   })
 
   it('keeps desktop terminal creation local when a local worktree overrides a runtime repo owner', async () => {
-    delete pairedWebFlag.__ORCA_WEB_CLIENT__
+    delete pairedWebFlag.__ALFRED_WEB_CLIENT__
     createWebRuntimeSessionTerminalMock.mockResolvedValue(false)
     const store = createTestStore()
     seedActiveWorkspace(store)

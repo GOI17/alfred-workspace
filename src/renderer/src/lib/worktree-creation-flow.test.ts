@@ -1,8 +1,8 @@
+import { makeRequest, makePendingCreation } from './pending-worktree-creation-test-fixture'
+import { getDefaultSettings as completeGetDefaultSettings } from '../../../shared/constants'
+import { makeRepo as completeMakeRepo } from '../../../shared/repo-test-fixture'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type {
-  PendingWorktreeCreation,
-  WorktreeCreationRequest
-} from '@/lib/pending-worktree-creation'
+import type { PendingWorktreeCreation } from '@/lib/pending-worktree-creation'
 
 const { prepareEphemeralVmWorkspaceTargetMock } = vi.hoisted(() => ({
   prepareEphemeralVmWorkspaceTargetMock: vi.fn()
@@ -12,13 +12,14 @@ type TestActiveView = 'terminal' | 'tasks'
 
 const store = {
   settings: {
+    ...completeGetDefaultSettings('/tmp'),
     activeRuntimeEnvironmentId: null as string | null,
     experimentalNativeChat: undefined as boolean | undefined,
     openAgentTabsInChatByDefault: undefined as boolean | undefined
   },
   activeView: 'terminal' as TestActiveView,
   activePendingCreationId: 'creation-1' as string | null,
-  repos: [{ id: 'repo-runtime', connectionId: null }],
+  repos: [completeMakeRepo({ id: 'repo-runtime', connectionId: null })],
   pendingWorktreeCreations: {} as Record<string, PendingWorktreeCreation>,
   beginPendingWorktreeCreation: vi.fn((entry: PendingWorktreeCreation) => {
     store.pendingWorktreeCreations[entry.creationId] = entry
@@ -110,33 +111,6 @@ beforeEach(() => {
   vi.mocked(ensureWorktreeHasInitialTerminal).mockReturnValue('tab-1')
 })
 
-function makeRequest(overrides: Partial<WorktreeCreationRequest> = {}): WorktreeCreationRequest {
-  return {
-    repoId: 'repo-1',
-    name: 'feature',
-    setupDecision: 'inherit',
-    agent: null,
-    pendingFirstAgentMessageRename: false,
-    note: '',
-    startupPlan: null,
-    quickPrompt: '',
-    quickTelemetry: null,
-    ...overrides
-  }
-}
-
-function makePendingCreation(request: WorktreeCreationRequest): PendingWorktreeCreation {
-  return {
-    creationId: 'creation-1',
-    phase: 'preparing',
-    status: 'creating',
-    startedAt: 1,
-    indeterminate: false,
-    loaderVisible: true,
-    request
-  }
-}
-
 async function flushAsyncWorktreeCreation(): Promise<void> {
   await Promise.resolve()
   await Promise.resolve()
@@ -145,7 +119,7 @@ async function flushAsyncWorktreeCreation(): Promise<void> {
 describe('runBackgroundWorktreeCreation', () => {
   beforeEach(() => {
     store.settings.activeRuntimeEnvironmentId = null
-    store.repos = [{ id: 'repo-runtime', connectionId: null }]
+    store.repos = [completeMakeRepo({ id: 'repo-runtime', connectionId: null })]
     store.pendingWorktreeCreations = {}
     store.activePendingCreationId = null
     store.beginPendingWorktreeCreation.mockClear()
@@ -203,15 +177,15 @@ describe('runBackgroundWorktreeCreation', () => {
 
   it('shows a VM provisioning phase and creates the worktree on the prepared runtime repo', async () => {
     store.repos = [
-      {
+      completeMakeRepo({
         id: 'repo-1',
         connectionId: null,
         gitRemoteIdentity: {
-          canonicalKey: 'github.com/stablyai/orca',
+          canonicalKey: 'github.com/GOI17/alfred-workspace',
           remoteName: 'origin',
-          remoteUrl: 'git@github.com:stablyai/orca.git'
+          remoteUrl: 'git@github.com:GOI17/alfred-workspace.git'
         }
-      } as never
+      })
     ]
     prepareEphemeralVmWorkspaceTargetMock.mockResolvedValue({
       ok: true,
@@ -252,7 +226,7 @@ describe('runBackgroundWorktreeCreation', () => {
     expect(prepareEphemeralVmWorkspaceTargetMock).toHaveBeenCalledWith({
       repoId: 'repo-1',
       recipeId: 'cloud-sandbox',
-      projectId: 'github:stablyai/orca',
+      projectId: 'github:goi17/alfred-workspace',
       workspaceName: 'feature',
       provisionId: 'creation-1',
       setupExistingFolder: store.setupProjectExistingFolder
@@ -299,7 +273,7 @@ describe('runBackgroundWorktreeCreation', () => {
         ephemeralVmRecipe: {
           sourceRepoId: 'repo-1',
           recipeId: 'cloud-sandbox',
-          projectId: 'github:stablyai/orca'
+          projectId: 'github:goi17/alfred-workspace'
         },
         baseBranch: 'abc123',
         compareBaseRef: 'refs/remotes/origin/main',
@@ -453,9 +427,9 @@ describe('staged background worktree creation', () => {
       provider: 'jira' as const,
       type: 'issue' as const,
       number: 0,
-      title: 'ORCA-123 Durable Jira link',
-      url: 'https://company.atlassian.net/browse/ORCA-123',
-      jiraIdentifier: 'ORCA-123'
+      title: 'ALFRED-123 Durable Jira link',
+      url: 'https://company.atlassian.net/browse/ALFRED-123',
+      jiraIdentifier: 'ALFRED-123'
     }
     const linkedTaskSourceContext = {
       kind: 'task-source' as const,
@@ -467,7 +441,7 @@ describe('staged background worktree creation', () => {
         provider: 'jira' as const,
         siteId: 'site-1',
         siteUrl: 'https://company.atlassian.net',
-        projectKey: 'ORCA'
+        projectKey: 'ALFRED'
       },
       accountLabel: 'dev@company.test'
     }
@@ -590,7 +564,7 @@ describe('staged background worktree creation', () => {
         })
     )
     globalThis.window = { api: { agentTrust: { markTrusted } } } as never
-    store.repos = [{ id: 'repo-1', connectionId: null }]
+    store.repos = [completeMakeRepo({ id: 'repo-1', connectionId: null })]
     store.createWorktree.mockResolvedValueOnce({
       worktree: { id: 'wt-1', repoId: 'repo-1', path: '/repo/wt-1' }
     })
@@ -752,7 +726,7 @@ describe('staged background worktree creation', () => {
   ] as const)('passes %s draft mode to backend startup', async (_label, agent, draft, viewMode) => {
     store.settings.experimentalNativeChat = true
     store.settings.openAgentTabsInChatByDefault = true
-    store.repos = [{ id: 'repo-1', connectionId: null }]
+    store.repos = [completeMakeRepo({ id: 'repo-1', connectionId: null })]
     continueBackgroundWorktreeCreation(
       'creation-1',
       makeRequest({

@@ -99,32 +99,36 @@ describe('new-workspace-composer-repo', () => {
   })
 
   describe('resolveComposerActiveRepoId', () => {
-    const localOrca = makeRepo('local-orca', { upstream: { owner: 'stablyai', repo: 'orca' } })
-    const runtimeOrca = makeRepo('runtime-orca', {
-      connectionId: 'runtime-ssh-orca-1',
-      upstream: { owner: 'stablyai', repo: 'orca' }
+    const localAlfred = makeRepo('local-alfred', {
+      upstream: { owner: 'alfredlabs', repo: 'alfred' }
     })
-    const otherProject = makeRepo('noqa', { upstream: { owner: 'stablyai', repo: 'noqa' } })
-    const repos = [otherProject, localOrca, runtimeOrca]
+    const runtimeAlfred = makeRepo('runtime-alfred', {
+      connectionId: 'runtime-ssh-alfred-1',
+      upstream: { owner: 'alfredlabs', repo: 'alfred' }
+    })
+    const otherProject = makeRepo('noqa', { upstream: { owner: 'alfredlabs', repo: 'noqa' } })
+    const repos = [otherProject, localAlfred, runtimeAlfred]
     const eligibleRepos = getComposerEligibleRepos(repos)
 
     it('maps an active runtime-owned SSH repo to its local same-project sibling', () => {
-      expect(resolveComposerActiveRepoId(repos, eligibleRepos, 'runtime-orca')).toBe('local-orca')
+      expect(resolveComposerActiveRepoId(repos, eligibleRepos, 'runtime-alfred')).toBe(
+        'local-alfred'
+      )
     })
 
     it('leaves a normal active repo unchanged', () => {
-      expect(resolveComposerActiveRepoId(repos, eligibleRepos, 'local-orca')).toBe('local-orca')
+      expect(resolveComposerActiveRepoId(repos, eligibleRepos, 'local-alfred')).toBe('local-alfred')
     })
 
     it('keeps the runtime repo id when no same-project sibling is eligible', () => {
-      const onlyRuntime = [runtimeOrca]
+      const onlyRuntime = [runtimeAlfred]
       expect(
         resolveComposerActiveRepoId(
           onlyRuntime,
           getComposerEligibleRepos(onlyRuntime),
-          'runtime-orca'
+          'runtime-alfred'
         )
-      ).toBe('runtime-orca')
+      ).toBe('runtime-alfred')
     })
 
     it('passes through null/undefined active repo', () => {

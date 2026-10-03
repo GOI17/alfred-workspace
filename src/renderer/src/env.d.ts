@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 
+import './renderer-diagnostic-globals'
+
 import type { PaneManager } from '@/lib/pane-manager/pane-manager'
 import type { OnboardingFeatureSetupDeps } from '@/components/onboarding/onboarding-feature-setup'
 import type { languages } from 'monaco-editor'

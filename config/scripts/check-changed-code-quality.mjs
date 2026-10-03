@@ -117,7 +117,7 @@ export function isRootCodeQualityPath(file) {
 function resolveBase(root, requestedBase) {
   for (const candidate of [
     requestedBase,
-    process.env.ORCA_CODE_QUALITY_BASE,
+    process.env.ALFRED_CODE_QUALITY_BASE,
     'origin/main',
     'main'
   ]) {
@@ -139,15 +139,27 @@ export function collectAddedLineRanges(root, requestedBase) {
   const base = resolveBase(root, requestedBase)
   const mergeBase = runGit(root, ['merge-base', base, 'HEAD']).trim()
   const comparisonBase = resolvePullRequestDiffBase(root, mergeBase)
-  const changedFiles = splitNullDelimited(
-    runGit(root, ['diff', '--name-only', '-z', '--diff-filter=ACMRTUB', comparisonBase, '--'])
+  const changedEntries = splitNullDelimited(
+    runGit(root, [
+      'diff',
+      '--find-renames',
+      '--name-status',
+      '-z',
+      '--diff-filter=ACMRTUB',
+      comparisonBase,
+      '--'
+    ])
   )
   const untrackedFiles = splitNullDelimited(
     runGit(root, ['ls-files', '--others', '--exclude-standard', '-z'])
   )
   const rangesByFile = new Map()
 
-  for (const file of changedFiles) {
+  for (let entry = 0; entry < changedEntries.length;) {
+    const status = changedEntries[entry++]
+    const originalFile = changedEntries[entry++]
+    const renamed = status.startsWith('R') || status.startsWith('C')
+    const file = renamed ? changedEntries[entry++] : originalFile
     if (
       !isRootCodeQualityPath(file) ||
       !SOURCE_FILE_PATTERN.test(file) ||
@@ -155,7 +167,16 @@ export function collectAddedLineRanges(root, requestedBase) {
     ) {
       continue
     }
-    const diff = runGit(root, ['diff', '--unified=0', '--no-color', comparisonBase, '--', file])
+    const paths = renamed ? [originalFile, file] : [file]
+    const diff = runGit(root, [
+      'diff',
+      '--find-renames',
+      '--unified=0',
+      '--no-color',
+      comparisonBase,
+      '--',
+      ...paths
+    ])
     const ranges = parseAddedLineRanges(diff)
     if (ranges.length > 0) {
       rangesByFile.set(file, ranges)
@@ -221,9 +242,9 @@ export function collectBaseLineBlocks(root, comparisonBase, files = null) {
   // (it filters to ACMRTUB), so read every path the diff touches, deletions included.
   const paths =
     files ??
-    splitNullDelimited(runGit(root, ['diff', '--name-only', '-z', comparisonBase, '--'])).filter(
-      (file) => SOURCE_FILE_PATTERN.test(file)
-    )
+    splitNullDelimited(
+      runGit(root, ['diff', '--no-renames', '--name-only', '-z', comparisonBase, '--'])
+    ).filter((file) => SOURCE_FILE_PATTERN.test(file))
   const blocks = []
   for (const file of paths) {
     const result = spawnSync('git', ['show', `${comparisonBase}:${file}`], {
@@ -244,6 +265,26 @@ export function collectBaseLineBlocks(root, comparisonBase, files = null) {
   return blocks
 }
 
+export function indexBaseLineBlocks(baseBlocks) {
+  const blocks = []
+  const anchors = new Map()
+  for (const rawBlock of baseBlocks) {
+    const block = rawBlock.map(normalizeSourceLine).filter((line) => line !== '')
+    const blockIndex = blocks.length
+    blocks.push(block)
+    for (let lineIndex = 0; lineIndex < block.length; lineIndex += 1) {
+      const line = block[lineIndex]
+      let positions = anchors.get(line)
+      if (!positions) {
+        positions = []
+        anchors.set(line, positions)
+      }
+      positions.push(blockIndex, lineIndex)
+    }
+  }
+  return { blocks, anchors }
+}
+
 export function isMovedCode(highlightedLines, baseBlocks) {
   const needle = highlightedLines.map(normalizeSourceLine).filter((line) => line !== '')
   if (needle.length === 0) {
@@ -257,29 +298,28 @@ export function isMovedCode(highlightedLines, baseBlocks) {
   // and nearly all of it must be present. Genuinely new code shares neither the
   // anchor nor the ordering, so it stays reported.
   const MIN_COVERAGE = 0.9
-  return baseBlocks.some((rawHaystack) => {
-    const haystack = rawHaystack.map(normalizeSourceLine).filter((line) => line !== '')
-    for (let start = 0; start < haystack.length; start += 1) {
-      if (haystack[start] !== needle[0]) {
-        continue
+  const { blocks, anchors } = Array.isArray(baseBlocks)
+    ? indexBaseLineBlocks(baseBlocks)
+    : baseBlocks
+  const positions = anchors.get(needle[0]) ?? []
+  for (let position = 0; position < positions.length; position += 2) {
+    const haystack = blocks[positions[position]]
+    let matched = 1
+    let cursor = positions[position + 1] + 1
+    for (let index = 1; index < needle.length && cursor < haystack.length; index += 1) {
+      while (cursor < haystack.length && haystack[cursor] !== needle[index]) {
+        cursor += 1
       }
-      let matched = 1
-      let cursor = start + 1
-      for (let index = 1; index < needle.length && cursor < haystack.length; index += 1) {
-        while (cursor < haystack.length && haystack[cursor] !== needle[index]) {
-          cursor += 1
-        }
-        if (cursor < haystack.length) {
-          matched += 1
-          cursor += 1
-        }
-      }
-      if (matched / needle.length >= MIN_COVERAGE) {
-        return true
+      if (cursor < haystack.length) {
+        matched += 1
+        cursor += 1
       }
     }
-    return false
-  })
+    if (matched / needle.length >= MIN_COVERAGE) {
+      return true
+    }
+  }
+  return false
 }
 
 function diagnosticHighlightedLines(root, filename, span) {
@@ -421,10 +461,16 @@ export function main(
     return 0
   }
 
-  const baseBlocks = collectBaseLineBlocks(root, comparisonBase)
+  console.log(
+    `Checking ${files.length} changed source files against ${comparisonBase.slice(0, 12)}.`
+  )
+  // Index once: each diagnostic must not normalize and scan the entire base again.
+  const baseBlocks = indexBaseLineBlocks(collectBaseLineBlocks(root, comparisonBase))
+  console.log(`Indexed ${baseBlocks.blocks.length} base source files for moved-code matching.`)
 
   let failures = 0
   for (const scan of OXLINT_SCANS) {
+    const startedAt = performance.now()
     const diagnostics = runOxlintScan(root, scan, files).filter(
       (diagnostic) =>
         !isSuppressedDiagnostic(diagnostic, root) &&
@@ -437,7 +483,7 @@ export function main(
     }
     failures += diagnostics.length
     console.log(
-      `${scan.label}: ${diagnostics.length} new finding(s) across ${files.length} changed file(s).`
+      `${scan.label}: ${diagnostics.length} new finding(s) across ${files.length} changed file(s) (${((performance.now() - startedAt) / 1000).toFixed(1)}s).`
     )
   }
 

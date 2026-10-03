@@ -316,7 +316,7 @@ describe('pruneStaleVirtualRowElementCache', () => {
     } as Element
     const retainedScope = {
       defaultHostId: 'runtime:env-1',
-      handlerName: 'handleOpenReviewInOrca'
+      handlerName: 'handleOpenReviewInAlfred'
     }
     Object.assign(staleElement, { __retainedWorktreeCardScopeForTest: retainedScope })
 

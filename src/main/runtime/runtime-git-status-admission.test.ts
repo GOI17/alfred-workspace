@@ -1,8 +1,8 @@
+import { createRuntimeServiceTestDouble } from './runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import type { GitAdmissionEvent } from '../git/command-runner/git-admission-state'
 import { GitAdmissionScheduler } from '../git/command-runner/git-subprocess-admission'
 import type * as GitStatusModule from '../git/status'
-import type { OrcaRuntimeService } from './orca-runtime'
 import { RpcDispatcher } from './rpc/dispatcher'
 import { GIT_METHODS } from './rpc/methods/git'
 import { RuntimeGitStatusCommands } from './runtime-git-status-commands'
@@ -35,10 +35,10 @@ describe('runtime git status admission', () => {
         executionHostId: 'local'
       })
     } as never)
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getRuntimeGitStatus: commands.getRuntimeGitStatus.bind(commands)
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GIT_METHODS })
 
     for (const admissionTier of ['background', 'interactive', 'future-tier']) {

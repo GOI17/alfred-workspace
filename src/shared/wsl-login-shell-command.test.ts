@@ -63,7 +63,7 @@ describe('wsl login shell command helpers', () => {
 
     expect(command).toContain('getent passwd')
     expect(command).toContain('bash|zsh|ksh|mksh|ash)')
-    expect(command).toContain('exec "$_orca_wsl_shell" -ilc')
+    expect(command).toContain('exec "$_alfred_wsl_shell" -ilc')
     expect(command).toContain('exec /bin/sh -lc')
     expect(command).toContain("printf '\\''hello'\\''")
   })
@@ -71,7 +71,7 @@ describe('wsl login shell command helpers', () => {
   it.skipIf(process.platform === 'win32')(
     'resolves env-node launchers from the current login-shell PATH on every run',
     () => {
-      const root = mkdtempSync(join(tmpdir(), 'orca-wsl-login-codex-'))
+      const root = mkdtempSync(join(tmpdir(), 'alfred-wsl-login-codex-'))
       const tools = join(root, 'tools')
       const loginBin = join(root, 'login')
       const v1Bin = join(root, 'nvm-v1')
@@ -83,11 +83,11 @@ describe('wsl login shell command helpers', () => {
       const loginShell = join(loginBin, 'bash')
       writeFileSync(
         join(tools, 'getent'),
-        `#!/bin/sh\nprintf '%s\\n' "user:x:1000:1000::/home/user:$ORCA_TEST_LOGIN_SHELL"\n`
+        `#!/bin/sh\nprintf '%s\\n' "user:x:1000:1000::/home/user:$ALFRED_TEST_LOGIN_SHELL"\n`
       )
       writeFileSync(
         loginShell,
-        '#!/bin/sh\nexport PATH="$ORCA_TEST_CODEX_BIN:/usr/bin:/bin"\nexec /bin/sh -c "$2"\n'
+        '#!/bin/sh\nexport PATH="$ALFRED_TEST_CODEX_BIN:/usr/bin:/bin"\nexec /bin/sh -c "$2"\n'
       )
       for (const [bin, label] of [
         [v1Bin, 'v1'],
@@ -108,8 +108,8 @@ describe('wsl login shell command helpers', () => {
           env: {
             ...process.env,
             PATH: `${tools}:/usr/bin:/bin`,
-            ORCA_TEST_LOGIN_SHELL: loginShell,
-            ORCA_TEST_CODEX_BIN: codexBin
+            ALFRED_TEST_LOGIN_SHELL: loginShell,
+            ALFRED_TEST_CODEX_BIN: codexBin
           }
         })
 
@@ -124,9 +124,9 @@ describe('wsl login shell command helpers', () => {
   )
 
   it('keeps command-scoped environment variables in the quoted payload', () => {
-    const command = buildWslLoginShellCommand('HISTFILE=/tmp/orca-history printf "$HISTFILE"')
+    const command = buildWslLoginShellCommand('HISTFILE=/tmp/alfred-history printf "$HISTFILE"')
 
-    expect(command).toContain('\'HISTFILE=/tmp/orca-history printf "$HISTFILE"\'')
+    expect(command).toContain('\'HISTFILE=/tmp/alfred-history printf "$HISTFILE"\'')
     expectValidShSyntax(command)
   }, 30_000)
 
@@ -156,7 +156,9 @@ describe('wsl login shell command helpers', () => {
     // Why the captured form: an interactive login shell also prints the distro's
     // rc/motd to stdout (stock Ubuntu ships a sudo hint), so a raw login-shell
     // read cannot be compared byte-for-byte on a real distro.
-    const captured = buildWslCapturedLoginShellCommand('orca_value=ok; printf "<%s>" "$orca_value"')
+    const captured = buildWslCapturedLoginShellCommand(
+      'alfred_value=ok; printf "<%s>" "$alfred_value"'
+    )
 
     expect(
       captured.readStdout(
@@ -205,7 +207,7 @@ describe('wsl login shell command helpers', () => {
       expect(
         captured.readStdout(
           'To run a command as administrator (user "root"), use "sudo <command>".\n\n' +
-            '__ORCA_WSL_CAPTURE_BEGIN_nonce1__directory__ORCA_WSL_CAPTURE_END_nonce1__'
+            '__ALFRED_WSL_CAPTURE_BEGIN_nonce1__directory__ALFRED_WSL_CAPTURE_END_nonce1__'
         )
       ).toBe('directory')
     })
@@ -237,19 +239,20 @@ describe('wsl login shell command helpers', () => {
     it('emits the status plumbing the payload needs', () => {
       const captured = buildWslCapturedLoginShellCommand('exit 2', 'nonce1')
 
-      expect(captured.command).toContain('_orca_capture_status=$?')
-      expect(captured.command).toContain('exit $_orca_capture_status')
+      expect(captured.command).toContain('_alfred_capture_status=$?')
+      expect(captured.command).toContain('exit $_alfred_capture_status')
     })
 
     it('keeps payload bytes that themselves contain a fence', () => {
       // Why a per-call nonce: `cat` of a file quoting a fixed marker would
       // otherwise be truncated at the quote.
       const captured = buildWslCapturedLoginShellCommand('cat -- /f', 'nonce2')
-      const payload = 'see __ORCA_WSL_CAPTURE_BEGIN_nonce1__ and __ORCA_WSL_CAPTURE_END_nonce1__\n'
+      const payload =
+        'see __ALFRED_WSL_CAPTURE_BEGIN_nonce1__ and __ALFRED_WSL_CAPTURE_END_nonce1__\n'
 
       expect(
         captured.readStdout(
-          `banner\n__ORCA_WSL_CAPTURE_BEGIN_nonce2__${payload}__ORCA_WSL_CAPTURE_END_nonce2__`
+          `banner\n__ALFRED_WSL_CAPTURE_BEGIN_nonce2__${payload}__ALFRED_WSL_CAPTURE_END_nonce2__`
         )
       ).toBe(payload)
     })
@@ -263,7 +266,7 @@ describe('wsl login shell command helpers', () => {
     it('returns the tail when a payload exits before the closing fence', () => {
       const captured = buildWslCapturedLoginShellCommand('printf partial; exit 2', 'nonce1')
 
-      expect(captured.readStdout('banner\n__ORCA_WSL_CAPTURE_BEGIN_nonce1__partial')).toBe(
+      expect(captured.readStdout('banner\n__ALFRED_WSL_CAPTURE_BEGIN_nonce1__partial')).toBe(
         'partial'
       )
     })
@@ -295,15 +298,17 @@ describe('wsl login shell command helpers', () => {
     const command = buildWslInteractiveLoginShellCommand()
 
     expect(command).toContain('getent passwd')
-    expect(command).toContain('if [ -z "$_orca_wsl_shell" ] || [ ! -x "$_orca_wsl_shell" ]; then')
-    expect(command).toContain('_orca_shell_ready_root=""')
-    expect(command).toContain('if [ -n "${ORCA_USER_DATA_PATH:-}" ]; then')
-    expect(command).toContain('_orca_wsl_shell_name=$(basename "$_orca_wsl_shell"')
+    expect(command).toContain(
+      'if [ -z "$_alfred_wsl_shell" ] || [ ! -x "$_alfred_wsl_shell" ]; then'
+    )
+    expect(command).toContain('_alfred_shell_ready_root=""')
+    expect(command).toContain('if [ -n "${ALFRED_USER_DATA_PATH:-}" ]; then')
+    expect(command).toContain('_alfred_wsl_shell_name=$(basename "$_alfred_wsl_shell"')
     expect(command).toContain('bash)')
-    expect(command).toContain('--rcfile "${_orca_shell_ready_root}/bash/rcfile"')
+    expect(command).toContain('--rcfile "${_alfred_shell_ready_root}/bash/rcfile"')
     expect(command).toContain('zsh)')
-    expect(command).toContain('export ZDOTDIR="${_orca_shell_ready_root}/zsh"')
-    expect(command).toContain('exec "$_orca_wsl_shell" -l')
+    expect(command).toContain('export ZDOTDIR="${_alfred_shell_ready_root}/zsh"')
+    expect(command).toContain('exec "$_alfred_wsl_shell" -l')
     expectValidShSyntax(command)
   })
 })
@@ -311,28 +316,28 @@ describe('wsl login shell command helpers', () => {
 describe('in-guest wrapper root resolution', () => {
   // Why this test exists: the wrapper tree is content-addressed, so its path
   // carries a hash the guest cannot derive. A previous revision of this script
-  // rebuilt the root as `${ORCA_USER_DATA_PATH}/shell-ready`, which stopped
+  // rebuilt the root as `${ALFRED_USER_DATA_PATH}/shell-ready`, which stopped
   // matching -- every WSL pane then fell through to an unwrapped `exec $shell -l`
   // and silently lost the ready marker, OSC 133, and the launch preflight.
   it('prefers the host-published root over the legacy user-data guess', () => {
     const script = buildWslInteractiveLoginShellCommand()
-    expect(script).toContain('if [ -n "${ORCA_SHELL_READY_ROOT:-}" ]; then')
-    expect(script).toContain('_orca_shell_ready_root="${ORCA_SHELL_READY_ROOT%/}"')
+    expect(script).toContain('if [ -n "${ALFRED_SHELL_READY_ROOT:-}" ]; then')
+    expect(script).toContain('_alfred_shell_ready_root="${ALFRED_SHELL_READY_ROOT%/}"')
     // The legacy branch must remain reachable only as a fallback, so an older
-    // host that exports just ORCA_USER_DATA_PATH still wraps its shells.
-    expect(script).toContain('elif [ -n "${ORCA_USER_DATA_PATH:-}" ]; then')
+    // host that exports just ALFRED_USER_DATA_PATH still wraps its shells.
+    expect(script).toContain('elif [ -n "${ALFRED_USER_DATA_PATH:-}" ]; then')
   })
 
   it('resolves the published root ahead of the legacy path under a real shell', () => {
     const script = buildWslInteractiveLoginShellCommand()
     // Run only the root-resolution prologue, then report what it picked.
-    const prologue = script.split('_orca_wsl_shell_name=')[0] as string
+    const prologue = script.split('_alfred_wsl_shell_name=')[0]
     const probe = [
-      'ORCA_SHELL_READY_ROOT=/mnt/c/ud/shell-wrappers/deadbeefdeadbeef/shell-ready',
-      'ORCA_USER_DATA_PATH=/mnt/c/ud',
-      'export ORCA_SHELL_READY_ROOT ORCA_USER_DATA_PATH',
+      'ALFRED_SHELL_READY_ROOT=/mnt/c/ud/shell-wrappers/deadbeefdeadbeef/shell-ready',
+      'ALFRED_USER_DATA_PATH=/mnt/c/ud',
+      'export ALFRED_SHELL_READY_ROOT ALFRED_USER_DATA_PATH',
       prologue,
-      'printf "%s" "$_orca_shell_ready_root"'
+      'printf "%s" "$_alfred_shell_ready_root"'
     ].join('\n')
     const result = spawnSync('sh', ['-c', probe], { encoding: 'utf8' })
     expect(result.status).toBe(0)

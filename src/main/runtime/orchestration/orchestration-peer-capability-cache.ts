@@ -1,7 +1,7 @@
 import type { RuntimeCapability } from '../../../shared/protocol-version'
 import type { RuntimeStatus } from '../../../shared/runtime-types'
 import { BoundedMap } from '../../../shared/bounded-map'
-import type { OrcaRuntimeService } from '../orca-runtime'
+import type { AlfredRuntimeService } from '../alfred-runtime'
 
 const DEFAULT_MAX_PEERS = 128
 
@@ -271,10 +271,10 @@ export class OrchestrationPeerCapabilityCache {
   }
 }
 
-const cachesByRuntime = new WeakMap<OrcaRuntimeService, OrchestrationPeerCapabilityCache>()
+const cachesByRuntime = new WeakMap<AlfredRuntimeService, OrchestrationPeerCapabilityCache>()
 
 export function getOrchestrationPeerCapabilityCache(
-  runtime: OrcaRuntimeService
+  runtime: AlfredRuntimeService
 ): OrchestrationPeerCapabilityCache {
   let cache = cachesByRuntime.get(runtime)
   if (!cache) {

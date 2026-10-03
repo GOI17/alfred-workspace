@@ -17,7 +17,7 @@ function makeActions(): StartupActions {
     fetchAllWorktrees: vi.fn(),
     fetchWorktrees: vi.fn(),
     fetchWorktreeLineage: vi.fn(),
-    fetchOrcaProfiles: vi.fn(),
+    fetchAlfredProfiles: vi.fn(),
     fetchSettings: vi.fn(),
     awaitOwnerWorktreeVisibilityDefaultsHydration: vi.fn(),
     fetchKeybindings: vi.fn(),
@@ -36,7 +36,7 @@ function makeActions(): StartupActions {
     setHydrationSucceeded: vi.fn(),
     pruneLastVisitedTimestamps: vi.fn(),
     seedActiveWorktreeLastVisitedIfMissing: vi.fn()
-  } as StartupActions
+  }
 }
 
 describe('startup action selector', () => {

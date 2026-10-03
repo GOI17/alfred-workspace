@@ -78,13 +78,13 @@ describe('landing preflight issues', () => {
       hasGitHubBackedProject([
         repo({
           id: 'github-repo',
-          path: '/Users/alice/orca',
-          displayName: 'orca',
+          path: '/Users/alice/alfred',
+          displayName: 'alfred',
           repoIcon: {
             type: 'image',
-            src: 'https://github.com/stablyai.png?size=64',
+            src: 'https://github.com/alfredlabs.png?size=64',
             source: 'github',
-            label: 'stablyai/orca'
+            label: 'GOI17/alfred-workspace'
           }
         })
       ])
@@ -96,9 +96,9 @@ describe('landing preflight issues', () => {
       hasGitHubBackedProject([
         repo({
           id: 'github-repo',
-          path: '/Users/alice/orca',
-          displayName: 'orca',
-          upstream: { owner: 'stablyai', repo: 'orca' }
+          path: '/Users/alice/alfred',
+          displayName: 'alfred',
+          upstream: { owner: 'alfredlabs', repo: 'alfred' }
         })
       ])
     ).toBe(true)

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   getEffectiveHooksFromConfigMock,
-  parseOrcaYamlMock,
+  parseAlfredYamlMock,
   shouldRunSetupForCreateMock,
   resolveSetupRunnerShellMock,
   getSshGitProviderMock,
@@ -97,7 +97,7 @@ describe('registerWorktreeHandlers', () => {
     setupWorktreeHandlers()
   })
 
-  it('reads remote orca.yaml and returns a setup launch payload during SSH create', async () => {
+  it('reads remote alfred.yaml and returns a setup launch payload during SSH create', async () => {
     const repo = {
       id: 'repo-ssh',
       path: '/remote/repo',
@@ -114,7 +114,7 @@ describe('registerWorktreeHandlers', () => {
         }
         if (args[0] === 'rev-parse' && args[1] === '--git-path') {
           return {
-            stdout: '/remote/repo/.git/worktrees/repo-improve-dashboard/orca/setup-runner.sh\n',
+            stdout: '/remote/repo/.git/worktrees/repo-improve-dashboard/alfred/setup-runner.sh\n',
             stderr: ''
           }
         }
@@ -163,7 +163,7 @@ describe('registerWorktreeHandlers', () => {
     getSshFilesystemProviderMock.mockReturnValue(fsProvider)
     getActiveMultiplexerMock.mockReturnValue(mux)
     store.setWorktreeMeta.mockImplementation((_worktreeId, meta) => meta)
-    parseOrcaYamlMock.mockReturnValue({
+    parseAlfredYamlMock.mockReturnValue({
       scripts: { setup: 'pnpm install' },
       setupAgentStartupPolicy: 'wait-for-setup'
     })
@@ -176,27 +176,27 @@ describe('registerWorktreeHandlers', () => {
       setupDecision: 'run'
     })
 
-    expect(fsProvider.readFile).toHaveBeenCalledWith('/remote/repo/orca.yaml')
-    expect(fsProvider.readFile).toHaveBeenCalledWith('/remote/repo-improve-dashboard/orca.yaml')
+    expect(fsProvider.readFile).toHaveBeenCalledWith('/remote/repo/alfred.yaml')
+    expect(fsProvider.readFile).toHaveBeenCalledWith('/remote/repo-improve-dashboard/alfred.yaml')
     expect(provider.exec).toHaveBeenCalledWith(
-      ['rev-parse', '--git-path', 'orca/setup-runner.sh'],
+      ['rev-parse', '--git-path', 'alfred/setup-runner.sh'],
       '/remote/repo-improve-dashboard'
     )
     expect(fsProvider.createDir).toHaveBeenCalledWith(
-      '/remote/repo/.git/worktrees/repo-improve-dashboard/orca'
+      '/remote/repo/.git/worktrees/repo-improve-dashboard/alfred'
     )
     expect(fsProvider.writeFile).toHaveBeenCalledWith(
-      '/remote/repo/.git/worktrees/repo-improve-dashboard/orca/setup-runner.sh',
+      '/remote/repo/.git/worktrees/repo-improve-dashboard/alfred/setup-runner.sh',
       '#!/usr/bin/env bash\nset -e\npnpm install\n'
     )
     expect(result).toEqual(
       expect.objectContaining({
         setup: {
           runnerScriptPath:
-            '/remote/repo/.git/worktrees/repo-improve-dashboard/orca/setup-runner.sh',
+            '/remote/repo/.git/worktrees/repo-improve-dashboard/alfred/setup-runner.sh',
           envVars: expect.objectContaining({
-            ORCA_ROOT_PATH: '/remote/repo',
-            ORCA_WORKTREE_PATH: '/remote/repo-improve-dashboard'
+            ALFRED_ROOT_PATH: '/remote/repo',
+            ALFRED_WORKTREE_PATH: '/remote/repo-improve-dashboard'
           }),
           waitForAgentStartup: true
         }
@@ -222,7 +222,7 @@ describe('registerWorktreeHandlers', () => {
         if (args[0] === 'rev-parse' && args[1] === '--git-path') {
           return {
             stdout:
-              'C:\\remote\\repo\\.git\\worktrees\\improve-dashboard\\orca\\setup-runner.cmd\n',
+              'C:\\remote\\repo\\.git\\worktrees\\improve-dashboard\\alfred\\setup-runner.cmd\n',
             stderr: ''
           }
         }
@@ -270,7 +270,7 @@ describe('registerWorktreeHandlers', () => {
       notify: vi.fn()
     })
     store.setWorktreeMeta.mockImplementation((_worktreeId, meta) => meta)
-    parseOrcaYamlMock.mockReturnValue({ scripts: { setup: 'pnpm install' } })
+    parseAlfredYamlMock.mockReturnValue({ scripts: { setup: 'pnpm install' } })
     getEffectiveHooksFromConfigMock.mockReturnValue({ scripts: { setup: 'pnpm install' } })
     shouldRunSetupForCreateMock.mockReturnValue(true)
     resolveSetupRunnerShellMock.mockReturnValue({ family: 'posix' })
@@ -282,11 +282,11 @@ describe('registerWorktreeHandlers', () => {
     })
 
     expect(provider.exec).toHaveBeenCalledWith(
-      ['rev-parse', '--git-path', 'orca/setup-runner.cmd'],
+      ['rev-parse', '--git-path', 'alfred/setup-runner.cmd'],
       'C:\\remote\\improve-dashboard'
     )
     expect(fsProvider.writeFile).toHaveBeenCalledWith(
-      'C:\\remote\\repo\\.git\\worktrees\\improve-dashboard\\orca\\setup-runner.cmd',
+      'C:\\remote\\repo\\.git\\worktrees\\improve-dashboard\\alfred\\setup-runner.cmd',
       'pnpm install'
     )
     expect(resolveSetupRunnerShellMock).not.toHaveBeenCalled()
@@ -294,10 +294,10 @@ describe('registerWorktreeHandlers', () => {
       expect.objectContaining({
         setup: {
           runnerScriptPath:
-            'C:\\remote\\repo\\.git\\worktrees\\improve-dashboard\\orca\\setup-runner.cmd',
+            'C:\\remote\\repo\\.git\\worktrees\\improve-dashboard\\alfred\\setup-runner.cmd',
           envVars: expect.objectContaining({
-            ORCA_ROOT_PATH: 'C:\\remote\\repo',
-            ORCA_WORKTREE_PATH: 'C:\\remote\\improve-dashboard'
+            ALFRED_ROOT_PATH: 'C:\\remote\\repo',
+            ALFRED_WORKTREE_PATH: 'C:\\remote\\improve-dashboard'
           })
         }
       })

@@ -1,7 +1,8 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
-import type { OrcaRuntimeService } from '../../orca-runtime'
+import type { AlfredRuntimeService } from '../../alfred-runtime'
 import type { RuntimeTerminalWait } from '../../../../shared/runtime-types'
 import { createSubscriptionRegistryDouble } from '../subscription-registry-test-double'
 import { TERMINAL_METHODS } from './terminal'
@@ -35,9 +36,9 @@ describe('legacy terminal subscription stream IDs', () => {
       registerOwnedSubscriptionCleanup: vi.fn(registry.registerOwnedSubscriptionCleanup),
       cleanupSubscription: vi.fn(registry.cleanupSubscription),
       waitForTerminal: vi.fn(() => new Promise<RuntimeTerminalWait>(() => {}))
-    } as unknown as Partial<OrcaRuntimeService>
+    } as unknown as Partial<AlfredRuntimeService>
     const dispatcher = new RpcDispatcher({
-      runtime: runtime as OrcaRuntimeService,
+      runtime: createRuntimeServiceTestDouble(runtime),
       methods: TERMINAL_METHODS
     })
 

@@ -1,0 +1,176 @@
+import { isJsonObject } from '../../shared/json-object'
+/**
+ * Which installed alfredd is the live one, and which one a rollback goes back to.
+ *
+ * A versioned install directory decides where bytes land; it does not decide which version
+ * runs. Without this record, "roll back" means "deploy the old version again" — which needs
+ * the client that has those bytes, on a host that may be the only thing still working. The
+ * record is the host-side half: it names an active version, a rollback target, and the
+ * pre-activation state snapshot that makes going back to that target sound.
+ *
+ * It lives beside the version dirs (`~/.alfred-remote/alfredd-active.json`), not inside one,
+ * because it has to outlive whichever version GC removes.
+ */
+import { remoteInstallDirName, ALFREDD_INSTALL_MODEL } from './remote-install-model'
+
+export const ALFREDD_ACTIVATION_FILENAME = 'alfredd-active.json'
+export const ALFREDD_ACTIVATION_SCHEMA_VERSION = 1
+
+/** Where a pre-activation copy of the shared data root lives, relative to `.alfred-remote/`. */
+export const ALFREDD_STATE_SNAPSHOT_DIR = 'alfredd-state-snapshots'
+
+export type AlfreddStateSnapshot = {
+  /** Directory name under `ALFREDD_STATE_SNAPSHOT_DIR`. */
+  dirName: string
+  /** The version whose activation this snapshot was taken FOR — i.e. taken before it ran. */
+  takenBeforeVersion: string
+  /** The version that produced the state, i.e. the rollback target it is readable by. */
+  readableByVersion: string | null
+  takenAt: string
+}
+
+export type AlfreddActivationRecord = {
+  schemaVersion: typeof ALFREDD_ACTIVATION_SCHEMA_VERSION
+  /** Full content-hashed version, e.g. `0.1.0+9f2a1c`. Null before the first activation. */
+  active: string | null
+  /** The version `active` replaced. The rollback target, and pinned against GC. */
+  previous: string | null
+  activatedAt: string | null
+  snapshot: AlfreddStateSnapshot | null
+}
+
+export function emptyAlfreddActivationRecord(): AlfreddActivationRecord {
+  return {
+    schemaVersion: ALFREDD_ACTIVATION_SCHEMA_VERSION,
+    active: null,
+    previous: null,
+    activatedAt: null,
+    snapshot: null
+  }
+}
+
+/**
+ * Parse the record read off the host.
+ *
+ * Why a null return and not a throw on a newer schema: a client older than the host must not
+ * treat "I cannot read this" as "nothing is activated" — that would deploy over a live
+ * install. Callers distinguish the two through `AlfreddActivationReadResult`.
+ */
+export type AlfreddActivationReadResult =
+  | { state: 'absent' }
+  | { state: 'ok'; record: AlfreddActivationRecord }
+  | { state: 'unreadable'; reason: string }
+
+export function parseAlfreddActivationRecord(raw: string | null): AlfreddActivationReadResult {
+  if (raw === null || raw.trim() === '') {
+    return { state: 'absent' }
+  }
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch (error) {
+    return {
+      state: 'unreadable',
+      reason: `activation record is not JSON: ${error instanceof Error ? error.message : String(error)}`
+    }
+  }
+  if (!isJsonObject(parsed)) {
+    return { state: 'unreadable', reason: 'activation record is not an object' }
+  }
+  const record = parsed
+  if (record.schemaVersion !== ALFREDD_ACTIVATION_SCHEMA_VERSION) {
+    return {
+      state: 'unreadable',
+      reason:
+        `activation record schemaVersion ${String(record.schemaVersion)} is not ` +
+        `${ALFREDD_ACTIVATION_SCHEMA_VERSION}; this client cannot safely interpret it`
+    }
+  }
+  return {
+    state: 'ok',
+    record: {
+      schemaVersion: ALFREDD_ACTIVATION_SCHEMA_VERSION,
+      active: typeof record.active === 'string' ? record.active : null,
+      previous: typeof record.previous === 'string' ? record.previous : null,
+      activatedAt: typeof record.activatedAt === 'string' ? record.activatedAt : null,
+      snapshot: parseSnapshot(record.snapshot)
+    }
+  }
+}
+
+function parseSnapshot(value: unknown): AlfreddStateSnapshot | null {
+  if (!isJsonObject(value)) {
+    return null
+  }
+  const snapshot = value
+  if (typeof snapshot.dirName !== 'string' || typeof snapshot.takenBeforeVersion !== 'string') {
+    return null
+  }
+  return {
+    dirName: snapshot.dirName,
+    takenBeforeVersion: snapshot.takenBeforeVersion,
+    readableByVersion:
+      typeof snapshot.readableByVersion === 'string' ? snapshot.readableByVersion : null,
+    takenAt: typeof snapshot.takenAt === 'string' ? snapshot.takenAt : ''
+  }
+}
+
+export function serializeAlfreddActivationRecord(record: AlfreddActivationRecord): string {
+  return `${JSON.stringify(record, null, 2)}\n`
+}
+
+/** The record that results from activating `version`, keeping the outgoing one as the target. */
+export function withActivatedVersion(
+  record: AlfreddActivationRecord,
+  version: string,
+  snapshot: AlfreddStateSnapshot | null,
+  now: Date
+): AlfreddActivationRecord {
+  return {
+    schemaVersion: ALFREDD_ACTIVATION_SCHEMA_VERSION,
+    active: version,
+    // Why keep the OLD previous when re-activating the same version: a repeated deploy of
+    // an already-active build is not a version change, so it must not erase the rollback
+    // target by naming the active version as its own predecessor.
+    previous: record.active === version ? record.previous : record.active,
+    activatedAt: now.toISOString(),
+    snapshot: record.active === version ? record.snapshot : snapshot
+  }
+}
+
+/** The record that results from rolling `active` back to `previous`. */
+export function withRolledBackVersion(
+  record: AlfreddActivationRecord,
+  now: Date
+): AlfreddActivationRecord {
+  return {
+    schemaVersion: ALFREDD_ACTIVATION_SCHEMA_VERSION,
+    active: record.previous,
+    // Why null and not the version we just left: it is the build we are rolling back FROM,
+    // so offering it as the next rollback target would walk straight back into the failure.
+    previous: null,
+    activatedAt: now.toISOString(),
+    // The snapshot was taken before `active` ran; once restored it has been consumed.
+    snapshot: null
+  }
+}
+
+/**
+ * Version dirs GC must not remove, as directory names.
+ *
+ * `previous` is here because a rollback target that GC deleted is not a rollback target.
+ * `daemonEntryVersion` is here because an update preserves a live daemon forked from the
+ * OUTGOING bundle (see alfredd-update-plan.ts) — deleting the tree under a running process is
+ * how a later respawn finds no entry point.
+ */
+export function alfreddGcPinnedDirNames(
+  record: AlfreddActivationRecord,
+  daemonEntryVersion?: string | null
+): string[] {
+  const versions = [record.active, record.previous, daemonEntryVersion ?? null].filter(
+    (v): v is string => typeof v === 'string' && v.length > 0
+  )
+  return [...new Set(versions)].map((version) =>
+    remoteInstallDirName(ALFREDD_INSTALL_MODEL, version)
+  )
+}

@@ -69,8 +69,8 @@ vi.mock('./ssh', () => ({ getActiveMultiplexer: vi.fn() }))
 
 import { registerRepoHandlers } from './repos'
 
-const MAIN_CHECKOUT = '/Users/dev/projects/orca'
-const LINKED_WORKTREE = '/Users/dev/orca/workspaces/orca/pr-3235'
+const MAIN_CHECKOUT = '/Users/dev/projects/alfred'
+const LINKED_WORKTREE = '/Users/dev/alfred/workspaces/alfred/pr-3235'
 
 type AddResult = { repo: Repo } | { error: string }
 
@@ -78,15 +78,14 @@ describe('repos:add with git worktrees', () => {
   const handlers = new Map<string, (event: unknown, args: unknown) => unknown>()
   const mockWindow = { isDestroyed: () => false, webContents: { send: vi.fn() } }
 
-  const trackedMainRepo = (): Repo =>
-    ({
-      id: 'main-repo-id',
-      path: MAIN_CHECKOUT,
-      displayName: 'orca',
-      badgeColor: '#ef4444',
-      addedAt: 1,
-      kind: 'git'
-    }) as Repo
+  const trackedMainRepo = (): Repo => ({
+    id: 'main-repo-id',
+    path: MAIN_CHECKOUT,
+    displayName: 'alfred',
+    badgeColor: '#ef4444',
+    addedAt: 1,
+    kind: 'git'
+  })
 
   const callAdd = (args: { path: string; kind?: 'git' | 'folder' }): Promise<AddResult> => {
     const handler = handlers.get('repos:add')
@@ -157,9 +156,9 @@ describe('repos:add with git worktrees', () => {
 
   it('matches the tracked main checkout across path separator differences', async () => {
     mockStore.getRepos.mockReturnValue([
-      { ...trackedMainRepo(), path: 'C:\\Users\\dev\\projects\\orca' } as Repo
+      { ...trackedMainRepo(), path: 'C:\\Users\\dev\\projects\\alfred' }
     ])
-    getLinkedWorktreeMainRepoRootMock.mockReturnValue('C:/Users/dev/projects/orca')
+    getLinkedWorktreeMainRepoRootMock.mockReturnValue('C:/Users/dev/projects/alfred')
 
     const result = await callAdd({ path: 'C:/Users/dev/worktrees/pr-3235' })
 

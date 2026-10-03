@@ -7,11 +7,11 @@ import { clampGrabPayload } from './browser-grab-payload'
 
 describe('buildGuestOverlayScript', () => {
   it.each([
-    ['arm', '07cffca05c4c9dab10bdcf301deab24e033edd07c6cd235bb364e1a139720a0a'],
-    ['awaitClick', 'b6b65b2b53c8719f1d10f93954cf867d99e43e14dbd1ca0a92e5067b168a126c'],
-    ['finalize', '91bd9836b0536c9579e0d4648d30679c0b4a5893d9a43110a70e67d6804fd291'],
-    ['extractHover', 'cf0ee3ac61669daefa7db9389233c1abfe9f0fb9e7257300c761987aac914b02'],
-    ['teardown', '732efde1022745f26dd4250d2891a663023eecafdf025fd66dde87781a985d81']
+    ['arm', 'b53d45079a7d926f799ade304207b180b08ddf51727ba3ee0ad0841b56b48cb7'],
+    ['awaitClick', '7998c145ed38bcc673d825f9404f88ceb6fdbd16593153f28527ead26bf8cce6'],
+    ['finalize', 'cf62d4e2229b0959b3455585cccc2182cbbbab9910f5a997cf6a1425bc065051'],
+    ['extractHover', '9664617b41da07c22caf4eba69b7060af435dfc9920e566992e4cfc925c84b36'],
+    ['teardown', '1f7aa449a0b7ba52aece1ba8ade4c522f2c90651edc13535290918a28ab6cf4d']
   ] as const)('preserves the serialized %s guest script', (action, expectedSha256) => {
     expect(createHash('sha256').update(buildGuestOverlayScript(action)).digest('hex')).toBe(
       expectedSha256
@@ -46,8 +46,8 @@ describe('buildGuestOverlayScript', () => {
   it('arm script contains shadow DOM setup', () => {
     const script = buildGuestOverlayScript('arm')
     expect(script).toContain('attachShadow')
-    expect(script).toContain('__orca-grab-host')
-    expect(script).toContain('__orcaGrab')
+    expect(script).toContain('__alfred-grab-host')
+    expect(script).toContain('__alfredGrab')
   })
 
   it('arm script contains budget constants matching shared types', () => {
@@ -107,13 +107,13 @@ describe('buildGuestOverlayScript', () => {
   it('teardown script cleans up the overlay', () => {
     const script = buildGuestOverlayScript('teardown')
     expect(script).toContain('cleanup')
-    expect(script).toContain('__orcaGrab')
+    expect(script).toContain('__alfredGrab')
   })
 
   it('teardown script cancels pending awaitClick', () => {
     const script = buildGuestOverlayScript('teardown')
     expect(script).toContain('cancelAwait')
-    expect(buildGuestOverlayScript('awaitClick')).toContain('__orcaCancelled')
+    expect(buildGuestOverlayScript('awaitClick')).toContain('__alfredCancelled')
   })
 
   it('arm script uses full-viewport overlay as click catcher', () => {
@@ -256,7 +256,7 @@ describe('awaitClick under a Zone.js-patched global Promise', () => {
     extractPayload?: () => unknown
     getCurrentElement?: () => unknown
   }): {
-    window: { __orcaGrab: Record<string, unknown> }
+    window: { __alfredGrab: Record<string, unknown> }
     click: () => void
     contextmenu: () => void
     cancel: () => void
@@ -279,13 +279,18 @@ describe('awaitClick under a Zone.js-patched global Promise', () => {
       freezeHighlight(): void {},
       cleanup(): void {}
     }
-    const window = { __orcaGrab: grab }
+    const window = { __alfredGrab: grab }
     return {
       window,
       click: () => handlers.click?.(noopEvent),
       contextmenu: () => handlers.contextmenu?.(noopEvent),
-      // cancelAwait is installed on __orcaGrab by the script itself at runtime.
-      cancel: () => (window.__orcaGrab.cancelAwait as (() => void) | undefined)?.()
+      // cancelAwait is installed on __alfredGrab by the script itself at runtime.
+      cancel: () => {
+        if (typeof window.__alfredGrab.cancelAwait !== 'function') {
+          throw new Error('Missing cancel callback')
+        }
+        window.__alfredGrab.cancelAwait()
+      }
     }
   }
 
@@ -326,7 +331,7 @@ describe('awaitClick under a Zone.js-patched global Promise', () => {
     harness.contextmenu()
     const received = (await crossExecuteJavaScriptBoundary(completion)) as Record<string, unknown>
 
-    expect(received).toHaveProperty('__orcaContextMenu', true)
+    expect(received).toHaveProperty('__alfredContextMenu', true)
     expect(received.payload).toHaveProperty('page')
     expect(clampGrabPayload(received.payload)).not.toBeNull()
   })
@@ -338,7 +343,7 @@ describe('awaitClick under a Zone.js-patched global Promise', () => {
     harness.cancel()
     const received = await crossExecuteJavaScriptBoundary(completion)
 
-    expect(received).toEqual({ __orcaCancelled: true })
+    expect(received).toEqual({ __alfredCancelled: true })
   })
 
   it('rejects across the boundary when selection fails despite ZoneAwarePromise', async () => {

@@ -7,7 +7,7 @@ import { readGloballyUpdatableSkillNames } from './skill-update-registration'
 const temporaryDirectories: string[] = []
 
 async function temporaryRoot(): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), 'orca-skill-registration-'))
+  const root = await mkdtemp(join(tmpdir(), 'alfred-skill-registration-'))
   temporaryDirectories.push(root)
   return root
 }
@@ -28,18 +28,18 @@ describe('global skill update registration', () => {
           orchestration: {
             skillFolderHash: 'hash',
             skillPath: 'skills/orchestration/SKILL.md',
-            source: 'stablyai/orca'
+            source: 'GOI17/alfred-workspace'
           },
           copied: {},
           emptyHash: {
             skillFolderHash: '',
             skillPath: 'skills/empty-hash/SKILL.md',
-            source: 'stablyai/orca'
+            source: 'GOI17/alfred-workspace'
           },
           emptyPath: {
             skillFolderHash: 'hash',
             skillPath: '',
-            source: 'stablyai/orca'
+            source: 'GOI17/alfred-workspace'
           }
         }
       })
@@ -59,17 +59,17 @@ describe('global skill update registration', () => {
       JSON.stringify({
         version: 3,
         skills: {
-          'orca-cli': {
+          'alfred-cli': {
             skillFolderHash: 'hash',
-            skillPath: 'skills/orca-cli/SKILL.md',
-            source: 'stablyai/orca'
+            skillPath: 'skills/alfred-cli/SKILL.md',
+            source: 'GOI17/alfred-workspace'
           }
         }
       })
     )
 
     await expect(readGloballyUpdatableSkillNames({ homeDir: root, stateHome })).resolves.toEqual(
-      new Set(['orca-cli'])
+      new Set(['alfred-cli'])
     )
   })
 })

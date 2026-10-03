@@ -1,14 +1,14 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import type { ElectronApplication } from '@stablyai/playwright-test'
-import { expect, test } from './helpers/orca-app'
-import { createRestartSession } from './helpers/orca-restart'
+import { expect, test } from './helpers/alfred-app'
+import { createRestartSession } from './helpers/alfred-restart'
 
 const STUB_AGENT_DIR = path.join(process.cwd(), 'tests', 'e2e', 'fixtures', 'golden-stub-agent')
 const LAUNCH_ENV = { PATH: `${STUB_AGENT_DIR}${path.delimiter}${process.env.PATH ?? ''}` }
 
 function grokConfigPath(userDataDir: string): string {
-  return path.join(userDataDir, 'home', '.grok', 'hooks', 'orca-status.json')
+  return path.join(userDataDir, 'home', '.grok', 'hooks', 'alfred-status.json')
 }
 
 async function waitForManagedConfig(configPath: string): Promise<void> {
@@ -23,7 +23,7 @@ async function waitForManagedConfig(configPath: string): Promise<void> {
         }
         return Boolean(config.hooks?.SessionStart && config.hooks?.UserPromptSubmit)
       },
-      { timeout: 30_000, message: 'Orca did not install the managed Grok hook config' }
+      { timeout: 30_000, message: 'Alfred did not install the managed Grok hook config' }
     )
     .toBe(true)
 }

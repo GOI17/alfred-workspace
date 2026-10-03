@@ -64,7 +64,7 @@ test('director admission environment matches what Terraform deploys', () => {
   )
   assert.match(
     relay,
-    /name = "ORCA_RELAY_REGIONAL_PLACEMENT_ENABLED"[\s\S]*?secret\s+= google_secret_manager_secret\.relay_regional_placement_enabled\.secret_id[\s\S]*?version = data\.external\.relay_serving_regional_placement_version\.result\.version/
+    /name = "ALFRED_RELAY_REGIONAL_PLACEMENT_ENABLED"[\s\S]*?secret\s+= google_secret_manager_secret\.relay_regional_placement_enabled\.secret_id[\s\S]*?version = data\.external\.relay_serving_regional_placement_version\.result\.version/
   )
   assert.match(relay, /data "external" "relay_serving_regional_placement_version"/)
   assert.match(relay, /read-relay-serving-regional-placement-version\.mjs/)
@@ -108,7 +108,7 @@ test('validates optional director capacity configuration', () => {
   const cells = [
     {
       id: 'staging-gce-c3',
-      url: 'https://c3.relay-staging.onorca.dev',
+      url: 'https://c3.relay-staging.alfredlabs.org',
       capacityRequests: 4_000,
       initiallyEnabled: false,
       region: 'us-central1',
@@ -117,17 +117,17 @@ test('validates optional director capacity configuration', () => {
     }
   ]
   const config = {
-    project: 'onorca-cloud-staging',
+    project: 'onalfred-cloud-staging',
     'capacity-service-account':
-      'orca-cloud-staging-gha-cap@onorca-cloud-staging.iam.gserviceaccount.com',
+      'alfred-cloud-staging-gha-cap@onalfred-cloud-staging.iam.gserviceaccount.com',
     'director-cells-json': JSON.stringify(cells)
   }
   assert.deepEqual(directorDeploymentEnvironment(config), {
     ...DIRECTOR_ADMISSION_ENVIRONMENT,
-    ORCA_RELAY_ADMISSION_SELECTOR_VERSION: '3',
-    ORCA_RELAY_CAPACITY_SERVICE_ACCOUNT:
-      'orca-cloud-staging-gha-cap@onorca-cloud-staging.iam.gserviceaccount.com',
-    ORCA_RELAY_CELLS_JSON: JSON.stringify([
+    ALFRED_RELAY_ADMISSION_SELECTOR_VERSION: '3',
+    ALFRED_RELAY_CAPACITY_SERVICE_ACCOUNT:
+      'alfred-cloud-staging-gha-cap@onalfred-cloud-staging.iam.gserviceaccount.com',
+    ALFRED_RELAY_CELLS_JSON: JSON.stringify([
       {
         id: cells[0].id,
         url: cells[0].url,
@@ -157,7 +157,7 @@ test('validates optional director capacity configuration', () => {
   )
   assert.match(
     environmentUpdateValue(directorDeploymentEnvironment(config)),
-    /^\^~\^ORCA_RELAY_DATABASE_POOL_MAX=/
+    /^\^~\^ALFRED_RELAY_DATABASE_POOL_MAX=/
   )
   assert.equal(environmentUpdateValue({ FIRST: 'one', SECOND: 'two' }), 'FIRST=one,SECOND=two')
   assert.deepEqual(
@@ -170,7 +170,7 @@ test('validates optional director capacity configuration', () => {
           id: 'staging-gce-c3',
           initiallyEnabled: false,
           region: 'us-central1',
-          url: 'https://c3.relay-staging.onorca.dev'
+          url: 'https://c3.relay-staging.alfredlabs.org'
         }
       ]),
       JSON.stringify([{ ...cells[0], connectionHardCap: 1_000 }]),
@@ -180,14 +180,14 @@ test('validates optional director capacity configuration', () => {
       changed: true,
       value: directorDeploymentEnvironment({
         'director-cells-json': JSON.stringify([{ ...cells[0], connectionHardCap: 1_000 }])
-      }).ORCA_RELAY_CELLS_JSON
+      }).ALFRED_RELAY_CELLS_JSON
     }
   )
   assert.throws(
     () =>
       directorTopologyChange(
         JSON.stringify(cells),
-        JSON.stringify([{ ...cells[0], url: 'https://wrong.relay-staging.onorca.dev' }]),
+        JSON.stringify([{ ...cells[0], url: 'https://wrong.relay-staging.alfredlabs.org' }]),
         'staging-gce-c3'
       ),
     /outside the reviewed capacity pair/
@@ -197,11 +197,11 @@ test('validates optional director capacity configuration', () => {
 test('validates exact director runtime and regional rehome identities', () => {
   const base = [
     '--project',
-    'onorca-cloud',
+    'onalfred-cloud',
     '--region',
     'us-central1',
     '--service',
-    'orca-cloud-relay',
+    'alfred-cloud-relay',
     '--image',
     `relay@sha256:${'a'.repeat(64)}`,
     '--role',
@@ -209,34 +209,34 @@ test('validates exact director runtime and regional rehome identities', () => {
     '--release-id',
     'rehome',
     '--runtime-service-account',
-    'relay-director@onorca-cloud.iam.gserviceaccount.com',
+    'relay-director@onalfred-cloud.iam.gserviceaccount.com',
     '--rehome-director-service-account',
-    'relay-director@onorca-cloud.iam.gserviceaccount.com',
+    'relay-director@onalfred-cloud.iam.gserviceaccount.com',
     '--rehome-audience',
-    'https://relay.onorca.dev/v1/admin/host-drain',
+    'https://relay.alfredlabs.org/v1/admin/host-drain',
     '--expected-rehome-generation',
     '7',
     '--rehome-control-origin',
-    'https://relay.onorca.dev',
+    'https://relay.alfredlabs.org',
     '--admin-audience',
-    'https://relay.onorca.dev/v1/admin/drain'
+    'https://relay.alfredlabs.org/v1/admin/drain'
   ]
   const config = parseArguments(base)
   assert.deepEqual(directorDeploymentEnvironment(config), {
     ...DIRECTOR_ADMISSION_ENVIRONMENT,
-    ORCA_RELAY_ADMISSION_SELECTOR_VERSION: '3',
-    ORCA_RELAY_IMAGE_DIGEST: `sha256:${'a'.repeat(64)}`,
+    ALFRED_RELAY_ADMISSION_SELECTOR_VERSION: '3',
+    ALFRED_RELAY_IMAGE_DIGEST: `sha256:${'a'.repeat(64)}`,
     [DIRECTOR_REHOME_IDENTITY_ENV]:
-      'relay-director@onorca-cloud.iam.gserviceaccount.com',
+      'relay-director@onalfred-cloud.iam.gserviceaccount.com',
     [DIRECTOR_REHOME_AUDIENCE_ENV]:
-      'https://relay.onorca.dev/v1/admin/host-drain'
+      'https://relay.alfredlabs.org/v1/admin/host-drain'
   })
   const missingAudience = [...base]
   missingAudience.splice(missingAudience.indexOf('--rehome-audience'), 2)
   assert.throws(() => parseArguments(missingAudience), /configured together/)
   const invalidOrigin = [...base]
   invalidOrigin[invalidOrigin.indexOf('--rehome-control-origin') + 1] =
-    'http://relay.onorca.dev'
+    'http://relay.alfredlabs.org'
   assert.throws(
     () => parseArguments(invalidOrigin),
     /HTTPS origin/
@@ -248,11 +248,11 @@ test('validates exact director runtime and regional rehome identities', () => {
 
 test('requires durable regional rehome control to be disabled at the exact generation', async () => {
   const config = {
-    'admin-audience': 'https://relay.onorca.dev/v1/admin/drain',
+    'admin-audience': 'https://relay.alfredlabs.org/v1/admin/drain',
     'expected-rehome-generation': '7'
   }
-  const environment = process.env.ORCA_RELAY_ADMIN_ID_TOKEN
-  process.env.ORCA_RELAY_ADMIN_ID_TOKEN = 'aaa.bbb.ccc'
+  const environment = process.env.ALFRED_RELAY_ADMIN_ID_TOKEN
+  process.env.ALFRED_RELAY_ADMIN_ID_TOKEN = 'aaa.bbb.ccc'
   try {
     const control = await assertRegionalRehomeDisabled(
       config,
@@ -286,17 +286,17 @@ test('requires durable regional rehome control to be disabled at the exact gener
       /durably disabled/
     )
   } finally {
-    if (environment === undefined) delete process.env.ORCA_RELAY_ADMIN_ID_TOKEN
-    else process.env.ORCA_RELAY_ADMIN_ID_TOKEN = environment
+    if (environment === undefined) delete process.env.ALFRED_RELAY_ADMIN_ID_TOKEN
+    else process.env.ALFRED_RELAY_ADMIN_ID_TOKEN = environment
   }
 })
 
 test('rejects literal regional placement changes outside the runtime-setting step', () => {
   const base = {
-    project: 'onorca-cloud',
+    project: 'onalfred-cloud',
     region: 'us-central1',
-    service: 'orca-cloud-relay',
-    image: `us-central1-docker.pkg.dev/onorca-cloud/orca-cloud/relay@sha256:${'a'.repeat(64)}`,
+    service: 'alfred-cloud-relay',
+    image: `us-central1-docker.pkg.dev/onalfred-cloud/alfred-cloud/relay@sha256:${'a'.repeat(64)}`,
     role: 'director',
     'release-id': 'regional-kill-switch'
   }
@@ -313,7 +313,7 @@ test('appends disabled Asia cells without changing the existing director topolog
   const current = [
     {
       id: 'production-gce-c26',
-      url: 'https://c26.relay.onorca.dev',
+      url: 'https://c26.relay.alfredlabs.org',
       capacityRequests: 4_000,
       initiallyEnabled: true,
       connectionHardCap: 1_000,
@@ -322,7 +322,7 @@ test('appends disabled Asia cells without changing the existing director topolog
   ]
   const asia = {
     id: 'production-gce-c27',
-    url: 'https://c27.relay.onorca.dev',
+    url: 'https://c27.relay.alfredlabs.org',
     region: 'asia-east2',
     capacityRequests: 6_000,
     initiallyEnabled: false,
@@ -339,14 +339,14 @@ test('appends disabled Asia cells without changing the existing director topolog
       changed: true,
       value: directorDeploymentEnvironment({
         'director-cells-json': JSON.stringify([asia, { ...current[0], region: 'us-central1' }])
-      }).ORCA_RELAY_CELLS_JSON
+      }).ALFRED_RELAY_CELLS_JSON
     }
   )
   const exact = JSON.stringify([{ ...current[0], region: 'us-central1' }, asia])
   assert.deepEqual(directorCellSetAddition(exact, exact), {
     changed: false,
     value: directorDeploymentEnvironment({ 'director-cells-json': exact })
-      .ORCA_RELAY_CELLS_JSON
+      .ALFRED_RELAY_CELLS_JSON
   })
   assert.throws(
     () => directorCellSetAddition(JSON.stringify(current), JSON.stringify([{ ...current[0], region: 'us-central1', capacityRequests: 6_000 }, asia])),
@@ -367,7 +367,7 @@ test('pins a director startup probe above the bounded reconciliation window', ()
 })
 
 test('bounds traffic tags by the Cloud Run service-plus-tag contract', () => {
-  const service = 'orca-cloud-relay-staging-c1'
+  const service = 'alfred-cloud-relay-staging-c1'
   const candidate = cloudRunTrafficTag(service, 'candidate', '29247170608-1-19cc312a')
   assert.match(candidate, /^candidate-[a-f0-9]{9}$/)
   assert.equal(service.length + candidate.length, 46)
@@ -379,15 +379,15 @@ test('bounds traffic tags by the Cloud Run service-plus-tag contract', () => {
 test('derives and validates a Cloud Run tagged revision origin', () => {
   assert.equal(
     taggedRevisionOrigin(
-      'https://orca-cloud-relay-staging-c1-gjzz5mc7ka-uc.a.run.app',
+      'https://alfred-cloud-relay-staging-c1-gjzz5mc7ka-uc.a.run.app',
       'candidate-123'
     ),
-    'https://candidate-123---orca-cloud-relay-staging-c1-gjzz5mc7ka-uc.a.run.app'
+    'https://candidate-123---alfred-cloud-relay-staging-c1-gjzz5mc7ka-uc.a.run.app'
   )
-  assert.throws(() => taggedRevisionOrigin('https://relay-staging.onorca.dev', 'candidate-123'))
+  assert.throws(() => taggedRevisionOrigin('https://relay-staging.alfredlabs.org', 'candidate-123'))
   assert.throws(() =>
     taggedRevisionOrigin(
-      'https://orca-cloud-relay-staging-c1-gjzz5mc7ka-uc.a.run.app',
+      'https://alfred-cloud-relay-staging-c1-gjzz5mc7ka-uc.a.run.app',
       '123-invalid'
     )
   )
@@ -434,12 +434,12 @@ function directorHarness({
     activeRevision: 'relay-00001-old',
     tags: new Map([['candidate-old', 'relay-00000-stale']]),
     revisions: new Map([
-      ['relay-00000-stale', { env: { ORCA_RELAY_ROLE: 'director' }, minimum: 1, maximum: 5 }],
+      ['relay-00000-stale', { env: { ALFRED_RELAY_ROLE: 'director' }, minimum: 1, maximum: 5 }],
       [
         'relay-00001-old',
         {
           env: {
-            ORCA_RELAY_ROLE: 'director'
+            ALFRED_RELAY_ROLE: 'director'
           },
           secrets: {
             [DIRECTOR_REGIONAL_PLACEMENT_ENV]: {
@@ -501,7 +501,7 @@ function directorHarness({
     deployCandidate: (config, tag, env, image, minimum, maximum, regionalVersion) => {
       const revision = `relay-${String(state.nextRevision++).padStart(5, '0')}-new`
       state.revisions.set(revision, {
-        env: { ORCA_RELAY_ROLE: 'director', ...env },
+        env: { ALFRED_RELAY_ROLE: 'director', ...env },
         secrets: {
           [DIRECTOR_REGIONAL_PLACEMENT_ENV]: {
             secret: DIRECTOR_REGIONAL_PLACEMENT_SECRET,
@@ -552,9 +552,9 @@ function directorHarness({
 test('director deploy removes stale and promoted Cloud Run tags', async () => {
   const harness = directorHarness()
   const config = {
-    project: 'onorca-cloud-staging',
+    project: 'onalfred-cloud-staging',
     'capacity-service-account':
-      'orca-cloud-staging-gha-cap@onorca-cloud-staging.iam.gserviceaccount.com'
+      'alfred-cloud-staging-gha-cap@onalfred-cloud-staging.iam.gserviceaccount.com'
   }
   await deployDirector(config, 'candidate-new', harness.operations)
   assert.deepEqual(harness.removed, [['candidate-old'], ['candidate-new']])
@@ -576,7 +576,7 @@ test('director deploy removes stale and promoted Cloud Run tags', async () => {
       DIRECTOR_ADMISSION_ENVIRONMENT
     )
     assert.equal(
-      harness.state.revisions.get(revision).env.ORCA_RELAY_CAPACITY_SERVICE_ACCOUNT,
+      harness.state.revisions.get(revision).env.ALFRED_RELAY_CAPACITY_SERVICE_ACCOUNT,
       config['capacity-service-account']
     )
   }
@@ -595,21 +595,21 @@ test('director deploy stamps the durable regional placement secret reference', a
 })
 
 test('bootstraps both rollback and candidate onto the distinct director identity', async () => {
-  const predecessor = 'relay-runtime@onorca-cloud.iam.gserviceaccount.com'
-  const director = 'relay-director@onorca-cloud.iam.gserviceaccount.com'
+  const predecessor = 'relay-runtime@onalfred-cloud.iam.gserviceaccount.com'
+  const director = 'relay-director@onalfred-cloud.iam.gserviceaccount.com'
   const harness = directorHarness({ servingServiceAccount: predecessor })
   const inspected = []
   harness.operations.assertRegionalRehomeDisabled = async (_config, origin) => {
     inspected.push(origin)
   }
   await deployDirector({
-    project: 'onorca-cloud',
+    project: 'onalfred-cloud',
     'runtime-service-account': director,
     'predecessor-runtime-service-account': predecessor,
     'predecessor-image-digest': `sha256:${'f'.repeat(64)}`,
     'bootstrap-runtime-identity': 'true',
     'expected-rehome-generation': '0',
-    'rehome-control-origin': 'https://relay.onorca.dev'
+    'rehome-control-origin': 'https://relay.alfredlabs.org'
   }, 'candidate-new', harness.operations)
   assert.equal(
     harness.state.revisions.get(harness.state.activeRevision).serviceAccount,
@@ -627,10 +627,10 @@ test('bootstraps both rollback and candidate onto the distinct director identity
 
 test('steady-state director deploy rejects the predecessor identity', async () => {
   const harness = directorHarness({
-    servingServiceAccount: 'relay-runtime@onorca-cloud.iam.gserviceaccount.com'
+    servingServiceAccount: 'relay-runtime@onalfred-cloud.iam.gserviceaccount.com'
   })
   await assert.rejects(deployDirector({
-    'runtime-service-account': 'relay-director@onorca-cloud.iam.gserviceaccount.com'
+    'runtime-service-account': 'relay-director@onalfred-cloud.iam.gserviceaccount.com'
   }, 'candidate-new', harness.operations), /unexpected runtime service account/)
 })
 
@@ -738,15 +738,15 @@ test('reads only literal revision environment values', () => {
         containers: [
           {
             env: [
-              { name: 'ORCA_RELAY_CELL_ID', value: 'staging-c1' },
-              { name: 'ORCA_RELAY_CELL_CAPACITY', value: '900' },
+              { name: 'ALFRED_RELAY_CELL_ID', value: 'staging-c1' },
+              { name: 'ALFRED_RELAY_CELL_CAPACITY', value: '900' },
               { name: 'DATABASE_URL', valueFrom: { secretKeyRef: { name: 'database' } } }
             ]
           }
         ]
       }
     }),
-    { ORCA_RELAY_CELL_ID: 'staging-c1', ORCA_RELAY_CELL_CAPACITY: '900' }
+    { ALFRED_RELAY_CELL_ID: 'staging-c1', ALFRED_RELAY_CELL_CAPACITY: '900' }
   )
 })
 
@@ -785,11 +785,11 @@ test('reads only Secret Manager revision environment references', () => {
 
 test('accepts only a bounded JWT-shaped supplied admin identity token', () => {
   assert.equal(suppliedAdminIdentityToken({}), null)
-  assert.equal(suppliedAdminIdentityToken({ ORCA_RELAY_ADMIN_ID_TOKEN: 'aaa.bbb.ccc' }), 'aaa.bbb.ccc')
-  assert.throws(() => suppliedAdminIdentityToken({ ORCA_RELAY_ADMIN_ID_TOKEN: '' }))
-  assert.throws(() => suppliedAdminIdentityToken({ ORCA_RELAY_ADMIN_ID_TOKEN: 'not-a-jwt' }))
+  assert.equal(suppliedAdminIdentityToken({ ALFRED_RELAY_ADMIN_ID_TOKEN: 'aaa.bbb.ccc' }), 'aaa.bbb.ccc')
+  assert.throws(() => suppliedAdminIdentityToken({ ALFRED_RELAY_ADMIN_ID_TOKEN: '' }))
+  assert.throws(() => suppliedAdminIdentityToken({ ALFRED_RELAY_ADMIN_ID_TOKEN: 'not-a-jwt' }))
   assert.throws(() =>
-    suppliedAdminIdentityToken({ ORCA_RELAY_ADMIN_ID_TOKEN: `aaa.${'b'.repeat(8_190)}.ccc` })
+    suppliedAdminIdentityToken({ ALFRED_RELAY_ADMIN_ID_TOKEN: `aaa.${'b'.repeat(8_190)}.ccc` })
   )
 })
 

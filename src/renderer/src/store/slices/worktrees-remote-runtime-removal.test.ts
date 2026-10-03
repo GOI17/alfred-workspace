@@ -106,9 +106,9 @@ describe('worktree remote runtime mutations', () => {
       })
     store.setState({
       settings: { activeRuntimeEnvironmentId: 'env-1' } as never,
-      trustedOrcaHooks: { repo1: { all: { approvedAt: 1 } } },
+      trustedAlfredHooks: { repo1: { all: { approvedAt: 1 } } },
       worktreesByRepo: { repo1: [wt] }
-    } as Partial<AppState>)
+    })
 
     await store.getState().removeWorktree({ id: wt.id, executionHostId: 'runtime:env-1' })
 
@@ -471,9 +471,9 @@ describe('worktree remote runtime mutations', () => {
     })
     store.setState({
       settings: { activeRuntimeEnvironmentId: 'env-1' } as never,
-      trustedOrcaHooks: { 'repo-shared': { all: { approvedAt: 1 } } },
+      trustedAlfredHooks: { 'repo-shared': { all: { approvedAt: 1 } } },
       worktreesByRepo: { 'repo-shared': [original] }
-    } as Partial<AppState>)
+    })
 
     const result = await store.getState().removeWorktree({ id: worktreeId, executionHostId: null })
 
@@ -577,16 +577,16 @@ describe('worktree remote runtime mutations', () => {
   it('removes SSH-owned worktrees through local IPC even when a runtime is focused', async () => {
     const store = createTestStore()
     const wt = makeWorktree({
-      id: 'repo-ssh::/home/orca/wt1',
+      id: 'repo-ssh::/home/alfred/wt1',
       repoId: 'repo-ssh',
-      path: '/home/orca/wt1'
+      path: '/home/alfred/wt1'
     })
     store.setState({
       settings: { activeRuntimeEnvironmentId: 'env-1' } as never,
       repos: [
         {
           id: 'repo-ssh',
-          path: '/home/orca/repo',
+          path: '/home/alfred/repo',
           displayName: 'SSH Repo',
           badgeColor: '#000',
           addedAt: 0,
@@ -594,7 +594,7 @@ describe('worktree remote runtime mutations', () => {
         }
       ],
       worktreesByRepo: { 'repo-ssh': [wt] }
-    } as Partial<AppState>)
+    })
 
     const result = await store.getState().removeWorktree({ id: wt.id, executionHostId: null })
 

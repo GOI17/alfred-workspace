@@ -8,7 +8,7 @@ import {
   isAgentSessionPtyWriteRefusedError
 } from '../../shared/agent-session-pty-write-admission'
 
-/** Structural subset of OrcaRuntimeService exposed to plugin facade bindings. */
+/** Structural subset of AlfredRuntimeService exposed to plugin facade bindings. */
 export type PluginRuntimeDelegate = {
   resolveActiveWorktreeContext(): Promise<{
     worktreeId: string

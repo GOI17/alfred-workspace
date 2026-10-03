@@ -1,12 +1,12 @@
 import { spawn } from 'node:child_process'
 import type { CommandHandler } from '../dispatch'
 import { formatCliStatus, formatStatus, printResult } from '../format'
-import { RuntimeClientError, serveOrcaApp } from '../runtime-client'
+import { RuntimeClientError, serveAlfredApp } from '../runtime-client'
 import { stripElectronRunAsNode } from '../runtime/launch'
 import { getServeOptionValidationError } from '../../shared/serve-option-validation'
 
 function envRecord(): Record<string, string> {
-  // Why: the `orca` launcher runs Orca's Electron binary as Node, so this CLI
+  // Why: the `alfred` launcher runs Alfred's Electron binary as Node, so this CLI
   // process carries ELECTRON_RUN_AS_NODE=1. Strip it before it reaches the
   // spawned `claude` (and any nested Electron it launches), which would
   // otherwise be forced into headless plain-Node mode.
@@ -66,11 +66,11 @@ export const CORE_HANDLERS: Record<string, CommandHandler> = {
         'Claude Agent Teams native panes are not supported on Windows.'
       )
     }
-    const paneKey = process.env.ORCA_PANE_KEY
+    const paneKey = process.env.ALFRED_PANE_KEY
     if (!paneKey) {
       throw new RuntimeClientError(
         'invalid_environment',
-        'orca claude-teams must be run inside an Orca terminal.'
+        'alfred claude-teams must be run inside an Alfred terminal.'
       )
     }
     const inheritedEnv = envRecord()
@@ -93,7 +93,7 @@ export const CORE_HANDLERS: Record<string, CommandHandler> = {
     )
   },
   open: async ({ client, json }) => {
-    const result = await client.openOrca()
+    const result = await client.openAlfred()
     printResult(result, json, formatCliStatus)
   },
   serve: async ({ flags, json }) => {
@@ -113,7 +113,7 @@ export const CORE_HANDLERS: Record<string, CommandHandler> = {
     }
     const port = getOptionalServePort(flags)
     const pairingAddressValue = flags.get('pairing-address')
-    const exitCode = await serveOrcaApp({
+    const exitCode = await serveAlfredApp({
       json,
       port,
       pairingAddress: typeof pairingAddressValue === 'string' ? pairingAddressValue : null,

@@ -1,3 +1,4 @@
+import { makeWorktree as fixtureMakeWorktree } from '../../../shared/worktree/worktree-test-fixture'
 /**
  * STA-4343: the same repo at the same path on two hosts is TWO workspaces.
  *
@@ -21,12 +22,12 @@ import {
 } from './worktree-repo-index'
 import { buildWorktreeByIdIndex } from './slices/worktree-by-id-index'
 
-const SHARED_ID = 'repo-1::/work/orca'
+const SHARED_ID = 'repo-1::/work/alfred'
 
-const baseWorktree: Worktree = {
+const baseWorktree: Worktree = fixtureMakeWorktree({
   id: SHARED_ID,
   repoId: 'repo-1',
-  path: '/work/orca',
+  path: '/work/alfred',
   branch: 'refs/heads/feature',
   head: 'abc123',
   isBare: false,
@@ -38,10 +39,10 @@ const baseWorktree: Worktree = {
   comment: '',
   isUnread: false,
   isPinned: false
-} as Worktree
+})
 
-const localRow: Worktree = { ...baseWorktree, hostId: 'local', displayName: 'local orca' }
-const sshRow: Worktree = { ...baseWorktree, hostId: 'ssh:build-box', displayName: 'ssh orca' }
+const localRow: Worktree = { ...baseWorktree, hostId: 'local', displayName: 'local alfred' }
+const sshRow: Worktree = { ...baseWorktree, hostId: 'ssh:build-box', displayName: 'ssh alfred' }
 
 function byRepo(...worktrees: Worktree[]): AppState['worktreesByRepo'] {
   return { 'repo-1': worktrees }
@@ -68,7 +69,7 @@ describe('id-keyed worktree projections keep distinct hosts distinct', () => {
   })
 
   it('treats an unqualified row as its own bucket rather than inventing a host', () => {
-    const unqualified: Worktree = { ...baseWorktree, displayName: 'unqualified orca' }
+    const unqualified: Worktree = { ...baseWorktree, displayName: 'unqualified alfred' }
 
     const all = getIndexedAllWorktrees(byRepo(unqualified, sshRow))
 

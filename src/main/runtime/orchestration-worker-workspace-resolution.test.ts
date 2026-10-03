@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -37,7 +38,7 @@ import {
   registerSshFilesystemProvider,
   unregisterSshFilesystemProvider
 } from '../providers/ssh-filesystem-dispatch'
-import { OrcaRuntimeService } from './orca-runtime'
+import { AlfredRuntimeService } from './alfred-runtime'
 
 const REPO_ID = 'repo-1'
 const REPO_PATH = '/repo'
@@ -93,7 +94,7 @@ function makeStore(
     getAllWorkspaceLineage: () => ({}),
     removeWorktreeLineage: vi.fn(),
     removeWorkspaceLineage: vi.fn(),
-    getGitHubCache: () => undefined,
+    getGitHubCache: () => ({ pr: {}, issue: {} }),
     getSettings: () => ({
       workspaceDir: '/tmp/workspaces',
       nestWorkspaces: false,
@@ -136,7 +137,7 @@ describe('orchestration worker workspace resolution', () => {
     ['path', `path:${WORKTREE_PATH}`],
     ['name', 'name:Feature']
   ])('resolves a local worktree by %s with one catalog scan', async (_label, selector) => {
-    const runtime = new OrcaRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
 
     await expect(runtime.showManagedTerminalWorkspace(selector)).resolves.toMatchObject({
       id: WORKTREE_ID,
@@ -154,11 +155,13 @@ describe('orchestration worker workspace resolution', () => {
       addedAt: 1,
       connectionId: 'ssh-1'
     } satisfies Repo
-    const runtime = new OrcaRuntimeService(
-      makeStore({
-        repos: [remoteRepo],
-        meta: { [WORKTREE_ID]: makeMeta('Remote feature') }
-      }) as never
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(
+        makeStore({
+          repos: [remoteRepo],
+          meta: { [WORKTREE_ID]: makeMeta('Remote feature') }
+        })
+      )
     )
 
     await expect(runtime.showManagedTerminalWorkspace(`id:${WORKTREE_ID}`)).resolves.toMatchObject({
@@ -168,7 +171,7 @@ describe('orchestration worker workspace resolution', () => {
   })
 
   it('does not fall back from the floating terminal sentinel to another workspace', async () => {
-    const runtime = new OrcaRuntimeService(makeStore() as never)
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
 
     await expect(
       runtime.showManagedTerminalWorkspace(`id:${FLOATING_TERMINAL_WORKTREE_ID}`)
@@ -185,13 +188,15 @@ describe('orchestration worker workspace resolution', () => {
         { path: secondPath, head: 'b', branch: 'two', isBare: false, isMainWorktree: false }
       ]
     })
-    const runtime = new OrcaRuntimeService(
-      makeStore({
-        meta: {
-          [WORKTREE_ID]: makeMeta('Duplicate'),
-          [`${REPO_ID}::${secondPath}`]: makeMeta('Duplicate')
-        }
-      }) as never
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(
+        makeStore({
+          meta: {
+            [WORKTREE_ID]: makeMeta('Duplicate'),
+            [`${REPO_ID}::${secondPath}`]: makeMeta('Duplicate')
+          }
+        })
+      )
     )
 
     await expect(runtime.showManagedTerminalWorkspace('name:Duplicate')).rejects.toThrow(
@@ -219,14 +224,16 @@ describe('orchestration worker workspace resolution', () => {
         }
       ])
     })
-    const runtime = new OrcaRuntimeService(
-      makeStore({
-        repos: [makeStore().getRepos()[0], remoteRepo],
-        meta: {
-          [WORKTREE_ID]: makeMeta('Local feature'),
-          [`${remoteRepo.id}::${WORKTREE_PATH}`]: makeMeta('Remote feature')
-        }
-      }) as never
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(
+        makeStore({
+          repos: [makeStore().getRepos()[0], remoteRepo],
+          meta: {
+            [WORKTREE_ID]: makeMeta('Local feature'),
+            [`${remoteRepo.id}::${WORKTREE_PATH}`]: makeMeta('Remote feature')
+          }
+        })
+      )
     )
 
     await expect(runtime.showManagedTerminalWorkspace(`path:${WORKTREE_PATH}`)).rejects.toThrow(
@@ -235,7 +242,7 @@ describe('orchestration worker workspace resolution', () => {
   })
 
   it('resolves local and SSH folder workspaces without a Git catalog scan', async () => {
-    const localPath = await mkdtemp(join(tmpdir(), 'orca-worker-local-folder-'))
+    const localPath = await mkdtemp(join(tmpdir(), 'alfred-worker-local-folder-'))
     tempPaths.push(localPath)
     const group = { id: 'group-1', name: 'Group', parentPath: localPath } as ProjectGroup
     const localFolder = {
@@ -255,11 +262,13 @@ describe('orchestration worker workspace resolution', () => {
       stat: vi.fn().mockResolvedValue({ type: 'directory', size: 0, mtime: 1 })
     } as never)
     try {
-      const runtime = new OrcaRuntimeService(
-        makeStore({
-          folderWorkspaces: [localFolder, remoteFolder],
-          projectGroups: [group]
-        }) as never
+      const runtime = new AlfredRuntimeService(
+        createRuntimeStoreTestDouble(
+          makeStore({
+            folderWorkspaces: [localFolder, remoteFolder],
+            projectGroups: [group]
+          })
+        )
       )
 
       await expect(
@@ -296,8 +305,10 @@ describe('orchestration worker workspace resolution', () => {
       addedAt: 1,
       ...repo
     })) as Repo[]
-    const runtime = new OrcaRuntimeService(
-      makeStore({ repos, folderWorkspaces: [folder], projectGroups: [group] }) as never
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(
+        makeStore({ repos, folderWorkspaces: [folder], projectGroups: [group] })
+      )
     )
 
     await expect(runtime.showManagedTerminalWorkspace('folder:folder-1')).rejects.toThrow(

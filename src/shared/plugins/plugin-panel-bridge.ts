@@ -12,11 +12,11 @@ import { isPluginPanelAction } from './plugin-host-api'
  * bridge is a transport, not a second contract.
  */
 
-export const PANEL_ACTION_REQUEST_TYPE = 'orca-panel-action'
-export const PANEL_ACTION_RESULT_TYPE = 'orca-panel-action-result'
-export const PANEL_PING_TYPE = 'orca-panel-ping'
-export const PANEL_PONG_TYPE = 'orca-panel-pong'
-export const PLUGIN_PANEL_FRAME_NAME_PREFIX = 'orca-plugin-panel:'
+export const PANEL_ACTION_REQUEST_TYPE = 'alfred-panel-action'
+export const PANEL_ACTION_RESULT_TYPE = 'alfred-panel-action-result'
+export const PANEL_PING_TYPE = 'alfred-panel-ping'
+export const PANEL_PONG_TYPE = 'alfred-panel-pong'
+export const PLUGIN_PANEL_FRAME_NAME_PREFIX = 'alfred-plugin-panel:'
 
 /** Per-plugin bridge budgets, enforced host-side. */
 export const PANEL_MESSAGE_MAX_BYTES = 64 * 1024

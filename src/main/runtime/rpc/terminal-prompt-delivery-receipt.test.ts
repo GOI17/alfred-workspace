@@ -44,7 +44,7 @@ function request(
       enter: true,
       agentPrompt: true,
       waitSubmitMs,
-      client: { id: 'orca-cli', type: 'desktop' }
+      client: { id: 'alfred-cli', type: 'desktop' }
     }
   }
 }

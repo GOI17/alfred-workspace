@@ -41,9 +41,9 @@ async function checkFreshness(overrides = {}) {
       env: {
         ...process.env,
         GITHUB_OUTPUT: output,
-        GITHUB_REPOSITORY: 'stablyai/orca',
+        GITHUB_REPOSITORY: 'GOI17/alfred-workspace-release-fixture',
         MAIN_REPO_TOKEN: 'main-token',
-        HOURLY_REPO: 'stablyai/orca-hourly',
+        HOURLY_REPO: 'GOI17/alfred-workspace-hourly',
         HEAD_SHA: head,
         LAST_TAG: 'previous-hourly',
         LAST_SHA: head.slice(0, 12),
@@ -75,7 +75,7 @@ describe('hourly build preflight', () => {
     expect(result.stderr).toBe('')
     expect(result.output).toBe(`head_sha=${head}\nshould_build=true\n`)
     expect(preflight.steps.find((step) => step.id === 'app_token').if).toBe(
-      "github.repository == 'stablyai/orca'"
+      "vars.ALFRED_RELEASES_ENABLED == 'true' && github.repository == 'GOI17/alfred-workspace'"
     )
     const fork = workflow.jobs['build-alfred']
     expect(fork.if).toBe("github.repository == 'GOI17/alfred-workspace'")
@@ -95,7 +95,7 @@ describe('hourly build preflight', () => {
     ).toBe('read')
     expect(build.needs).toBe('preflight')
     expect(build.if).toBe(
-      "github.repository == 'stablyai/orca' && needs.preflight.outputs.should_build == 'true'"
+      "vars.ALFRED_RELEASES_ENABLED == 'true' && github.repository == 'GOI17/alfred-workspace' && needs.preflight.outputs.should_build == 'true'"
     )
     expect(build.steps.find((step) => step.name === 'Checkout').with.ref).toBe(
       build.outputs.head_sha

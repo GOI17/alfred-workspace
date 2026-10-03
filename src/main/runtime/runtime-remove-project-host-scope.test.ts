@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 /**
  * The same repo id is allowed on two execution hosts (persistence.ts `removeProjectForHost`).
  * `repo.rm` resolves a *row*, so the deletion it performs must be scoped to that row's host:
@@ -7,7 +8,7 @@
  */
 import { describe, expect, it, vi } from 'vitest'
 import type { Repo } from '../../shared/repo-types'
-import { OrcaRuntimeService } from './orca-runtime'
+import { AlfredRuntimeService } from './alfred-runtime'
 
 function makeRepos(): Repo[] {
   return [
@@ -49,17 +50,19 @@ function createRuntime() {
       }
     }
   })
-  const runtime = new OrcaRuntimeService({
-    getRepos: () => [...repos],
-    getRepo: (id: string) => repos.find((repo) => repo.id === id) ?? null,
-    getAllWorktreeMeta: () => ({}),
-    getWorktreeMeta: () => null,
-    setWorktreeMeta: vi.fn(),
-    removeWorktreeMeta: vi.fn(),
-    getGitHubCache: () => null,
-    removeProject,
-    removeProjectForHost
-  } as never)
+  const runtime = new AlfredRuntimeService(
+    createRuntimeStoreTestDouble({
+      getRepos: () => [...repos],
+      getRepo: (id: string) => repos.find((repo) => repo.id === id),
+      getAllWorktreeMeta: () => ({}),
+      getWorktreeMeta: () => undefined,
+      setWorktreeMeta: vi.fn(),
+      removeWorktreeMeta: vi.fn(),
+      getGitHubCache: () => ({ pr: {}, issue: {} }),
+      removeProject,
+      removeProjectForHost
+    })
+  )
   return { runtime, repos, removeProject, removeProjectForHost }
 }
 

@@ -23,10 +23,10 @@ describe('fingerprintPluginConsent', () => {
         __proto__: 'polluted',
         constructor: 'polluted',
         invalid: 'sha256-invalid',
-        'orca-samples.demo': 'sha256-valid',
-        'orca-samples.large': 'x'.repeat(257)
+        'alfred-samples.demo': 'sha256-valid',
+        'alfred-samples.large': 'x'.repeat(257)
       })
-    ).toEqual({ 'orca-samples.demo': 'sha256-valid' })
+    ).toEqual({ 'alfred-samples.demo': 'sha256-valid' })
   })
 
   it('is stable across capability order and duplicate declarations', () => {
@@ -48,11 +48,11 @@ describe('fingerprintPluginConsent', () => {
 
     expect(withWorker).not.toBe(panelOnly)
     const lists = {
-      pluginConsents: { 'orca-samples.demo': panelOnly },
+      pluginConsents: { 'alfred-samples.demo': panelOnly },
       disabledPlugins: []
     }
-    expect(getPluginActivationState('orca-samples.demo', withWorker, lists)).toBe('pending')
-    expect(needsReconsent('orca-samples.demo', withWorker, lists)).toBe(true)
+    expect(getPluginActivationState('alfred-samples.demo', withWorker, lists)).toBe('pending')
+    expect(needsReconsent('alfred-samples.demo', withWorker, lists)).toBe(true)
   })
 
   it('preserves capability-only fingerprints for existing panel plugins', () => {
@@ -79,8 +79,8 @@ describe('fingerprintPluginConsent', () => {
 
     expect(second).not.toBe(first)
     expect(
-      getPluginActivationState('orca-samples.recipes', second, {
-        pluginConsents: { 'orca-samples.recipes': first },
+      getPluginActivationState('alfred-samples.recipes', second, {
+        pluginConsents: { 'alfred-samples.recipes': first },
         disabledPlugins: []
       })
     ).toBe('pending')
@@ -105,7 +105,7 @@ describe('fingerprintPluginConsent', () => {
 
 describe('plugin install lockfile consent fingerprints', () => {
   const persistedEntry = {
-    pluginKey: 'orca-samples.demo',
+    pluginKey: 'alfred-samples.demo',
     version: '1.0.0',
     source: { kind: 'local-path' as const, path: '/plugins/demo' },
     resolvedCommit: null,
@@ -117,17 +117,17 @@ describe('plugin install lockfile consent fingerprints', () => {
   it('reads the legacy capabilityHash field as a consent fingerprint', () => {
     const parsed = parsePluginLockfile({
       version: 1,
-      plugins: { 'orca-samples.demo': persistedEntry }
+      plugins: { 'alfred-samples.demo': persistedEntry }
     })
 
-    expect(parsed.plugins['orca-samples.demo']?.consentFingerprint).toBe('sha256-legacy-name')
+    expect(parsed.plugins['alfred-samples.demo']?.consentFingerprint).toBe('sha256-legacy-name')
   })
 
   it('keeps writing the v1 field name for rollback compatibility', () => {
     const lock: PluginLockfile = {
       version: 1,
       plugins: {
-        'orca-samples.demo': {
+        'alfred-samples.demo': {
           ...persistedEntry,
           consentFingerprint: 'sha256-current'
         }
@@ -137,14 +137,14 @@ describe('plugin install lockfile consent fingerprints', () => {
     expect(serializePluginLockfile(lock)).toMatchObject({
       version: 1,
       plugins: {
-        'orca-samples.demo': {
+        'alfred-samples.demo': {
           capabilityHash: 'sha256-current'
         }
       }
     })
     expect(
       (serializePluginLockfile(lock) as { plugins: Record<string, unknown> }).plugins[
-        'orca-samples.demo'
+        'alfred-samples.demo'
       ]
     ).not.toHaveProperty('consentFingerprint')
   })
@@ -153,7 +153,7 @@ describe('plugin install lockfile consent fingerprints', () => {
     const parsed = parsePluginLockfile({
       version: 1,
       plugins: {
-        'orca-samples.other': persistedEntry
+        'alfred-samples.other': persistedEntry
       }
     })
 
@@ -164,10 +164,10 @@ describe('plugin install lockfile consent fingerprints', () => {
     const parsed = parsePluginLockfile({
       version: 1,
       plugins: {
-        'orca-samples.demo': { ...persistedEntry, resolvedCommit: 'a'.repeat(64) }
+        'alfred-samples.demo': { ...persistedEntry, resolvedCommit: 'a'.repeat(64) }
       }
     })
 
-    expect(parsed.plugins['orca-samples.demo']?.resolvedCommit).toBe('a'.repeat(64))
+    expect(parsed.plugins['alfred-samples.demo']?.resolvedCommit).toBe('a'.repeat(64))
   })
 })

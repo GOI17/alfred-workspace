@@ -1,16 +1,16 @@
 // Where in-box hook clients find this relay's loopback hook server: endpoint-directory naming
 // policy (per-user $HOME default, sibling-of-socket layout, Windows named-pipe path flattening) and
-// the ORCA_AGENT_HOOK_* env vars injected into relay-spawned PTYs. IO-free.
+// the ALFRED_AGENT_HOOK_* env vars injected into relay-spawned PTYs. IO-free.
 import { basename, dirname, join } from 'node:path'
 import { homedir } from 'node:os'
 
 import {
-  ORCA_HOOK_PROTOCOL_VERSION,
-  ORCA_HOOK_RAW_JSON_TRANSPORT
+  ALFRED_HOOK_PROTOCOL_VERSION,
+  ALFRED_HOOK_RAW_JSON_TRANSPORT
 } from '../shared/agent-hook-types'
 
 // Why: relay's userData equivalent under $HOME so each user on a shared dev box gets their own 0o700 dir.
-const RELAY_HOOKS_DIR_NAME = '.orca-relay'
+const RELAY_HOOKS_DIR_NAME = '.alfred-relay'
 const RELAY_HOOKS_SUBDIR = 'agent-hooks'
 
 export function defaultEndpointDir(): string {
@@ -49,14 +49,14 @@ export function buildRelayHookPtyEnv(coordinates: {
     return {}
   }
   const env: Record<string, string> = {
-    ORCA_AGENT_HOOK_PORT: String(coordinates.port),
-    ORCA_AGENT_HOOK_TOKEN: coordinates.token,
-    ORCA_AGENT_HOOK_ENV: coordinates.env,
-    ORCA_AGENT_HOOK_VERSION: ORCA_HOOK_PROTOCOL_VERSION,
-    ORCA_AGENT_HOOK_TRANSPORT: ORCA_HOOK_RAW_JSON_TRANSPORT
+    ALFRED_AGENT_HOOK_PORT: String(coordinates.port),
+    ALFRED_AGENT_HOOK_TOKEN: coordinates.token,
+    ALFRED_AGENT_HOOK_ENV: coordinates.env,
+    ALFRED_AGENT_HOOK_VERSION: ALFRED_HOOK_PROTOCOL_VERSION,
+    ALFRED_AGENT_HOOK_TRANSPORT: ALFRED_HOOK_RAW_JSON_TRANSPORT
   }
   if (coordinates.endpointFileWritten) {
-    env.ORCA_AGENT_HOOK_ENDPOINT = coordinates.endpointFilePath
+    env.ALFRED_AGENT_HOOK_ENDPOINT = coordinates.endpointFilePath
   }
   return env
 }

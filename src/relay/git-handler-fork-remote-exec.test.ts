@@ -12,8 +12,8 @@ import {
   removeGitTempDir
 } from './git-handler-test-harness'
 
-const FORK_REMOTE = 'pr-contributor-orca'
-const FORK_URL = 'https://github.com/contributor/orca.git'
+const FORK_REMOTE = 'pr-contributor-alfred'
+const FORK_URL = 'https://github.com/contributor/alfred.git'
 
 describe('GitHandler git.exec fork remote', () => {
   let dispatcher: MockDispatcher

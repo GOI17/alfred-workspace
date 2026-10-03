@@ -184,19 +184,19 @@ function buildRecipeEnv(
   return {
     ...process.env,
     ...env,
-    ORCA_VM_MODE: mode,
-    ORCA_VM_INSTANCE_ID: context.instanceId ?? '',
-    ORCA_RECIPE_ID: context.recipeId,
-    ORCA_PROJECT_ID: context.projectId ?? '',
-    ORCA_WORKSPACE_ID: context.workspaceId ?? '',
-    ORCA_WORKSPACE_NAME: context.workspaceName ?? '',
-    ORCA_REPO_PATH: context.repoPath,
-    ORCA_REPO_URL: context.repoUrl ?? '',
-    ORCA_REPO_BRANCH: context.branch ?? '',
-    ORCA_REPO_REF: context.ref ?? '',
-    ORCA_REPO_REF_HEAD: context.expectedRefHead ?? '',
-    ORCA_RECIPE_RESULT_SCHEMA_VERSION: String(resultSchemaVersion),
-    ORCA_VERSION: context.orcaVersion ?? ''
+    ALFRED_VM_MODE: mode,
+    ALFRED_VM_INSTANCE_ID: context.instanceId ?? '',
+    ALFRED_RECIPE_ID: context.recipeId,
+    ALFRED_PROJECT_ID: context.projectId ?? '',
+    ALFRED_WORKSPACE_ID: context.workspaceId ?? '',
+    ALFRED_WORKSPACE_NAME: context.workspaceName ?? '',
+    ALFRED_REPO_PATH: context.repoPath,
+    ALFRED_REPO_URL: context.repoUrl ?? '',
+    ALFRED_REPO_BRANCH: context.branch ?? '',
+    ALFRED_REPO_REF: context.ref ?? '',
+    ALFRED_REPO_REF_HEAD: context.expectedRefHead ?? '',
+    ALFRED_RECIPE_RESULT_SCHEMA_VERSION: String(resultSchemaVersion),
+    ALFRED_VERSION: context.alfredVersion ?? ''
   }
 }
 

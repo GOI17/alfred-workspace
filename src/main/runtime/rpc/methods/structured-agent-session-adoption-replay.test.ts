@@ -1,3 +1,5 @@
+import { getDefaultRuntimeClientSettings } from '../../runtime-client-settings-test-fixture'
+import { createRuntimeStoreTestDouble } from '../../runtime-store-test-double'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -8,7 +10,7 @@ import { AgentSessionRecordStore } from '../../agent-session-record-store'
 import type { StructuredAgentSessionAdapter } from '../../../native-chat/agent-session-wire/structured-agent-session-adapter'
 import { StructuredAgentSessionHost } from '../../../native-chat/agent-session-wire/structured-agent-session-host'
 import { setStructuredAgentSessionHost } from '../../../native-chat/agent-session-wire/structured-agent-session-registry'
-import { OrcaRuntimeService } from '../../orca-runtime'
+import { AlfredRuntimeService } from '../../alfred-runtime'
 import type { RpcRequest, RpcResponse } from '../core'
 import { RpcDispatcher } from '../dispatcher'
 import { STRUCTURED_AGENT_SESSION_METHODS } from './structured-agent-session'
@@ -92,7 +94,7 @@ async function call(dispatcher: RpcDispatcher, params: unknown, client = CLIENT)
 }
 
 beforeEach(async () => {
-  root = await mkdtemp(join(tmpdir(), 'orca-adoption-rpc-replay-'))
+  root = await mkdtemp(join(tmpdir(), 'alfred-adoption-rpc-replay-'))
 })
 
 afterEach(async () => {
@@ -131,21 +133,23 @@ describe('committed adopting create RPC replay', () => {
 
     let selectedHome = originalHome
     const selectAccountHome = vi.fn(() => selectedHome)
-    const runtime = new OrcaRuntimeService(
-      {
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
         getSettings: () => ({
+          ...getDefaultRuntimeClientSettings(),
           experimentalStructuredNativeChat: true,
           agentDefaultEnv: { codex: {} }
         })
-      } as never,
+      }),
       undefined,
       { prepareCodexStructuredLaunch: selectAccountHome }
     )
     // The structured surface is settings-gated for every caller, not just mobile; this test
     // probes durable-identity replay, which only runs once the gate admits the call.
     vi.spyOn(runtime, 'getClientSettings').mockReturnValue({
+      ...getDefaultRuntimeClientSettings(),
       experimentalStructuredNativeChat: true
-    } as ReturnType<OrcaRuntimeService['getClientSettings']>)
+    })
     vi.spyOn(runtime, 'getStructuredAgentSessionCreateSupport').mockResolvedValue({
       supported: true
     })

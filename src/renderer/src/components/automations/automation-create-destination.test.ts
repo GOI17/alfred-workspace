@@ -238,13 +238,13 @@ describe('create project mismatch', () => {
   function repo(overrides: Partial<Repo>): Repo {
     return {
       id: 'repo-1',
-      displayName: 'orca',
-      path: '/repos/orca',
+      displayName: 'alfred',
+      path: '/repos/alfred',
       badgeColor: '#000000',
       addedAt: 1,
       worktreeBaseRef: 'main',
       ...overrides
-    } as Repo
+    }
   }
   const desktopSelf = {
     authority: { kind: 'desktop' } as const,

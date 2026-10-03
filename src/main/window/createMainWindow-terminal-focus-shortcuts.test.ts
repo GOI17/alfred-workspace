@@ -1,3 +1,5 @@
+import { getDefaultUIState, getDefaultSettings } from '../../shared/constants'
+import { createPersistenceStoreTestDouble } from '../persistence/persistence-store-test-double'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('electron', async () =>
@@ -540,72 +542,7 @@ describe('createMainWindow', () => {
     expect(webContents.send).toHaveBeenCalledWith('ui:openQuickOpen')
   })
 
-  it('notifies before Orca-first captures a risky terminal-focused shortcut', () => {
-    const windowHandlers: Record<string, (...args: any[]) => void> = {}
-    const webContents = {
-      on: vi.fn((event, handler) => {
-        windowHandlers[event] = handler
-      }),
-      setZoomLevel: vi.fn(),
-      setBackgroundThrottling: vi.fn(),
-      invalidate: vi.fn(),
-      setWindowOpenHandler: vi.fn(),
-      send: vi.fn(),
-      isDevToolsOpened: vi.fn(),
-      openDevTools: vi.fn(),
-      closeDevTools: vi.fn()
-    }
-    const browserWindowInstance = {
-      webContents,
-      on: vi.fn(),
-      isDestroyed: vi.fn(() => false),
-      isMaximized: vi.fn(() => true),
-      isFullScreen: vi.fn(() => false),
-      getSize: vi.fn(() => [1200, 800]),
-      setSize: vi.fn(),
-      maximize: vi.fn(),
-      show: vi.fn(),
-      loadFile: vi.fn(() => Promise.resolve()),
-      loadURL: vi.fn(() => Promise.resolve())
-    }
-    browserWindowMock.mockImplementation(function () {
-      return browserWindowInstance
-    })
-
-    createMainWindow({
-      getUI: () => ({}),
-      getSettings: () => ({ terminalShortcutPolicy: 'orca-first' })
-    } as never)
-
-    const setFocusedListener = vi
-      .mocked(ipcMain.on)
-      .mock.calls.find(([channel]) => channel === 'ui:setTerminalInputFocused')?.[1]
-    expect(setFocusedListener).toBeTypeOf('function')
-    setFocusedListener?.({ sender: webContents } as never, true)
-
-    const preventDefault = vi.fn()
-    const isDarwin = process.platform === 'darwin'
-    windowHandlers['before-input-event'](
-      { preventDefault } as never,
-      {
-        type: 'keyDown',
-        code: 'KeyJ',
-        key: 'j',
-        meta: isDarwin,
-        control: !isDarwin,
-        alt: false,
-        shift: !isDarwin
-      } as never
-    )
-
-    expect(preventDefault).toHaveBeenCalledTimes(1)
-    expect(webContents.send).toHaveBeenNthCalledWith(1, 'ui:terminalShortcutCaptured', {
-      actionId: 'worktree.palette'
-    })
-    expect(webContents.send).toHaveBeenNthCalledWith(2, 'ui:toggleWorktreePalette')
-  })
-
-  it('notifies before Orca-first captures a terminal-focused double-tap shortcut', () => {
+  it('notifies before Alfred-first captures a risky terminal-focused shortcut', () => {
     const windowHandlers: Record<string, (...args: any[]) => void> = {}
     const webContents = {
       on: vi.fn((event, handler) => {
@@ -638,10 +575,83 @@ describe('createMainWindow', () => {
     })
 
     createMainWindow(
+      createPersistenceStoreTestDouble({
+        getUI: getDefaultUIState,
+        getSettings: () => ({
+          ...getDefaultSettings('/tmp'),
+          terminalShortcutPolicy: 'alfred-first'
+        })
+      })
+    )
+
+    const setFocusedListener = vi
+      .mocked(ipcMain.on)
+      .mock.calls.find(([channel]) => channel === 'ui:setTerminalInputFocused')?.[1]
+    expect(setFocusedListener).toBeTypeOf('function')
+    setFocusedListener?.({ sender: webContents } as never, true)
+
+    const preventDefault = vi.fn()
+    const isDarwin = process.platform === 'darwin'
+    windowHandlers['before-input-event'](
+      { preventDefault } as never,
       {
-        getUI: () => ({}),
-        getSettings: () => ({ terminalShortcutPolicy: 'orca-first' })
-      } as never,
+        type: 'keyDown',
+        code: 'KeyJ',
+        key: 'j',
+        meta: isDarwin,
+        control: !isDarwin,
+        alt: false,
+        shift: !isDarwin
+      } as never
+    )
+
+    expect(preventDefault).toHaveBeenCalledTimes(1)
+    expect(webContents.send).toHaveBeenNthCalledWith(1, 'ui:terminalShortcutCaptured', {
+      actionId: 'worktree.palette'
+    })
+    expect(webContents.send).toHaveBeenNthCalledWith(2, 'ui:toggleWorktreePalette')
+  })
+
+  it('notifies before Alfred-first captures a terminal-focused double-tap shortcut', () => {
+    const windowHandlers: Record<string, (...args: any[]) => void> = {}
+    const webContents = {
+      on: vi.fn((event, handler) => {
+        windowHandlers[event] = handler
+      }),
+      setZoomLevel: vi.fn(),
+      setBackgroundThrottling: vi.fn(),
+      invalidate: vi.fn(),
+      setWindowOpenHandler: vi.fn(),
+      send: vi.fn(),
+      isDevToolsOpened: vi.fn(),
+      openDevTools: vi.fn(),
+      closeDevTools: vi.fn()
+    }
+    const browserWindowInstance = {
+      webContents,
+      on: vi.fn(),
+      isDestroyed: vi.fn(() => false),
+      isMaximized: vi.fn(() => true),
+      isFullScreen: vi.fn(() => false),
+      getSize: vi.fn(() => [1200, 800]),
+      setSize: vi.fn(),
+      maximize: vi.fn(),
+      show: vi.fn(),
+      loadFile: vi.fn(() => Promise.resolve()),
+      loadURL: vi.fn(() => Promise.resolve())
+    }
+    browserWindowMock.mockImplementation(function () {
+      return browserWindowInstance
+    })
+
+    createMainWindow(
+      createPersistenceStoreTestDouble({
+        getUI: getDefaultUIState,
+        getSettings: () => ({
+          ...getDefaultSettings('/tmp'),
+          terminalShortcutPolicy: 'alfred-first'
+        })
+      }),
       {
         getKeybindings: () => ({ 'worktree.quickOpen': ['DoubleTap+Shift'] })
       }

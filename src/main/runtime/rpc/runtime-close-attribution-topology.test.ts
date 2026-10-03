@@ -1,6 +1,6 @@
+import { createRuntimeServiceTestDouble } from '../runtime-service-test-double'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { _resetTracerForTests, setActiveSink, type TracerSink } from '../../observability/tracer'
-import type { OrcaRuntimeService } from '../orca-runtime'
 import type { RpcRequest } from './core'
 import { RpcDispatcher } from './dispatcher'
 import { SESSION_TAB_METHODS } from './methods/session-tabs'
@@ -62,14 +62,14 @@ describe('runtime close attribution topology', () => {
       .fn()
       .mockResolvedValueOnce({ closed: true, refused: true, refusalReason: 'stale-terminal' })
       .mockResolvedValue({ closed: true })
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'runtime-owner-1',
       closeMobileSessionTab,
       listMobileSessionTabs: vi.fn(async (worktree: string) =>
         visibleSessionTab(worktree, worktree.endsWith('a') ? 'tab-a' : 'tab-b')
       ),
       refuseUnattributedMobileSessionTabClose: vi.fn().mockResolvedValue({ closed: true })
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     await dispatcher.dispatchStreaming(
@@ -136,13 +136,13 @@ describe('runtime close attribution topology', () => {
 
   it('keeps concurrent cross-worktree request and target identities distinct', async () => {
     const closeMobileSessionTab = vi.fn().mockResolvedValue({ closed: true })
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'runtime-owner-2',
       listMobileSessionTabs: vi.fn(async (worktree: string) =>
         visibleSessionTab(worktree, worktree.endsWith('a') ? 'tab-a' : 'tab-b')
       ),
       closeMobileSessionTab
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: SESSION_TAB_METHODS })
 
     await Promise.all(
@@ -193,11 +193,11 @@ describe('runtime close attribution topology', () => {
       .mockResolvedValueOnce({ handle: 'terminal-live', tabId: 'tab-live', ptyKilled: true })
       .mockRejectedValueOnce(new Error('terminal_handle_stale'))
     const listSessions = vi.fn()
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'runtime-owner-3',
       closeTerminal,
       listSessions
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: TERMINAL_METHODS })
     const context = {
       clientKind: 'runtime' as const,

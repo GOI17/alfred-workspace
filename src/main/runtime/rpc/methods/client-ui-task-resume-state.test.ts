@@ -1,6 +1,6 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { getDefaultUIState } from '../../../../shared/constants'
-import type { OrcaRuntimeService } from '../../orca-runtime'
 import type { RpcRequest } from '../core'
 import { RpcDispatcher } from '../dispatcher'
 import { CLIENT_UI_METHODS } from './client-ui'
@@ -12,10 +12,10 @@ function makeRequest(params: unknown): RpcRequest {
 
 function makeDispatcher(): { dispatcher: RpcDispatcher; updateUIState: ReturnType<typeof vi.fn> } {
   const updateUIState = vi.fn(() => getDefaultUIState())
-  const runtime = {
+  const runtime = createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
     updateUIState
-  } as unknown as OrcaRuntimeService
+  })
   return { dispatcher: new RpcDispatcher({ runtime, methods: CLIENT_UI_METHODS }), updateUIState }
 }
 

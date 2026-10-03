@@ -428,8 +428,8 @@ describe('CodexSubagentRoster', () => {
     )
 
     expect(appended.map((entry) => entry.identity)).toEqual([
-      { provider: 'orca', clientMessageId: `codex-subagents:${THREAD}:${TURN}` },
-      { provider: 'orca', clientMessageId: `codex-subagents:${THREAD}:outside-turn` }
+      { provider: 'alfred', clientMessageId: `codex-subagents:${THREAD}:${TURN}` },
+      { provider: 'alfred', clientMessageId: `codex-subagents:${THREAD}:outside-turn` }
     ])
   })
 

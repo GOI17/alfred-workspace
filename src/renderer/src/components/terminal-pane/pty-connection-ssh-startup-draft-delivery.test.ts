@@ -1,3 +1,4 @@
+import { makeRepo as completeMakeRepo } from '../../../../shared/repo-test-fixture'
 import type * as React from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { makePaneKey } from '../../../../shared/stable-pane-id'
@@ -159,7 +160,7 @@ describe('connectPanePty', () => {
     mockStoreState = {
       ...mockStoreState,
       tabsByWorktree: { 'wt-1': [{ id: 'tab-1', ptyId: null }] },
-      repos: [{ id: 'repo1', connectionId: 'ssh-conn-1' }],
+      repos: [completeMakeRepo({ id: 'repo1', connectionId: 'ssh-conn-1' })],
       sshConnectionStates: new Map([['ssh-conn-1', { status: 'connected' }]])
     }
 
@@ -169,7 +170,7 @@ describe('connectPanePty', () => {
       createDeps({ startup: { command: "claude 'say test'" } }) as never
     )
     await flushAsyncTicks()
-    capturedDataCallback.current?.('\x1b]777;orca-shell-ready\x07user@remote $ ')
+    capturedDataCallback.current?.('\x1b]777;alfred-shell-ready\x07user@remote $ ')
 
     expect(createdTransportOptions[0]).toEqual(
       expect.objectContaining({
@@ -194,7 +195,7 @@ describe('connectPanePty', () => {
     mockStoreState = {
       ...mockStoreState,
       tabsByWorktree: { 'wt-1': [{ id: 'tab-1', ptyId: null }] },
-      repos: [{ id: 'repo1', connectionId: 'ssh-conn-1' }],
+      repos: [completeMakeRepo({ id: 'repo1', connectionId: 'ssh-conn-1' })],
       sshConnectionStates: new Map([['ssh-conn-1', { status: 'connected' }]])
     }
     vi.mocked(window.api.pty.getForegroundProcess).mockResolvedValue('droid')
@@ -240,7 +241,7 @@ describe('connectPanePty', () => {
     mockStoreState = {
       ...mockStoreState,
       tabsByWorktree: { 'wt-1': [{ id: 'tab-1', ptyId: null }] },
-      repos: [{ id: 'repo1', connectionId: null }]
+      repos: [completeMakeRepo({ id: 'repo1', connectionId: null })]
     }
 
     const pane = createPane(1)
@@ -251,7 +252,7 @@ describe('connectPanePty', () => {
         launchAgent: 'codex',
         launchConfig: { agentArgs: '', agentEnv: {} },
         launchToken: 'launch-token-1',
-        draftPrompt: 'https://github.com/stablyai/orca/issues/42'
+        draftPrompt: 'https://github.com/GOI17/alfred-workspace/issues/42'
       }
     })
     vi.mocked(window.api.pty.getForegroundProcess).mockResolvedValue('codex')
@@ -279,12 +280,12 @@ describe('connectPanePty', () => {
     await flushAsyncTicks()
 
     expect(transport.sendInputAccepted).toHaveBeenCalledWith(
-      '\x1b[200~https://github.com/stablyai/orca/issues/42\x1b[201~'
+      '\x1b[200~https://github.com/GOI17/alfred-workspace/issues/42\x1b[201~'
     )
     expect(transport.sendInput.mock.calls.map(([data]) => data)).toEqual([
       '\x1b[I',
       'USER_DRAFT',
-      '\x1b[200~https://github.com/stablyai/orca/issues/42\x1b[201~'
+      '\x1b[200~https://github.com/GOI17/alfred-workspace/issues/42\x1b[201~'
     ])
     expect(window.api.pty.writeAccepted).not.toHaveBeenCalled()
     expect(mockStoreState.recordTerminalInput).toHaveBeenCalledOnce()
@@ -312,7 +313,7 @@ describe('connectPanePty', () => {
     mockStoreState = {
       ...mockStoreState,
       tabsByWorktree: { 'wt-1': [{ id: 'tab-1', ptyId: null }] },
-      repos: [{ id: 'repo1', connectionId: null }]
+      repos: [completeMakeRepo({ id: 'repo1', connectionId: null })]
     }
 
     const pane = createPane(1)
@@ -367,21 +368,22 @@ describe('connectPanePty', () => {
     mockStoreState = {
       ...mockStoreState,
       tabsByWorktree: { 'wt-1': [{ id: 'tab-1', ptyId: null }] },
-      repos: [{ id: 'repo1', connectionId: null }]
+      repos: [completeMakeRepo({ id: 'repo1', connectionId: null })]
     }
 
     const binding = connectPanePty(
       createPane(1) as never,
       createManager(1) as never,
+      // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: This disposal test uses the shared mock transports; the deferred connect never reaches their omitted live-PTY methods.
       createDeps({
         startup: {
           command: 'codex',
           launchAgent: 'codex',
           launchConfig: { agentArgs: '', agentEnv: {} },
           launchToken: 'launch-token-1',
-          draftPrompt: 'https://github.com/stablyai/orca/issues/42'
+          draftPrompt: 'https://github.com/GOI17/alfred-workspace/issues/42'
         }
-      }) as never
+      }) as unknown as Parameters<typeof connectPanePty>[2]
     )
 
     binding.dispose()
@@ -422,7 +424,7 @@ describe('connectPanePty', () => {
       mockStoreState = {
         ...mockStoreState,
         tabsByWorktree: { 'wt-1': [{ id: 'tab-1', ptyId: null }] },
-        repos: [{ id: 'repo1', connectionId: 'ssh-conn-1' }],
+        repos: [completeMakeRepo({ id: 'repo1', connectionId: 'ssh-conn-1' })],
         // Why: startup delivery assumes a live connection; a disconnected target routes through the deferred-connect gate instead of spawning synchronously.
         sshConnectionStates: new Map([['ssh-conn-1', { status: 'connected' }]])
       }
@@ -480,7 +482,7 @@ describe('connectPanePty', () => {
       mockStoreState = {
         ...mockStoreState,
         tabsByWorktree: { 'wt-1': [{ id: 'tab-1', ptyId: null }] },
-        repos: [{ id: 'repo1', connectionId: 'ssh-conn-1' }],
+        repos: [completeMakeRepo({ id: 'repo1', connectionId: 'ssh-conn-1' })],
         // Why: startup delivery assumes a live connection; a disconnected target routes through the deferred-connect gate instead of spawning synchronously.
         sshConnectionStates: new Map([['ssh-conn-1', { status: 'connected' }]])
       }
@@ -538,7 +540,7 @@ describe('connectPanePty', () => {
       mockStoreState = {
         ...mockStoreState,
         tabsByWorktree: { 'wt-1': [{ id: 'tab-1', ptyId: null }] },
-        repos: [{ id: 'repo1', connectionId: 'ssh-conn-1' }],
+        repos: [completeMakeRepo({ id: 'repo1', connectionId: 'ssh-conn-1' })],
         // Why: startup delivery assumes a live connection; a disconnected target routes through the deferred-connect gate instead of spawning synchronously.
         sshConnectionStates: new Map([['ssh-conn-1', { status: 'connected' }]])
       }
@@ -556,7 +558,7 @@ describe('connectPanePty', () => {
       }
       expect(transport.sendInput).not.toHaveBeenCalled()
 
-      capturedDataCallback.current?.('\x1b]777;orca-shell-ready\x07user@remote $ ')
+      capturedDataCallback.current?.('\x1b]777;alfred-shell-ready\x07user@remote $ ')
       for (const fn of pendingTimeouts.splice(0)) {
         fn()
       }
@@ -595,7 +597,7 @@ describe('connectPanePty', () => {
       mockStoreState = {
         ...mockStoreState,
         tabsByWorktree: { 'wt-1': [{ id: 'tab-1', ptyId: null }] },
-        repos: [{ id: 'repo1', connectionId: 'ssh-conn-1' }],
+        repos: [completeMakeRepo({ id: 'repo1', connectionId: 'ssh-conn-1' })],
         // Why: startup delivery assumes a live connection; a disconnected target routes through the deferred-connect gate instead of spawning synchronously.
         sshConnectionStates: new Map([['ssh-conn-1', { status: 'connected' }]])
       }
@@ -619,7 +621,7 @@ describe('connectPanePty', () => {
       }
       expect(transport.sendInput).not.toHaveBeenCalled()
 
-      capturedDataCallback.current?.('\x1b]777;orca-shell-ready\x07user@remote $ ')
+      capturedDataCallback.current?.('\x1b]777;alfred-shell-ready\x07user@remote $ ')
       for (const fn of pendingTimeouts.splice(0)) {
         fn()
       }

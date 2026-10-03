@@ -36,18 +36,18 @@ test('requires a preferred-region fallback to leave the full cell', async () => 
   assert.equal(await proveRelayLoadRegionalFallback({
     peer: {
       connect: async () => undefined,
-      assignedCellUrl: () => 'https://c3.relay-staging.onorca.dev',
+      assignedCellUrl: () => 'https://c3.relay-staging.alfredlabs.org',
       shutdown: async () => { shutdowns++ }
     },
-    blockedOrigin: 'https://c4.relay-staging.onorca.dev'
+    blockedOrigin: 'https://c4.relay-staging.alfredlabs.org'
   }), true)
   assert.equal(shutdowns, 1)
   await assert.rejects(proveRelayLoadRegionalFallback({
     peer: {
       connect: async () => undefined,
-      assignedCellUrl: () => 'https://c4.relay-staging.onorca.dev',
+      assignedCellUrl: () => 'https://c4.relay-staging.alfredlabs.org',
       shutdown: async () => undefined
     },
-    blockedOrigin: 'https://c4.relay-staging.onorca.dev'
+    blockedOrigin: 'https://c4.relay-staging.alfredlabs.org'
   }), /did not leave/)
 })

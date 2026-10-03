@@ -21,12 +21,12 @@ describe('getProjectHostCloneUrl', () => {
         createProject({
           providerIdentity: {
             provider: 'github',
-            owner: ' stablyai ',
-            repo: ' orca '
+            owner: ' alfredlabs ',
+            repo: ' alfred '
           }
         })
       )
-    ).toBe('https://github.com/stablyai/orca.git')
+    ).toBe('https://github.com/GOI17/alfred-workspace.git')
   })
 
   it('preserves an authenticated Enterprise host and port', () => {
@@ -36,12 +36,12 @@ describe('getProjectHostCloneUrl', () => {
           providerIdentity: {
             provider: 'github',
             owner: 'enterprise owner',
-            repo: 'orca repo',
+            repo: 'alfred repo',
             host: 'github.acme-corp.com:8443'
           }
         })
       )
-    ).toBe('https://github.acme-corp.com:8443/enterprise%20owner/orca%20repo.git')
+    ).toBe('https://github.acme-corp.com:8443/enterprise%20owner/alfred%20repo.git')
   })
 
   it('rejects malformed or path-bearing Enterprise hosts', () => {
@@ -55,7 +55,7 @@ describe('getProjectHostCloneUrl', () => {
       expect(
         getProjectHostCloneUrl(
           createProject({
-            providerIdentity: { provider: 'github', owner: 'acme', repo: 'orca', host }
+            providerIdentity: { provider: 'github', owner: 'acme', repo: 'alfred', host }
           })
         )
       ).toBeNull()
@@ -70,7 +70,7 @@ describe('getProjectHostCloneUrl', () => {
           providerIdentity: {
             provider: 'github',
             owner: '',
-            repo: 'orca'
+            repo: 'alfred'
           }
         })
       )

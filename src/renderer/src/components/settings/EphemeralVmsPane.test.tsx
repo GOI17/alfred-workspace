@@ -68,8 +68,8 @@ describe('EphemeralVmsPane', () => {
                 {
                   id: 'cloud-sandbox',
                   name: 'Cloud Sandbox',
-                  create: './scripts/orca-vm/cloud-sandbox.start.sh',
-                  destroy: './scripts/orca-vm/cloud-sandbox.cleanup.sh'
+                  create: './scripts/alfred-vm/cloud-sandbox.start.sh',
+                  destroy: './scripts/alfred-vm/cloud-sandbox.cleanup.sh'
                 }
               ]
             }

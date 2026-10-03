@@ -1,6 +1,6 @@
 import { optionalSettingsRead } from '../transport/settings-read-operations'
 import { useEffect, useState } from 'react'
-import type { PersistedTrustedOrcaHooks } from '../../../src/shared/orca-yaml-hook-types'
+import type { PersistedTrustedAlfredHooks } from '../../../src/shared/alfred-yaml-hook-types'
 import type { RpcAcceptedResult } from '../transport/rpc-accepted-result'
 import type { RpcClient } from '../transport/rpc-client'
 import type { RpcResponse } from '../transport/types'
@@ -37,12 +37,12 @@ export function useNewWorkspaceRuntimeContext(
 ): {
   runtimeSettings: NewWorktreeRuntimeSettings | null
   setRuntimeSettings: (settings: NewWorktreeRuntimeSettings) => void
-  trustedOrcaHooks: PersistedTrustedOrcaHooks
-  setTrustedOrcaHooks: (trust: PersistedTrustedOrcaHooks) => void
+  trustedAlfredHooks: PersistedTrustedAlfredHooks
+  setTrustedAlfredHooks: (trust: PersistedTrustedAlfredHooks) => void
   availableProviders: TaskProvider[]
 } {
   const [runtimeSettings, setRuntimeSettings] = useState<NewWorktreeRuntimeSettings | null>(null)
-  const [trustedOrcaHooks, setTrustedOrcaHooks] = useState<PersistedTrustedOrcaHooks>({})
+  const [trustedAlfredHooks, setTrustedAlfredHooks] = useState<PersistedTrustedAlfredHooks>({})
   const [availableProviders, setAvailableProviders] = useState<TaskProvider[]>([])
 
   useEffect(() => {
@@ -77,7 +77,7 @@ export function useNewWorkspaceRuntimeContext(
       if (uiRes.status === 'fulfilled') {
         const ui = newWorkspaceUiStateRead.interpret(uiRes.value)
         if (ui.accepted) {
-          setTrustedOrcaHooks(ui.value?.trustedOrcaHooks ?? {})
+          setTrustedAlfredHooks(ui.value?.trustedAlfredHooks ?? {})
         }
       }
 
@@ -109,8 +109,8 @@ export function useNewWorkspaceRuntimeContext(
   return {
     runtimeSettings,
     setRuntimeSettings,
-    trustedOrcaHooks,
-    setTrustedOrcaHooks,
+    trustedAlfredHooks,
+    setTrustedAlfredHooks,
     availableProviders
   }
 }

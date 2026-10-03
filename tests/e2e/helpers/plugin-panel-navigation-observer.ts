@@ -48,10 +48,8 @@ export async function startPanelNavigationObserver(
     ): void => {
       observation.didFrameNavigations.push({ isMainFrame, url })
     }
-    const probeGlobal = globalThis as typeof globalThis & {
-      __orcaPanelNavigationProbe?: MainPanelNavigationProbe
-    }
-    probeGlobal.__orcaPanelNavigationProbe?.dispose()
+    const probeGlobal = globalThis
+    probeGlobal.__alfredPanelNavigationProbe?.dispose()
     const originalOpenExternal = shell.openExternal
     const recordOpenExternal = async (url: string): Promise<void> => {
       observation.externalUrls.push(url)
@@ -60,7 +58,7 @@ export async function startPanelNavigationObserver(
     contents.on('did-frame-navigate', onDidFrameNavigate)
     shell.openExternal = recordOpenExternal
 
-    probeGlobal.__orcaPanelNavigationProbe = {
+    probeGlobal.__alfredPanelNavigationProbe = {
       observation,
       dispose: () => {
         contents.off('will-frame-navigate', onWillFrameNavigate)
@@ -77,11 +75,7 @@ export async function readPanelNavigationObserver(
   electronApp: ElectronApplication
 ): Promise<PanelNavigationObservation> {
   return electronApp.evaluate(() => {
-    const probe = (
-      globalThis as typeof globalThis & {
-        __orcaPanelNavigationProbe?: MainPanelNavigationProbe
-      }
-    ).__orcaPanelNavigationProbe
+    const probe = globalThis.__alfredPanelNavigationProbe
     if (!probe) {
       throw new Error('panel navigation observer is not active')
     }
@@ -93,16 +87,18 @@ export async function stopPanelNavigationObserver(
   electronApp: ElectronApplication
 ): Promise<PanelNavigationObservation> {
   return electronApp.evaluate(() => {
-    const probeGlobal = globalThis as typeof globalThis & {
-      __orcaPanelNavigationProbe?: MainPanelNavigationProbe
-    }
-    const probe = probeGlobal.__orcaPanelNavigationProbe
+    const probeGlobal = globalThis
+    const probe = probeGlobal.__alfredPanelNavigationProbe
     if (!probe) {
       throw new Error('panel navigation observer is not active')
     }
     const observation = structuredClone(probe.observation)
     probe.dispose()
-    delete probeGlobal.__orcaPanelNavigationProbe
+    delete probeGlobal.__alfredPanelNavigationProbe
     return observation
   })
+}
+
+declare global {
+  var __alfredPanelNavigationProbe: MainPanelNavigationProbe | undefined
 }

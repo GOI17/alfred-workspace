@@ -1,12 +1,20 @@
+import { createRuntimeStoreTestDouble } from '../../runtime-store-test-double'
 import { describe, expect, it } from 'vitest'
 import { getDefaultSettings } from '../../../../shared/constants'
-import { OrcaRuntimeService } from '../../orca-runtime'
+import { AlfredRuntimeService } from '../../alfred-runtime'
 import { SettingsUpdate } from './client-settings-schemas'
 
-function runtimeWithSharing(artifactSharingEnabled: unknown): OrcaRuntimeService {
-  return new OrcaRuntimeService({
-    getSettings: () => ({ ...getDefaultSettings('/tmp'), artifactSharingEnabled })
-  } as never)
+function runtimeWithSharing(artifactSharingEnabled: unknown): AlfredRuntimeService {
+  return new AlfredRuntimeService(
+    createRuntimeStoreTestDouble({
+      getSettings: () => {
+        // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: Malformed persisted flags intentionally exercise fail-closed capability admission.
+        return { ...getDefaultSettings('/tmp'), artifactSharingEnabled } as ReturnType<
+          typeof getDefaultSettings
+        >
+      }
+    })
+  )
 }
 
 // Why: the publish gate is only real if an agent cannot grant it to itself. The RPC settings

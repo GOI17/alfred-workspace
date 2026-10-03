@@ -8,8 +8,8 @@ const mocks = vi.hoisted(() => ({
   toastError: vi.fn(),
   toastSuccess: vi.fn(),
   state: {
-    orcaProfileAuthStatus: { state: 'connected' } as { state: string } | null,
-    connectCurrentOrcaProfile: vi.fn()
+    alfredProfileAuthStatus: { state: 'connected' },
+    connectCurrentAlfredProfile: vi.fn()
   }
 }))
 
@@ -33,19 +33,19 @@ const published = {
   change: 'created' as const,
   item: {
     artifact: { slug: 'artifact-a' },
-    shareUrl: 'https://share.onorca.dev/a/artifact-a'
+    shareUrl: 'https://share.alfredlabs.org/a/artifact-a'
   }
 }
 
 beforeEach(() => {
   vi.clearAllMocks()
-  mocks.state.orcaProfileAuthStatus = { state: 'connected' }
-  mocks.state.connectCurrentOrcaProfile = mocks.connect
+  mocks.state.alfredProfileAuthStatus = { state: 'connected' }
+  mocks.state.connectCurrentAlfredProfile = mocks.connect
 })
 
 describe('artifact publish flow', () => {
   it('signs in before preparing and publishing the request', async () => {
-    mocks.state.orcaProfileAuthStatus = { state: 'local' }
+    mocks.state.alfredProfileAuthStatus = { state: 'local' }
     mocks.connect.mockResolvedValue({ status: 'connected' })
     mocks.callRuntimeRpc.mockResolvedValue({ status: 'ok', value: published })
     const createRequest = vi.fn().mockResolvedValue(request)
@@ -79,7 +79,7 @@ describe('artifact publish flow', () => {
   })
 
   it('surfaces sign-in failures without preparing the file', async () => {
-    mocks.state.orcaProfileAuthStatus = { state: 'local' }
+    mocks.state.alfredProfileAuthStatus = { state: 'local' }
     mocks.connect.mockRejectedValue(new Error('login failed'))
     const createRequest = vi.fn().mockResolvedValue(request)
 

@@ -1,17 +1,18 @@
+import { createRuntimeServiceTestDouble } from '../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
 import { RpcDispatcher } from './dispatcher'
 import { defineMethod, InvalidArgumentError, type RpcRequest } from './core'
-import type { OrcaRuntimeService } from '../orca-runtime'
+import type { AlfredRuntimeService } from '../alfred-runtime'
 
 function makeRequest(method: string, params?: unknown): RpcRequest {
   return { id: 'req-1', authToken: 'tok', method, params }
 }
 
-function makeRuntime(): OrcaRuntimeService {
-  return {
+function makeRuntime(): AlfredRuntimeService {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime'
-  } as OrcaRuntimeService
+  })
 }
 
 const METHODS = [

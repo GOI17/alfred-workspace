@@ -28,27 +28,27 @@ type RuntimeFixtureMocks = {
 export function addRuntimeProject(mocks: RuntimeFixtureMocks, runtimeId: string): void {
   const repo = {
     id: RUNTIME_REPO_ID,
-    displayName: 'gpu-orca',
-    path: '/repos/gpu-orca',
+    displayName: 'gpu-alfred',
+    path: '/repos/gpu-alfred',
     badgeColor: '#111111',
     addedAt: 1,
     worktreeBaseRef: 'main',
     executionHostId: `runtime:${runtimeId}`
-  } as Repo
+  }
   const worktree = {
     id: RUNTIME_WORKSPACE_ID,
     repoId: RUNTIME_REPO_ID,
     displayName: 'main',
-    path: '/repos/gpu-orca',
+    path: '/repos/gpu-alfred',
     branch: 'main'
-  } as Worktree
+  }
   const setup: ProjectHostSetup = {
     id: 'setup-2',
     projectId: 'project-2',
     hostId: `runtime:${runtimeId}`,
     repoId: RUNTIME_REPO_ID,
-    path: '/repos/gpu-orca',
-    displayName: 'gpu-orca',
+    path: '/repos/gpu-alfred',
+    displayName: 'gpu-alfred',
     setupState: 'ready',
     setupMethod: 'legacy-repo',
     createdAt: 1,

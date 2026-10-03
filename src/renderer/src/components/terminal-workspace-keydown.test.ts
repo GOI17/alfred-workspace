@@ -7,11 +7,10 @@ import { dispatchWorkspaceTabCommand } from '@/lib/workspace-tab-commands'
 import type { Tab } from '../../../shared/tab-types'
 import { FLOATING_TERMINAL_WORKTREE_ID } from '../../../shared/constants'
 import {
-  ORCA_EDITOR_REQUEST_CMD_SAVE_EVENT,
+  ALFRED_EDITOR_REQUEST_CMD_SAVE_EVENT,
   type EditorRequestCmdSaveDetail
 } from './editor/editor-autosave'
 import { handleTerminalWorkspaceKeyDown } from './terminal-workspace-keydown'
-import type { TerminalActivationController } from './use-terminal-activation-actions'
 
 const mocks = vi.hoisted(() => ({
   state: {} as Record<string, unknown>,
@@ -77,17 +76,17 @@ const controller = {
   handleNewFile: vi.fn(),
   handleNewSimulatorTab: vi.fn(),
   handleNewTab: vi.fn(),
-  keybindings: undefined,
+  keybindings: {},
   mobileEmulatorEnabled: false,
-  terminalShortcutPolicy: 'orca-first'
-} as unknown as TerminalActivationController
+  terminalShortcutPolicy: 'alfred-first' as const
+}
 
 function pressCmdS(): (EditorRequestCmdSaveDetail | undefined)[] {
   const details: (EditorRequestCmdSaveDetail | undefined)[] = []
   const listener = (event: Event): void => {
     details.push((event as CustomEvent<EditorRequestCmdSaveDetail>).detail ?? undefined)
   }
-  window.addEventListener(ORCA_EDITOR_REQUEST_CMD_SAVE_EVENT, listener)
+  window.addEventListener(ALFRED_EDITOR_REQUEST_CMD_SAVE_EVENT, listener)
   const target = document.createElement('div')
   document.body.appendChild(target)
   const event = new KeyboardEvent('keydown', { key: 's', metaKey: true, cancelable: true })
@@ -95,7 +94,7 @@ function pressCmdS(): (EditorRequestCmdSaveDetail | undefined)[] {
   try {
     handleTerminalWorkspaceKeyDown(event, controller, 'darwin')
   } finally {
-    window.removeEventListener(ORCA_EDITOR_REQUEST_CMD_SAVE_EVENT, listener)
+    window.removeEventListener(ALFRED_EDITOR_REQUEST_CMD_SAVE_EVENT, listener)
     target.remove()
   }
   return details

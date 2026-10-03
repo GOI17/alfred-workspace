@@ -27,7 +27,7 @@ type PosixShell = 'bash' | 'zsh'
 const tempDirs: string[] = []
 
 function makeTempDir(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'orca-omp-node-pty-'))
+  const dir = mkdtempSync(join(tmpdir(), 'alfred-omp-node-pty-'))
   tempDirs.push(dir)
   return dir
 }
@@ -37,7 +37,7 @@ function writeFakeOmp(binDir: string): void {
   writeFileSync(
     ompPath,
     `#!/bin/sh
-agent_dir="\${PI_CODING_AGENT_DIR:-\${ORCA_FAKE_OMP_DEFAULT_DIR:-}}"
+agent_dir="\${PI_CODING_AGENT_DIR:-\${ALFRED_FAKE_OMP_DEFAULT_DIR:-}}"
 if [ "\${1:-}" = "config" ] && [ -n "$agent_dir" ]; then
   mkdir -p "$agent_dir"
   printf 'updated-by-omp-config\\n' > "$agent_dir/config.yml"
@@ -51,8 +51,8 @@ fi
     i=$((i + 1))
     printf 'ARG%s=%s\\n' "$i" "$arg"
   done
-} > "$ORCA_CAPTURE_FILE"
-exit "\${ORCA_TEST_FAKE_OMP_EXIT_CODE:-0}"
+} > "$ALFRED_CAPTURE_FILE"
+exit "\${ALFRED_TEST_FAKE_OMP_EXIT_CODE:-0}"
 `,
     { mode: 0o755 }
   )
@@ -76,7 +76,7 @@ async function runInteractivePosixPty(args: {
     cols: 100,
     rows: 30,
     cwd: args.cwd,
-    env: { ...args.env, ORCA_TEST_RCFILE: rcfile }
+    env: { ...args.env, ALFRED_TEST_RCFILE: rcfile }
   })
 
   let output = ''
@@ -97,7 +97,7 @@ async function runInteractivePosixPty(args: {
   })
 
   try {
-    const input = shell === 'zsh' ? `source "$ORCA_TEST_RCFILE"\n${args.input}` : args.input
+    const input = shell === 'zsh' ? `source "$ALFRED_TEST_RCFILE"\n${args.input}` : args.input
     proc.write(input.replace(/\n/g, '\r'))
     const { exitCode } = await Promise.race([exitPromise, timeoutPromise])
     expect(exitCode).toBe(0)
@@ -130,7 +130,7 @@ describePosix('OMP shell wrapper node-pty reproduction', () => {
     mkdirSync(binDir)
     mkdirSync(piDir)
     mkdirSync(extensionDir, { recursive: true })
-    const statusExtension = join(extensionDir, 'orca-agent-status.ts')
+    const statusExtension = join(extensionDir, 'alfred-agent-status.ts')
     writeFileSync(statusExtension, 'export default {}')
     writeFakeOmp(binDir)
 
@@ -139,12 +139,12 @@ describePosix('OMP shell wrapper node-pty reproduction', () => {
       HOME: tempDir,
       PATH: `${binDir}:${process.env.PATH ?? ''}`,
       PI_CODING_AGENT_DIR: '',
-      ORCA_PI_CODING_AGENT_DIR: '',
-      ORCA_OMP_CODING_AGENT_DIR: '',
-      ORCA_OMP_STATUS_EXTENSION: statusExtension,
-      ORCA_FAKE_OMP_DEFAULT_DIR: ompDir,
-      ORCA_CAPTURE_FILE: captureFile,
-      ORCA_AFTER_PI_FILE: afterPiFile,
+      ALFRED_PI_CODING_AGENT_DIR: '',
+      ALFRED_OMP_CODING_AGENT_DIR: '',
+      ALFRED_OMP_STATUS_EXTENSION: statusExtension,
+      ALFRED_FAKE_OMP_DEFAULT_DIR: ompDir,
+      ALFRED_CAPTURE_FILE: captureFile,
+      ALFRED_AFTER_PI_FILE: afterPiFile,
       TERM: process.env.TERM || 'xterm-256color'
     })
 
@@ -155,7 +155,7 @@ describePosix('OMP shell wrapper node-pty reproduction', () => {
       rcfileContent: '',
       env: makeEnv(unwrappedCapture, unwrappedAfterPi),
       input: `omp ask
-printf '%s' "$PI_CODING_AGENT_DIR" > "$ORCA_AFTER_PI_FILE"
+printf '%s' "$PI_CODING_AGENT_DIR" > "$ALFRED_AFTER_PI_FILE"
 exit 0
 `
     })
@@ -174,7 +174,7 @@ exit 0
       env: makeEnv(wrappedCapture, wrappedAfterPi),
       input: `type omp
 omp ask
-printf '%s' "$PI_CODING_AGENT_DIR" > "$ORCA_AFTER_PI_FILE"
+printf '%s' "$PI_CODING_AGENT_DIR" > "$ALFRED_AFTER_PI_FILE"
 exit 0
 `
     })
@@ -197,7 +197,7 @@ exit 0
     mkdirSync(binDir)
     mkdirSync(sourceDir, { recursive: true })
     mkdirSync(extensionDir, { recursive: true })
-    const statusExtension = join(extensionDir, 'orca-agent-status.ts')
+    const statusExtension = join(extensionDir, 'alfred-agent-status.ts')
     writeFileSync(statusExtension, 'export default {}')
     writeFakeOmp(binDir)
 
@@ -210,12 +210,12 @@ exit 0
         HOME: tempDir,
         PATH: `${binDir}:${process.env.PATH ?? ''}`,
         PI_CODING_AGENT_DIR: '',
-        ORCA_PI_CODING_AGENT_DIR: '',
-        ORCA_OMP_CODING_AGENT_DIR: '',
-        ORCA_OMP_SOURCE_AGENT_DIR: sourceDir,
-        ORCA_OMP_STATUS_EXTENSION: statusExtension,
-        ORCA_FAKE_OMP_DEFAULT_DIR: sourceDir,
-        ORCA_CAPTURE_FILE: captureFile,
+        ALFRED_PI_CODING_AGENT_DIR: '',
+        ALFRED_OMP_CODING_AGENT_DIR: '',
+        ALFRED_OMP_SOURCE_AGENT_DIR: sourceDir,
+        ALFRED_OMP_STATUS_EXTENSION: statusExtension,
+        ALFRED_FAKE_OMP_DEFAULT_DIR: sourceDir,
+        ALFRED_CAPTURE_FILE: captureFile,
         TERM: process.env.TERM || 'xterm-256color'
       },
       input: `omp config
@@ -252,7 +252,7 @@ exit 0
     mkdirSync(binDir)
     mkdirSync(sourceDir, { recursive: true })
     mkdirSync(extensionDir, { recursive: true })
-    const statusExtension = join(extensionDir, 'orca-agent-status.ts')
+    const statusExtension = join(extensionDir, 'alfred-agent-status.ts')
     writeFileSync(statusExtension, 'export default {}')
     writeFakeOmp(binDir)
 
@@ -265,12 +265,12 @@ exit 0
         HOME: tempDir,
         PATH: `${binDir}:${process.env.PATH ?? ''}`,
         PI_CODING_AGENT_DIR: '',
-        ORCA_PI_CODING_AGENT_DIR: '',
-        ORCA_OMP_CODING_AGENT_DIR: '',
-        ORCA_OMP_SOURCE_AGENT_DIR: sourceDir,
-        ORCA_OMP_STATUS_EXTENSION: statusExtension,
-        ORCA_FAKE_OMP_DEFAULT_DIR: sourceDir,
-        ORCA_CAPTURE_FILE: captureFile,
+        ALFRED_PI_CODING_AGENT_DIR: '',
+        ALFRED_OMP_CODING_AGENT_DIR: '',
+        ALFRED_OMP_SOURCE_AGENT_DIR: sourceDir,
+        ALFRED_OMP_STATUS_EXTENSION: statusExtension,
+        ALFRED_FAKE_OMP_DEFAULT_DIR: sourceDir,
+        ALFRED_CAPTURE_FILE: captureFile,
         TERM: process.env.TERM || 'xterm-256color'
       },
       input: `omp ${subcommand}
@@ -295,7 +295,7 @@ exit 0
       mkdirSync(binDir)
       mkdirSync(defaultOmpDir, { recursive: true })
       mkdirSync(extensionDir, { recursive: true })
-      const statusExtension = join(extensionDir, 'orca-agent-status.ts')
+      const statusExtension = join(extensionDir, 'alfred-agent-status.ts')
       writeFileSync(statusExtension, 'export default {}')
       writeFakeOmp(binDir)
 
@@ -308,11 +308,11 @@ exit 0
           HOME: tempDir,
           PATH: `${binDir}:${process.env.PATH ?? ''}`,
           PI_CODING_AGENT_DIR: '',
-          ORCA_PI_CODING_AGENT_DIR: '',
-          ORCA_OMP_CODING_AGENT_DIR: '',
-          ORCA_OMP_STATUS_EXTENSION: statusExtension,
-          ORCA_FAKE_OMP_DEFAULT_DIR: defaultOmpDir,
-          ORCA_CAPTURE_FILE: captureFile,
+          ALFRED_PI_CODING_AGENT_DIR: '',
+          ALFRED_OMP_CODING_AGENT_DIR: '',
+          ALFRED_OMP_STATUS_EXTENSION: statusExtension,
+          ALFRED_FAKE_OMP_DEFAULT_DIR: defaultOmpDir,
+          ALFRED_CAPTURE_FILE: captureFile,
           TERM: process.env.TERM || 'xterm-256color'
         },
         input: `omp config
@@ -344,7 +344,7 @@ exit 0
     symlinkSync(projectDir, logicalProjectLink)
     const expectedProjectDir = realpathSync(projectDir)
     const expectedWorkspaceDir = realpathSync(workspaceDir)
-    const statusExtension = join(extensionDir, 'orca-agent-status.ts')
+    const statusExtension = join(extensionDir, 'alfred-agent-status.ts')
     writeFileSync(statusExtension, 'export default {}')
     writeFakeOmp(binDir)
 
@@ -358,57 +358,57 @@ exit 0
     const scenarioFile = join(tempDir, 'stale-cwd-scenario')
     writeFileSync(
       scenarioFile,
-      `ORCA_CAPTURE_FILE="$ORCA_UNSET_PWD_CAPTURE_FILE"
+      `ALFRED_CAPTURE_FILE="$ALFRED_UNSET_PWD_CAPTURE_FILE"
 unset PWD
 omp
-__orca_test_unset_status=$?
+__alfred_test_unset_status=$?
 if [[ -z "\${PWD+x}" ]]; then
-  __orca_test_pwd_state=unset
+  __alfred_test_pwd_state=unset
 else
-  __orca_test_pwd_state=set
+  __alfred_test_pwd_state=set
 fi
-builtin cd -- "$ORCA_LOGICAL_PROJECT_LINK"
-/bin/rm -- "$ORCA_LOGICAL_PROJECT_LINK"
-ORCA_CAPTURE_FILE="$ORCA_DELETED_LINK_CAPTURE_FILE"
+builtin cd -- "$ALFRED_LOGICAL_PROJECT_LINK"
+/bin/rm -- "$ALFRED_LOGICAL_PROJECT_LINK"
+ALFRED_CAPTURE_FILE="$ALFRED_DELETED_LINK_CAPTURE_FILE"
 omp
-__orca_test_deleted_link_status=$?
-builtin cd -P -- "$ORCA_STALE_PROJECT_DIR"
-ORCA_CAPTURE_FILE="$ORCA_STALE_CAPTURE_FILE"
-/bin/rm -rf -- "$ORCA_STALE_PROJECT_DIR"
-/bin/mkdir -p -- "$ORCA_STALE_PROJECT_DIR"
+__alfred_test_deleted_link_status=$?
+builtin cd -P -- "$ALFRED_STALE_PROJECT_DIR"
+ALFRED_CAPTURE_FILE="$ALFRED_STALE_CAPTURE_FILE"
+/bin/rm -rf -- "$ALFRED_STALE_PROJECT_DIR"
+/bin/mkdir -p -- "$ALFRED_STALE_PROJECT_DIR"
 omp
-__orca_test_first_status=$?
-ORCA_CAPTURE_FILE="$ORCA_SKIP_CAPTURE_FILE"
+__alfred_test_first_status=$?
+ALFRED_CAPTURE_FILE="$ALFRED_SKIP_CAPTURE_FILE"
 omp --version
-__orca_test_skip_status=$?
+__alfred_test_skip_status=$?
 if [[ "$PWD" -ef . ]]; then
-  __orca_test_parent_state=live
+  __alfred_test_parent_state=live
 else
-  __orca_test_parent_state=stale
+  __alfred_test_parent_state=stale
 fi
 unset PWD
-ORCA_CAPTURE_FILE="$ORCA_STALE_UNSET_CAPTURE_FILE"
+ALFRED_CAPTURE_FILE="$ALFRED_STALE_UNSET_CAPTURE_FILE"
 omp
-__orca_test_stale_unset_status=$?
-unset ORCA_WORKTREE_PATH ORCA_ROOT_PATH
-ORCA_CAPTURE_FILE="$ORCA_NO_LOGICAL_CAPTURE_FILE"
+__alfred_test_stale_unset_status=$?
+unset ALFRED_WORKTREE_PATH ALFRED_ROOT_PATH
+ALFRED_CAPTURE_FILE="$ALFRED_NO_LOGICAL_CAPTURE_FILE"
 omp
-__orca_test_no_logical_status=$?
-PWD="$ORCA_STALE_PROJECT_DIR"
-/bin/rm -rf -- "$ORCA_STALE_PROJECT_DIR"
+__alfred_test_no_logical_status=$?
+PWD="$ALFRED_STALE_PROJECT_DIR"
+/bin/rm -rf -- "$ALFRED_STALE_PROJECT_DIR"
 omp
-__orca_test_missing_status=$?
+__alfred_test_missing_status=$?
 {
-  echo "UNSET=$__orca_test_unset_status"
-  echo "PWD=$__orca_test_pwd_state"
-  echo "LINK=$__orca_test_deleted_link_status"
-  echo "FIRST=$__orca_test_first_status"
-  echo "SKIP=$__orca_test_skip_status"
-  echo "PARENT=$__orca_test_parent_state"
-  echo "STALE_UNSET=$__orca_test_stale_unset_status"
-  echo "NO_LOGICAL=$__orca_test_no_logical_status"
-  echo "MISSING=$__orca_test_missing_status"
-} > "$ORCA_RESULT_FILE"
+  echo "UNSET=$__alfred_test_unset_status"
+  echo "PWD=$__alfred_test_pwd_state"
+  echo "LINK=$__alfred_test_deleted_link_status"
+  echo "FIRST=$__alfred_test_first_status"
+  echo "SKIP=$__alfred_test_skip_status"
+  echo "PARENT=$__alfred_test_parent_state"
+  echo "STALE_UNSET=$__alfred_test_stale_unset_status"
+  echo "NO_LOGICAL=$__alfred_test_no_logical_status"
+  echo "MISSING=$__alfred_test_missing_status"
+} > "$ALFRED_RESULT_FILE"
 exit 0
 `
     )
@@ -420,25 +420,25 @@ ${getPosixOmpShellWrapper()}`,
       env: {
         INPUTRC: '/dev/null',
         PROMPT_COMMAND: '',
-        ORCA_STALE_PROJECT_DIR: projectDir,
-        ORCA_LOGICAL_PROJECT_LINK: logicalProjectLink,
-        ORCA_UNSET_PWD_CAPTURE_FILE: unsetPwdCaptureFile,
-        ORCA_DELETED_LINK_CAPTURE_FILE: deletedLinkCaptureFile,
-        ORCA_STALE_CAPTURE_FILE: staleCaptureFile,
-        ORCA_SKIP_CAPTURE_FILE: skipCaptureFile,
-        ORCA_STALE_UNSET_CAPTURE_FILE: staleUnsetCaptureFile,
-        ORCA_NO_LOGICAL_CAPTURE_FILE: noLogicalCaptureFile,
-        ORCA_WORKTREE_PATH: workspaceDir,
+        ALFRED_STALE_PROJECT_DIR: projectDir,
+        ALFRED_LOGICAL_PROJECT_LINK: logicalProjectLink,
+        ALFRED_UNSET_PWD_CAPTURE_FILE: unsetPwdCaptureFile,
+        ALFRED_DELETED_LINK_CAPTURE_FILE: deletedLinkCaptureFile,
+        ALFRED_STALE_CAPTURE_FILE: staleCaptureFile,
+        ALFRED_SKIP_CAPTURE_FILE: skipCaptureFile,
+        ALFRED_STALE_UNSET_CAPTURE_FILE: staleUnsetCaptureFile,
+        ALFRED_NO_LOGICAL_CAPTURE_FILE: noLogicalCaptureFile,
+        ALFRED_WORKTREE_PATH: workspaceDir,
         HOME: homeDir,
         PATH: `${binDir}:/usr/bin:/bin:/usr/sbin:/sbin`,
-        ORCA_OMP_STATUS_EXTENSION: statusExtension,
-        ORCA_CAPTURE_FILE: staleCaptureFile,
-        ORCA_RESULT_FILE: resultFile,
-        ORCA_SCENARIO_FILE: scenarioFile,
-        ORCA_TEST_FAKE_OMP_EXIT_CODE: '23',
+        ALFRED_OMP_STATUS_EXTENSION: statusExtension,
+        ALFRED_CAPTURE_FILE: staleCaptureFile,
+        ALFRED_RESULT_FILE: resultFile,
+        ALFRED_SCENARIO_FILE: scenarioFile,
+        ALFRED_TEST_FAKE_OMP_EXIT_CODE: '23',
         TERM: 'xterm-256color'
       },
-      input: 'source "$ORCA_SCENARIO_FILE"\n'
+      input: 'source "$ALFRED_SCENARIO_FILE"\n'
     })
 
     const unsetPwdCapture = readFileSync(unsetPwdCaptureFile, 'utf8')
@@ -463,7 +463,7 @@ ${getPosixOmpShellWrapper()}`,
       'UNSET=23\nPWD=unset\nLINK=23\nFIRST=23\nSKIP=23\nPARENT=stale\nSTALE_UNSET=23\nNO_LOGICAL=1\nMISSING=1\n'
     )
     expect(output).toContain('no terminal working directory is available')
-    expect(output).toContain('Orca: OMP cannot access the terminal working directory')
+    expect(output).toContain('Alfred: OMP cannot access the terminal working directory')
   }
 
   itWithBash('rebinds a stale Bash cwd before launching OMP', async () => {

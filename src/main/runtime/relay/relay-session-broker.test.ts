@@ -1,6 +1,6 @@
+import { makeCloudAuthConfig } from '../../alfred-profiles/profile-cloud-auth-test-fixture'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import nacl from 'tweetnacl'
-import type { OrcaCloudAuthConfig } from '../../orca-profiles/profile-cloud-auth-config'
 import type { RelayHostHelloAckMessage } from './relay-control-protocol'
 import type * as RelayHttpClientModule from './relay-http-client'
 
@@ -148,9 +148,10 @@ describe('RelaySessionBroker lifecycle ownership', () => {
     const detachTransport = vi.fn()
     const connecting = RelaySessionBroker.connect({
       authConfig: {
+        ...makeCloudAuthConfig(),
         relayTokenEndpoint: 'https://auth.example.test/v1/relay-token',
         relayDirectorUrl: 'https://relay.example.test'
-      } as OrcaCloudAuthConfig,
+      },
       accessToken: 'access-token',
       identity: { userId: 'user-1', profileId: 'profile-1', organizationId: 'org-1' },
       keypair: {
@@ -615,9 +616,10 @@ function brokerOptions(
   const keypair = nacl.box.keyPair()
   return {
     authConfig: {
+      ...makeCloudAuthConfig(),
       relayTokenEndpoint: 'https://auth.example.test/v1/relay-token',
       relayDirectorUrl: 'https://relay.example.test'
-    } as OrcaCloudAuthConfig,
+    },
     accessToken: 'access-token',
     identity: { userId: 'user-1', profileId: 'profile-1', organizationId: 'org-1' },
     keypair: {

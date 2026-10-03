@@ -1,3 +1,4 @@
+import { makePR } from '../../../../../shared/github/pr-test-fixture'
 // @vitest-environment happy-dom
 
 import { act, cleanup, renderHook } from '@testing-library/react'
@@ -28,13 +29,13 @@ afterEach(() => {
 
 describe('useChecksPanelManualRefresh ordering', () => {
   it('refreshes review identity before starting checks and comments, then clears loading', async () => {
-    const refreshedPR = {
+    const refreshedPR = makePR({
       number: 42,
       state: 'open',
       title: 'Current review',
       headSha: 'head-2',
-      prRepo: { owner: 'orca', repo: 'app', host: 'github.com' }
-    } as NonNullable<RefreshInput['pr']>
+      prRepo: { owner: 'alfred', repo: 'app', host: 'github.com' }
+    })
     const setChecksLoading: RefreshInput['setChecksLoading'] = vi.fn((loading) => {
       refresh.calls.push(`checks-loading:${String(loading)}`)
     })

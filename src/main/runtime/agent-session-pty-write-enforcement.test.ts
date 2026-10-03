@@ -1,6 +1,7 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { settledWriteStub } from '../providers/settled-pty-write-stub'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { OrcaRuntimeService } from './orca-runtime'
+import { AlfredRuntimeService } from './alfred-runtime'
 import { agentSessionPtyWriteGate } from './agent-session-pty-write-gate'
 import { getDefaultWorkspaceSession } from '../../shared/constants'
 import {
@@ -51,7 +52,7 @@ function publish(lease: AgentSessionLease): void {
 }
 
 async function makeRuntime(options: { onWrite?: (ptyId: string, data: string) => void } = {}) {
-  const runtime = new OrcaRuntimeService(makeStore() as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
   const write = vi.fn((ptyId: string, data: string) => {
     options.onWrite?.(ptyId, data)
     // A real agent starts working when it receives the submit, and the prompt path now waits for

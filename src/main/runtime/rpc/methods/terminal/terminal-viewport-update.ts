@@ -1,8 +1,8 @@
-import type { OrcaRuntimeService } from '../../../orca-runtime'
+import type { AlfredRuntimeService } from '../../../alfred-runtime'
 import type { TerminalViewportClient } from './terminal-stream-types'
 
 export async function updateViewportForClient(
-  runtime: OrcaRuntimeService,
+  runtime: AlfredRuntimeService,
   ptyId: string,
   subscriptionKey: string,
   client: TerminalViewportClient,

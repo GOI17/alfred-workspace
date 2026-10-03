@@ -57,7 +57,7 @@ async function readShellCsp() {
   const source = await readFile(
     join(
       projectDir,
-      'mobile/modules/orca-mobile-web-shell/android/src/main/java/expo/modules/orcamobilewebshell/MobileWebShellCsp.kt'
+      'mobile/modules/alfred-mobile-web-shell/android/src/main/java/expo/modules/alfredmobilewebshell/MobileWebShellCsp.kt'
     ),
     'utf8'
   )
@@ -69,7 +69,7 @@ beforeAll(async () => {
   if (!bundles) {
     return
   }
-  scratch = await mkdtemp(join(tmpdir(), 'orca-mobile-web-app-render-'))
+  scratch = await mkdtemp(join(tmpdir(), 'alfred-mobile-web-app-render-'))
   const built = await buildMobileWebAppBundle({ outDir: join(scratch, 'bundle') })
   const { outDir } = built
   routeChunks = built.routeChunks
@@ -110,8 +110,8 @@ beforeAll(async () => {
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
   origin = `http://127.0.0.1:${String(server.address().port)}`
   // CI runs this against the runner's Google Chrome rather than paying for a browser download,
-  // the same reason and the same override shape as the orcad browser-provider job.
-  const executablePath = process.env.ORCA_MOBILE_WEB_RENDER_BROWSER
+  // the same reason and the same override shape as the alfredd browser-provider job.
+  const executablePath = process.env.ALFRED_MOBILE_WEB_RENDER_BROWSER
   browser = await chromium.launch({ headless: true, ...(executablePath ? { executablePath } : {}) })
 }, 180_000)
 
@@ -184,14 +184,14 @@ async function waitForRoute({ page, errors, uncaught }, route, awaitText) {
   // Polled on a timer rather than Playwright's default animation frames, which a page that never
   // paints never delivers.
   const cause = await race(
-    page.waitForFunction(() => document.documentElement.dataset.orcaWebEntry === 'mounted', {
+    page.waitForFunction(() => document.documentElement.dataset.alfredWebEntry === 'mounted', {
       timeout: 30_000,
       polling: 250
     })
   )
   if (cause) {
     const state = await page.evaluate(
-      () => document.documentElement.dataset.orcaWebEntry ?? 'absent'
+      () => document.documentElement.dataset.alfredWebEntry ?? 'absent'
     )
     throw named(cause, `never mounted (entry ${state})`)
   }
@@ -224,7 +224,7 @@ async function render(route, awaitText) {
 describe('the shell policy this page is tested under', () => {
   it('is the same on both platforms, so one render check covers both', async () => {
     const swift = await readFile(
-      join(projectDir, 'mobile/modules/orca-mobile-web-shell/ios/MobileWebShellCsp.swift'),
+      join(projectDir, 'mobile/modules/alfred-mobile-web-shell/ios/MobileWebShellCsp.swift'),
       'utf8'
     )
     expect(parseCspDirectives(swift, 'static let header = [', '].joined')).toBe(cspHeader)

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import * as ownership from '../../shared/own-retained-string'
-import { OrcaRuntimeWithScheduleWaitBlockedCheck } from './orca-runtime-schedule-wait-blocked-check'
-import { WAIT_BLOCKED_KEYWORD_CARRY_CHARS } from './orca-runtime-postlude'
+import { AlfredRuntimeWithScheduleWaitBlockedCheck } from './alfred-runtime-schedule-wait-blocked-check'
+import { WAIT_BLOCKED_KEYWORD_CARRY_CHARS } from './alfred-runtime-postlude'
 import type { createWaitBlockedCheckState } from './wait-blocked-check-state'
 
 type ScheduleHost = {
@@ -11,7 +11,8 @@ type ScheduleHost = {
 }
 
 function createScheduleHost(): ScheduleHost {
-  const prototype = OrcaRuntimeWithScheduleWaitBlockedCheck.prototype as unknown as ScheduleHost
+  // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: The test calls the protected scheduler with its explicit scheduling-state fixture.
+  const prototype = AlfredRuntimeWithScheduleWaitBlockedCheck.prototype as unknown as ScheduleHost
   return {
     waitBlockedCheckStateByPtyId: new Map(),
     runWaitBlockedCheck: () => {},

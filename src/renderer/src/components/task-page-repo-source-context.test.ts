@@ -1,20 +1,20 @@
+import { makeRepo as fixtureMakeRepo } from '../../../shared/repo-test-fixture'
 import { describe, expect, it } from 'vitest'
 import { buildGitLabProviderIdentity, getTaskPageRepoCacheInput } from './task-page-source-context'
-import type { Repo } from '../../../shared/repo-types'
 
 describe('buildGitLabProviderIdentity', () => {
   it('splits namespace and project and builds the web URL', () => {
     expect(
       buildGitLabProviderIdentity({
         host: 'gitlab.example.com',
-        path: 'acme/platform/orca'
+        path: 'acme/platform/alfred'
       })
     ).toEqual({
       provider: 'gitlab',
-      projectId: 'acme/platform/orca',
+      projectId: 'acme/platform/alfred',
       namespace: 'acme/platform',
-      project: 'orca',
-      webUrl: 'https://gitlab.example.com/acme/platform/orca'
+      project: 'alfred',
+      webUrl: 'https://gitlab.example.com/acme/platform/alfred'
     })
   })
 
@@ -36,14 +36,14 @@ describe('buildGitLabProviderIdentity', () => {
 
 describe('getTaskPageRepoCacheInput', () => {
   it('copies repo identity fields used by the GitHub work-item cache', () => {
-    const repo = {
+    const repo = fixtureMakeRepo({
       id: 'repo-1',
-      path: '/tmp/orca',
+      path: '/tmp/alfred',
       executionHostId: 'local'
-    } as Repo
+    })
     const input = getTaskPageRepoCacheInput(repo)
     expect(input.id).toBe('repo-1')
-    expect(input.path).toBe('/tmp/orca')
+    expect(input.path).toBe('/tmp/alfred')
     expect(input.executionHostId).toBe('local')
   })
 })

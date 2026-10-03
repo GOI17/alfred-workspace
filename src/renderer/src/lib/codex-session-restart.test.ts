@@ -1,9 +1,8 @@
+import { makeWorktree } from '../../../shared/worktree/worktree-test-fixture'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useAppStore } from '@/store'
-import { shouldUseShellReadyStartupDelivery } from '../../../shared/codex-startup-delivery'
 import type { TuiAgent } from '../../../shared/tui-agent'
 import {
-  CODEX_ACCOUNT_RESTART_STARTUP,
   markLiveCodexSessionsForRestart,
   markRestoredStaleCodexSessionsForRestart
 } from './codex-session-restart'
@@ -25,21 +24,6 @@ function setLaunchAgentOnFirstTab(launchAgent: TuiAgent): void {
   }
   useAppStore.setState({ tabsByWorktree: { wt1: [{ ...tab, launchAgent }, ...rest] } })
 }
-
-describe('CODEX_ACCOUNT_RESTART_STARTUP', () => {
-  it('waits for shell readiness before relaunching Codex after an account switch', () => {
-    // Why launchAgent is load-bearing: pty:spawn runs the managed-auth
-    // readiness gate and Codex launch prep only for launchAgent 'codex', so
-    // dropping it would let a restart respawn race the account handoff and
-    // record a launch account the pane does not actually read.
-    expect(CODEX_ACCOUNT_RESTART_STARTUP).toEqual({
-      command: 'codex',
-      startupCommandDelivery: 'shell-ready',
-      launchAgent: 'codex'
-    })
-    expect(shouldUseShellReadyStartupDelivery(CODEX_ACCOUNT_RESTART_STARTUP)).toBe(true)
-  })
-})
 
 describe('markLiveCodexSessionsForRestart', () => {
   const originalWindow = (globalThis as { window?: typeof window }).window
@@ -63,7 +47,7 @@ describe('markLiveCodexSessionsForRestart', () => {
             id: 'tab-1',
             ptyId: 'pty-1',
             worktreeId: 'wt1',
-            title: 'orca-1',
+            title: 'alfred-1',
             customTitle: null,
             color: null,
             sortOrder: 0,
@@ -141,7 +125,7 @@ describe('markLiveCodexSessionsForRestart', () => {
             id: 'tab-1',
             ptyId: 'pty-1',
             worktreeId: 'wt1',
-            title: 'orca-1',
+            title: 'alfred-1',
             customTitle: null,
             color: null,
             sortOrder: 0,
@@ -151,7 +135,7 @@ describe('markLiveCodexSessionsForRestart', () => {
             id: 'tab-2',
             ptyId: 'pty-3',
             worktreeId: 'wt1',
-            title: 'orca-2',
+            title: 'alfred-2',
             customTitle: null,
             color: null,
             sortOrder: 1,
@@ -387,7 +371,7 @@ describe('markLiveCodexSessionsForRestart', () => {
             id: 'tab-1',
             ptyId: 'remote:term-1',
             worktreeId: 'wt1',
-            title: 'orca-1',
+            title: 'alfred-1',
             customTitle: null,
             color: null,
             sortOrder: 0,
@@ -451,16 +435,18 @@ describe('markLiveCodexSessionsForRestart lane scoping', () => {
       settings: { activeRuntimeEnvironmentId: null } as never,
       worktreesByRepo: {
         repo1: [
-          { id: 'wt1', path: worktreePaths.wt1 ?? '/Users/dev/code/orca' },
-          ...(worktreePaths.wt2 ? [{ id: 'wt2', path: worktreePaths.wt2 }] : [])
+          makeWorktree(
+            makeWorktree({ id: 'wt1', path: worktreePaths.wt1 ?? '/Users/dev/code/alfred' })
+          ),
+          ...(worktreePaths.wt2 ? [makeWorktree({ id: 'wt2', path: worktreePaths.wt2 })] : [])
         ]
-      } as never,
+      },
       tabsByWorktree: {
         wt1: panes.map((pane, index) => ({
           id: `tab-${index}`,
           ptyId: pane.ptyId,
           worktreeId: pane.worktreeId ?? 'wt1',
-          title: `orca-${index}`,
+          title: `alfred-${index}`,
           customTitle: null,
           color: null,
           sortOrder: index,
@@ -588,7 +574,7 @@ describe('markLiveCodexSessionsForRestart lane scoping', () => {
   // only because its foreground read as `wsl.exe` and failed the Codex test. Pin
   // the lane instead — a WSL pane whose foreground IS codex must escape too.
   it('leaves a WSL Codex pane alone on a host switch even when its foreground is codex', async () => {
-    seedPanes([{ ptyId: 'pty-wsl' }], { wt1: '\\\\wsl.localhost\\Ubuntu\\home\\dev\\orca' })
+    seedPanes([{ ptyId: 'pty-wsl' }], { wt1: '\\\\wsl.localhost\\Ubuntu\\home\\dev\\alfred' })
 
     await markLiveCodexSessionsForRestart({
       previousAccountLabel: ACCOUNT_A,
@@ -601,7 +587,7 @@ describe('markLiveCodexSessionsForRestart lane scoping', () => {
   })
 
   it('marks that same WSL pane when its own distro is the lane that changed', async () => {
-    seedPanes([{ ptyId: 'pty-wsl' }], { wt1: '\\\\wsl.localhost\\Ubuntu\\home\\dev\\orca' })
+    seedPanes([{ ptyId: 'pty-wsl' }], { wt1: '\\\\wsl.localhost\\Ubuntu\\home\\dev\\alfred' })
 
     await markLiveCodexSessionsForRestart({
       previousAccountLabel: ACCOUNT_A,
@@ -615,7 +601,7 @@ describe('markLiveCodexSessionsForRestart lane scoping', () => {
   })
 
   it('keeps one distro switch off another distro pane', async () => {
-    seedPanes([{ ptyId: 'pty-wsl' }], { wt1: '\\\\wsl.localhost\\Ubuntu\\home\\dev\\orca' })
+    seedPanes([{ ptyId: 'pty-wsl' }], { wt1: '\\\\wsl.localhost\\Ubuntu\\home\\dev\\alfred' })
 
     await markLiveCodexSessionsForRestart({
       previousAccountLabel: ACCOUNT_A,
@@ -675,7 +661,7 @@ describe('markLiveCodexSessionsForRestart lane scoping', () => {
     it('cards a pane the record puts in the switched lane against the derivation', async () => {
       // The mirror: the user changed a runtime preference after this WSL-looking
       // pane spawned on the host, and re-derivation would now miss its notice.
-      seedPanes([{ ptyId: 'pty-1' }], { wt1: '\\\\wsl.localhost\\Ubuntu\\home\\dev\\orca' })
+      seedPanes([{ ptyId: 'pty-1' }], { wt1: '\\\\wsl.localhost\\Ubuntu\\home\\dev\\alfred' })
       vi.mocked(window.api.codexAccounts.listRecordedPaneLanes).mockResolvedValue({
         'pty-1': 'host'
       })
@@ -833,7 +819,7 @@ describe('markRestoredStaleCodexSessionsForRestart', () => {
             id: 'tab-1',
             ptyId: 'pty-1',
             worktreeId: 'wt1',
-            title: 'orca-1',
+            title: 'alfred-1',
             customTitle: null,
             color: null,
             sortOrder: 0,

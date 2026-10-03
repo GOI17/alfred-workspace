@@ -22,7 +22,7 @@ describe('daily E2E dispatch contract', () => {
     )
     expect(dispatchJob.needs).toBe('build-daily-mac')
     expect(dispatchJob.if).toBe(
-      "${{ needs.build-daily-mac.outputs.published == 'true' && needs.build-daily-mac.outputs.head_sha != '' }}"
+      "vars.ALFRED_RELEASES_ENABLED == 'true' && (needs.build-daily-mac.outputs.published == 'true' && needs.build-daily-mac.outputs.head_sha != '')"
     )
     expect(dispatchJob.permissions.actions).toBe('write')
     expect(dispatchStep.env.SHA).toBe('${{ needs.build-daily-mac.outputs.head_sha }}')

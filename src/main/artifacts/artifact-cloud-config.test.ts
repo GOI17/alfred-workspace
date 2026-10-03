@@ -6,27 +6,27 @@ import {
 
 describe('resolveArtifactCloudApiUrl', () => {
   it('uses the first-party production origin by default', () => {
-    expect(resolveArtifactCloudApiUrl(undefined, {}, true)).toBe('https://share.onorca.dev')
+    expect(resolveArtifactCloudApiUrl(undefined, {}, true)).toBe('https://share.alfredlabs.org')
   })
 
   it('allows loopback HTTP only in development', () => {
     expect(
       resolveArtifactCloudApiUrl(
         undefined,
-        { ORCA_ARTIFACTS_API_URL: 'http://127.0.0.1:45961' },
+        { ALFRED_ARTIFACTS_API_URL: 'http://127.0.0.1:45961' },
         false
       )
     ).toBe('http://127.0.0.1:45961')
     expect(() => resolveArtifactCloudApiUrl('http://127.0.0.1:45961', {}, true)).toThrow(/HTTPS/)
   })
 
-  it('rejects origins that could receive an Orca access token', () => {
+  it('rejects origins that could receive an Alfred access token', () => {
     expect(() => resolveArtifactCloudApiUrl('https://example.com', {}, false)).toThrow(
-      /onorca\.dev/
+      /alfredlabs\.org/
     )
-    expect(() => resolveArtifactCloudApiUrl('https://share.onorca.dev/path', {}, false)).toThrow(
-      /origin/
-    )
+    expect(() =>
+      resolveArtifactCloudApiUrl('https://share.alfredlabs.org/path', {}, false)
+    ).toThrow(/origin/)
   })
 
   it('allows auth token overrides only in non-production development builds', () => {

@@ -1,9 +1,10 @@
+import { createRuntimeServiceTestDouble } from '../../../../runtime-service-test-double'
 import { describe, expect, it } from 'vitest'
 import type { AgentStatusOrchestrationContext } from '../../../../../../shared/agent-status-types'
 import { AgentHookServer } from '../../../../../agent-hooks/server'
-import type { OrcaRuntimeService } from '../../../../orca-runtime'
+import type { AlfredRuntimeService } from '../../../../alfred-runtime'
 import type { OrchestrationDb } from '../../../../orchestration/db'
-import { OrcaRuntimeWithGetOrchestrationDispatchAuthority } from '../../../../orca-runtime-get-orchestration-dispatch-authority'
+import { AlfredRuntimeWithGetOrchestrationDispatchAuthority } from '../../../../alfred-runtime-get-orchestration-dispatch-authority'
 import {
   AgentStatusObservedPaneIdentityCapture,
   AgentStatusObservedPaneIdentities,
@@ -34,7 +35,7 @@ type ObservedWorld = {
   runProcess: (handle: string, incarnation: string) => void
   dispatchPane: (paneKey: string, dispatchId: string | null) => void
   ingest: (paneKey: string, state: 'working' | 'waiting') => void
-  runtime: OrcaRuntimeService
+  runtime: AlfredRuntimeService
 }
 
 /** Real hook server, real ingest-time capture, real fleet snapshot accessor. */
@@ -76,12 +77,12 @@ function createWorld(): ObservedWorld {
         connectionId: null,
         payload: { state, prompt: `turn ${state}`, agentType: 'claude' }
       }),
-    runtime: {
+    runtime: createRuntimeServiceTestDouble({
       getOrchestrationFleetAgentStatusSnapshot: () =>
-        OrcaRuntimeWithGetOrchestrationDispatchAuthority.prototype.getOrchestrationFleetAgentStatusSnapshot.call(
+        AlfredRuntimeWithGetOrchestrationDispatchAuthority.prototype.getOrchestrationFleetAgentStatusSnapshot.call(
           host as never
         )
-    } as unknown as OrcaRuntimeService
+    })
   }
 }
 

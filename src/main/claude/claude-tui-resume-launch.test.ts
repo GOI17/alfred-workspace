@@ -1,3 +1,4 @@
+import { agentSessionRecordFixture } from '../../shared/agent-session-record.test-fixture'
 import { chmodSync, mkdtempSync, mkdirSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { delimiter, join } from 'node:path'
@@ -10,7 +11,8 @@ import { createClaudeTuiResumeLaunchBuilder } from './claude-tui-resume-launch'
 
 function record(overrides: Partial<AgentSessionRecord> = {}): AgentSessionRecord {
   return {
-    sessionId: 'orca-session-1',
+    ...agentSessionRecordFixture(),
+    sessionId: 'alfred-session-1',
     provider: 'claude',
     location: {
       executionHostId: 'local',
@@ -29,7 +31,7 @@ function record(overrides: Partial<AgentSessionRecord> = {}): AgentSessionRecord
       }
     ],
     ...overrides
-  } as AgentSessionRecord
+  }
 }
 
 function makeExecutable(path: string): void {
@@ -76,7 +78,7 @@ describe('Claude TUI resume launch', () => {
       SAFE_PARENT: 'kept',
       SELECTED_ACCOUNT: 'one',
       CLAUDE_CONFIG_DIR: '/accounts/claude-one',
-      ORCA_AGENT_LAUNCH_TOKEN: 'spawn-one',
+      ALFRED_AGENT_LAUNCH_TOKEN: 'spawn-one',
       [CLAUDE_SPAWN_TOKEN_ENV]: 'spawn-one',
       ANTHROPIC_AUTH_TOKEN: 'selected-account-token'
     })
@@ -90,7 +92,7 @@ describe('Claude TUI resume launch', () => {
   })
 
   it('pairs the resumed Claude CLI with its sibling Node runtime', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'orca-claude-resume-'))
+    const root = mkdtempSync(join(tmpdir(), 'alfred-claude-resume-'))
     const binDir = join(root, 'bin')
     const claudeCommand = join(binDir, process.platform === 'win32' ? 'claude.cmd' : 'claude')
     const nodeCommand = join(binDir, process.platform === 'win32' ? 'node.cmd' : 'node')

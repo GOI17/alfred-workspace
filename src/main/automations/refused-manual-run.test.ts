@@ -84,7 +84,7 @@ const AUTOMATIONS: Automation[] = [
 async function createStore() {
   mkdirSync(testState.dir, { recursive: true })
   writeFileSync(
-    join(testState.dir, 'orca-data.json'),
+    join(testState.dir, 'alfred-data.json'),
     JSON.stringify({
       ...getDefaultPersistedState(testState.dir),
       repos: REPOS,
@@ -101,8 +101,8 @@ async function createStore() {
   const store = new Store()
   const service = new AutomationService(store, { tickMs: 60_000 })
   // Manual runs arrive over the shared runtime RPC surface for every transport.
-  const { OrcaRuntimeService } = await import('../runtime/orca-runtime')
-  const runtime = new OrcaRuntimeService(store as never)
+  const { AlfredRuntimeService } = await import('../runtime/alfred-runtime')
+  const runtime = new AlfredRuntimeService(store)
   runtime.setAutomationService(service)
   return { store, service, runtime }
 }

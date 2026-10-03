@@ -99,7 +99,7 @@ describe('AgentBrowserBridge', () => {
 
     const args = execFileMock.mock.calls[0][1] as string[]
     expect(args).toContain('--session')
-    expect(args[args.indexOf('--session') + 1]).toBe('orca-tab-tab-1')
+    expect(args[args.indexOf('--session') + 1]).toBe('alfred-tab-tab-1')
   })
 
   // ── Embedded CDP ownership ──
@@ -190,7 +190,8 @@ describe('AgentBrowserBridge', () => {
     // Why: this reproduces the teardown race where the tab close path has
     // already removed the bridge session before agent-browser reports that
     // its CDP proxy disappeared.
-    ;(bridge as unknown as { sessions: Map<string, unknown> }).sessions.delete('orca-tab-tab-1')
+    // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: The test inspects the bridge session map to verify command-transport reuse.
+    ;(bridge as unknown as { sessions: Map<string, unknown> }).sessions.delete('alfred-tab-tab-1')
     releaseSnapshot!()
 
     await expect(snapshotPromise).rejects.toMatchObject({

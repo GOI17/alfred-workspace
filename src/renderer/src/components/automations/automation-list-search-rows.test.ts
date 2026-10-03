@@ -1,5 +1,6 @@
+import { makeRepo as fixtureMakeRepo } from '../../../../shared/repo-test-fixture'
 import { describe, expect, it } from 'vitest'
-import type { Repo } from '../../../../shared/repo-types'
+
 import { getAgentLabel } from './automation-draft-model'
 import {
   AUTOMATION_LIST_SEARCH_PROMPT_MAX_CODE_UNITS,
@@ -23,7 +24,7 @@ import {
   REPO_ID
 } from './automations-page-fixtures'
 
-const repo = { id: REPO_ID, displayName: 'orca', path: '/src/orca' } as Repo
+const repo = fixtureMakeRepo({ id: REPO_ID, displayName: 'alfred', path: '/src/alfred' })
 const repoMap = new Map([[REPO_ID, repo]])
 
 function fieldsFor(
@@ -49,7 +50,7 @@ describe('automation search row fields', () => {
 
     expect(fields).toEqual({
       name: 'Nightly sweep',
-      project: 'orca /src/orca',
+      project: 'alfred /src/alfred',
       workspace: 'feature/login-retry',
       agent: getAgentLabel('claude'),
       host: 'build-box',
@@ -108,7 +109,7 @@ describe('automation search row index', () => {
     expect(rows.map((row) => row.key)).toEqual([first, second])
     expect(matchAutomationListSearchRowKeys(rows, 'reviewers')).toEqual([second])
     expect(matchAutomationListSearchRowKeys(rows, 'build-box')).toEqual([second])
-    expect(matchAutomationListSearchRowKeys(rows, 'orca')).toEqual([first, second])
+    expect(matchAutomationListSearchRowKeys(rows, 'alfred')).toEqual([first, second])
     expect(matchAutomationListSearchRowKeys(rows, 'nothing')).toEqual([])
   })
 

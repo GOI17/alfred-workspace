@@ -1,17 +1,28 @@
+import type { ExecutionHostId } from '../../../../shared/execution-host'
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
-import type { OrcaRuntimeService } from '../../orca-runtime'
+import type { AlfredRuntimeService } from '../../alfred-runtime'
 import type { RpcRequest } from '../core'
 import { RpcDispatcher } from '../dispatcher'
 import { WORKTREE_METHODS } from './worktree'
 
-function makeRuntime(repoHostIds: (string | undefined)[] = ['local']): OrcaRuntimeService {
-  return {
+function makeRuntime(
+  repoHostIds: (ExecutionHostId | undefined)[] = ['local']
+): AlfredRuntimeService {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'test-runtime',
     listRepos: () =>
-      repoHostIds.map((executionHostId) => ({ id: 'repo-1', path: '/repo', executionHostId })),
+      repoHostIds.map((executionHostId) => ({
+        id: 'repo-1',
+        path: '/repo',
+        displayName: 'repo',
+        badgeColor: 'blue',
+        addedAt: 1,
+        executionHostId
+      })),
     showManagedWorktree: vi.fn().mockResolvedValue({ id: 'wt-1', hostId: 'local' }),
     removeManagedWorktree: vi.fn().mockResolvedValue({})
-  } as unknown as OrcaRuntimeService
+  })
 }
 
 const WORKTREE_ID = 'repo-1::/repo/wt'

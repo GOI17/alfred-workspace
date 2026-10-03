@@ -1,7 +1,6 @@
-import type { RpcClient } from '../transport/rpc-client'
 import { workerTerminalTakeoverReport } from './mobile-terminal-operations'
 
-type ReportClient = RpcClient
+type ReportClient = Parameters<typeof workerTerminalTakeoverReport.request>[0]
 const REPORT_INTERVAL_MS = 30_000
 const REPORT_RETRY_DELAY_MS = 250
 let reportsByClient = new WeakMap<ReportClient, Map<string, number>>()

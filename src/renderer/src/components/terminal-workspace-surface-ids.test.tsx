@@ -183,8 +183,8 @@ describe('workspace surface ids', () => {
     const localFolder: FolderWorkspace = {
       id: 'folder-shared',
       projectGroupId: 'group-shared',
-      name: 'orca',
-      folderPath: '/work/orca-local',
+      name: 'alfred',
+      folderPath: '/work/alfred-local',
       connectionId: null,
       executionHostId: 'local',
       linkedTask: null,
@@ -199,7 +199,7 @@ describe('workspace surface ids', () => {
     }
     const runtimeFolder: FolderWorkspace = {
       ...localFolder,
-      folderPath: '/remote/orca',
+      folderPath: '/remote/alfred',
       executionHostId: 'runtime:env-1'
     }
     useAppStore.setState({
@@ -210,7 +210,7 @@ describe('workspace surface ids', () => {
 
     const { result } = renderHook(() => useTerminalWorkspaceFoundation())
     expect(result.current.workspaceSurfaces).toEqual([
-      { id: 'folder:folder-shared', path: '/remote/orca' }
+      { id: 'folder:folder-shared', path: '/remote/alfred' }
     ])
 
     // Leaving the folder workspace drops the tie-break, so the projection must re-run
@@ -222,7 +222,7 @@ describe('workspace surface ids', () => {
       })
     })
     expect(result.current.workspaceSurfaces).toEqual([
-      { id: 'folder:folder-shared', path: '/work/orca-local' }
+      { id: 'folder:folder-shared', path: '/work/alfred-local' }
     ])
     warn.mockRestore()
   })

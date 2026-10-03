@@ -29,14 +29,14 @@ describe('rebuild-native-deps patched node-pty rebuild', () => {
       try {
         const rebuildLogPath = join(projectDir, 'electron-rebuild.log')
         writeFakeUsableElectronPackage(projectDir, { platform: 'win32' })
-        writeFakeElectronRebuild(projectDir, { logPathEnv: 'ORCA_REBUILD_TEST_LOG' })
+        writeFakeElectronRebuild(projectDir, { logPathEnv: 'ALFRED_REBUILD_TEST_LOG' })
         writeFakeLoadableNodePty(projectDir, { nativeDir: '../build/Release/' })
         writeFakeWindowsRegistry(projectDir)
         writeFakeWindowsProcessTree(projectDir)
         writeFakeNodePtyConptyPayload(projectDir, process.arch)
 
         const result = runRebuildScript(projectDir, {
-          ORCA_REBUILD_TEST_LOG: rebuildLogPath,
+          ALFRED_REBUILD_TEST_LOG: rebuildLogPath,
           npm_config_platform: 'win32',
           npm_config_arch: process.arch
         })
@@ -227,21 +227,23 @@ describe('rebuild-native-deps patched node-pty rebuild', () => {
       try {
         const rebuildLogPath = join(projectDir, 'electron-rebuild.log')
         writeFakeUsableElectronPackage(projectDir, { platform: 'win32' })
-        writeFakeElectronRebuild(projectDir, { logPathEnv: 'ORCA_REBUILD_TEST_LOG' })
+        writeFakeElectronRebuild(projectDir, { logPathEnv: 'ALFRED_REBUILD_TEST_LOG' })
         writeFakeLoadableNodePty(projectDir)
         writeFakeWindowsProcessTree(projectDir)
         writeFakeNodePtyConptyPayload(projectDir, process.arch)
 
         const result = runRebuildScript(projectDir, {
-          ORCA_REBUILD_TEST_LOG: rebuildLogPath,
+          ALFRED_REBUILD_TEST_LOG: rebuildLogPath,
           npm_config_platform: 'win32',
           npm_config_arch: process.arch
         })
 
         expect(result.status, result.stderr).toBe(0)
-        expect(result.stdout).toContain('Rebuilding failed native modules: @orca/windows-registry')
+        expect(result.stdout).toContain(
+          'Rebuilding failed native modules: @alfred/windows-registry'
+        )
         const rebuildCall = JSON.parse(readFileSync(rebuildLogPath, 'utf8').trim())
-        expect(rebuildCall.onlyModules).toEqual(['@orca/windows-registry'])
+        expect(rebuildCall.onlyModules).toEqual(['@alfred/windows-registry'])
       } finally {
         removeTreeSync(projectDir)
       }
@@ -249,21 +251,21 @@ describe('rebuild-native-deps patched node-pty rebuild', () => {
   )
 
   it.skipIf(process.platform !== 'win32')(
-    'rebuilds a loadable ConPTY native that lacks Orca job ownership',
+    'rebuilds a loadable ConPTY native that lacks Alfred job ownership',
     () => {
       const projectDir = mkTempProject()
 
       try {
         const rebuildLogPath = join(projectDir, 'electron-rebuild.log')
         writeFakeUsableElectronPackage(projectDir, { platform: 'win32' })
-        writeFakeElectronRebuild(projectDir, { logPathEnv: 'ORCA_REBUILD_TEST_LOG' })
+        writeFakeElectronRebuild(projectDir, { logPathEnv: 'ALFRED_REBUILD_TEST_LOG' })
         writeFakeLoadableNodePty(projectDir, { ownsPtyJob: false })
         writeFakeWindowsRegistry(projectDir)
         writeFakeWindowsProcessTree(projectDir)
         writeFakeNodePtyConptyPayload(projectDir, process.arch)
 
         const result = runRebuildScript(projectDir, {
-          ORCA_REBUILD_TEST_LOG: rebuildLogPath,
+          ALFRED_REBUILD_TEST_LOG: rebuildLogPath,
           npm_config_platform: 'win32',
           npm_config_arch: process.arch
         })
@@ -287,12 +289,12 @@ describe('rebuild-native-deps patched node-pty rebuild', () => {
       try {
         const rebuildLogPath = join(projectDir, 'electron-rebuild.log')
         writeFakeUsableElectronPackage(projectDir)
-        writeFakeElectronRebuild(projectDir, { logPathEnv: 'ORCA_REBUILD_TEST_LOG' })
+        writeFakeElectronRebuild(projectDir, { logPathEnv: 'ALFRED_REBUILD_TEST_LOG' })
         writeFakeLoadableNodePty(projectDir)
         writeNodePtyPatchFile(projectDir)
 
         const result = runRebuildScript(projectDir, {
-          ORCA_REBUILD_TEST_LOG: rebuildLogPath
+          ALFRED_REBUILD_TEST_LOG: rebuildLogPath
         })
 
         expect(result.status, result.stderr).toBe(0)
@@ -318,13 +320,13 @@ describe('rebuild-native-deps patched node-pty rebuild', () => {
       try {
         const rebuildLogPath = join(projectDir, 'electron-rebuild.log')
         writeFakeUsableElectronPackage(projectDir)
-        writeFakeElectronRebuild(projectDir, { logPathEnv: 'ORCA_REBUILD_TEST_LOG' })
+        writeFakeElectronRebuild(projectDir, { logPathEnv: 'ALFRED_REBUILD_TEST_LOG' })
         writeFakeLoadableNodePty(projectDir, { nativeDir: '../build/Release/' })
         writeNodePtyPatchFile(projectDir)
         writePatchedNodePtyBuildArtifacts(projectDir)
 
         const result = runRebuildScript(projectDir, {
-          ORCA_REBUILD_TEST_LOG: rebuildLogPath
+          ALFRED_REBUILD_TEST_LOG: rebuildLogPath
         })
 
         expect(result.status, result.stderr).toBe(0)
@@ -346,18 +348,20 @@ describe('rebuild-native-deps patched node-pty rebuild', () => {
       try {
         const rebuildLogPath = join(projectDir, 'electron-rebuild.log')
         writeFakeUsableElectronPackage(projectDir)
-        writeFakeElectronRebuild(projectDir, { logPathEnv: 'ORCA_REBUILD_TEST_LOG' })
+        writeFakeElectronRebuild(projectDir, { logPathEnv: 'ALFRED_REBUILD_TEST_LOG' })
         writeFakeLoadableNodePty(projectDir, { nativeDir: '../prebuilds/darwin-arm64/' })
         writeNodePtyPatchFile(projectDir)
         writePatchedNodePtyBuildArtifacts(projectDir)
 
         const result = runRebuildScript(projectDir, {
-          ORCA_REBUILD_TEST_LOG: rebuildLogPath
+          ALFRED_REBUILD_TEST_LOG: rebuildLogPath
         })
 
         expect(result.status, result.stderr).toBe(0)
         expect(result.stdout).toContain('Rebuilding failed native modules: node-pty')
-        expect(result.stdout).toContain("expected build/Release so Orca's node-pty patch is active")
+        expect(result.stdout).toContain(
+          "expected build/Release so Alfred's node-pty patch is active"
+        )
 
         const rebuildCall = JSON.parse(readFileSync(rebuildLogPath, 'utf8').trim())
         expect(rebuildCall.onlyModules).toEqual(['node-pty'])

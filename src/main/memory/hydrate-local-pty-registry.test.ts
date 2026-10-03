@@ -83,6 +83,18 @@ function makeStore(
   } as Store
 }
 
+function makeSession(identity: Pick<SessionInfo, 'sessionId' | 'pid' | 'cwd'>): SessionInfo {
+  return {
+    state: 'running',
+    shellState: 'ready',
+    isAlive: true,
+    cols: 80,
+    rows: 24,
+    createdAt: 1,
+    ...identity
+  }
+}
+
 function makeProvider(sessions: SessionInfo[]): Pick<DaemonPtyAdapter, 'listSessions'> {
   return {
     listSessions: vi.fn().mockResolvedValue(sessions)
@@ -497,9 +509,7 @@ describe('hydrateLocalPtyRegistryAtBoot', () => {
     const provider = {
       listSessions: vi
         .fn()
-        .mockResolvedValueOnce([
-          { sessionId: ptyId, pid: 4242, cwd: '/local/Triton' } as unknown as SessionInfo
-        ])
+        .mockResolvedValueOnce([makeSession({ sessionId: ptyId, pid: 4242, cwd: '/local/Triton' })])
         .mockResolvedValueOnce([])
     }
     getDaemonProviderMock.mockReturnValue(provider)
@@ -564,7 +574,7 @@ describe('hydrateLocalPtyRegistryAtBoot', () => {
 
     const ptyId = 'repo-a::/local/Triton@@cafebabe'
     const provider = makeProvider([
-      { sessionId: ptyId, pid: 4242, cwd: '/local/Triton' } as unknown as SessionInfo
+      makeSession({ sessionId: ptyId, pid: 4242, cwd: '/local/Triton' })
     ])
     getDaemonProviderMock.mockReturnValue(provider)
     listLocalRepoWorktreesStrictMock.mockResolvedValue([
@@ -581,16 +591,14 @@ describe('hydrateLocalPtyRegistryAtBoot', () => {
 
   it('matches Windows worktree path spelling while preserving the daemon worktree id', async () => {
     const { hydrate, listRegisteredPtys } = await loadFresh()
-    const worktreeId = 'repo-a::C:/Users/Neil/Orca'
+    const worktreeId = 'repo-a::C:/Users/Neil/Alfred'
     const ptyId = `${worktreeId}@@cafebabe`
     getDaemonProviderMock.mockReturnValue(
-      makeProvider([
-        { sessionId: ptyId, pid: 4242, cwd: 'C:/Users/Neil/Orca' } as unknown as SessionInfo
-      ])
+      makeProvider([makeSession({ sessionId: ptyId, pid: 4242, cwd: 'C:/Users/Neil/Alfred' })])
     )
     listLocalRepoWorktreesStrictMock.mockResolvedValue([
       {
-        path: 'c:\\users\\neil\\orca',
+        path: 'c:\\users\\neil\\alfred',
         head: '',
         branch: '',
         isBare: false,
@@ -598,29 +606,27 @@ describe('hydrateLocalPtyRegistryAtBoot', () => {
       }
     ])
 
-    await hydrate(makeStore([{ id: 'repo-a', path: 'C:\\Users\\Neil\\Orca' }]))
+    await hydrate(makeStore([{ id: 'repo-a', path: 'C:\\Users\\Neil\\Alfred' }]))
 
     expect(listRegisteredPtys()).toEqual([expect.objectContaining({ ptyId, worktreeId })])
   })
 
   it('fails closed when live worktrees collide on one normalized key', async () => {
     const { hydrate, listRegisteredPtys } = await loadFresh()
-    const ptyId = 'repo-a::C:/Users/Neil/Orca@@cafebabe'
+    const ptyId = 'repo-a::C:/Users/Neil/Alfred@@cafebabe'
     getDaemonProviderMock.mockReturnValue(
-      makeProvider([
-        { sessionId: ptyId, pid: 4242, cwd: 'C:/Users/Neil/Orca' } as unknown as SessionInfo
-      ])
+      makeProvider([makeSession({ sessionId: ptyId, pid: 4242, cwd: 'C:/Users/Neil/Alfred' })])
     )
     listLocalRepoWorktreesStrictMock.mockResolvedValue([
       {
-        path: 'C:/Users/Neil/Orca',
+        path: 'C:/Users/Neil/Alfred',
         head: '',
         branch: '',
         isBare: false,
         isMainWorktree: true
       },
       {
-        path: 'c:\\users\\neil\\orca',
+        path: 'c:\\users\\neil\\alfred',
         head: '',
         branch: '',
         isBare: false,
@@ -628,27 +634,23 @@ describe('hydrateLocalPtyRegistryAtBoot', () => {
       }
     ])
 
-    await hydrate(makeStore([{ id: 'repo-a', path: 'C:/Users/Neil/Orca' }]))
+    await hydrate(makeStore([{ id: 'repo-a', path: 'C:/Users/Neil/Alfred' }]))
 
     expect(listRegisteredPtys()).toHaveLength(0)
   })
 
   it('matches local WSL UNC aliases without treating WSL as a remote host', async () => {
     const { hydrate, listRegisteredPtys } = await loadFresh()
-    const worktreeId = 'repo-a::\\\\wsl$\\Ubuntu\\home\\neil\\orca'
+    const worktreeId = 'repo-a::\\\\wsl$\\Ubuntu\\home\\neil\\alfred'
     const ptyId = `${worktreeId}@@cafebabe`
     getDaemonProviderMock.mockReturnValue(
       makeProvider([
-        {
-          sessionId: ptyId,
-          pid: 4242,
-          cwd: '\\\\wsl$\\Ubuntu\\home\\neil\\orca'
-        } as unknown as SessionInfo
+        makeSession({ sessionId: ptyId, pid: 4242, cwd: '\\\\wsl$\\Ubuntu\\home\\neil\\alfred' })
       ])
     )
     listLocalRepoWorktreesStrictMock.mockResolvedValue([
       {
-        path: '\\\\wsl.localhost\\ubuntu\\home\\neil\\orca',
+        path: '\\\\wsl.localhost\\ubuntu\\home\\neil\\alfred',
         head: '',
         branch: '',
         isBare: false,
@@ -656,7 +658,7 @@ describe('hydrateLocalPtyRegistryAtBoot', () => {
       }
     ])
 
-    await hydrate(makeStore([{ id: 'repo-a', path: '\\\\wsl$\\Ubuntu\\home\\neil\\orca' }]))
+    await hydrate(makeStore([{ id: 'repo-a', path: '\\\\wsl$\\Ubuntu\\home\\neil\\alfred' }]))
 
     expect(listRegisteredPtys()).toEqual([expect.objectContaining({ ptyId, worktreeId })])
   })
@@ -667,9 +669,7 @@ describe('hydrateLocalPtyRegistryAtBoot', () => {
       'folder-repo::/workspace/folder::workspace:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
     const ptyId = `${instanceId}@@cafebabe`
     getDaemonProviderMock.mockReturnValue(
-      makeProvider([
-        { sessionId: ptyId, pid: 4242, cwd: '/workspace/folder' } as unknown as SessionInfo
-      ])
+      makeProvider([makeSession({ sessionId: ptyId, pid: 4242, cwd: '/workspace/folder' })])
     )
 
     await hydrate(
@@ -690,9 +690,7 @@ describe('hydrateLocalPtyRegistryAtBoot', () => {
       'folder-repo::/workspace/folder::workspace:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
     const ptyId = `${instanceId}@@cafebabe`
     getDaemonProviderMock.mockReturnValue(
-      makeProvider([
-        { sessionId: ptyId, pid: 4242, cwd: '/workspace/folder' } as unknown as SessionInfo
-      ])
+      makeProvider([makeSession({ sessionId: ptyId, pid: 4242, cwd: '/workspace/folder' })])
     )
 
     await hydrate(
@@ -742,9 +740,7 @@ describe('hydrateLocalPtyRegistryAtBoot', () => {
       'folder-repo::/workspace/folder::workspace:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
     const ptyId = `${instanceId}@@cafebabe`
     getDaemonProviderMock.mockReturnValue(
-      makeProvider([
-        { sessionId: ptyId, pid: 4242, cwd: '/workspace/folder' } as unknown as SessionInfo
-      ])
+      makeProvider([makeSession({ sessionId: ptyId, pid: 4242, cwd: '/workspace/folder' })])
     )
 
     await hydrate(

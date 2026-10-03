@@ -88,7 +88,7 @@ describe('getSpawnArgsForWindows', () => {
     withPlatform('win32', () => {
       const { spawnCmd, spawnArgs } = getSpawnArgsForWindows(
         'C:\\Tools\\idea.cmd',
-        ['C:\\workspaces\\orca'],
+        ['C:\\workspaces\\alfred'],
         { detachedGui: true }
       )
       expect(spawnCmd).toBe(getCmdExePath())
@@ -105,7 +105,7 @@ describe('getSpawnArgsForWindows', () => {
         '/d',
         '/c',
         'C:\\Tools\\idea.cmd',
-        'C:\\workspaces\\orca'
+        'C:\\workspaces\\alfred'
       ])
       expect(spawnArgs[3]).toBe('')
       expect(spawnArgs).not.toContain('/K')
@@ -116,8 +116,10 @@ describe('getSpawnArgsForWindows', () => {
 
   it('keeps the waiting form for batch launches without detachedGui', () => {
     withPlatform('win32', () => {
-      const { spawnArgs } = getSpawnArgsForWindows('C:\\Tools\\idea.cmd', ['C:\\workspaces\\orca'])
-      expect(spawnArgs).toEqual(['/d', '/c', 'C:\\Tools\\idea.cmd', 'C:\\workspaces\\orca'])
+      const { spawnArgs } = getSpawnArgsForWindows('C:\\Tools\\idea.cmd', [
+        'C:\\workspaces\\alfred'
+      ])
+      expect(spawnArgs).toEqual(['/d', '/c', 'C:\\Tools\\idea.cmd', 'C:\\workspaces\\alfred'])
     })
   })
 
@@ -165,11 +167,11 @@ describe('getSpawnArgsForWindows', () => {
     withPlatform('win32', () => {
       const { spawnCmd, spawnArgs } = getSpawnArgsForWindows(
         'C:\\Program Files\\JetBrains\\IntelliJ IDEA\\bin\\idea64.exe',
-        ['C:\\workspaces\\orca'],
+        ['C:\\workspaces\\alfred'],
         { detachedGui: true }
       )
       expect(spawnCmd).toBe('C:\\Program Files\\JetBrains\\IntelliJ IDEA\\bin\\idea64.exe')
-      expect(spawnArgs).toEqual(['C:\\workspaces\\orca'])
+      expect(spawnArgs).toEqual(['C:\\workspaces\\alfred'])
     })
   })
 
@@ -280,7 +282,7 @@ describe('getSpawnArgsForWindows', () => {
 
 describe('resolveWindowsCommand', () => {
   it('finds package-manager .cmd shims on PATH before spawning fixed commands', () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'orca-win-command-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'alfred-win-command-'))
     try {
       const pnpmShim = join(tempDir, 'pnpm.cmd')
       writeFileSync(pnpmShim, '@echo off\r\n')

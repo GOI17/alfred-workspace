@@ -1,3 +1,4 @@
+import { isJsonObject } from '../../../../shared/json-object'
 export function addLifecycleRejectionMarker(
   payload: string | null,
   code: string,
@@ -6,31 +7,27 @@ export function addLifecycleRejectionMarker(
   let parsed: Record<string, unknown> = {}
   try {
     const value: unknown = payload ? JSON.parse(payload) : {}
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-      parsed = value as Record<string, unknown>
+    if (isJsonObject(value)) {
+      parsed = value
     }
   } catch {
     // Authority reconciliation only reaches this path with object payloads.
   }
   return JSON.stringify({
     ...parsed,
-    _orcaLifecycleRejection: { code, reason }
+    _alfredLifecycleRejection: { code, reason }
   })
 }
 
 export function hasLifecycleRejectionMarker(payload: string | null): boolean {
   try {
     const value: unknown = JSON.parse(payload ?? 'null')
-    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    if (!isJsonObject(value)) {
       return false
     }
-    const marker = (value as Record<string, unknown>)._orcaLifecycleRejection
+    const marker = value._alfredLifecycleRejection
     return Boolean(
-      marker &&
-      typeof marker === 'object' &&
-      !Array.isArray(marker) &&
-      typeof (marker as Record<string, unknown>).code === 'string' &&
-      typeof (marker as Record<string, unknown>).reason === 'string'
+      isJsonObject(marker) && typeof marker.code === 'string' && typeof marker.reason === 'string'
     )
   } catch {
     return false

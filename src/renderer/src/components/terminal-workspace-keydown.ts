@@ -26,7 +26,19 @@ import type { TerminalActivationController } from './use-terminal-activation-act
 
 export function handleTerminalWorkspaceKeyDown(
   event: KeyboardEvent,
-  controller: TerminalActivationController,
+  controller: Pick<
+    TerminalActivationController,
+    | 'activeWorktreeId'
+    | 'handleCloseAllFiles'
+    | 'handleNewAgentTab'
+    | 'handleNewBrowserTab'
+    | 'handleNewFile'
+    | 'handleNewSimulatorTab'
+    | 'handleNewTab'
+    | 'keybindings'
+    | 'mobileEmulatorEnabled'
+    | 'terminalShortcutPolicy'
+  >,
   shortcutPlatform: NodeJS.Platform
 ): void {
   const {
@@ -52,7 +64,7 @@ export function handleTerminalWorkspaceKeyDown(
       terminalShortcutPolicy
     })
   const notifyTerminalCapture = (actionId: KeybindingActionId): void => {
-    if (context !== 'terminal' || terminalShortcutPolicy !== 'orca-first') {
+    if (context !== 'terminal' || terminalShortcutPolicy !== 'alfred-first') {
       return
     }
     showTerminalShortcutCaptureNotification({

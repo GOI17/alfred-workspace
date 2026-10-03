@@ -1,6 +1,7 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import type { RuntimeClientEvent } from '../../../../shared/runtime-client-events'
-import type { OrcaRuntimeService } from '../../orca-runtime'
+import type { AlfredRuntimeService } from '../../alfred-runtime'
 import {
   eraseRpcMethods,
   isStreamingMethod,
@@ -15,7 +16,7 @@ const subscribeMethod = eraseRpcMethods(ALL_RPC_METHODS).find(
 ) as RpcStreamingMethod
 
 function makeRuntime(): {
-  runtime: OrcaRuntimeService
+  runtime: AlfredRuntimeService
   onClientEvent: ReturnType<typeof vi.fn>
   cleanups: (() => void)[]
 } {
@@ -27,12 +28,12 @@ function makeRuntime(): {
     ) =>
       () => {}
   )
-  const runtime = {
+  const runtime = createRuntimeServiceTestDouble({
     onClientEvent,
     registerSubscriptionCleanup: (_id: string, cleanup: () => void) => {
       cleanups.push(cleanup)
     }
-  } as unknown as OrcaRuntimeService
+  })
   return { runtime, onClientEvent, cleanups }
 }
 

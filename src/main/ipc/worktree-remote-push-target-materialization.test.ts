@@ -1,3 +1,4 @@
+import { createSshGitProviderTestDouble } from '../providers/ssh-git-provider-test-double'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { SshGitProvider } from '../providers/ssh-git-provider'
 import type { GitPushTarget } from '../../shared/worktree/types'
@@ -12,8 +13,8 @@ import {
 } from './worktree-remote'
 
 const REPO_PATH = '/repo-root'
-const FORK_URL = 'git@github.com:contributor/orca.git'
-const FORK_REMOTE = 'pr-contributor-orca'
+const FORK_URL = 'git@github.com:contributor/alfred.git'
+const FORK_REMOTE = 'pr-contributor-alfred'
 
 function forkTarget(overrides: Partial<GitPushTarget> = {}): GitPushTarget {
   return {
@@ -109,7 +110,7 @@ describe('materializeWorktreePushTargetRemote', () => {
       FORK_REMOTE,
       FORK_URL
     ])
-    expect(calls).toContainEqual(['config', `remote.${FORK_REMOTE}.orca-created`, 'true'])
+    expect(calls).toContainEqual(['config', `remote.${FORK_REMOTE}.alfred-created`, 'true'])
     expect(calls).toContainEqual([
       'fetch',
       FORK_REMOTE,
@@ -436,11 +437,11 @@ describe('materializeWorktreePushTargetRemoteSsh', () => {
       return { stdout: '', stderr: '' }
     })
     const fetchRemoteTrackingRef = vi.fn(async () => {})
-    const markRemoteOrcaCreated = vi.fn(async () => {})
+    const markRemoteAlfredCreated = vi.fn(async () => {})
     const target = forkTarget()
 
     const result = await materializeWorktreePushTargetRemoteSsh(
-      { exec, fetchRemoteTrackingRef, markRemoteOrcaCreated } as unknown as SshGitProvider,
+      createSshGitProviderTestDouble({ exec, fetchRemoteTrackingRef, markRemoteAlfredCreated }),
       REPO_PATH,
       target
     )
@@ -450,7 +451,7 @@ describe('materializeWorktreePushTargetRemoteSsh', () => {
     expect(calls).toContainEqual(['check-ref-format', '--branch', target.branchName])
     expect(calls).toContainEqual(['remote', 'add', FORK_REMOTE, FORK_URL])
     // Provenance is a narrow RPC, not exec: the relay's generic git.exec blocks config writes.
-    expect(markRemoteOrcaCreated).toHaveBeenCalledWith(REPO_PATH, FORK_REMOTE)
+    expect(markRemoteAlfredCreated).toHaveBeenCalledWith(REPO_PATH, FORK_REMOTE)
     expect(fetchRemoteTrackingRef).toHaveBeenCalledWith(
       REPO_PATH,
       FORK_REMOTE,
@@ -467,7 +468,7 @@ describe('materializeWorktreePushTargetRemoteSsh', () => {
       return { stdout: '', stderr: '' }
     })
     const fetchRemoteTrackingRef = vi.fn(async () => {})
-    const markRemoteOrcaCreated = vi.fn(async () => {})
+    const markRemoteAlfredCreated = vi.fn(async () => {})
     const target = forkTarget()
     const setWorktreeMeta = vi.fn()
     const store: WorktreePushTargetStore = {
@@ -476,7 +477,7 @@ describe('materializeWorktreePushTargetRemoteSsh', () => {
     } as unknown as WorktreePushTargetStore
 
     const result = await materializeWorktreePushTargetRemoteSsh(
-      { exec, fetchRemoteTrackingRef, markRemoteOrcaCreated } as unknown as SshGitProvider,
+      createSshGitProviderTestDouble({ exec, fetchRemoteTrackingRef, markRemoteAlfredCreated }),
       REPO_PATH,
       target,
       store,
@@ -526,12 +527,12 @@ describe('materializeWorktreePushTargetRemoteSsh', () => {
     const fetchRemoteTrackingRef = vi.fn(async () => {
       throw new Error('network unreachable')
     })
-    const markRemoteOrcaCreated = vi.fn(async () => {})
+    const markRemoteAlfredCreated = vi.fn(async () => {})
     const target = forkTarget()
 
     await expect(
       materializeWorktreePushTargetRemoteSsh(
-        { exec, fetchRemoteTrackingRef, markRemoteOrcaCreated } as unknown as SshGitProvider,
+        createSshGitProviderTestDouble({ exec, fetchRemoteTrackingRef, markRemoteAlfredCreated }),
         REPO_PATH,
         target
       )
@@ -545,7 +546,7 @@ describe('materializeWorktreePushTargetRemoteSsh', () => {
   // misses under the *requested* remote name so this reaches prepareWorktreePushTargetSsh's
   // own by-URL reuse scan, which finds the sibling's differently-named remote.
   it('keeps a reused fork remote a sibling worktree owns when the SSH head fetch fails', async () => {
-    const SIBLING_REMOTE = 'pr-contributor-orca-existing'
+    const SIBLING_REMOTE = 'pr-contributor-alfred-existing'
     const exec = vi.fn(async (args: string[]) => {
       if (args[0] === 'remote' && args[1] === 'get-url') {
         if (args[2] === SIBLING_REMOTE) {
@@ -556,8 +557,8 @@ describe('materializeWorktreePushTargetRemoteSsh', () => {
       if (args[0] === 'remote' && args[1] === '-v') {
         return {
           stdout: [
-            'origin\thttps://github.com/stablyai/orca.git (fetch)',
-            'origin\thttps://github.com/stablyai/orca.git (push)',
+            'origin\thttps://github.com/GOI17/alfred-workspace.git (fetch)',
+            'origin\thttps://github.com/GOI17/alfred-workspace.git (push)',
             `${SIBLING_REMOTE}\t${FORK_URL} (fetch)`,
             `${SIBLING_REMOTE}\t${FORK_URL} (push)`
           ].join('\n'),

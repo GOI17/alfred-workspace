@@ -1,3 +1,4 @@
+import { getDefaultSettings as fixtureGetDefaultSettings } from '../constants'
 import { describe, expect, it } from 'vitest'
 import type { GlobalSettings } from '../global-settings-types'
 import type { Repo } from '../repo-types'
@@ -7,7 +8,7 @@ import { createAgentScratchWorktreePathMatcher } from '../agent-scratch-worktree
 import { migrateExternalWorktreeVisibilityDefaults } from '../external-worktree-visibility'
 import {
   applyMetadataFallbackVisibility,
-  buildKnownOrcaWorkspaceLayouts,
+  buildKnownAlfredWorkspaceLayouts,
   classifyWorktreeOwnership,
   effectiveExternalWorktreeVisibility,
   isLegacyRepoForExternalWorktreeVisibility,
@@ -77,7 +78,9 @@ function makeMeta(overrides: Partial<WorktreeMeta> = {}): WorktreeMeta {
 
 function makeSettings(overrides: Partial<GlobalSettings> = {}): GlobalSettings {
   return {
-    workspaceDir: '/orca/workspaces',
+    ...fixtureGetDefaultSettings('/tmp'),
+    worktreeVisibilityDefaults: undefined,
+    workspaceDir: '/alfred/workspaces',
     nestWorkspaces: true,
     workspaceDirHistory: [],
     refreshLocalBaseRefOnWorktreeCreate: false,
@@ -95,11 +98,11 @@ function makeSettings(overrides: Partial<GlobalSettings> = {}): GlobalSettings {
     terminalFontWeight: 400,
     terminalLineHeight: 1.2,
     ...overrides
-  } as GlobalSettings
+  }
 }
 
 describe('worktree ownership classification', () => {
-  it('treats explicit Orca metadata as managed even outside the workspace root', () => {
+  it('treats explicit Alfred metadata as managed even outside the workspace root', () => {
     const repo = makeRepo()
     const settings = makeSettings()
     expect(
@@ -107,79 +110,79 @@ describe('worktree ownership classification', () => {
         repo,
         settings,
         worktree: makeWorktree({ path: '/tmp/outside' }),
-        meta: makeMeta({ orcaCreatedAt: 1 }),
-        knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+        meta: makeMeta({ alfredCreatedAt: 1 }),
+        knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
       })
-    ).toBe('orca-managed')
+    ).toBe('alfred-managed')
   })
 
-  it('treats nested Orca workspace paths without metadata as external', () => {
+  it('treats nested Alfred workspace paths without metadata as external', () => {
     const repo = makeRepo()
     const settings = makeSettings()
-    const layouts = buildKnownOrcaWorkspaceLayouts(settings, repo)
+    const layouts = buildKnownAlfredWorkspaceLayouts(settings, repo)
     expect(
       classifyWorktreeOwnership({
         repo,
         settings,
-        worktree: makeWorktree({ path: '/orca/workspaces/app/feature' }),
-        knownOrcaLayouts: layouts
+        worktree: makeWorktree({ path: '/alfred/workspaces/app/feature' }),
+        knownAlfredLayouts: layouts
       })
     ).toBe('external')
     expect(
       classifyWorktreeOwnership({
         repo,
         settings,
-        worktree: makeWorktree({ path: '/orca/workspaces/other/feature' }),
-        knownOrcaLayouts: layouts
+        worktree: makeWorktree({ path: '/alfred/workspaces/other/feature' }),
+        knownAlfredLayouts: layouts
       })
     ).toBe('external')
   })
 
-  it('treats explicit Orca creation layout metadata as managed', () => {
+  it('treats explicit Alfred creation layout metadata as managed', () => {
     const repo = makeRepo()
     const settings = makeSettings()
     expect(
       classifyWorktreeOwnership({
         repo,
         settings,
-        worktree: makeWorktree({ path: '/orca/workspaces/app/feature' }),
+        worktree: makeWorktree({ path: '/alfred/workspaces/app/feature' }),
         meta: makeMeta({
-          orcaCreationWorkspaceLayout: { path: '/orca/workspaces', nestWorkspaces: true }
+          alfredCreationWorkspaceLayout: { path: '/alfred/workspaces', nestWorkspaces: true }
         }),
-        knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+        knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
       })
-    ).toBe('orca-managed')
+    ).toBe('alfred-managed')
   })
 
-  it('does not treat metadata-free nested workspace paths as Orca-managed for new repos', () => {
+  it('does not treat metadata-free nested workspace paths as Alfred-managed for new repos', () => {
     const repo = makeRepo({ externalWorktreeVisibility: 'hide' })
     const settings = makeSettings()
     const detected = toDetectedWorktree({
       repo,
       settings,
       worktree: makeWorktree({
-        path: '/orca/workspaces/app/manual-git-worktree',
+        path: '/alfred/workspaces/app/manual-git-worktree',
         isMainWorktree: false
       }),
-      knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+      knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
     })
 
     expect(detected.ownership).toBe('external')
     expect(detected.visible).toBe(false)
   })
 
-  it('does not treat generic discovery metadata on nested workspace paths as Orca-managed', () => {
+  it('does not treat generic discovery metadata on nested workspace paths as Alfred-managed', () => {
     const repo = makeRepo({ externalWorktreeVisibility: 'hide' })
     const settings = makeSettings()
     const detected = toDetectedWorktree({
       repo,
       settings,
       worktree: makeWorktree({
-        path: '/orca/workspaces/app/manual-git-worktree',
+        path: '/alfred/workspaces/app/manual-git-worktree',
         isMainWorktree: false
       }),
       meta: makeMeta({ displayName: 'manual-git-worktree' }),
-      knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+      knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
     })
 
     expect(detected.ownership).toBe('external')
@@ -193,10 +196,10 @@ describe('worktree ownership classification', () => {
       repo,
       settings,
       worktree: makeWorktree({
-        path: '/orca/workspaces/app/manual-git-worktree',
+        path: '/alfred/workspaces/app/manual-git-worktree',
         isMainWorktree: false
       }),
-      knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+      knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
     })
 
     expect(detected.ownership).toBe('external')
@@ -213,10 +216,10 @@ describe('worktree ownership classification', () => {
       repo,
       settings,
       worktree: makeWorktree({
-        path: '/orca/workspaces/app/manual-git-worktree',
+        path: '/alfred/workspaces/app/manual-git-worktree',
         isMainWorktree: false
       }),
-      knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+      knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
     })
 
     expect(detected.ownership).toBe('external')
@@ -230,8 +233,8 @@ describe('worktree ownership classification', () => {
       classifyWorktreeOwnership({
         repo,
         settings,
-        worktree: makeWorktree({ path: '/orca/workspaces/feature' }),
-        knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+        worktree: makeWorktree({ path: '/alfred/workspaces/feature' }),
+        knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
       })
     ).toBe('unknown-legacy')
   })
@@ -240,14 +243,14 @@ describe('worktree ownership classification', () => {
     const repo = makeRepo()
     const settings = makeSettings({
       nestWorkspaces: true,
-      workspaceDirHistory: [{ path: '/orca/workspaces', nestWorkspaces: false }]
+      workspaceDirHistory: [{ path: '/alfred/workspaces', nestWorkspaces: false }]
     })
     expect(
       classifyWorktreeOwnership({
         repo,
         settings,
-        worktree: makeWorktree({ path: '/orca/workspaces/feature' }),
-        knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+        worktree: makeWorktree({ path: '/alfred/workspaces/feature' }),
+        knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
       })
     ).toBe('unknown-legacy')
   })
@@ -263,7 +266,7 @@ describe('worktree ownership classification', () => {
         repo,
         settings,
         worktree: makeWorktree({ path: '/old/workspaces/app/feature' }),
-        knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+        knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
       })
     ).toBe('external')
   })
@@ -282,7 +285,7 @@ describe('worktree ownership classification', () => {
       workspaceDirHistory
     })
 
-    const layouts = buildKnownOrcaWorkspaceLayouts(settings, repo)
+    const layouts = buildKnownAlfredWorkspaceLayouts(settings, repo)
 
     expect(layouts).toHaveLength(LARGE_WORKSPACE_HISTORY_COUNT + 1)
     expect(layouts[0]).toEqual({ path: '/new/workspaces', nestWorkspaces: true })
@@ -295,17 +298,17 @@ describe('worktree ownership classification', () => {
 
   it('handles Windows drive casing and separators', () => {
     const repo = makeRepo({ path: 'C:\\repos\\App' })
-    const settings = makeSettings({ workspaceDir: 'C:\\Orca\\Workspaces' })
+    const settings = makeSettings({ workspaceDir: 'C:\\Alfred\\Workspaces' })
     expect(
       classifyWorktreeOwnership({
         repo,
         settings,
         worktree: makeWorktree({
-          id: 'repo-1::C:\\ORCA\\WORKSPACES\\App\\Feature',
-          path: 'C:\\ORCA\\WORKSPACES\\App\\Feature',
+          id: 'repo-1::C:\\ALFRED\\WORKSPACES\\App\\Feature',
+          path: 'C:\\ALFRED\\WORKSPACES\\App\\Feature',
           isMainWorktree: false
         }),
-        knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+        knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
       })
     ).toBe('external')
   })
@@ -320,7 +323,7 @@ describe('worktree ownership classification', () => {
         path: '/repos/app-linked',
         isMainWorktree: false
       }),
-      knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+      knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
     })
     const gitMain = toDetectedWorktree({
       repo,
@@ -329,7 +332,7 @@ describe('worktree ownership classification', () => {
         path: '/repos/app-main',
         isMainWorktree: true
       }),
-      knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+      knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
     })
 
     expect(selected.visible).toBe(true)
@@ -469,7 +472,7 @@ describe('external worktree visibility policy', () => {
     expect(
       shouldShowWorktree({
         repo,
-        worktree: makeWorktree({ path: '/orca/workspaces/feature' }),
+        worktree: makeWorktree({ path: '/alfred/workspaces/feature' }),
         ownership: 'unknown-legacy',
         isLegacyRepoForVisibility: true,
         isSelectedCheckout: false
@@ -489,7 +492,7 @@ describe('agent scratch worktrees', () => {
         repo,
         settings,
         worktree: makeWorktree({ path: scratchPath, isMainWorktree: false }),
-        knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+        knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
       })
     ).toBe('agent-scratch')
   })
@@ -497,7 +500,7 @@ describe('agent scratch worktrees', () => {
   it('classifies scratch worktrees created inside another linked checkout', () => {
     const repo = makeRepo()
     const settings = makeSettings()
-    const linkedCheckoutPath = '/orca/workspaces/app/feature-x'
+    const linkedCheckoutPath = '/alfred/workspaces/app/feature-x'
     expect(
       classifyWorktreeOwnership({
         repo,
@@ -506,7 +509,7 @@ describe('agent scratch worktrees', () => {
           path: `${linkedCheckoutPath}/.claude/worktrees/agent-a04ccaaa`,
           isMainWorktree: false
         }),
-        knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo),
+        knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo),
         agentScratchWorktreePathMatcher: createAgentScratchWorktreePathMatcher(
           [repo.path, linkedCheckoutPath],
           []
@@ -515,7 +518,7 @@ describe('agent scratch worktrees', () => {
     ).toBe('agent-scratch')
   })
 
-  it('keeps strong Orca metadata authoritative over the scratch path match', () => {
+  it('keeps strong Alfred metadata authoritative over the scratch path match', () => {
     const repo = makeRepo()
     const settings = makeSettings()
     expect(
@@ -523,10 +526,10 @@ describe('agent scratch worktrees', () => {
         repo,
         settings,
         worktree: makeWorktree({ path: scratchPath, isMainWorktree: false }),
-        meta: makeMeta({ orcaCreatedAt: 1 }),
-        knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+        meta: makeMeta({ alfredCreatedAt: 1 }),
+        knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
       })
-    ).toBe('orca-managed')
+    ).toBe('alfred-managed')
   })
 
   it('keeps agent scratch hidden by default for new and legacy repos', () => {
@@ -539,7 +542,7 @@ describe('agent scratch worktrees', () => {
         repo,
         settings,
         worktree: makeWorktree({ path: scratchPath, isMainWorktree: false }),
-        knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+        knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
       })
       expect(detected.ownership).toBe('agent-scratch')
       expect(detected.visible).toBe(false)
@@ -558,7 +561,7 @@ describe('agent scratch worktrees', () => {
         repo,
         settings,
         worktree: makeWorktree({ path, isMainWorktree: false }),
-        knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+        knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
       })
 
       expect(detected).toMatchObject({ ownership: 'agent-scratch', visible: true })
@@ -579,7 +582,7 @@ describe('agent scratch worktrees', () => {
         repo,
         settings,
         worktree: makeWorktree({ path: scratchPath, isMainWorktree: false }),
-        knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+        knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
       }).visible
     ).toBe(false)
     expect(
@@ -590,7 +593,7 @@ describe('agent scratch worktrees', () => {
           path: '/repos/app/.gsd-workspaces/phase-1',
           isMainWorktree: false
         }),
-        knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+        knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
       }).visible
     ).toBe(true)
   })
@@ -607,7 +610,7 @@ describe('agent scratch worktrees', () => {
       repo,
       settings,
       worktree: makeWorktree({ path: customPath, isMainWorktree: false }),
-      knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+      knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
     })
 
     expect(detected.visibilitySource).toEqual({ kind: 'custom', id: 'team' })
@@ -644,18 +647,18 @@ describe('agent scratch worktrees', () => {
   it('keeps agent scratch hidden in the metadata fallback while revealing the rest', () => {
     const repo = makeRepo()
     const settings = makeSettings()
-    const layouts = buildKnownOrcaWorkspaceLayouts(settings, repo)
+    const layouts = buildKnownAlfredWorkspaceLayouts(settings, repo)
     const scratch = toDetectedWorktree({
       repo,
       settings,
       worktree: makeWorktree({ path: scratchPath, isMainWorktree: false }),
-      knownOrcaLayouts: layouts
+      knownAlfredLayouts: layouts
     })
     const external = toDetectedWorktree({
       repo,
       settings,
       worktree: makeWorktree({ path: '/scratch/manual', isMainWorktree: false }),
-      knownOrcaLayouts: layouts
+      knownAlfredLayouts: layouts
     })
 
     expect(applyMetadataFallbackVisibility(scratch)).toMatchObject({
@@ -678,7 +681,7 @@ describe('agent scratch worktrees', () => {
       repo,
       settings,
       worktree: makeWorktree({ path: scratchPath, isMainWorktree: false }),
-      knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+      knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
     })
 
     expect(scratch).toMatchObject({ ownership: 'agent-scratch', visible: true })
@@ -697,7 +700,7 @@ describe('agent scratch worktrees', () => {
           path: '/repos/.claude/worktrees/app/manual/feature-x',
           isMainWorktree: false
         }),
-        knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+        knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
       })
     ).not.toBe('agent-scratch')
   })

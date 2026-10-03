@@ -44,7 +44,7 @@ describe('dev-channel Windows build wiring', () => {
     'only runs the %s Windows leg once the release is live',
     (channel, path, jobName) => {
       expect(readWorkflow(path).jobs[`build-${channel}-win`].if).toBe(
-        `needs.${jobName}.outputs.published == 'true'`
+        `vars.ALFRED_RELEASES_ENABLED == 'true' && (needs.${jobName}.outputs.published == 'true')`
       )
     }
   )
@@ -150,7 +150,7 @@ describe('dev-channel Windows build workflow', () => {
     const verify = stepNamed(winSteps(), 'Verify Windows update manifest published')
 
     expect(verify.run).toContain('latest.yml')
-    expect(verify.run).toContain('orca-windows-setup.exe')
+    expect(verify.run).toContain('alfred-windows-setup.exe')
   })
 
   // Why: this is callable and separately dispatchable, and workflow_call takes
@@ -171,6 +171,6 @@ describe('dev-channel Windows build workflow', () => {
   it('never stamps an official telemetry build identity', () => {
     const build = stepNamed(winSteps(), 'Build app')
 
-    expect(Object.keys(build.env ?? {})).not.toContain('ORCA_BUILD_IDENTITY')
+    expect(Object.keys(build.env ?? {})).not.toContain('ALFRED_BUILD_IDENTITY')
   })
 })

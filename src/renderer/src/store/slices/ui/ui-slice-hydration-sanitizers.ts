@@ -1,5 +1,5 @@
 import type { AppState } from '../../types'
-import type { PersistedTrustedOrcaHooks } from '../../../../../shared/orca-yaml-hook-types'
+import type { PersistedTrustedAlfredHooks } from '../../../../../shared/alfred-yaml-hook-types'
 import type { PersistedUIState } from '../../../../../shared/persisted-ui-state-types'
 import type {
   TaskViewPresetId,
@@ -48,29 +48,43 @@ export function sanitizePersistedRepoIds(value: unknown): string[] {
   return value.filter((repoId): repoId is string => typeof repoId === 'string')
 }
 
-export function sanitizeTrustedOrcaHooks(trust: unknown): PersistedTrustedOrcaHooks {
+export function sanitizeTrustedAlfredHooks(trust: unknown): PersistedTrustedAlfredHooks {
   if (!isPlainPersistedRecord(trust)) {
     return {}
   }
-  const next: PersistedTrustedOrcaHooks = {}
+  const next: PersistedTrustedAlfredHooks = {}
   for (const [repoId, entry] of Object.entries(trust)) {
     if (!isSafePersistedRecordKey(repoId) || !isPlainPersistedRecord(entry)) {
       continue
     }
-    next[repoId] = entry as PersistedTrustedOrcaHooks[string]
+    const repo: PersistedTrustedAlfredHooks[string] = {}
+    if (isPlainPersistedRecord(entry.all) && typeof entry.all.approvedAt === 'number') {
+      repo.all = { approvedAt: entry.all.approvedAt }
+    }
+    for (const kind of ['setup', 'archive', 'issueCommand', 'vmRecipe'] as const) {
+      const hook = entry[kind]
+      if (
+        isPlainPersistedRecord(hook) &&
+        typeof hook.contentHash === 'string' &&
+        typeof hook.approvedAt === 'number'
+      ) {
+        repo[kind] = { contentHash: hook.contentHash, approvedAt: hook.approvedAt }
+      }
+    }
+    next[repoId] = repo
   }
   return next
 }
 
-export function hydrateTrustedOrcaHooks(
+export function hydrateTrustedAlfredHooks(
   trust: unknown,
   validRepoIds: Set<string>
-): PersistedTrustedOrcaHooks {
-  const sanitized = sanitizeTrustedOrcaHooks(trust)
+): PersistedTrustedAlfredHooks {
+  const sanitized = sanitizeTrustedAlfredHooks(trust)
   if (validRepoIds.size === 0) {
     return sanitized
   }
-  const next: PersistedTrustedOrcaHooks = {}
+  const next: PersistedTrustedAlfredHooks = {}
   for (const [repoId, entry] of Object.entries(sanitized)) {
     if (validRepoIds.has(repoId)) {
       next[repoId] = entry

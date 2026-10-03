@@ -125,9 +125,9 @@ describe('pluginMarketplaceSchema', () => {
 
 describe('marketplace provenance contracts', () => {
   it.each([
-    ['stablyai.orca-skills', true, true],
-    ['stablyai.skills', true, false],
-    ['community.orca-skills', true, false],
+    ['alfredlabs.alfred-skills', true, true],
+    ['alfredlabs.skills', true, false],
+    ['community.alfred-skills', true, false],
     ['community.skills', false, false],
     ['invalid', false, false]
   ])('classifies %s', (pluginKey, reserved, official) => {
@@ -136,27 +136,27 @@ describe('marketplace provenance contracts', () => {
   })
 
   it.each([
-    'https://github.com/stablyai/orca-skills.git',
-    'ssh://git@github.com/stablyai/orca-skills.git',
-    'git@github.com:stablyai/orca-skills.git'
+    'https://github.com/GOI17/alfred-workspace-skills.git',
+    'ssh://git@github.com/GOI17/alfred-workspace-skills.git',
+    'git@github.com:GOI17/alfred-workspace-skills.git'
   ])('accepts official organization source %s', (source) => {
     expect(isOfficialOrganizationGitSource(source)).toBe(true)
   })
 
   it('does not trust lookalike organizations or hosts', () => {
-    expect(isOfficialOrganizationGitSource('https://github.com/stablyai-fakes/orca-skills')).toBe(
-      false
-    )
-    expect(isOfficialOrganizationGitSource('https://gitlab.com/stablyai/orca-skills')).toBe(false)
+    expect(
+      isOfficialOrganizationGitSource('https://github.com/alfredlabs-fakes/alfred-skills')
+    ).toBe(false)
+    expect(
+      isOfficialOrganizationGitSource('https://gitlab.com/GOI17/alfred-workspace-skills')
+    ).toBe(false)
   })
 
   it('recognizes only the canonical official marketplace repository', () => {
     expect(
-      isOfficialMarketplaceGitSource(
-        `git@github.com:stablyai/${OFFICIAL_MARKETPLACE_REPOSITORY}.git`
-      )
+      isOfficialMarketplaceGitSource(`git@github.com:GOI17/${OFFICIAL_MARKETPLACE_REPOSITORY}.git`)
     ).toBe(true)
-    expect(isOfficialMarketplaceGitSource('git@github.com:stablyai/plugins.git')).toBe(false)
+    expect(isOfficialMarketplaceGitSource('git@github.com:GOI17/plugins.git')).toBe(false)
   })
 
   it('parses nested repository paths without confusing the repository name', () => {

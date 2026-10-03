@@ -1,3 +1,5 @@
+import type { RuntimeTerminalCreate } from '../../../../shared/runtime-terminal-contracts'
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   AGENT_SESSION_HOST_AUTHORITY_RUNTIME_CAPABILITY,
@@ -10,7 +12,6 @@ import {
   AGENT_SESSION_RPC_ERROR_CODES,
   AGENT_SESSION_OPERATION_FUTURE_SKEW_MS
 } from '../../../../shared/agent-session-host-authority'
-import type { OrcaRuntimeService } from '../../orca-runtime'
 import type { RpcRequest, RpcResponse } from '../core'
 import { RpcDispatcher } from '../dispatcher'
 import { AGENT_SESSION_METHODS } from './agent-session'
@@ -43,7 +44,7 @@ describe('agent session RPC methods', () => {
   it('dispatches an explicit structured resume without an authoritative command', async () => {
     const runtime = runtimeStub()
     const dispatcher = new RpcDispatcher({
-      runtime: runtime as unknown as OrcaRuntimeService,
+      runtime: createRuntimeServiceTestDouble(runtime),
       methods: AGENT_SESSION_METHODS
     })
 
@@ -104,7 +105,7 @@ describe('agent session RPC methods', () => {
     for (const clientKind of ['runtime', 'mobile'] as const) {
       const runtime = runtimeStub()
       const dispatcher = new RpcDispatcher({
-        runtime: runtime as unknown as OrcaRuntimeService,
+        runtime: createRuntimeServiceTestDouble(runtime),
         methods: AGENT_SESSION_METHODS
       })
       const replies: RpcResponse[] = []
@@ -127,7 +128,7 @@ describe('agent session RPC methods', () => {
   it('keeps automatic authority checkpoint-only', async () => {
     const runtime = runtimeStub()
     const dispatcher = new RpcDispatcher({
-      runtime: runtime as unknown as OrcaRuntimeService,
+      runtime: createRuntimeServiceTestDouble(runtime),
       methods: AGENT_SESSION_METHODS
     })
 
@@ -147,7 +148,7 @@ describe('agent session RPC methods', () => {
   it('rejects mismatched agent/provider identity before runtime mutation', async () => {
     const runtime = runtimeStub()
     const dispatcher = new RpcDispatcher({
-      runtime: runtime as unknown as OrcaRuntimeService,
+      runtime: createRuntimeServiceTestDouble(runtime),
       methods: AGENT_SESSION_METHODS
     })
 
@@ -167,7 +168,7 @@ describe('agent session RPC methods', () => {
   it('rejects opaque fresh-launch authority and malformed operation IDs', async () => {
     const runtime = runtimeStub()
     const dispatcher = new RpcDispatcher({
-      runtime: runtime as unknown as OrcaRuntimeService,
+      runtime: createRuntimeServiceTestDouble(runtime),
       methods: AGENT_SESSION_METHODS
     })
 
@@ -200,7 +201,10 @@ describe('agent session RPC methods', () => {
         worktree: string | undefined,
         _clientMutationId: string | undefined,
         _reconcileExisting: boolean,
-        run: (worktree: string | undefined, handle: string | undefined) => Promise<unknown>
+        run: (
+          worktree: string | undefined,
+          handle: string | undefined
+        ) => Promise<RuntimeTerminalCreate>
       ) => run(worktree, undefined)
     )
     const runtime = {
@@ -209,7 +213,7 @@ describe('agent session RPC methods', () => {
       dedupeTerminalCreate
     }
     const dispatcher = new RpcDispatcher({
-      runtime: runtime as unknown as OrcaRuntimeService,
+      runtime: createRuntimeServiceTestDouble(runtime),
       methods: TERMINAL_METHODS
     })
 
@@ -247,7 +251,7 @@ describe('agent session RPC methods', () => {
   it('rejects future-dated operation IDs before runtime mutation', async () => {
     const runtime = runtimeStub()
     const dispatcher = new RpcDispatcher({
-      runtime: runtime as unknown as OrcaRuntimeService,
+      runtime: createRuntimeServiceTestDouble(runtime),
       methods: AGENT_SESSION_METHODS
     })
     const now = 1_752_883_200_000
@@ -272,7 +276,7 @@ describe('agent session RPC methods', () => {
   it('passes authenticated caller identity outside the request payload', async () => {
     const runtime = runtimeStub()
     const dispatcher = new RpcDispatcher({
-      runtime: runtime as unknown as OrcaRuntimeService,
+      runtime: createRuntimeServiceTestDouble(runtime),
       methods: AGENT_SESSION_METHODS
     })
     const replies: RpcResponse[] = []
@@ -312,7 +316,7 @@ describe('agent session RPC methods', () => {
   it('rejects draft delivery without a non-empty prompt', async () => {
     const runtime = runtimeStub()
     const dispatcher = new RpcDispatcher({
-      runtime: runtime as unknown as OrcaRuntimeService,
+      runtime: createRuntimeServiceTestDouble(runtime),
       methods: AGENT_SESSION_METHODS
     })
 
@@ -333,7 +337,7 @@ describe('agent session RPC methods', () => {
   it('rejects oversized structured agent arguments before runtime mutation', async () => {
     const runtime = runtimeStub()
     const dispatcher = new RpcDispatcher({
-      runtime: runtime as unknown as OrcaRuntimeService,
+      runtime: createRuntimeServiceTestDouble(runtime),
       methods: AGENT_SESSION_METHODS
     })
 
@@ -354,7 +358,7 @@ describe('agent session RPC methods', () => {
     const runtime = runtimeStub()
     runtime.ensureAgentSession.mockRejectedValueOnce(new Error(code))
     const dispatcher = new RpcDispatcher({
-      runtime: runtime as unknown as OrcaRuntimeService,
+      runtime: createRuntimeServiceTestDouble(runtime),
       methods: AGENT_SESSION_METHODS
     })
 

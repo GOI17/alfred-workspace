@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 const {
   callMock,
   runtimeClientConstructorMock,
-  serveOrcaAppMock,
+  serveAlfredAppMock,
   getDefaultUserDataPathMock,
   addEnvironmentFromPairingCodeMock,
   listEnvironmentsMock,
@@ -11,8 +11,8 @@ const {
 } = vi.hoisted(() => ({
   callMock: vi.fn(),
   runtimeClientConstructorMock: vi.fn(),
-  serveOrcaAppMock: vi.fn(),
-  getDefaultUserDataPathMock: vi.fn(() => '/tmp/orca-user-data'),
+  serveAlfredAppMock: vi.fn(),
+  getDefaultUserDataPathMock: vi.fn(() => '/tmp/alfred-user-data'),
   addEnvironmentFromPairingCodeMock: vi.fn(),
   listEnvironmentsMock: vi.fn(),
   spawnMock: vi.fn()
@@ -23,7 +23,7 @@ vi.mock('./runtime-client', async () => {
   return createRuntimeClientModuleMock({
     callMock,
     runtimeClientConstructorMock,
-    serveOrcaAppMock,
+    serveAlfredAppMock,
     getDefaultUserDataPathMock
   })
 })
@@ -51,10 +51,10 @@ import {
 } from './test-fixtures'
 import { pairRuntimeEnvironment, useWorktreeAwarenessEnvironment } from './index-test-harness'
 
-describe('orca cli worktree awareness', () => {
+describe('alfred cli worktree awareness', () => {
   useWorktreeAwarenessEnvironment({
     callMock,
-    serveOrcaAppMock,
+    serveAlfredAppMock,
     getDefaultUserDataPathMock,
     addEnvironmentFromPairingCodeMock,
     listEnvironmentsMock,
@@ -140,11 +140,11 @@ describe('orca cli worktree awareness', () => {
         setups: [
           {
             id: 'setup-local',
-            projectId: 'github:stablyai/orca',
+            projectId: 'github:GOI17/alfred-workspace',
             hostId: 'local',
             repoId: 'repo-local',
-            path: '/tmp/orca',
-            displayName: 'Orca',
+            path: '/tmp/alfred',
+            displayName: 'Alfred',
             setupState: 'ready',
             setupMethod: 'legacy-repo',
             createdAt: 1,
@@ -152,11 +152,11 @@ describe('orca cli worktree awareness', () => {
           },
           {
             id: 'setup-gpu',
-            projectId: 'github:stablyai/orca',
+            projectId: 'github:GOI17/alfred-workspace',
             hostId: 'runtime:gpu',
             repoId: 'repo-gpu',
-            path: '/srv/orca',
-            displayName: 'Orca',
+            path: '/srv/alfred',
+            displayName: 'Alfred',
             setupState: 'ready',
             setupMethod: 'legacy-repo',
             createdAt: 1,
@@ -184,7 +184,7 @@ describe('orca cli worktree awareness', () => {
         '--provider',
         'codex',
         '--project',
-        'github:stablyai/orca',
+        'github:GOI17/alfred-workspace',
         '--host',
         'runtime:gpu',
         '--json'
@@ -201,11 +201,11 @@ describe('orca cli worktree awareness', () => {
         repo: 'id:repo-gpu',
         runContext: {
           kind: 'workspace-run',
-          projectId: 'github:stablyai/orca',
+          projectId: 'github:GOI17/alfred-workspace',
           hostId: 'runtime:gpu',
           projectHostSetupId: 'setup-gpu',
           repoId: 'repo-gpu',
-          path: '/srv/orca'
+          path: '/srv/alfred'
         },
         workspace: undefined,
         workspaceMode: 'new_per_run'
@@ -220,11 +220,11 @@ describe('orca cli worktree awareness', () => {
         setups: [
           {
             id: 'setup-gpu',
-            projectId: 'github:stablyai/orca',
+            projectId: 'github:GOI17/alfred-workspace',
             hostId: 'runtime:gpu',
             repoId: 'repo-gpu',
-            path: '/srv/orca',
-            displayName: 'Orca',
+            path: '/srv/alfred',
+            displayName: 'Alfred',
             setupState: 'ready',
             setupMethod: 'legacy-repo',
             createdAt: 1,
@@ -255,11 +255,11 @@ describe('orca cli worktree awareness', () => {
           repo: 'id:repo-gpu',
           runContext: {
             kind: 'workspace-run',
-            projectId: 'github:stablyai/orca',
+            projectId: 'github:GOI17/alfred-workspace',
             hostId: 'runtime:gpu',
             projectHostSetupId: 'setup-gpu',
             repoId: 'repo-gpu',
-            path: '/srv/orca'
+            path: '/srv/alfred'
           }
         })
       })

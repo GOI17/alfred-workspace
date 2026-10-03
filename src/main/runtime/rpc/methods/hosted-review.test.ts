@@ -1,7 +1,7 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
-import type { OrcaRuntimeService } from '../../orca-runtime'
 import { HOSTED_REVIEW_METHODS } from './hosted-review'
 
 function makeRequest(method: string, params?: unknown): RpcRequest {
@@ -10,19 +10,19 @@ function makeRequest(method: string, params?: unknown): RpcRequest {
 
 describe('hosted review RPC methods', () => {
   it('fetches branch review status on the runtime server', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getHostedReviewForBranch: vi.fn().mockResolvedValue({
         provider: 'github',
         number: 12,
         title: 'Feature',
         state: 'open',
-        url: 'https://github.com/acme/orca/pull/12',
+        url: 'https://github.com/acme/alfred/pull/12',
         status: 'success',
         updatedAt: '2026-05-10T00:00:00.000Z',
         mergeable: 'MERGEABLE'
       })
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: HOSTED_REVIEW_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -50,10 +50,10 @@ describe('hosted review RPC methods', () => {
   })
 
   it('carries a selected-worktree claim through to the runtime', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getHostedReviewForBranch: vi.fn().mockResolvedValue(null)
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: HOSTED_REVIEW_METHODS })
 
     await dispatcher.dispatch(
@@ -72,10 +72,10 @@ describe('hosted review RPC methods', () => {
   })
 
   it('carries interactive card refresh admission through to the runtime', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getHostedReviewForBranch: vi.fn().mockResolvedValue(null)
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: HOSTED_REVIEW_METHODS })
 
     await dispatcher.dispatch(
@@ -92,7 +92,7 @@ describe('hosted review RPC methods', () => {
   })
 
   it('dispatches creation eligibility requests to the runtime', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getHostedReviewCreationEligibility: vi.fn().mockResolvedValue({
         provider: 'github',
@@ -105,7 +105,7 @@ describe('hosted review RPC methods', () => {
         head: 'feature/create-pr',
         title: 'Create PR'
       })
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: HOSTED_REVIEW_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -147,11 +147,11 @@ describe('hosted review RPC methods', () => {
     // The params schema is open because the token is the host's own and a client repeats back what
     // a newer host named. A build that does not know the arm has to answer, not reject the params.
     // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: the refusal is answered before the dispatcher reads the runtime, and asserting neither creator ran is what proves it; the interface has 1047 members and no narrower stand-in exists.
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       createHostedReview: vi.fn(),
       createStackedHostedReview: vi.fn()
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: HOSTED_REVIEW_METHODS })
     const create = {
       repo: 'repo-1',
@@ -172,14 +172,14 @@ describe('hosted review RPC methods', () => {
   })
 
   it('dispatches create requests to the runtime', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       createHostedReview: vi.fn().mockResolvedValue({
         ok: true,
         number: 51,
-        url: 'https://github.com/acme/orca/pull/51'
+        url: 'https://github.com/acme/alfred/pull/51'
       })
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: HOSTED_REVIEW_METHODS })
 
     const response = await dispatcher.dispatch(
@@ -212,16 +212,16 @@ describe('hosted review RPC methods', () => {
   })
 
   it('dispatches stacked creation through a distinct runtime method', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       createStackedHostedReview: vi.fn().mockResolvedValue({
         ok: true,
         number: 52,
-        url: 'https://github.com/acme/orca/pull/52',
+        url: 'https://github.com/acme/alfred/pull/52',
         stackNumber: 60,
-        parentReview: { number: 51, url: 'https://github.com/acme/orca/pull/51' }
+        parentReview: { number: 51, url: 'https://github.com/acme/alfred/pull/51' }
       })
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: HOSTED_REVIEW_METHODS })
 
     const response = await dispatcher.dispatch(

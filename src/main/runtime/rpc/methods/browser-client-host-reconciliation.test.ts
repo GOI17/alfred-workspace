@@ -1,7 +1,8 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { BROWSER_CLIENT_HOST_RUNTIME_CAPABILITY } from '../../../../shared/protocol-version'
 import { getBrowserHostLeaseRegistry } from '../../browser-host-lease-registry-instance'
-import type { OrcaRuntimeService } from '../../orca-runtime'
+import type { AlfredRuntimeService } from '../../alfred-runtime'
 import { RpcDispatcher } from '../dispatcher'
 import { BROWSER_CLIENT_HOST_METHODS } from './browser-client-host'
 
@@ -155,13 +156,13 @@ async function commandResult(dispatcher: RpcDispatcher, params: Record<string, u
   return JSON.parse(replies[0]!)
 }
 
-function runtime(cleanups: Map<string, () => void>): OrcaRuntimeService {
-  return {
+function runtime(cleanups: Map<string, () => void>): AlfredRuntimeService {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'runtime-a',
     getStartedAt: () => 1,
     // Attach adopts client-hosted pages from the reported inventory before recovery runs.
-    resolveBrowserExecutionHostKeyForWorkspace: async () => undefined,
+    resolveBrowserExecutionHostKeyForWorkspace: async () => ({ status: 'unavailable' }),
     markClientHostedPagesReconciled: () => {},
     registerSubscriptionCleanup: (id: string, cleanup: () => void) => cleanups.set(id, cleanup)
-  } as unknown as OrcaRuntimeService
+  })
 }

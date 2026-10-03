@@ -1,7 +1,7 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
-import type { OrcaRuntimeService } from '../../orca-runtime'
 import { DIAGNOSTICS_METHODS } from './diagnostics'
 
 function makeRequest(method: string, params?: unknown): RpcRequest {
@@ -35,10 +35,10 @@ describe('diagnostics RPC methods', () => {
       totalMemory: 1024,
       collectedAt: 123
     }
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getMemorySnapshot: vi.fn().mockResolvedValue(snapshot)
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: DIAGNOSTICS_METHODS })
 
     const response = await dispatcher.dispatch(makeRequest('diagnostics.memory'))

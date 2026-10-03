@@ -1,8 +1,8 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 // Split from github.test.ts to keep it under its line cap.
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
-import type { OrcaRuntimeService } from '../../orca-runtime'
 import { GITHUB_METHODS } from './github'
 
 function makeRequest(method: string, params?: unknown): RpcRequest {
@@ -11,10 +11,10 @@ function makeRequest(method: string, params?: unknown): RpcRequest {
 
 describe('github.prForBranch refresh reason', () => {
   it('forwards an optional PR refresh reason without requiring it from older clients', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       getRepoPRForBranch: vi.fn().mockResolvedValue({ kind: 'no-pr', fetchedAt: 1 })
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: GITHUB_METHODS })
 
     await dispatcher.dispatch(

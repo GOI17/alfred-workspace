@@ -1,9 +1,10 @@
+import { makeRepo as fixtureMakeRepo } from '../../../../shared/repo-test-fixture'
 // @vitest-environment happy-dom
 
 import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { Repo } from '../../../../shared/repo-types'
+
 import { makeAutomation, makeAutomationListRow, REPO_ID } from './automations-page-fixtures'
 import type { AutomationListRow } from './automation-list-row-identity'
 import { resolveAutomationListEmptyState } from './automation-list-empty-state'
@@ -26,7 +27,7 @@ const buildRowsSpy = vi.mocked(searchRows.buildAutomationListSearchRows)
 const matchRowsSpy = vi.mocked(searchRows.matchAutomationListSearchRowKeys)
 
 const repoMap = new Map([
-  [REPO_ID, { id: REPO_ID, displayName: 'orca', path: '/src/orca' } as Repo]
+  [REPO_ID, fixtureMakeRepo({ id: REPO_ID, displayName: 'alfred', path: '/src/alfred' })]
 ])
 
 type SearchResult = ReturnType<typeof useAutomationListSearch>

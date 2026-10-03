@@ -298,7 +298,7 @@ describe('fetchWorktrees', () => {
     const sshWorktree = makeWorktree({
       id: 'repo1::/ssh/wt1',
       repoId: 'repo1',
-      path: '/home/orca/wt1'
+      path: '/home/alfred/wt1'
     })
     let releaseLocal!: () => void
     let releaseSsh!: () => void
@@ -337,14 +337,14 @@ describe('fetchWorktrees', () => {
         },
         {
           id: 'repo1',
-          path: '/home/orca/repo1',
+          path: '/home/alfred/repo1',
           displayName: 'Repo One SSH',
           badgeColor: '#000',
           addedAt: 0,
           connectionId: 'ssh-1'
         }
       ]
-    } as Partial<AppState>)
+    })
 
     const refresh = store.getState().fetchAllWorktrees()
     await Promise.all([localStarted, sshStarted])
@@ -365,9 +365,9 @@ describe('fetchWorktrees', () => {
   it('preserves SSH host identity when detected and visible refreshes overlap', async () => {
     const store = createTestStore()
     const sshWorktree = makeWorktree({
-      id: 'repo-ssh::/home/orca/wt1',
+      id: 'repo-ssh::/home/alfred/wt1',
       repoId: 'repo-ssh',
-      path: '/home/orca/wt1'
+      path: '/home/alfred/wt1'
     })
     let releaseScan!: () => void
     const scanStarted = new Promise<void>((resolve) => {
@@ -386,14 +386,14 @@ describe('fetchWorktrees', () => {
       repos: [
         {
           id: 'repo-ssh',
-          path: '/home/orca/repo',
+          path: '/home/alfred/repo',
           displayName: 'SSH Repo',
           badgeColor: '#000',
           addedAt: 0,
           connectionId: 'ssh-1'
         }
       ]
-    } as Partial<AppState>)
+    })
 
     const detectedRequest = store.getState().fetchDetectedWorktrees('repo-ssh')
     const visibleRequest = store.getState().fetchWorktrees('repo-ssh')
@@ -417,9 +417,9 @@ describe('fetchWorktrees', () => {
   it('preserves SSH host identity when visible refresh starts before detected refresh', async () => {
     const store = createTestStore()
     const sshWorktree = makeWorktree({
-      id: 'repo-ssh::/home/orca/wt1',
+      id: 'repo-ssh::/home/alfred/wt1',
       repoId: 'repo-ssh',
-      path: '/home/orca/wt1'
+      path: '/home/alfred/wt1'
     })
     let releaseScan!: () => void
     const scanStarted = new Promise<void>((resolve) => {
@@ -438,14 +438,14 @@ describe('fetchWorktrees', () => {
       repos: [
         {
           id: 'repo-ssh',
-          path: '/home/orca/repo',
+          path: '/home/alfred/repo',
           displayName: 'SSH Repo',
           badgeColor: '#000',
           addedAt: 0,
           connectionId: 'ssh-1'
         }
       ]
-    } as Partial<AppState>)
+    })
 
     const visibleRequest = store.getState().fetchWorktrees('repo-ssh')
     const detectedRequest = store.getState().fetchDetectedWorktrees('repo-ssh')
@@ -507,22 +507,22 @@ describe('fetchWorktrees', () => {
   it('merges one exact direct provider result once without a second scan', async () => {
     const store = createTestStore()
     const worktree = makeWorktree({
-      id: 'repo-ssh::/home/orca/feature',
+      id: 'repo-ssh::/home/alfred/feature',
       repoId: 'repo-ssh',
-      path: '/home/orca/feature'
+      path: '/home/alfred/feature'
     })
     store.setState({
       repos: [
         {
           id: 'repo-ssh',
-          path: '/home/orca/repo',
+          path: '/home/alfred/repo',
           displayName: 'SSH Repo',
           badgeColor: '#000',
           addedAt: 0,
           connectionId: 'ssh-1'
         }
       ]
-    } as Partial<AppState>)
+    })
     mockApi.worktrees.listDetected.mockImplementationOnce(async (args: ListDetectedWorktreesArgs) =>
       qualifyDetectedResult(args, makeDetectedResult(args.repoId, [worktree]))
     )
@@ -551,9 +551,9 @@ describe('fetchWorktrees', () => {
   it('rejects a late duplicate exact-host owner with zero mutation publications', async () => {
     const store = createTestStore()
     const existing = makeWorktree({
-      id: 'repo-ssh::/home/orca/existing',
+      id: 'repo-ssh::/home/alfred/existing',
       repoId: 'repo-ssh',
-      path: '/home/orca/existing',
+      path: '/home/alfred/existing',
       branch: 'refs/heads/old',
       hostId: 'ssh:ssh-1'
     })
@@ -561,7 +561,7 @@ describe('fetchWorktrees', () => {
       repos: [
         {
           id: 'repo-ssh',
-          path: '/home/orca/repo',
+          path: '/home/alfred/repo',
           displayName: 'SSH Repo',
           badgeColor: '#000',
           addedAt: 0,
@@ -572,7 +572,7 @@ describe('fetchWorktrees', () => {
       detectedWorktreesByRepo: {
         'repo-ssh': makeDetectedResult('repo-ssh', [existing])
       }
-    } as Partial<AppState>)
+    })
     let request!: ListDetectedWorktreesArgs
     let resolveProvider!: (result: HostQualifiedDetectedWorktreeResult) => void
     mockApi.worktrees.listDetected.mockImplementationOnce(
@@ -593,7 +593,7 @@ describe('fetchWorktrees', () => {
         ...state.repos,
         {
           id: 'repo-ssh',
-          path: '/home/orca/duplicate',
+          path: '/home/alfred/duplicate',
           displayName: 'Duplicate SSH Repo',
           badgeColor: '#111',
           addedAt: 1,
@@ -632,7 +632,7 @@ describe('fetchWorktrees', () => {
       repos: [
         {
           id: 'repo-ssh',
-          path: '/home/orca/repo',
+          path: '/home/alfred/repo',
           displayName: 'SSH Repo',
           badgeColor: '#000',
           addedAt: 0,
@@ -651,7 +651,7 @@ describe('fetchWorktrees', () => {
           }
         ]
       ])
-    } as Partial<AppState>)
+    })
 
     await expect(store.getState().fetchWorktrees('repo-ssh')).resolves.toBe(false)
     expect(mockApi.worktrees.listDetected).not.toHaveBeenCalled()

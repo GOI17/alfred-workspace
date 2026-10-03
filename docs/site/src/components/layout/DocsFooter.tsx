@@ -9,7 +9,7 @@ export function DocsFooter() {
           <div>
             <Link
               href="/docs"
-              aria-label="Orca docs"
+              aria-label="Alfred docs"
               className="mb-4 inline-flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
             >
               <Image src="/docs/logo.svg" alt="" width={32} height={20} />
@@ -17,7 +17,7 @@ export function DocsFooter() {
                 aria-hidden="true"
                 className="font-sans text-xl font-bold tracking-tight text-foreground"
               >
-                ORCA
+                ALFRED
               </span>
             </Link>
             <p className="text-muted-foreground max-w-sm text-sm">
@@ -40,7 +40,7 @@ export function DocsFooter() {
               </li>
               <li>
                 <a
-                  href="https://www.onorca.dev"
+                  href="https://alfredlabs.org"
                   className="rounded-md px-1 py-0.5 transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                 >
                   Home
@@ -48,28 +48,10 @@ export function DocsFooter() {
               </li>
               <li>
                 <a
-                  href="https://github.com/stablyai/orca"
+                  href="https://github.com/GOI17/alfred-workspace"
                   className="rounded-md px-1 py-0.5 transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                 >
                   GitHub
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://discord.gg/fzjDKHxv8Q"
-                  className="rounded-md px-1 py-0.5 transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-                >
-                  Discord
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://x.com/orca_build"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-md px-1 py-0.5 transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-                >
-                  X
                 </a>
               </li>
             </ul>
@@ -78,19 +60,19 @@ export function DocsFooter() {
 
         <div className="flex flex-col items-center justify-between gap-4 border-t border-border pt-6 font-mono text-sm text-muted-foreground md:flex-row">
           <p>
-            © {new Date().getFullYear()} Lovecast Inc. ·{' '}
+            © {new Date().getFullYear()} Alfredlabs ·{' '}
             <a
-              href="https://github.com/stablyai/orca/blob/main/LICENSE"
+              href="https://github.com/GOI17/alfred-workspace/blob/main/LICENSE"
               className="rounded-sm underline decoration-border underline-offset-4 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
             >
               MIT licensed
             </a>
           </p>
           <a
-            href="https://github.com/stablyai/orca/tree/main/docs/site"
+            href="https://github.com/GOI17/alfred-workspace/tree/main/docs/site"
             className="rounded-sm text-xs underline decoration-border underline-offset-4 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
           >
-            Docs source: docs/site in stablyai/orca
+            Docs source: docs/site in GOI17/alfred-workspace
           </a>
         </div>
       </div>

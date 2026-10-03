@@ -72,7 +72,7 @@ export function useAutomationDraftEffects({
   useEffect(() => {
     if (
       !createOpen ||
-      createTarget !== 'orca' ||
+      createTarget !== 'alfred' ||
       draft.workspaceMode !== 'new_per_run' ||
       !draft.projectId
     ) {

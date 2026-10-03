@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   AGENT_PROMPT_BRACKETED_PASTE_END,
@@ -8,7 +9,7 @@ import {
   AGENT_PROMPT_TEST_WORKTREE_PATH,
   createAgentPromptSubmissionRuntime
 } from './agent-prompt-submission-runtime-test-fixture'
-import { OrcaRuntimeService } from './orca-runtime'
+import { AlfredRuntimeService } from './alfred-runtime'
 import { makeStore } from './runtime-rpc-worktree-store-fixtures'
 
 const createPromptRuntime = createAgentPromptSubmissionRuntime
@@ -334,7 +335,7 @@ describe('agent prompt submission runtime', () => {
     vi.setSystemTime(1_000)
     let handle = ''
     const writes: string[] = []
-    const runtime = new OrcaRuntimeService(makeStore() as never, undefined, {
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()), undefined, {
       getAgentStatusSnapshot: () => [
         {
           paneKey: 'prompt-pane',
@@ -469,7 +470,7 @@ describe('agent prompt submission runtime', () => {
   })
 
   // Why: hook rows reach the runtime through this provider, which has no window and no OSC title —
-  // the same path a headless `orca serve` host and a minimized desktop window take.
+  // the same path a headless `alfred serve` host and a minimized desktop window take.
   async function createHookOnlyPromptRuntime(
     hook: {
       state: 'done' | 'working'
@@ -477,13 +478,13 @@ describe('agent prompt submission runtime', () => {
     },
     launchAgent: 'kimi' | 'codex' = 'kimi'
   ): Promise<{
-    runtime: OrcaRuntimeService
+    runtime: AlfredRuntimeService
     handle: string
     writes: string[]
   }> {
     let handle = ''
     const writes: string[] = []
-    const runtime = new OrcaRuntimeService(makeStore() as never, undefined, {
+    const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()), undefined, {
       getAgentStatusSnapshot: () => [
         {
           paneKey: 'prompt-pane',

@@ -59,10 +59,10 @@ function detected(
 ): DetectedWorktreeListResult['worktrees'][number] {
   return {
     ...makeWorktree({ id, repoId, hostId }),
-    ownership: 'orca-managed',
+    ownership: 'alfred-managed',
     selectedCheckout: true,
     visible: true
-  } as DetectedWorktreeListResult['worktrees'][number]
+  }
 }
 
 describe('purgeStaleRuntimeHostState', () => {

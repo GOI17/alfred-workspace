@@ -27,7 +27,7 @@ afterEach(async () => {
 
 function writeRuntimeConnection(userDataPath: string, endpoint: string, runtimeId: string): void {
   writeFileSync(
-    join(userDataPath, 'orca-runtime.json'),
+    join(userDataPath, 'alfred-runtime.json'),
     JSON.stringify({
       runtimeId,
       pid: 1,
@@ -58,7 +58,7 @@ function expectPromptRetryBlockedJson(error: unknown, requestId: string): void {
 
 describe('RuntimeClient orchestration recovery identity', () => {
   it('rejects a worker-start timeout whose client grace would overflow timers', () => {
-    const client = new RuntimeClient(undefined, 60_000, null, null, 'orca')
+    const client = new RuntimeClient(undefined, 60_000, null, null, 'alfred')
     const resolve = (
       client as unknown as {
         resolveMethodTimeoutMs: (method: string, params?: unknown) => number
@@ -72,7 +72,7 @@ describe('RuntimeClient orchestration recovery identity', () => {
   })
 
   it('attaches the request and exact retry identity to a real RPC failure response', async () => {
-    const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-recovery-'))
+    const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-recovery-'))
     const endpoint = join(userDataPath, 'runtime.sock')
     const server = createServer((socket) => {
       let buffer = ''
@@ -109,7 +109,7 @@ describe('RuntimeClient orchestration recovery identity', () => {
     await new Promise<void>((resolve) => server.listen(endpoint, resolve))
     writeRuntimeConnection(userDataPath, endpoint, 'runtime-1')
 
-    const client = new RuntimeClient(userDataPath, 500, null, null, 'orca')
+    const client = new RuntimeClient(userDataPath, 500, null, null, 'alfred')
     try {
       await client.call('orchestration.workerStart', { task: 'task_1' })
       throw new Error('expected worker-start failure')
@@ -127,10 +127,10 @@ describe('RuntimeClient orchestration recovery identity', () => {
       expect(recovered.data).toMatchObject({
         orchestrationRequestId: expect.any(String),
         dispatchId: 'dispatch_1',
-        originalCommand: ['orca', 'orchestration', 'worker-start', '--task', 'task_1'],
+        originalCommand: ['alfred', 'orchestration', 'worker-start', '--task', 'task_1'],
         recovery: {
           queryCommand: [
-            'orca',
+            'alfred',
             'orchestration',
             'worker-show',
             '--dispatch',
@@ -138,7 +138,7 @@ describe('RuntimeClient orchestration recovery identity', () => {
             '--json'
           ],
           retryCommand: [
-            'orca',
+            'alfred',
             'orchestration',
             'worker-start',
             '--task',
@@ -153,7 +153,7 @@ describe('RuntimeClient orchestration recovery identity', () => {
   })
 
   it('keeps durable prompt retry when failure metadata proves the preflight runtime', async () => {
-    const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-current-prompt-'))
+    const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-current-prompt-'))
     const endpoint = join(userDataPath, 'runtime.sock')
     const server = createServer((socket) => {
       socket.once('data', (data) => {
@@ -172,7 +172,7 @@ describe('RuntimeClient orchestration recovery identity', () => {
     await new Promise<void>((resolve) => server.listen(endpoint, resolve))
     writeRuntimeConnection(userDataPath, endpoint, 'runtime-current')
 
-    const client = new RuntimeClient(userDataPath, 500, null, null, 'orca')
+    const client = new RuntimeClient(userDataPath, 500, null, null, 'alfred')
     const error = await client
       .call(
         'terminal.send',
@@ -182,7 +182,7 @@ describe('RuntimeClient orchestration recovery identity', () => {
           enter: true,
           interrupt: false,
           agentPrompt: true,
-          client: { id: 'orca-cli', type: 'desktop' }
+          client: { id: 'alfred-cli', type: 'desktop' }
         },
         {
           terminalPromptPreflight: { runtimeId: 'runtime-current' },
@@ -200,7 +200,7 @@ describe('RuntimeClient orchestration recovery identity', () => {
   })
 
   it('keeps the prompt retry ID when the attested runtime times out in transport', async () => {
-    const userDataPath = mkdtempSync(join(tmpdir(), 'orca-rt-timeout-'))
+    const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-rt-timeout-'))
     const endpoint = join(userDataPath, 'runtime.sock')
     let receivedRequest: Record<string, unknown> | undefined
     const server = createServer((socket) => {
@@ -212,7 +212,7 @@ describe('RuntimeClient orchestration recovery identity', () => {
     await new Promise<void>((resolve) => server.listen(endpoint, resolve))
     writeRuntimeConnection(userDataPath, endpoint, 'runtime-current')
 
-    const client = new RuntimeClient(userDataPath, 200, null, null, 'orca')
+    const client = new RuntimeClient(userDataPath, 200, null, null, 'alfred')
     const error = await client
       .call(
         'terminal.send',
@@ -222,7 +222,7 @@ describe('RuntimeClient orchestration recovery identity', () => {
           enter: true,
           interrupt: false,
           agentPrompt: true,
-          client: { id: 'orca-cli', type: 'desktop' }
+          client: { id: 'alfred-cli', type: 'desktop' }
         },
         {
           terminalPromptPreflight: { runtimeId: 'runtime-current' },
@@ -234,17 +234,20 @@ describe('RuntimeClient orchestration recovery identity', () => {
 
     expect(receivedRequest?.orchestrationRequestId).toBe('prompt-transport-timeout')
     expect(error).toBeInstanceOf(RuntimeClientError)
+    if (!(error instanceof RuntimeClientError)) {
+      throw new Error('Expected a runtime client error')
+    }
     expect(error).not.toBeInstanceOf(RuntimeRpcFailureError)
-    expect((error as RuntimeClientError).code).toBe('runtime_timeout')
+    expect(error.code).toBe('runtime_timeout')
     expect(error).toMatchObject({ data: { orchestrationRequestId: 'prompt-transport-timeout' } })
     expect((error as Error).message).toContain(
       '--retry-request prompt-transport-timeout --wait-submit <seconds>'
     )
-    expect((error as RuntimeClientError).data).not.toHaveProperty('retrySafe')
+    expect(error.data).not.toHaveProperty('retrySafe')
   })
 
   it('blocks retry when a downgraded runtime rejects after capability preflight', async () => {
-    const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-downgraded-prompt-'))
+    const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-downgraded-prompt-'))
     const endpoint = join(userDataPath, 'runtime.sock')
     let receivedRequest: Record<string, unknown> | undefined
     const server = createServer((socket) => {
@@ -265,7 +268,7 @@ describe('RuntimeClient orchestration recovery identity', () => {
     await new Promise<void>((resolve) => server.listen(endpoint, resolve))
     writeRuntimeConnection(userDataPath, endpoint, 'runtime-after-downgrade')
 
-    const client = new RuntimeClient(userDataPath, 500, null, null, 'orca')
+    const client = new RuntimeClient(userDataPath, 500, null, null, 'alfred')
     const error = await client
       .call(
         'terminal.send',
@@ -275,7 +278,7 @@ describe('RuntimeClient orchestration recovery identity', () => {
           enter: true,
           interrupt: false,
           agentPrompt: true,
-          client: { id: 'orca-cli', type: 'desktop' }
+          client: { id: 'alfred-cli', type: 'desktop' }
         },
         {
           terminalPromptPreflight: { runtimeId: 'runtime-before-downgrade' },
@@ -291,7 +294,7 @@ describe('RuntimeClient orchestration recovery identity', () => {
   })
 
   it('blocks retry when a downgraded runtime loses the prompt reply', async () => {
-    const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-lost-prompt-reply-'))
+    const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-lost-prompt-reply-'))
     const endpoint = join(userDataPath, 'runtime.sock')
     let receivedRequest: Record<string, unknown> | undefined
     const server = createServer((socket) => {
@@ -305,7 +308,7 @@ describe('RuntimeClient orchestration recovery identity', () => {
     await new Promise<void>((resolve) => server.listen(endpoint, resolve))
     writeRuntimeConnection(userDataPath, endpoint, 'runtime-after-downgrade')
 
-    const client = new RuntimeClient(userDataPath, 500, null, null, 'orca')
+    const client = new RuntimeClient(userDataPath, 500, null, null, 'alfred')
     const error = await client
       .call(
         'terminal.send',
@@ -315,7 +318,7 @@ describe('RuntimeClient orchestration recovery identity', () => {
           enter: true,
           interrupt: false,
           agentPrompt: true,
-          client: { id: 'orca-cli', type: 'desktop' }
+          client: { id: 'alfred-cli', type: 'desktop' }
         },
         {
           terminalPromptPreflight: { runtimeId: 'runtime-before-downgrade' },
@@ -327,13 +330,16 @@ describe('RuntimeClient orchestration recovery identity', () => {
 
     expect(receivedRequest?.orchestrationRequestId).toBe('prompt-downgraded-lost-reply')
     expect(error).toBeInstanceOf(RuntimeClientError)
+    if (!(error instanceof RuntimeClientError)) {
+      throw new Error('Expected a runtime client error')
+    }
     expect(error).not.toBeInstanceOf(RuntimeRpcFailureError)
     expectPromptRetryBlockedJson(error, 'prompt-downgraded-lost-reply')
-    expect(JSON.stringify((error as RuntimeClientError).data)).not.toContain('Update Orca')
+    expect(JSON.stringify(error.data)).not.toContain('Update Alfred')
   })
 
   it('reports an unknown legacy prompt outcome without advertising an unsafe retry', async () => {
-    const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-legacy-prompt-'))
+    const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-legacy-prompt-'))
     const endpoint = join(userDataPath, 'runtime.sock')
     let receivedRequest: Record<string, unknown> | undefined
     const server = createServer((socket) => {
@@ -346,7 +352,7 @@ describe('RuntimeClient orchestration recovery identity', () => {
     await new Promise<void>((resolve) => server.listen(endpoint, resolve))
     writeRuntimeConnection(userDataPath, endpoint, 'runtime-legacy')
 
-    const client = new RuntimeClient(userDataPath, 500, null, null, 'orca')
+    const client = new RuntimeClient(userDataPath, 500, null, null, 'alfred')
     const error = await client
       .call(
         'terminal.send',
@@ -356,7 +362,7 @@ describe('RuntimeClient orchestration recovery identity', () => {
           enter: true,
           interrupt: false,
           agentPrompt: true,
-          client: { id: 'orca-cli', type: 'desktop' }
+          client: { id: 'alfred-cli', type: 'desktop' }
         },
         { legacyTerminalPrompt: true }
       )
@@ -364,6 +370,9 @@ describe('RuntimeClient orchestration recovery identity', () => {
       .catch((caught: unknown) => caught)
 
     expect(error).toBeInstanceOf(RuntimeClientError)
+    if (!(error instanceof RuntimeClientError)) {
+      throw new Error('Expected a runtime client error')
+    }
     expect(error).not.toBeInstanceOf(RuntimeRpcFailureError)
     expect(error).toMatchObject({
       data: {
@@ -371,11 +380,11 @@ describe('RuntimeClient orchestration recovery identity', () => {
         retrySafe: false,
         nextSteps: expect.arrayContaining([
           'Inspect the terminal output and agent state without sending input.',
-          'Update Orca on the execution host before future prompt sends that need durable retry.'
+          'Update Alfred on the execution host before future prompt sends that need durable retry.'
         ])
       }
     })
-    expect((error as RuntimeClientError).data).not.toHaveProperty('orchestrationRequestId')
+    expect(error.data).not.toHaveProperty('orchestrationRequestId')
     expect(receivedRequest).not.toHaveProperty('orchestrationRequestId')
     expect((error as Error).message).not.toContain('--retry-request')
     expect((error as Error).message).toContain('do not resend automatically')

@@ -1,10 +1,11 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
-import { OrcaRuntimeService } from './orca-runtime'
+import { AlfredRuntimeService } from './alfred-runtime'
 import { readRuntimeMetadata } from './runtime-metadata'
-import { OrcaRuntimeRpcServer } from './runtime-rpc'
+import { AlfredRuntimeRpcServer } from './runtime-rpc'
 import { sendRequest } from './runtime-rpc-test-harness'
 import { makeStore } from './runtime-rpc-worktree-store-fixtures'
 
@@ -24,11 +25,13 @@ vi.mock('../git/worktree', () => {
   }
 })
 
-describe('OrcaRuntimeRpcServer', () => {
+describe('AlfredRuntimeRpcServer', () => {
   it('serves worktree.ps from the runtime summary builder', async () => {
-    const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-rpc-'))
-    const runtime = new OrcaRuntimeService(makeStore({ isUnread: true }) as never)
-    const server = new OrcaRuntimeRpcServer({ runtime, userDataPath })
+    const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(makeStore({ isUnread: true }))
+    )
+    const server = new AlfredRuntimeRpcServer({ runtime, userDataPath })
 
     runtime.attachWindow(1)
     runtime.syncWindowGraph(1, {
@@ -91,9 +94,11 @@ describe('OrcaRuntimeRpcServer', () => {
   })
 
   it('bounds worktree.list responses with limit metadata', async () => {
-    const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-rpc-'))
-    const runtime = new OrcaRuntimeService(makeStore({ isUnread: true }) as never)
-    const server = new OrcaRuntimeRpcServer({ runtime, userDataPath })
+    const userDataPath = mkdtempSync(join(tmpdir(), 'alfred-runtime-rpc-'))
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(makeStore({ isUnread: true }))
+    )
+    const server = new AlfredRuntimeRpcServer({ runtime, userDataPath })
 
     await server.start()
 

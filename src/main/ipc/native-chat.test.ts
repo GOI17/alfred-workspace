@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { appendFile, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -70,18 +71,22 @@ async function invokeReadSession(args: {
 
 describe('nativeChat:readSession handler', () => {
   it('preserves notFound so a just-created session stays in retry/loading', async () => {
-    const result = (await invokeReadSession({
-      agent: 'claude',
-      sessionId: 'missing-session',
-      transcriptPath: join(tmpdir(), 'orca-native-chat-ipc-does-not-exist.jsonl')
-    })) as { error?: string; notFound?: true }
+    const result = z
+      .object({ error: z.string().optional(), notFound: z.literal(true).optional() })
+      .parse(
+        await invokeReadSession({
+          agent: 'claude',
+          sessionId: 'missing-session',
+          transcriptPath: join(tmpdir(), 'alfred-native-chat-ipc-does-not-exist.jsonl')
+        })
+      )
 
     expect(result.error).toBeDefined()
     expect(result.notFound).toBe(true)
   })
 
   it('resolves a Claude transcript and returns the full conversation', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'orca-native-chat-ipc-'))
+    const root = await mkdtemp(join(tmpdir(), 'alfred-native-chat-ipc-'))
     tempRoots.push(root)
     const projectsDir = join(root, '.claude', 'projects')
     const projectDir = join(projectsDir, '-repo')
@@ -125,7 +130,7 @@ describe('nativeChat:readSession handler', () => {
   })
 
   it('windows to the most-recent `limit` turns and pages older history when raised', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'orca-native-chat-ipc-limit-'))
+    const root = await mkdtemp(join(tmpdir(), 'alfred-native-chat-ipc-limit-'))
     tempRoots.push(root)
     const projectDir = join(root, '.claude', 'projects', '-repo')
     await mkdir(projectDir, { recursive: true })
@@ -165,7 +170,7 @@ describe('nativeChat:readSession handler', () => {
   })
 
   it('emits snapshot and appended frames and tears down on destroy', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'orca-native-chat-ipc-sub-'))
+    const root = await mkdtemp(join(tmpdir(), 'alfred-native-chat-ipc-sub-'))
     tempRoots.push(root)
     const projectsDir = join(root, '.claude', 'projects')
     const projectDir = join(projectsDir, '-repo')
@@ -255,7 +260,7 @@ describe('nativeChat:readSession handler', () => {
   it('settles the view with a pending frame while the transcript is unflushed', async () => {
     // The user-visible bug: a session that has not been prompted never writes
     // its JSONL, so with no frame at all the chat view spins indefinitely.
-    const root = await mkdtemp(join(tmpdir(), 'orca-native-chat-ipc-unflushed-'))
+    const root = await mkdtemp(join(tmpdir(), 'alfred-native-chat-ipc-unflushed-'))
     tempRoots.push(root)
     await mkdir(join(root, '.claude', 'projects', '-repo'), { recursive: true })
 
@@ -301,7 +306,7 @@ describe('nativeChat:readSession handler', () => {
   })
 
   it('drops cleanup registration when sender is destroyed before subscribe completes', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'orca-native-chat-ipc-destroy-race-'))
+    const root = await mkdtemp(join(tmpdir(), 'alfred-native-chat-ipc-destroy-race-'))
     tempRoots.push(root)
     const projectDir = join(root, '.claude', 'projects', '-repo')
     await mkdir(projectDir, { recursive: true })
@@ -362,7 +367,7 @@ describe('nativeChat:readSession handler', () => {
   })
 
   it('returns an error for an unknown session without throwing', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'orca-native-chat-ipc-missing-'))
+    const root = await mkdtemp(join(tmpdir(), 'alfred-native-chat-ipc-missing-'))
     tempRoots.push(root)
     const previousHome = process.env.HOME
     process.env.HOME = root

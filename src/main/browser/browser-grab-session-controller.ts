@@ -1,3 +1,4 @@
+import { isJsonObject } from '../../shared/json-object'
 import type { BrowserGrabCancelReason, BrowserGrabResult } from '../../shared/browser-grab-types'
 import { buildGuestOverlayScript } from './grab-guest-script'
 import { clampGrabPayload } from './browser-grab-payload'
@@ -22,11 +23,11 @@ type ActiveGrabOp = {
 const GRAB_OP_TIMEOUT_MS = 120_000
 
 function isGuestCancellationPayload(rawPayload: unknown): boolean {
-  if (!rawPayload || typeof rawPayload !== 'object') {
+  if (!isJsonObject(rawPayload)) {
     return false
   }
-  const payload = rawPayload as Record<string, unknown>
-  if (payload.__orcaCancelled === true) {
+  const payload = rawPayload
+  if (payload.__alfredCancelled === true) {
     return true
   }
   // Why: old guest/Electron paths can serialize cancellation as a plain error
@@ -124,13 +125,13 @@ export class BrowserGrabSessionController {
       }
 
       // Why: the guest overlay runtime handles the click in-page and calls
-      // __orcaGrabResolve() which is wired by the 'awaitClick' script to
+      // __alfredGrabResolve() which is wired by the 'awaitClick' script to
       // resolve the executeJavaScript Promise with the extracted payload.
       // Main just needs to run that script and await its result.
       const awaitGuestClick = async (): Promise<void> => {
         try {
           const rawPayload = await guest.executeJavaScript(buildGuestOverlayScript('awaitClick'))
-          if (!rawPayload || typeof rawPayload !== 'object') {
+          if (!isJsonObject(rawPayload)) {
             settleOnce({ opId, kind: 'cancelled', reason: 'user' })
             return
           }
@@ -140,14 +141,11 @@ export class BrowserGrabSessionController {
             settleOnce({ opId, kind: 'cancelled', reason: 'user' })
             return
           }
-          // Why: the guest wraps right-click results in { __orcaContextMenu, payload }
+          // Why: the guest wraps right-click results in { __alfredContextMenu, payload }
           // so the renderer can show the full action dropdown instead of auto-copying.
           const isContextMenu =
-            '__orcaContextMenu' in (rawPayload as Record<string, unknown>) &&
-            (rawPayload as Record<string, unknown>).__orcaContextMenu === true
-          const payloadSource = isContextMenu
-            ? (rawPayload as Record<string, unknown>).payload
-            : rawPayload
+            '__alfredContextMenu' in rawPayload && rawPayload.__alfredContextMenu === true
+          const payloadSource = isContextMenu ? rawPayload.payload : rawPayload
           const payload = clampGrabPayload(payloadSource)
           if (!payload) {
             settleOnce({ opId, kind: 'error', reason: 'Guest returned invalid payload structure' })

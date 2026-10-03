@@ -1,3 +1,6 @@
+import { makeWorktreeMeta } from '../../../../../../shared/worktree/metadata-test-fixture'
+import type { WorktreeMeta } from '../../../../../../shared/worktree/meta-types'
+import { createRuntimeStoreTestDouble } from '../../../../runtime-store-test-double'
 import { resolve } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -43,7 +46,7 @@ import { installMainWindowAgentStatusListeners } from '../../../../../startup/ma
 import { mainProcessState } from '../../../../../startup/main-process-state'
 import { agentHookServer } from '../../../../../agent-hooks/server'
 import { OrchestrationDb } from '../../../../orchestration/db'
-import { OrcaRuntimeService } from '../../../../orca-runtime'
+import { AlfredRuntimeService } from '../../../../alfred-runtime'
 import { ORCHESTRATION_WORKER_LIST_METHOD } from './worker-list-method'
 import { projectFleetWorkerPage } from './worker-observation'
 
@@ -95,27 +98,27 @@ const CENSUS: readonly CensusRow[] = [
     role: 'binds the hook server snapshot into the runtime deps'
   },
   {
-    path: 'main/orcad/orcad-entry.ts',
+    path: 'main/alfredd/alfredd-entry.ts',
     kind: 'wiring',
-    role: 'binds the same snapshot, OSC producer and structured sink into the headless orcad runtime deps'
+    role: 'binds the same snapshot, OSC producer and structured sink into the headless alfredd runtime deps'
   },
   {
-    path: 'main/runtime/orca-runtime-state-fields.ts',
+    path: 'main/runtime/alfred-runtime-state-fields.ts',
     kind: 'wiring',
     role: 'stores the snapshot deps on the runtime'
   },
   {
-    path: 'main/runtime/orca-runtime-preserved-branch-cleanup.ts',
+    path: 'main/runtime/alfred-runtime-preserved-branch-cleanup.ts',
     kind: 'wiring',
     role: 'declares the snapshot dep fields'
   },
   {
-    path: 'main/runtime/orca-runtime-get-orchestration-dispatch-authority.ts',
+    path: 'main/runtime/alfred-runtime-get-orchestration-dispatch-authority.ts',
     kind: 'produces',
     role: 'getOrchestrationFleetAgentStatusSnapshot — delegates to the checked snapshot module'
   },
   {
-    path: 'main/runtime/orca-runtime-stop-requested-pty-ids.ts',
+    path: 'main/runtime/alfred-runtime-stop-requested-pty-ids.ts',
     kind: 'wiring',
     role: 'feeds the enriched fleet rows to the orchestration projection'
   },
@@ -135,27 +138,27 @@ const CENSUS: readonly CensusRow[] = [
     role: 'worker-show fleet verdict (driven below)'
   },
   {
-    path: 'main/runtime/orca-runtime-get-worktree-ps.ts',
+    path: 'main/runtime/alfred-runtime-get-worktree-ps.ts',
     kind: 'consumes',
     role: 'worktree.ps inline agent rows (driven below)'
   },
   {
-    path: 'main/runtime/orca-runtime-get-terminal-interactive-wait.ts',
+    path: 'main/runtime/alfred-runtime-get-terminal-interactive-wait.ts',
     kind: 'consumes',
     role: 'exact-worker provider session selection, matched on pane key'
   },
   {
-    path: 'main/runtime/orca-runtime-serialize-agent-prompt-submission.ts',
+    path: 'main/runtime/alfred-runtime-serialize-agent-prompt-submission.ts',
     kind: 'consumes',
     role: 'prompt-submission serialization, matched on pane key'
   },
   {
-    path: 'main/runtime/orca-runtime-resolve-recovered-structured-tui-transcript.ts',
+    path: 'main/runtime/alfred-runtime-resolve-recovered-structured-tui-transcript.ts',
     kind: 'consumes',
     role: 'recovered transcript resolution from provider-session rows, matched on pane key'
   },
   {
-    path: 'main/runtime/orca-runtime-prune-mobile-session-tab-group-layout.ts',
+    path: 'main/runtime/alfred-runtime-prune-mobile-session-tab-group-layout.ts',
     kind: 'consumes',
     role: 'mobile tab-group pruning and its live agent row, plus the pane identity accessors'
   }
@@ -190,8 +193,8 @@ function publishedHookRow(): AgentStatusIpcPayload {
 }
 
 /** A runtime whose only stubs are the pane-to-terminal lookups the real terminal registry owns. */
-function censusRuntime(): OrcaRuntimeService {
-  const runtime = new OrcaRuntimeService(null, undefined, {
+function censusRuntime(): AlfredRuntimeService {
+  const runtime = new AlfredRuntimeService(null, undefined, {
     getAgentStatusSnapshot: () => [publishedHookRow()]
   })
   vi.spyOn(runtime, 'getAgentStatusTerminalHandleForPaneKey').mockImplementation((paneKey) =>
@@ -234,7 +237,7 @@ const REPO_PATH = '/census/repo'
 
 /** Enough store for `worktree.ps` to resolve one worktree; the git listing is mocked above. */
 function censusStore() {
-  const metaById: Record<string, unknown> = {}
+  const metaById: Record<string, WorktreeMeta> = {}
   return {
     getRepo: (id: string) => (id === 'repo-census' ? censusStore().getRepos()[0] : undefined),
     getRepos: () => [
@@ -242,8 +245,8 @@ function censusStore() {
     ],
     getAllWorktreeMeta: () => metaById,
     getWorktreeMeta: (id: string) => metaById[id],
-    setWorktreeMeta: (id: string, meta: Record<string, unknown>) => {
-      metaById[id] = { ...(metaById[id] as object), ...meta }
+    setWorktreeMeta: (id: string, meta: Partial<WorktreeMeta>) => {
+      metaById[id] = makeWorktreeMeta({ ...metaById[id], ...meta })
       return metaById[id]
     },
     removeWorktreeMeta: () => {},
@@ -332,9 +335,13 @@ describe('agent status producer census', () => {
     ])
     // The hook row names its worktree by id, so learn the id the runtime minted before publishing.
     let rows: AgentStatusIpcPayload[] = []
-    const runtime = new OrcaRuntimeService(censusStore() as never, undefined, {
-      getAgentStatusSnapshot: () => rows
-    })
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble(censusStore()),
+      undefined,
+      {
+        getAgentStatusSnapshot: () => rows
+      }
+    )
 
     const discovery = await runtime.getWorktreePs(10)
     const worktreeId = discovery.worktrees[0]?.worktreeId

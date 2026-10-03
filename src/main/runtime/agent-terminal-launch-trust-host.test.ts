@@ -1,3 +1,5 @@
+import type { Repo } from '../../shared/repo-types'
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 // launchAgentTerminal read `store.getRepo(worktree.repoId)?.connectionId` for the trust write —
 // host-blind, so the same repo id on two hosts wrote a remote path into the client's agent config
 // and the agent on the host never saw the trust (#11163). Every sibling call site already passes
@@ -11,7 +13,7 @@ vi.mock('electron', () => ({
   app: { getPath: vi.fn(() => '/tmp'), isPackaged: false }
 }))
 
-import { OrcaRuntimeService } from './orca-runtime'
+import { AlfredRuntimeService } from './alfred-runtime'
 
 const REMOTE_PATH = '/srv/app-feature'
 
@@ -26,14 +28,23 @@ type RuntimeInternals = {
   createTerminal: (selector: string, opts: unknown) => Promise<unknown>
 }
 
-function makeRuntime(repos: readonly Record<string, unknown>[], hostId?: string) {
+function makeRuntime(
+  repoInputs: readonly (Pick<Repo, 'id' | 'path'> & Partial<Repo>)[],
+  hostId?: string
+) {
+  const repos: Repo[] = repoInputs.map((repo) => ({
+    displayName: 'repo',
+    badgeColor: 'blue',
+    addedAt: 1,
+    ...repo
+  }))
   const store = {
     getSettings: () => ({ disabledTuiAgents: [], workspaceDir: '/tmp/workspaces' }),
     getProjectHostSetups: () => [],
     getRepos: () => repos,
     getRepo: (id: string) => repos.find((repo) => repo.id === id)
   }
-  const runtime = new OrcaRuntimeService(store as never)
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(store))
   const internals = runtime as unknown as RuntimeInternals
   vi.spyOn(internals, 'resolveWorktreeSelector').mockResolvedValue({
     id: 'repo-shared::/srv/app-feature',

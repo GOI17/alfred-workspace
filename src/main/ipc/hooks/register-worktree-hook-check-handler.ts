@@ -3,7 +3,12 @@ import type { ExecutionHostId } from '../../../shared/execution-host'
 import { isFolderRepo } from '../../../shared/repo-kind'
 import { getSshFilesystemProvider } from '../../providers/ssh-filesystem-dispatch'
 import { joinWorktreeRelativePath } from '../../runtime/runtime-relative-paths'
-import { parseOrcaYaml, hasHooksFile, loadHooks, hasUnrecognizedOrcaYamlKeys } from '../../hooks'
+import {
+  parseAlfredYaml,
+  hasHooksFile,
+  loadHooks,
+  hasUnrecognizedAlfredYamlKeys
+} from '../../hooks'
 import { isENOENT } from '../filesystem-path-containment'
 import { resolveRepoForExecutionHost } from '../worktrees/repo-host-ownership'
 import type { WorktreeIpcContext } from '../worktrees/worktree-ipc-context'
@@ -35,11 +40,13 @@ export function registerWorktreeHookCheckHandler(context: WorktreeIpcContext): v
           return { status: 'error', hasHooks: false, hooks: null, mayNeedUpdate: false }
         }
         try {
-          const result = await fsProvider.readFile(joinWorktreeRelativePath(repo.path, 'orca.yaml'))
+          const result = await fsProvider.readFile(
+            joinWorktreeRelativePath(repo.path, 'alfred.yaml')
+          )
           return {
             status: 'ok',
             hasHooks: !result.isBinary,
-            hooks: result.isBinary ? null : parseOrcaYaml(result.content),
+            hooks: result.isBinary ? null : parseAlfredYaml(result.content),
             mayNeedUpdate: false
           }
         } catch (error) {
@@ -54,8 +61,8 @@ export function registerWorktreeHookCheckHandler(context: WorktreeIpcContext): v
 
       const has = hasHooksFile(repo.path)
       const hooks = has ? loadHooks(repo.path) : null
-      // Why: unrecognised top-level keys mean the file is well-formed but from a newer Orca; suggest updating rather than "could not be parsed".
-      const mayNeedUpdate = has && !hooks && hasUnrecognizedOrcaYamlKeys(repo.path)
+      // Why: unrecognised top-level keys mean the file is well-formed but from a newer Alfred; suggest updating rather than "could not be parsed".
+      const mayNeedUpdate = has && !hooks && hasUnrecognizedAlfredYamlKeys(repo.path)
       return {
         status: 'ok',
         hasHooks: has,

@@ -1,6 +1,7 @@
+import { createRuntimeServiceTestDouble } from '../../../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import type { RuntimeTerminalPromptDelivery } from '../../../../../../shared/runtime-terminal-contracts'
-import type { OrcaRuntimeService } from '../../../../orca-runtime'
+import type { AlfredRuntimeService } from '../../../../alfred-runtime'
 import { observeWorkerTurnStart } from './worker-start-turn-observation'
 
 function delivery(
@@ -19,12 +20,12 @@ function delivery(
 }
 
 function runtimeObserving(result: RuntimeTerminalPromptDelivery): {
-  runtime: OrcaRuntimeService
+  runtime: AlfredRuntimeService
   observe: ReturnType<typeof vi.fn>
 } {
   const observe = vi.fn().mockResolvedValue(result)
   return {
-    runtime: { observeTerminalAgentPrompt: observe } as unknown as OrcaRuntimeService,
+    runtime: createRuntimeServiceTestDouble({ observeTerminalAgentPrompt: observe }),
     observe
   }
 }

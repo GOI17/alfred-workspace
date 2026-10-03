@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron'
 import { z } from 'zod'
 import type { Store } from '../persistence'
-import type { OrcaRuntimeService } from '../runtime/orca-runtime'
+import type { AlfredRuntimeService } from '../runtime/alfred-runtime'
 import type {
   PluginPanelActionOutcome,
   PluginPanelEntry
@@ -73,7 +73,7 @@ export { listPluginsForClients } from '../plugins/plugin-client-list'
 import { listPluginsForClients } from '../plugins/plugin-client-list'
 
 export function canRemoveInstalledPlugin(
-  pluginService: PluginService,
+  pluginService: { getDiscovered(): readonly { pluginKey?: string | null; isDev?: boolean }[] },
   pluginKey: string,
   lock?: PluginLockfile
 ): boolean {
@@ -90,7 +90,7 @@ function rendererPanelOwner(webContentsId: number): string {
 export function registerPluginHandlers(
   store: Store,
   pluginService: PluginService,
-  runtime: OrcaRuntimeService | null,
+  runtime: AlfredRuntimeService | null,
   marketplaceServices?: PluginMarketplaceHandlerServices
 ): void {
   // The runtime IS the delegate: the structural PluginRuntimeDelegate type

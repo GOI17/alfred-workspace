@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   BROWSER_CLIENT_HOST_RUNTIME_CAPABILITY,
@@ -6,7 +7,7 @@ import {
 } from '../../../../shared/protocol-version'
 import { getBrowserHostLeaseRegistry } from '../../browser-host-lease-registry-instance'
 import type { BrowserHostLease } from '../../browser-host-lease-records'
-import type { OrcaRuntimeService } from '../../orca-runtime'
+import type { AlfredRuntimeService } from '../../alfred-runtime'
 import { BrowserNetworkTunnelOutboundMemoryBudgetRegistry } from '../../../browser/browser-network-tunnel-outbound-memory-budget'
 import {
   browserNetworkExecutionHostKey,
@@ -36,15 +37,15 @@ function request(lease?: BrowserHostLease, overrides: Record<string, unknown> = 
   }
 }
 
-function runtime(cleanups = new Map<string, () => void>()): OrcaRuntimeService {
-  return {
+function runtime(cleanups = new Map<string, () => void>()): AlfredRuntimeService {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'runtime-a',
     getStartedAt: () => 1,
     registerSubscriptionCleanup: (id: string, cleanup: () => void) => cleanups.set(id, cleanup)
-  } as unknown as OrcaRuntimeService
+  })
 }
 
-function attachLease(hostRuntime: OrcaRuntimeService): BrowserHostLease {
+function attachLease(hostRuntime: AlfredRuntimeService): BrowserHostLease {
   return getBrowserHostLeaseRegistry(hostRuntime).attach({
     browserHostClientId: 'host-a',
     connectionId: 'host-control-connection',
@@ -54,7 +55,7 @@ function attachLease(hostRuntime: OrcaRuntimeService): BrowserHostLease {
 }
 
 function grantExecutionHost(
-  hostRuntime: OrcaRuntimeService,
+  hostRuntime: AlfredRuntimeService,
   lease: BrowserHostLease,
   executionHost: Parameters<typeof browserNetworkExecutionHostKey>[0]
 ) {

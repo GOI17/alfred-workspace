@@ -4,10 +4,10 @@
   "namedDeltas": [],
   "runnerVersion": 1,
   "baseline": "b4dfad0a8ba4e15976ec06b9d38994b6a31e1643",
-  "lockfileSha256": "4568633356187895ccda8e2ff83245c37d5621832c69e268733733b6947971e3",
-  "recorderSha256": "f67c2f5b753d2a4f572599f6861fae8e6e917fe89ac75b58288f8e84be609d86",
+  "lockfileSha256": "6dc9405f6240556235cc8c897075c4dab1e8f5f8f1cf571c8eafdb496d3da818",
+  "recorderSha256": "96c80e2da6f1dbc42aad4f355811aa0e88e121b01243422126e7d08bd0ea57e2",
   "adapterSha256": "12a04986290715d5db23a1eb5192c1138bb2d375d1b1dd37ba310ea89eb11566",
-  "scenarioSha256": "e19c4ff95d568edbb5c0d6058eb17843be31bdfd528825985963f8ece8cbc652",
+  "scenarioSha256": "3d3b57946eb7bfa7cc1b646866c3604c88ee06dbabd7b5f652a4f0d25e19e7ed",
   "platform": "darwin",
   "scenarioVersion": 1,
   "projectionVersion": 2,
@@ -40,23 +40,22 @@
         "startedAt": 0
       }
     },
-    "1813829924d9": {
+    "4b3f098e13ac": {
       "crash": {
         "$rpc": "null"
       },
       "elements": {
         "Pressable": 2,
-        "Text": 6,
+        "Text": 5,
         "View": 3
       },
-      "labels": ["Send test notification"],
+      "labels": ["Sending…"],
       "text": [
         "Having trouble receiving alerts?",
-        "Send a test through Orca’s push service.",
+        "Send a test through Alfred’s push service.",
         "Send test notification",
-        "Send test notification",
-        "Troubleshooting",
-        "Accepted by Orca’s push service. Check for the notification."
+        "Sending…",
+        "Troubleshooting"
       ]
     },
     "649d12c8eb9b": {
@@ -94,25 +93,7 @@
         }
       }
     },
-    "6967f95147f9": {
-      "crash": {
-        "$rpc": "null"
-      },
-      "elements": {
-        "Pressable": 2,
-        "Text": 5,
-        "View": 3
-      },
-      "labels": ["Sending…"],
-      "text": [
-        "Having trouble receiving alerts?",
-        "Send a test through Orca’s push service.",
-        "Send test notification",
-        "Sending…",
-        "Troubleshooting"
-      ]
-    },
-    "d86c08a509c4": {
+    "88704d1f32dd": {
       "crash": {
         "$rpc": "null"
       },
@@ -124,10 +105,29 @@
       "labels": ["Send test notification"],
       "text": [
         "Having trouble receiving alerts?",
-        "Send a test through Orca’s push service.",
+        "Send a test through Alfred’s push service.",
         "Send test notification",
         "Send test notification",
         "Troubleshooting"
+      ]
+    },
+    "cfbe0a4e4d65": {
+      "crash": {
+        "$rpc": "null"
+      },
+      "elements": {
+        "Pressable": 2,
+        "Text": 6,
+        "View": 3
+      },
+      "labels": ["Send test notification"],
+      "text": [
+        "Having trouble receiving alerts?",
+        "Send a test through Alfred’s push service.",
+        "Send test notification",
+        "Send test notification",
+        "Troubleshooting",
+        "Accepted by Alfred’s push service. Check for the notification."
       ]
     },
     "eb79a9b3682a": {
@@ -155,7 +155,7 @@
           "settlements": {
             "mount": "eb79a9b3682a"
           },
-          "state": "d86c08a509c4",
+          "state": "88704d1f32dd",
           "effects": []
         }
       },
@@ -168,7 +168,7 @@
             "mount": "eb79a9b3682a",
             "press": "eb79a9b3682a"
           },
-          "state": "6967f95147f9",
+          "state": "4b3f098e13ac",
           "effects": []
         }
       },
@@ -181,7 +181,7 @@
             "mount": "eb79a9b3682a",
             "press": "eb79a9b3682a"
           },
-          "state": "1813829924d9",
+          "state": "cfbe0a4e4d65",
           "effects": []
         }
       }

@@ -1,7 +1,8 @@
+import { createRuntimeServiceTestDouble } from './runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import type { IPtyProvider } from '../providers/types'
 import type { Repo } from '../../shared/repo-types'
-import type { OrcaRuntimeService } from './orca-runtime'
+import type { AlfredRuntimeService } from './alfred-runtime'
 import { stopMissingWorktreeTerminals } from './missing-worktree-terminal-reconciliation'
 
 function createProvider(sessionIds: string[]): IPtyProvider {
@@ -13,10 +14,10 @@ function createProvider(sessionIds: string[]): IPtyProvider {
   } as unknown as IPtyProvider
 }
 
-function createRuntime(): OrcaRuntimeService {
-  return {
+function createRuntime(): AlfredRuntimeService {
+  return createRuntimeServiceTestDouble({
     stopTerminalsForWorktree: vi.fn(async () => ({ stopped: 0 }))
-  } as unknown as OrcaRuntimeService
+  })
 }
 
 const localRepo: Repo = {

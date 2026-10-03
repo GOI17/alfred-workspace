@@ -1,5 +1,6 @@
+import { createRuntimeStoreTestDouble } from './runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
-import { OrcaRuntimeService } from './orca-runtime'
+import { AlfredRuntimeService } from './alfred-runtime'
 import { getDefaultWorkspaceSession } from '../../shared/constants'
 import type { WorkspaceSessionState } from '../../shared/workspace-session-state-types'
 
@@ -39,8 +40,8 @@ function makeRuntimeWithLeaf(options: {
   leafPtyId: string
   controllerSessions: ControllerSession[] | 'unavailable'
   hasPty?: (ptyId: string) => boolean | null
-}): OrcaRuntimeService {
-  const runtime = new OrcaRuntimeService(makeStore() as never)
+}): AlfredRuntimeService {
+  const runtime = new AlfredRuntimeService(createRuntimeStoreTestDouble(makeStore()))
   runtime.setPtyController({
     spawn: vi.fn(async () => ({ id: 'never' })),
     write: () => true,

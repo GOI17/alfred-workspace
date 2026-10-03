@@ -75,19 +75,19 @@ describe('pending worktree creation state', () => {
         taskSourceContext: {
           kind: 'task-source',
           provider: 'github',
-          projectId: 'github:stablyai/orca',
+          projectId: 'github:GOI17/alfred-workspace',
           hostId: 'local',
           projectHostSetupId: 'setup-local',
           repoId: 'repo-local',
-          providerIdentity: { provider: 'github', owner: 'stablyai', repo: 'orca' }
+          providerIdentity: { provider: 'github', owner: 'alfredlabs', repo: 'alfred' }
         },
         workspaceRunContext: {
           kind: 'workspace-run',
-          projectId: 'github:stablyai/orca',
+          projectId: 'github:GOI17/alfred-workspace',
           hostId: 'ssh:ssh-1',
           projectHostSetupId: 'setup-ssh',
           repoId: 'repo-ssh',
-          path: '/home/orca/orca'
+          path: '/home/alfred/alfred'
         },
         name: 'feature',
         setupDecision: 'inherit',

@@ -1,3 +1,4 @@
+import { isJsonObject } from '../../shared/json-object'
 // ─── Relay Protocol ─────────────────────────────────────────────────
 // 13-byte framing header matching VS Code's PersistentProtocol wire format.
 // See design-ssh-support.md § JSON-RPC Protocol Specification.
@@ -26,9 +27,9 @@ export {
 export type { DecodedFrame, FrameDecoderOptions } from '../../shared/relay-frame-decoder'
 
 export const RELAY_VERSION = '0.1.0'
-export const RELAY_SENTINEL = `ORCA-RELAY v${RELAY_VERSION} READY\n`
+export const RELAY_SENTINEL = `ALFRED-RELAY v${RELAY_VERSION} READY\n`
 export const RELAY_SENTINEL_TIMEOUT_MS = 10_000
-export const RELAY_REMOTE_DIR = '.orca-remote'
+export const RELAY_REMOTE_DIR = '.alfred-remote'
 
 /** Message type byte. */
 export const MessageType = {
@@ -69,25 +70,28 @@ export const STREAM_CHUNK_SIZE = 256 * 1024
  * as git.responseChunk frames. Absent from old relays, so a new client falls
  * back to the plain result they return. */
 export type GitResponseStreamMarker = {
-  __orcaGitResponseStream: { streamId: number; totalBytes: number; chunkCount: number }
+  __alfredGitResponseStream: { streamId: number; totalBytes: number; chunkCount: number }
 }
 
 export function isGitResponseStreamMarker(value: unknown): value is GitResponseStreamMarker {
-  if (typeof value !== 'object' || value === null || !('__orcaGitResponseStream' in value)) {
+  if (typeof value !== 'object' || value === null || !('__alfredGitResponseStream' in value)) {
     return false
   }
-  const marker = (value as { __orcaGitResponseStream?: unknown }).__orcaGitResponseStream
-  if (typeof marker !== 'object' || marker === null) {
+  const marker = value.__alfredGitResponseStream
+  if (!isJsonObject(marker)) {
     return false
   }
-  const fields = marker as Record<string, unknown>
+  const fields = marker
   return (
+    typeof fields.streamId === 'number' &&
     Number.isInteger(fields.streamId) &&
-    (fields.streamId as number) > 0 &&
+    fields.streamId > 0 &&
+    typeof fields.totalBytes === 'number' &&
     Number.isInteger(fields.totalBytes) &&
-    (fields.totalBytes as number) >= 0 &&
+    fields.totalBytes >= 0 &&
+    typeof fields.chunkCount === 'number' &&
     Number.isInteger(fields.chunkCount) &&
-    (fields.chunkCount as number) >= 0
+    fields.chunkCount >= 0
   )
 }
 

@@ -2,11 +2,11 @@ import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { DaemonClient } from '../../src/main/daemon/client'
 import { getDaemonSocketPath, getDaemonTokenPath } from '../../src/main/daemon/daemon-spawner'
-import { DEFAULT_LOCAL_ORCA_PROFILE_ID } from '../../src/shared/orca-profiles'
+import { DEFAULT_LOCAL_ALFRED_PROFILE_ID } from '../../src/shared/alfred-profiles'
 import type { ElectronApplication, Page } from '@stablyai/playwright-test'
-import { test, expect } from './helpers/orca-app'
+import { test, expect } from './helpers/alfred-app'
 import { TEST_REPO_PATH_FILE } from './global-setup'
-import { attachRepoAndOpenTerminal, createRestartSession } from './helpers/orca-restart'
+import { attachRepoAndOpenTerminal, createRestartSession } from './helpers/alfred-restart'
 import { ensureTerminalVisible, waitForActiveWorktree, waitForSessionReady } from './helpers/store'
 import {
   waitForActivePaneHookDescriptor,
@@ -74,7 +74,7 @@ async function backgroundMountTab(page: Page, worktreeId: string, tabId: string)
   await page.evaluate(
     ({ tabId, worktreeId }) => {
       window.dispatchEvent(
-        new CustomEvent('orca-background-mount-terminal-worktree', {
+        new CustomEvent('alfred-background-mount-terminal-worktree', {
           detail: { worktreeId, tabIds: [tabId] }
         })
       )
@@ -89,7 +89,7 @@ async function backgroundMountTab(page: Page, worktreeId: string, tabId: string)
 function readPersistedSession(userDataDir: string) {
   return JSON.parse(
     readFileSync(
-      path.join(userDataDir, 'profiles', DEFAULT_LOCAL_ORCA_PROFILE_ID, 'orca-data.json'),
+      path.join(userDataDir, 'profiles', DEFAULT_LOCAL_ALFRED_PROFILE_ID, 'alfred-data.json'),
       'utf8'
     )
   ).workspaceSession
@@ -378,8 +378,8 @@ for (const daemonSessionGone of [false, true]) {
             activeTabId: state.activeTabIdByWorktree[worktreeId] ?? null
           })
           const transitions: Transition[] = [snapshot(store.getState())]
-          const e2eWindow = window as typeof window & { __orcaRevealTransitions?: Transition[] }
-          e2eWindow.__orcaRevealTransitions = transitions
+          const e2eWindow = window
+          e2eWindow.__alfredRevealTransitions = transitions
           store.subscribe((state) => {
             const next = snapshot(state)
             if (JSON.stringify(next) !== JSON.stringify(transitions.at(-1))) {
@@ -401,18 +401,7 @@ for (const daemonSessionGone of [false, true]) {
       await ensureTerminalVisible(second.page)
       // Give the reconciler's async verdict time to land; the tab must never have left.
       await second.page.waitForTimeout(3_000)
-      const transitions = await second.page.evaluate(
-        () =>
-          (
-            window as typeof window & {
-              __orcaRevealTransitions?: {
-                activeWorktreeId: string | null
-                tabPresent: boolean
-                leafPtyIds: string[]
-              }[]
-            }
-          ).__orcaRevealTransitions ?? []
-      )
+      const transitions = await second.page.evaluate(() => window.__alfredRevealTransitions ?? [])
       // Pre-fix this read: leaf binding cleared -> tab removed -> worktree deselected -> tab re-added by graph sync.
       expect(
         transitions.filter(
@@ -527,4 +516,16 @@ for (const daemonSessionGone of [false, true]) {
       await session.dispose()
     }
   })
+}
+
+declare global {
+  // oxlint-disable-next-line typescript/consistent-type-definitions -- Window declarations must merge with the DOM library.
+  interface Window {
+    __alfredRevealTransitions?: {
+      activeWorktreeId: string | null
+      tabPresent: boolean
+      leafPtyIds: string[]
+      activeTabId: string | null
+    }[]
+  }
 }

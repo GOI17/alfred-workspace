@@ -22,17 +22,17 @@ export function buildWslExecArgs(
 export function buildWslLoginShellCommand(command: string): string {
   const quotedCommand = quotePosixShell(command)
   return [
-    '_orca_wsl_shell=$(getent passwd "$(id -un)" 2>/dev/null | cut -d: -f7)',
-    'if [ -z "$_orca_wsl_shell" ] || [ ! -x "$_orca_wsl_shell" ]; then',
-    '  _orca_wsl_shell="${SHELL:-/bin/bash}"',
+    '_alfred_wsl_shell=$(getent passwd "$(id -un)" 2>/dev/null | cut -d: -f7)',
+    'if [ -z "$_alfred_wsl_shell" ] || [ ! -x "$_alfred_wsl_shell" ]; then',
+    '  _alfred_wsl_shell="${SHELL:-/bin/bash}"',
     'fi',
-    'if [ -z "$_orca_wsl_shell" ] || [ ! -x "$_orca_wsl_shell" ]; then',
-    '  _orca_wsl_shell=/bin/sh',
+    'if [ -z "$_alfred_wsl_shell" ] || [ ! -x "$_alfred_wsl_shell" ]; then',
+    '  _alfred_wsl_shell=/bin/sh',
     'fi',
-    '_orca_wsl_shell_name=$(basename "$_orca_wsl_shell" | tr "[:upper:]" "[:lower:]")',
-    'case "$_orca_wsl_shell_name" in',
-    `  sh|dash) exec "$_orca_wsl_shell" -lc ${quotedCommand} ;;`,
-    `  bash|zsh|ksh|mksh|ash) exec "$_orca_wsl_shell" -ilc ${quotedCommand} ;;`,
+    '_alfred_wsl_shell_name=$(basename "$_alfred_wsl_shell" | tr "[:upper:]" "[:lower:]")',
+    'case "$_alfred_wsl_shell_name" in',
+    `  sh|dash) exec "$_alfred_wsl_shell" -lc ${quotedCommand} ;;`,
+    `  bash|zsh|ksh|mksh|ash) exec "$_alfred_wsl_shell" -ilc ${quotedCommand} ;;`,
     `  *) exec /bin/sh -lc ${quotedCommand} ;;`,
     'esac'
   ].join('\n')
@@ -72,8 +72,8 @@ export function buildWslCapturedLoginShellCommand(
   command: string,
   nonce: string = nextWslCaptureNonce()
 ): WslCapturedLoginShellCommand {
-  const begin = `__ORCA_WSL_CAPTURE_BEGIN_${nonce}__`
-  const end = `__ORCA_WSL_CAPTURE_END_${nonce}__`
+  const begin = `__ALFRED_WSL_CAPTURE_BEGIN_${nonce}__`
+  const end = `__ALFRED_WSL_CAPTURE_END_${nonce}__`
   return {
     beginMarker: begin,
     endMarker: end,
@@ -81,9 +81,9 @@ export function buildWslCapturedLoginShellCommand(
       [
         `printf %s ${quotePosixShell(begin)}`,
         command,
-        '_orca_capture_status=$?',
+        '_alfred_capture_status=$?',
         `printf %s ${quotePosixShell(end)}`,
-        'exit $_orca_capture_status'
+        'exit $_alfred_capture_status'
       ].join('\n')
     ),
     readStdout: (stdout) => {
@@ -106,36 +106,36 @@ export function buildWslCapturedLoginShellCommand(
 
 export function buildWslInteractiveLoginShellCommand(): string {
   return [
-    '_orca_wsl_shell=$(getent passwd "$(id -un)" 2>/dev/null | cut -d: -f7)',
-    'if [ -z "$_orca_wsl_shell" ] || [ ! -x "$_orca_wsl_shell" ]; then',
-    '  _orca_wsl_shell="${SHELL:-/bin/bash}"',
+    '_alfred_wsl_shell=$(getent passwd "$(id -un)" 2>/dev/null | cut -d: -f7)',
+    'if [ -z "$_alfred_wsl_shell" ] || [ ! -x "$_alfred_wsl_shell" ]; then',
+    '  _alfred_wsl_shell="${SHELL:-/bin/bash}"',
     'fi',
-    'if [ -z "$_orca_wsl_shell" ] || [ ! -x "$_orca_wsl_shell" ]; then',
-    '  _orca_wsl_shell=/bin/sh',
+    'if [ -z "$_alfred_wsl_shell" ] || [ ! -x "$_alfred_wsl_shell" ]; then',
+    '  _alfred_wsl_shell=/bin/sh',
     'fi',
-    '_orca_shell_ready_root=""',
+    '_alfred_shell_ready_root=""',
     // Why the explicit root first: the wrapper tree is content-addressed, so its
     // path carries a hash the guest cannot derive. The host publishes the
-    // resolved root and WSLENV /p-translates it. The ORCA_USER_DATA_PATH branch
+    // resolved root and WSLENV /p-translates it. The ALFRED_USER_DATA_PATH branch
     // stays as the fallback for an older host that exports only that.
-    'if [ -n "${ORCA_SHELL_READY_ROOT:-}" ]; then',
-    '  _orca_shell_ready_root="${ORCA_SHELL_READY_ROOT%/}"',
-    'elif [ -n "${ORCA_USER_DATA_PATH:-}" ]; then',
-    '  _orca_shell_ready_root="${ORCA_USER_DATA_PATH%/}/shell-ready"',
+    'if [ -n "${ALFRED_SHELL_READY_ROOT:-}" ]; then',
+    '  _alfred_shell_ready_root="${ALFRED_SHELL_READY_ROOT%/}"',
+    'elif [ -n "${ALFRED_USER_DATA_PATH:-}" ]; then',
+    '  _alfred_shell_ready_root="${ALFRED_USER_DATA_PATH%/}/shell-ready"',
     'fi',
-    '_orca_wsl_shell_name=$(basename "$_orca_wsl_shell" | tr "[:upper:]" "[:lower:]")',
-    'case "$_orca_wsl_shell_name" in',
+    '_alfred_wsl_shell_name=$(basename "$_alfred_wsl_shell" | tr "[:upper:]" "[:lower:]")',
+    'case "$_alfred_wsl_shell_name" in',
     '  bash)',
-    '    if [ -n "${_orca_shell_ready_root:-}" ] && [ -f "${_orca_shell_ready_root}/bash/rcfile" ]; then',
-    '      exec "$_orca_wsl_shell" --rcfile "${_orca_shell_ready_root}/bash/rcfile"',
+    '    if [ -n "${_alfred_shell_ready_root:-}" ] && [ -f "${_alfred_shell_ready_root}/bash/rcfile" ]; then',
+    '      exec "$_alfred_wsl_shell" --rcfile "${_alfred_shell_ready_root}/bash/rcfile"',
     '    fi',
     '    ;;',
     '  zsh)',
-    '    if [ -n "${_orca_shell_ready_root:-}" ] && [ -d "${_orca_shell_ready_root}/zsh" ]; then',
-    '      export ZDOTDIR="${_orca_shell_ready_root}/zsh"',
+    '    if [ -n "${_alfred_shell_ready_root:-}" ] && [ -d "${_alfred_shell_ready_root}/zsh" ]; then',
+    '      export ZDOTDIR="${_alfred_shell_ready_root}/zsh"',
     '    fi',
     '    ;;',
     'esac',
-    'exec "$_orca_wsl_shell" -l'
+    'exec "$_alfred_wsl_shell" -l'
   ].join('\n')
 }

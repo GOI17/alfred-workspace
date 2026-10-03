@@ -49,8 +49,8 @@ describe('onboarding feature setup telemetry validation', () => {
         linear_tickets: false,
         orchestration: true,
         selected_count: 2,
-        command: 'npx skills add https://github.com/stablyai/orca --global'
-      } as never).ok
+        command: 'npx skills add https://github.com/GOI17/alfred-workspace --global'
+      }).ok
     ).toBe(false)
     expect(
       validate('onboarding_feature_setup_toggled', {

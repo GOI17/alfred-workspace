@@ -1,3 +1,4 @@
+import { getDefaultSettings } from '../constants'
 import { describe, expect, it } from 'vitest'
 import type { GlobalSettings } from '../global-settings-types'
 import type { Repo } from '../repo-types'
@@ -5,7 +6,7 @@ import type { Worktree } from './types'
 import { resolveConfiguredWorktreeBasePaths } from './configured-worktree-base-path'
 import { createWorktreeVisibilitySourceMatcher } from './visibility-sources'
 import {
-  buildKnownOrcaWorkspaceLayouts,
+  buildKnownAlfredWorkspaceLayouts,
   classifyWorktreeOwnership,
   toDetectedWorktree,
   EXTERNAL_WORKTREE_VISIBILITY_ROLLOUT_AT
@@ -13,6 +14,7 @@ import {
 
 function makeRepo(overrides: Partial<Repo> = {}): Repo {
   return {
+    ...getDefaultSettings('/tmp'),
     id: 'repo-1',
     path: '/repos/OrbisCXM',
     displayName: 'OrbisCXM',
@@ -51,11 +53,12 @@ function makeWorktree(path: string): Worktree {
 
 function makeSettings(overrides: Partial<GlobalSettings> = {}): GlobalSettings {
   return {
-    workspaceDir: '/orca/workspaces',
+    ...getDefaultSettings('/tmp'),
+    workspaceDir: '/alfred/workspaces',
     nestWorkspaces: true,
     workspaceDirHistory: [],
     ...overrides
-  } as GlobalSettings
+  }
 }
 
 function detect(repo: Repo, path: string, settings = makeSettings()) {
@@ -63,7 +66,7 @@ function detect(repo: Repo, path: string, settings = makeSettings()) {
     repo,
     settings,
     worktree: makeWorktree(path),
-    knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+    knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
   })
 }
 
@@ -80,7 +83,7 @@ describe('a configured worktree base that collides with a built-in visibility so
         repo,
         settings,
         worktree: makeWorktree(configuredBaseWorktree),
-        knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo)
+        knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo)
       })
     ).toBe('external')
   })
@@ -126,7 +129,7 @@ describe('a configured worktree base that collides with a built-in visibility so
       externalWorktreeVisibility: 'hide',
       worktreeVisibilitySourcePreferences: { builtIn: { claude: 'show' } }
     })
-    const linkedCheckout = '/orca/workspaces/OrbisCXM/feature-x'
+    const linkedCheckout = '/alfred/workspaces/OrbisCXM/feature-x'
     const settings = makeSettings()
 
     expect(
@@ -134,7 +137,7 @@ describe('a configured worktree base that collides with a built-in visibility so
         repo,
         settings,
         worktree: makeWorktree(`${linkedCheckout}/.claude/worktrees/agent-a04ccaaa`),
-        knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo),
+        knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo),
         worktreeVisibilitySourceMatcher: createWorktreeVisibilitySourceMatcher(
           [repo.path, linkedCheckout],
           [],
@@ -230,7 +233,7 @@ describe('agent scratch stays hidden for repos that did not configure that base 
 
   it('hides scratch nested under a linked checkout even with a configured base', () => {
     const repo = makeRepo({ worktreeBasePath: '.claude/worktrees' })
-    const linkedCheckout = '/orca/workspaces/OrbisCXM/feature-x'
+    const linkedCheckout = '/alfred/workspaces/OrbisCXM/feature-x'
     const settings = makeSettings()
 
     expect(
@@ -238,7 +241,7 @@ describe('agent scratch stays hidden for repos that did not configure that base 
         repo,
         settings,
         worktree: makeWorktree(`${linkedCheckout}/.claude/worktrees/agent-a04ccaaa`),
-        knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo),
+        knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo),
         worktreeVisibilitySourceMatcher: createWorktreeVisibilitySourceMatcher(
           [repo.path, linkedCheckout],
           [],
@@ -268,7 +271,7 @@ describe('agent scratch stays hidden for repos that did not configure that base 
         repo,
         settings,
         worktree: makeWorktree(`${nestedCheckout}/.claude/worktrees/agent-a04ccaaa`),
-        knownOrcaLayouts: buildKnownOrcaWorkspaceLayouts(settings, repo),
+        knownAlfredLayouts: buildKnownAlfredWorkspaceLayouts(settings, repo),
         worktreeVisibilitySourceMatcher: createWorktreeVisibilitySourceMatcher(
           [repo.path, nestedCheckout],
           [],

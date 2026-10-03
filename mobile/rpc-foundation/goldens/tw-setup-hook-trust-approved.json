@@ -4,19 +4,19 @@
   "namedDeltas": [],
   "runnerVersion": 1,
   "baseline": "b4dfad0a8ba4e15976ec06b9d38994b6a31e1643",
-  "lockfileSha256": "4568633356187895ccda8e2ff83245c37d5621832c69e268733733b6947971e3",
-  "recorderSha256": "f67c2f5b753d2a4f572599f6861fae8e6e917fe89ac75b58288f8e84be609d86",
+  "lockfileSha256": "6dc9405f6240556235cc8c897075c4dab1e8f5f8f1cf571c8eafdb496d3da818",
+  "recorderSha256": "96c80e2da6f1dbc42aad4f355811aa0e88e121b01243422126e7d08bd0ea57e2",
   "adapterSha256": "52a76b7a830b32287bce14abbe1b9d9ac70e71eafe5b4c6801c2eb14a4150125",
-  "scenarioSha256": "f54f5c6dbbe7dbcf8e85e9bd36b27ca9bea7de65d5e35dabace49b3fc766a403",
+  "scenarioSha256": "9076f512885d1be508be9abfada75068ff43cb8b80638617b795c482e3439ce6",
   "platform": "darwin",
   "scenarioVersion": 1,
   "projectionVersion": 2,
   "goldenFormatVersion": 5,
   "values": {
-    "86d0d8f71257": {
+    "07962f7247ab": {
       "name": "ui.set#1",
       "ordinal": 2,
-      "json": "{\"id\":\"frame-1\",\"deviceToken\":\"recording-device\",\"method\":\"ui.set\",\"params\":{\"trustedOrcaHooks\":{\"repo-1\":{\"setup\":{\"contentHash\":\"hash-1\",\"approvedAt\":1767225600000}}}}}"
+      "json": "{\"id\":\"frame-1\",\"deviceToken\":\"recording-device\",\"method\":\"ui.set\",\"params\":{\"trustedAlfredHooks\":{\"repo-1\":{\"setup\":{\"contentHash\":\"hash-1\",\"approvedAt\":1767225600000}}}}}"
     },
     "a406b068aeca": {
       "status": "fulfilled",
@@ -41,7 +41,7 @@
         }
       }
     },
-    "e2089203d4dd": {
+    "c47b8b1ceaf3": {
       "name": "ui.set#1",
       "ordinal": 1,
       "args": [
@@ -52,7 +52,7 @@
         {
           "name": "params",
           "value": {
-            "trustedOrcaHooks": {
+            "trustedAlfredHooks": {
               "repo-1": {
                 "setup": {
                   "approvedAt": 1767225600000,
@@ -89,8 +89,8 @@
       {
         "id": "approved",
         "observation": {
-          "sender": ["e2089203d4dd"],
-          "payloads": ["86d0d8f71257"],
+          "sender": ["c47b8b1ceaf3"],
+          "payloads": ["07962f7247ab"],
           "settlements": {
             "approve": "a406b068aeca"
           },

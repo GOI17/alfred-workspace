@@ -1,3 +1,4 @@
+import { createRuntimeServiceTestDouble } from '../../../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   ORCHESTRATION_CONTRACT_RUNTIME_CAPABILITY,
@@ -5,7 +6,7 @@ import {
   ORCHESTRATION_FEDERATION_STRUCTURED_READ_RUNTIME_CAPABILITY,
   ORCHESTRATION_WORKER_STOP_VERDICT_RUNTIME_CAPABILITY
 } from '../../../../../../shared/protocol-version'
-import { OrcaRuntimeService } from '../../../../orca-runtime'
+import { AlfredRuntimeService } from '../../../../alfred-runtime'
 import type { OrchestrationDb } from '../../../../orchestration/db'
 import type { FederatedDispatchRow } from '../../../../orchestration/types'
 import { readFederatedWorkerOutput } from './federated-worker-read'
@@ -37,7 +38,7 @@ describe('federated transport safety', () => {
             },
       _meta: { runtimeId: 'epoch-worker' }
     }))
-    const runtime = new OrcaRuntimeService(null, undefined, {
+    const runtime = new AlfredRuntimeService(null, undefined, {
       orchestrationEnvironmentTransport: {
         resolve: () => server,
         call
@@ -91,10 +92,10 @@ describe('federated transport safety', () => {
         output: { dispatchId: 'dispatch-worker', source: 'terminal' }
       }
     })
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       callOrchestrationWorkerServer,
       resolveOrchestrationWorkerServer: () => server
-    } as unknown as OrcaRuntimeService
+    })
     const federated = federatedDispatch()
 
     await readFederatedWorkerOutput({
@@ -124,7 +125,7 @@ describe('federated transport safety', () => {
       }),
       projectFederatedDispatchObservation
     } as unknown as OrchestrationDb
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       callOrchestrationWorkerServer: vi.fn(async (_selector, method: string) =>
         method === 'status.get'
           ? runtimeStatus([ORCHESTRATION_FEDERATION_STRUCTURED_READ_RUNTIME_CAPABILITY])
@@ -133,7 +134,7 @@ describe('federated transport safety', () => {
               output: { dispatchId: 'dispatch-worker', source: 'terminal' }
             }
       )
-    } as unknown as OrcaRuntimeService
+    })
 
     await readFederatedWorkerOutput({
       runtime,
@@ -166,10 +167,11 @@ describe('federated transport safety', () => {
             archive: null
           }
     )
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       callOrchestrationWorkerServer,
-      getOrchestrationDb: () => db
-    } as unknown as OrcaRuntimeService
+      // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: This transport test exercises only the DB operations supplied above, without opening SQLite.
+      getOrchestrationDb: () => db as unknown as OrchestrationDb
+    })
 
     const result = await releaseFederatedWorker({
       runtime,
@@ -246,12 +248,13 @@ describe('federated transport safety', () => {
       }
       return { acknowledgedThrough: 1 }
     })
-    const runtime = {
-      getOrchestrationDb: () => db,
+    const runtime = createRuntimeServiceTestDouble({
+      // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: This transport test exercises only the DB operations supplied above, without opening SQLite.
+      getOrchestrationDb: () => db as unknown as OrchestrationDb,
       resolveOrchestrationWorkerServer: () => server,
       callOrchestrationWorkerServer,
       notifyMessageArrived: vi.fn()
-    } as unknown as OrcaRuntimeService
+    })
 
     await syncFederatedDispatch(runtime, federated.dispatch_id)
 
@@ -277,12 +280,13 @@ describe('federated transport safety', () => {
         ? runtimeStatus([ORCHESTRATION_WORKER_STOP_VERDICT_RUNTIME_CAPABILITY])
         : { state: 'stopped', alreadySettled: false, processAction: 'closed_agent_terminal' }
     )
-    const runtime = {
-      getOrchestrationDb: () => db,
+    const runtime = createRuntimeServiceTestDouble({
+      // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: This transport test exercises only the DB operations supplied above, without opening SQLite.
+      getOrchestrationDb: () => db as unknown as OrchestrationDb,
       getRuntimeId: () => 'runtime-home',
       resolveOrchestrationWorkerServer: () => server,
       callOrchestrationWorkerServer
-    } as unknown as OrcaRuntimeService
+    })
     const method = ORCHESTRATION_WORKER_STOP_METHODS.find(
       (candidate) => candidate.name === 'orchestration.workerStop'
     )!

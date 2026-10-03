@@ -9,9 +9,9 @@ import type { CodexAccountService } from '../codex-accounts/service'
 import type { CodexRuntimeHomeService } from '../codex-accounts/runtime-home-service'
 import type { ClaudeAccountService } from '../claude-accounts/service'
 import type { ClaudeRuntimeAuthService } from '../claude-accounts/runtime-auth-service'
-import type { OrcaRuntimeService } from '../runtime/orca-runtime'
+import type { AlfredRuntimeService } from '../runtime/alfred-runtime'
 import type { RateLimitService } from '../rate-limits/service'
-import type { OrcaRuntimeRpcServer } from '../runtime/runtime-rpc'
+import type { AlfredRuntimeRpcServer } from '../runtime/runtime-rpc'
 import type { DesktopRelayService } from '../runtime/relay/desktop-relay-service'
 import type { DesktopPushService } from '../runtime/push/desktop-push-service'
 import type { StarNagService } from '../star-nag/service'
@@ -30,7 +30,7 @@ import type { GpuFallbackMarker, GpuFallbackEnvironment } from './gpu-fallback-m
 import type { createCodexSessionMigrationScheduler } from '../codex/codex-session-migration-scheduler'
 import type { getDevInstanceIdentity } from './dev-instance-identity'
 import type { createServeDesktopActivationGate } from './serve-desktop-activation'
-import type { ensureActiveOrcaProfile } from '../orca-profiles/profile-index-store'
+import type { ensureActiveAlfredProfile } from '../alfred-profiles/profile-index-store'
 import type { createWindowsShellPathHydration } from './windows-shell-path-hydration'
 import type { ServeOptions } from './main-process-serve'
 import type { HangDetectionMarker } from '../hang-watchdog/hang-detection-marker'
@@ -46,7 +46,7 @@ import type { GpuCrashDiagnosticsRecorder } from '../crash-reporting/gpu-crash-d
 import { createWebContentsTimedFlag } from './web-contents-timed-flag'
 
 /** Mutable composition-root state shared by startup, window, serve, and quit phases. */
-export const mainProcessState = {
+const initialMainProcessState = {
   mainWindow: null as BrowserWindow | null,
   /** Whether a manual app.quit() (Cmd+Q) is in progress; lets the close handler skip the running-process confirmation and go straight to close. */
   isQuitting: false,
@@ -60,9 +60,9 @@ export const mainProcessState = {
   codexSessionMigration: null as ReturnType<typeof createCodexSessionMigrationScheduler> | null,
   claudeAccounts: null as ClaudeAccountService | null,
   claudeRuntimeAuth: null as ClaudeRuntimeAuthService | null,
-  runtime: null as OrcaRuntimeService | null,
+  runtime: null,
   rateLimits: null as RateLimitService | null,
-  runtimeRpc: null as OrcaRuntimeRpcServer | null,
+  runtimeRpc: null,
   serveReadinessPublisher: new ServeReadinessPublisher(),
   desktopRelayService: null as DesktopRelayService | null,
   desktopPushService: null as DesktopPushService | null,
@@ -125,7 +125,7 @@ export const mainProcessState = {
   devAgentHookEndpointNamespace: undefined as string | undefined,
   startupDiagnosticsEnabled: false,
   desktopActivationGate: null as ReturnType<typeof createServeDesktopActivationGate> | null,
-  activeOrcaProfile: null as ReturnType<typeof ensureActiveOrcaProfile> | null,
+  activeAlfredProfile: null,
   windowsShellPathHydration: null as ReturnType<typeof createWindowsShellPathHydration> | null,
   shellPathReady: Promise.resolve(),
   hangDetection: null as HangDetectionMarker | null,
@@ -136,6 +136,15 @@ export const mainProcessState = {
   emulatorBridge: null as EmulatorBridge | null,
   tray: null as Tray | null
 }
+
+export const mainProcessState: Omit<
+  typeof initialMainProcessState,
+  'runtime' | 'runtimeRpc' | 'activeAlfredProfile'
+> & {
+  runtime: AlfredRuntimeService | null
+  runtimeRpc: AlfredRuntimeRpcServer | null
+  activeAlfredProfile: ReturnType<typeof ensureActiveAlfredProfile> | null
+} = initialMainProcessState
 
 /** Environment passed to GPU fallback marker helpers. */
 export function gpuFallbackEnvironment(): GpuFallbackEnvironment {

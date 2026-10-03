@@ -179,7 +179,7 @@ describe('fresh spawn leaves a local pane unbound', () => {
       ...mockStoreState,
       tabsByWorktree: { 'wt-1': [{ id: 'tab-1', ptyId: null, generation: 7 }] },
       ptyIdsByTabId: { 'tab-1': [] },
-      repos: [{ id: 'repo1', connectionId: 'target-a', displayName: 'orca' }],
+      repos: [{ id: 'repo1', connectionId: 'target-a', displayName: 'alfred' }],
       sshConnectionStates: new Map([
         [
           'target-a',
@@ -193,7 +193,7 @@ describe('fresh spawn leaves a local pane unbound', () => {
       ]),
       directSshPaneRetryByTabId: { 'tab-1': pendingRetry },
       settleDirectSshPaneRetry
-    } as StoreState
+    }
 
     connectPanePty(createPane(1) as never, createManager(1) as never, createDeps() as never)
     await flushAsyncTicks(40)

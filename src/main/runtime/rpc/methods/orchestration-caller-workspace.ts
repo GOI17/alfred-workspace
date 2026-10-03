@@ -13,11 +13,11 @@
  * caller of a public terminal verb something that looks writable and is not.
  */
 
-import type { OrcaRuntimeService } from '../../orca-runtime'
+import type { AlfredRuntimeService } from '../../alfred-runtime'
 import { isStructuredWorkerHandle } from '../../structured-worker-identity'
 
 export async function resolveDispatchCallerWorktreeId(
-  runtime: Pick<OrcaRuntimeService, 'showTerminal' | 'getOrchestrationDispatchAuthority'>,
+  runtime: Pick<AlfredRuntimeService, 'showTerminal' | 'getOrchestrationDispatchAuthority'>,
   callerHandle: string
 ): Promise<string> {
   if (isStructuredWorkerHandle(callerHandle)) {

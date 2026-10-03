@@ -1,8 +1,9 @@
+import { createRuntimeServiceTestDouble } from '../../../../runtime-service-test-double'
 import { mkdtemp, rm, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { OrcaRuntimeService } from '../../../../orca-runtime'
+import type { AlfredRuntimeService } from '../../../../alfred-runtime'
 import * as sshFilesystemDispatch from '../../../../../providers/ssh-filesystem-dispatch'
 import { readExactWorkerOutput } from './worker-output'
 
@@ -17,13 +18,13 @@ describe('exact orchestration worker output', () => {
   let directory: string
   let transcriptA: string
   let transcriptB: string
-  let providerSession: ReturnType<OrcaRuntimeService['getExactWorkerProviderSession']>
-  let runtime: OrcaRuntimeService
+  let providerSession: ReturnType<AlfredRuntimeService['getExactWorkerProviderSession']>
+  let runtime: AlfredRuntimeService
   const readTerminal = vi.fn()
   let sshProviderLookup: { mockRestore: () => void }
 
   beforeEach(async () => {
-    directory = await mkdtemp(join(tmpdir(), 'orca-worker-output-'))
+    directory = await mkdtemp(join(tmpdir(), 'alfred-worker-output-'))
     transcriptA = join(directory, 'session-a.jsonl')
     transcriptB = join(directory, 'session-b.jsonl')
     await writeFile(transcriptA, `${codexMessage('a', 'worker A only')}\n`)
@@ -48,12 +49,12 @@ describe('exact orchestration worker output', () => {
       nextCursor: '9'
     })
     sshProviderLookup = vi.spyOn(sshFilesystemDispatch, 'getSshFilesystemProvider')
-    runtime = {
+    runtime = createRuntimeServiceTestDouble({
       getExactWorkerProviderSession: vi.fn(() => providerSession),
       getTerminalProcessIncarnation: vi.fn(() => 'pty:incarnation-1'),
       getTerminalPaneKey: vi.fn(() => 'tab:worker'),
       readTerminal
-    } as unknown as OrcaRuntimeService
+    })
   })
 
   afterEach(async () => {

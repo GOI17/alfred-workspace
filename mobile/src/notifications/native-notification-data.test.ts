@@ -1,9 +1,9 @@
 import { expect, it } from 'vitest'
 import { readNativeNotificationData } from './native-notification-data'
-import { readOrcaPushPayload } from './push-payload'
+import { readAlfredPushPayload } from './push-payload'
 
 it('reads actual Expo APNs payloads when content.data is null', () => {
-  const orca = {
+  const alfred = {
     hostFingerprint: 'qa-host',
     notificationId: 'done',
     notificationSeq: 4,
@@ -11,9 +11,9 @@ it('reads actual Expo APNs payloads when content.data is null', () => {
   }
   const data = readNativeNotificationData({
     content: { data: null },
-    trigger: { type: 'push', payload: { aps: {}, orca } }
+    trigger: { type: 'push', payload: { aps: {}, alfred } }
   })
-  expect(readOrcaPushPayload(data)).toMatchObject(orca)
+  expect(readAlfredPushPayload(data)).toMatchObject(alfred)
 })
 it('keeps Android push and local notification data', () => {
   const data = { hostId: 'host', notificationId: 'done' }

@@ -20,7 +20,7 @@ export class PushOutcomeCounters {
       return
     }
     console.warn(
-      JSON.stringify({ event: 'orca_desktop_push_failures', ...Object.fromEntries(this.counts) })
+      JSON.stringify({ event: 'alfred_desktop_push_failures', ...Object.fromEntries(this.counts) })
     )
     this.counts.clear()
   }

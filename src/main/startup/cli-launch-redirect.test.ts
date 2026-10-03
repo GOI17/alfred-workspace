@@ -5,15 +5,15 @@ import { getCliLaunchArgs, maybeRedirectCliLaunch } from './cli-launch-redirect'
 const COMMAND_NAMES = ['project', 'serve', 'status', 'skills', 'worktree']
 
 const linux = {
-  resourcesPath: '/opt/Orca/resources',
-  execPath: '/opt/Orca/orca-ide',
+  resourcesPath: '/opt/Alfred/resources',
+  execPath: '/opt/Alfred/alfred-ide',
   get cliEntryPath(): string {
     return posix.join(this.resourcesPath, 'app.asar.unpacked', 'out', 'cli', 'index.js')
   }
 }
 const windows = {
-  resourcesPath: 'C:\\Users\\me\\AppData\\Local\\Programs\\Orca\\resources',
-  execPath: 'C:\\Users\\me\\AppData\\Local\\Programs\\Orca\\Orca.exe',
+  resourcesPath: 'C:\\Users\\me\\AppData\\Local\\Programs\\Alfred\\resources',
+  execPath: 'C:\\Users\\me\\AppData\\Local\\Programs\\Alfred\\Alfred.exe',
   get cliEntryPath(): string {
     return win32.join(this.resourcesPath, 'app.asar.unpacked', 'out', 'cli', 'index.js')
   }
@@ -112,7 +112,7 @@ describe('CLI launch redirect: command form', () => {
   it('redirects a direct binary launch with no AppImage env at all', () => {
     expect(
       getCliLaunchArgs(
-        ['/home/u/.config/orca-runtime/versions/1.4.158/orca-ide', 'skills', 'get', '--full'],
+        ['/home/u/.config/alfred-runtime/versions/1.4.158/alfred-ide', 'skills', 'get', '--full'],
         linux.cliEntryPath,
         linuxOptions
       )
@@ -225,8 +225,8 @@ describe('CLI launch redirect: command form', () => {
   })
 
   it.each([
-    ['--project', 'github:stablyai/orca', 'project', 'setups'],
-    ['--project=github:stablyai/orca', 'project', 'setups'],
+    ['--project', 'github:GOI17/alfred-workspace', 'project', 'setups'],
+    ['--project=github:GOI17/alfred-workspace', 'project', 'setups'],
     ['--project', 'project', 'project', 'setups'],
     ['--project=project', 'project', 'setups']
   ])('preserves a project selector in %j', (...args) => {
@@ -288,9 +288,9 @@ describe('CLI launch redirect: spawning', () => {
         timeoutMs: null,
         env: expect.objectContaining({
           ELECTRON_RUN_AS_NODE: '1',
-          ORCA_CLI_LAUNCH_REDIRECTED: '1',
-          ORCA_NODE_OPTIONS: '--inspect',
-          ORCA_NODE_REPL_EXTERNAL_MODULE: 'external-loader'
+          ALFRED_CLI_LAUNCH_REDIRECTED: '1',
+          ALFRED_NODE_OPTIONS: '--inspect',
+          ALFRED_NODE_REPL_EXTERNAL_MODULE: 'external-loader'
         })
       })
     )
@@ -304,7 +304,7 @@ describe('CLI launch redirect: spawning', () => {
 
     const result = maybeRedirectCliLaunch({
       argv: [linux.execPath, 'status'],
-      env: { ORCA_CLI_LAUNCH_REDIRECTED: '1' },
+      env: { ALFRED_CLI_LAUNCH_REDIRECTED: '1' },
       platform: 'linux',
       isPackaged: true,
       resourcesPath: linux.resourcesPath,

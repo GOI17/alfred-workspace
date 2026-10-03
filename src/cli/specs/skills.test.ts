@@ -23,10 +23,12 @@ describe('skill command specs', () => {
   it('documents the per-reference selector beside --full', () => {
     const help = formatCommandHelp(spec('skills get'))
 
-    expect(help).toContain('Usage: orca skills get <topic> [--full | --reference <name>] [--json]')
+    expect(help).toContain(
+      'Usage: alfred skills get <topic> [--full | --reference <name>] [--json]'
+    )
     expect(help).toContain('--reference <name>     Print one bundled reference by name')
     expect(help).toContain('--references           List the bundled reference names for a topic')
-    expect(help).toContain('orca skills get orchestration --reference recovery-and-cleanup')
+    expect(help).toContain('alfred skills get orchestration --reference recovery-and-cleanup')
     expect(effectiveAllowedFlags(spec('skills get'))).toEqual(
       expect.arrayContaining(['reference', 'references'])
     )

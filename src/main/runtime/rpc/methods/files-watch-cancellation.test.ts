@@ -1,7 +1,7 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import type { RpcRequest } from '../core'
 import { RpcDispatcher } from '../dispatcher'
-import type { OrcaRuntimeService } from '../../orca-runtime'
 import { FILE_METHODS } from './files'
 
 function makeRequest(method: string, params?: unknown): RpcRequest {
@@ -19,7 +19,7 @@ describe('file watch RPC cancellation', () => {
         signal?: AbortSignal
       ) => {
         setupSignal = signal
-        return new Promise<() => void>((_resolve, reject) => {
+        return new Promise<() => Promise<void>>((_resolve, reject) => {
           signal?.addEventListener('abort', () => reject(new Error('setup aborted')), {
             once: true
           })
@@ -32,7 +32,7 @@ describe('file watch RPC cancellation', () => {
       await cleanup?.()
       cleanups.delete(id)
     })
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       watchFileExplorer,
       registerSubscriptionCleanup: vi.fn((id, cleanup) => cleanups.set(id, cleanup)),
@@ -40,7 +40,7 @@ describe('file watch RPC cancellation', () => {
       cleanupSubscription: vi.fn((id) => {
         void cleanupSubscriptionAndWait(id)
       })
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: FILE_METHODS })
     const replies: { result?: { type?: string; subscriptionId?: string } }[] = []
 
@@ -68,23 +68,23 @@ describe('file watch RPC cancellation', () => {
       type WatchCallback = (
         events: { kind: 'update'; absolutePath: string; isDirectory?: boolean }[]
       ) => void
-      const unwatch = vi.fn()
-      let resolveWatch: (value: () => void) => void = () => {}
+      const unwatch = vi.fn(async () => {})
+      let resolveWatch: (value: () => Promise<void>) => void = () => {}
       const watchFileExplorer = vi.fn((_worktree: string, callback: WatchCallback) => {
         callback([{ kind: 'update', absolutePath: '/repo/queued.ts', isDirectory: false }])
-        return new Promise<() => void>((resolve) => {
+        return new Promise<() => Promise<void>>((resolve) => {
           resolveWatch = resolve
         })
       })
       const cleanups = new Map<string, () => void | Promise<void>>()
-      const runtime = {
+      const runtime = createRuntimeServiceTestDouble({
         getRuntimeId: () => 'test-runtime',
         watchFileExplorer,
         registerSubscriptionCleanup: vi.fn((id, cleanup) => cleanups.set(id, cleanup)),
         cleanupSubscription: vi.fn((id) => {
           void Promise.resolve(cleanups.get(id)?.())
         })
-      } as unknown as OrcaRuntimeService
+      })
       const dispatcher = new RpcDispatcher({ runtime, methods: FILE_METHODS })
       const abortController = new AbortController()
       const replies: unknown[] = []

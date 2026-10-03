@@ -1,3 +1,5 @@
+import { z } from 'zod'
+import { createRuntimeStoreTestDouble } from '../runtime/runtime-store-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import {
   clearAgentHookPaneStateMock,
@@ -11,7 +13,7 @@ import {
 import { setupPtyIpcSuite } from './pty-ipc-test-harness'
 import { getDefaultWorkspaceSession } from '../../shared/constants'
 import { makePaneKey } from '../../shared/stable-pane-id'
-import { OrcaRuntimeService } from '../runtime/orca-runtime'
+import { AlfredRuntimeService } from '../runtime/alfred-runtime'
 import type { RuntimeResolvedWorktreeCache } from '../runtime/runtime-resolved-worktree-cache'
 import type { ResolvedWorktree } from '../runtime/runtime-worktree-path-identity'
 import { getWorktreeScanMutationRevision } from '../local-worktree-scan-generation'
@@ -50,7 +52,7 @@ vi.mock('../telemetry/client', () =>
 vi.mock('../telemetry/classify-error', () =>
   import('./pty-ipc-mock-registry').then((m) => m.classifyErrorModuleMock())
 )
-vi.mock('../cli/linux-terminal-orca-cli-shim', () =>
+vi.mock('../cli/linux-terminal-alfred-cli-shim', () =>
   import('./pty-ipc-mock-registry').then((m) => m.linuxCliShimModuleMock())
 )
 vi.mock('../memory/pty-registry', () =>
@@ -178,25 +180,27 @@ describe('registerPtyHandlers', () => {
     const leafId = '55555555-5555-4555-8555-555555555555'
     const ptyId = `${worktreeId}@@session-restore-1`
     const session = getDefaultWorkspaceSession()
-    const runtime = new OrcaRuntimeService({
-      getWorkspaceSession: () => session,
-      setWorkspaceSession: () => {},
-      getRepos: () => [
-        {
-          id: 'repo-restore',
-          path: '/tmp/restore-records',
-          displayName: 'restore',
-          badgeColor: '#000000',
-          addedAt: 0
-        }
-      ],
-      getAllWorktreeMeta: () => ({}),
-      getWorktreeMeta: () => undefined,
-      setWorktreeMeta: () => undefined as never,
-      removeWorktreeMeta: () => {},
-      getSettings: () => ({ workspaceDir: '/tmp/workspaces' }),
-      getProjects: () => []
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        getWorkspaceSession: () => session,
+        setWorkspaceSession: () => {},
+        getRepos: () => [
+          {
+            id: 'repo-restore',
+            path: '/tmp/restore-records',
+            displayName: 'restore',
+            badgeColor: '#000000',
+            addedAt: 0
+          }
+        ],
+        getAllWorktreeMeta: () => ({}),
+        getWorktreeMeta: () => undefined,
+        setWorktreeMeta: () => undefined as never,
+        removeWorktreeMeta: () => {},
+        getSettings: () => ({ workspaceDir: '/tmp/workspaces' }),
+        getProjects: () => []
+      })
+    )
     runtime.attachWindow(1)
     // The restored window graph still knows the persisted ptyId binding.
     runtime.syncWindowGraph(1, {
@@ -280,7 +284,7 @@ describe('registerPtyHandlers', () => {
       worktreeId: 'wt-gated',
       tabId,
       leafId,
-      env: { ORCA_PANE_KEY: paneKey }
+      env: { ALFRED_PANE_KEY: paneKey }
     })
 
     // The renderer owns the emulator snapshot here — but the list/read records
@@ -334,7 +338,7 @@ describe('registerPtyHandlers', () => {
       lastTitle: 'checkpoint-title'
     })
   })
-  // Why windowless: `orca serve`/CLI runtime creation is the topology that most
+  // Why windowless: `alfred serve`/CLI runtime creation is the topology that most
   // needs informative records — its controller.spawn path must seed them too.
   it('seeds restore records for a runtime-controller created terminal (headless reattach)', async () => {
     const worktreeId = 'repo-restore::/tmp/restore-records'
@@ -347,19 +351,21 @@ describe('registerPtyHandlers', () => {
       badgeColor: '#000000',
       addedAt: 0
     }
-    const runtime = new OrcaRuntimeService({
-      getWorkspaceSession: () => session,
-      setWorkspaceSession: () => {},
-      getRepo: (repoId: string) => (repoId === repo.id ? repo : undefined),
-      getRepos: () => [repo],
-      getAllWorktreeMeta: () => ({}),
-      getWorktreeMeta: () => undefined,
-      setWorktreeMeta: () => undefined as never,
-      removeWorktreeMeta: () => {},
-      getSettings: () => ({ workspaceDir: '/tmp/workspaces' }),
-      getProjects: () => [],
-      persistPtyBinding: vi.fn()
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        getWorkspaceSession: () => session,
+        setWorkspaceSession: () => {},
+        getRepo: (repoId: string) => (repoId === repo.id ? repo : undefined),
+        getRepos: () => [repo],
+        getAllWorktreeMeta: () => ({}),
+        getWorktreeMeta: () => undefined,
+        setWorktreeMeta: () => undefined as never,
+        removeWorktreeMeta: () => {},
+        getSettings: () => ({ workspaceDir: '/tmp/workspaces' }),
+        getProjects: () => [],
+        persistPtyBinding: vi.fn()
+      })
+    )
     // Why: selector resolution shells out to git for real repos; prime the
     // resolved-worktree cache so this headless fixture resolves offline.
     //
@@ -424,7 +430,7 @@ describe('registerPtyHandlers', () => {
       worktreeId: 'wt-1',
       tabId: 'tab-1',
       leafId,
-      env: { ORCA_PANE_KEY: 'tab-1:0' }
+      env: { ALFRED_PANE_KEY: 'tab-1:0' }
     })
 
     expect(registerPtyMock).toHaveBeenLastCalledWith(
@@ -448,7 +454,7 @@ describe('registerPtyHandlers', () => {
       worktreeId: 'wt-1',
       tabId: 'tab-1',
       leafId,
-      env: { ORCA_PANE_KEY: stablePaneKey }
+      env: { ALFRED_PANE_KEY: stablePaneKey }
     })
 
     expect(registerPtyMock).toHaveBeenLastCalledWith(
@@ -464,7 +470,7 @@ describe('registerPtyHandlers', () => {
       worktreeId: 'wt-1',
       tabId: 'tab-1',
       leafId,
-      env: { ORCA_PANE_KEY: makePaneKey('tab-2', leafId) }
+      env: { ALFRED_PANE_KEY: makePaneKey('tab-2', leafId) }
     })
 
     expect(registerPtyMock).toHaveBeenLastCalledWith(
@@ -485,16 +491,16 @@ describe('registerPtyHandlers', () => {
       tabId: 'tab-1',
       leafId,
       env: {
-        ORCA_PANE_KEY: remintedPaneKey,
-        ORCA_AGENT_LAUNCH_TOKEN: 'launch-remint'
+        ALFRED_PANE_KEY: remintedPaneKey,
+        ALFRED_AGENT_LAUNCH_TOKEN: 'launch-remint'
       }
     })
 
     expect(spawnMock.mock.calls.at(-1)?.[2]).toEqual(
       expect.objectContaining({
         env: expect.objectContaining({
-          ORCA_PANE_KEY: stablePaneKey,
-          ORCA_AGENT_LAUNCH_TOKEN: 'launch-remint'
+          ALFRED_PANE_KEY: stablePaneKey,
+          ALFRED_AGENT_LAUNCH_TOKEN: 'launch-remint'
         })
       })
     )
@@ -523,16 +529,16 @@ describe('registerPtyHandlers', () => {
       tabId: 'tab-2',
       leafId,
       env: {
-        ORCA_PANE_KEY: remintedPaneKey,
-        ORCA_AGENT_LAUNCH_TOKEN: 'launch-remint'
+        ALFRED_PANE_KEY: remintedPaneKey,
+        ALFRED_AGENT_LAUNCH_TOKEN: 'launch-remint'
       }
     })
 
     expect(spawnMock.mock.calls.at(-1)?.[2]).toEqual(
       expect.objectContaining({
         env: expect.objectContaining({
-          ORCA_PANE_KEY: claimedPaneKey,
-          ORCA_AGENT_LAUNCH_TOKEN: 'launch-remint'
+          ALFRED_PANE_KEY: claimedPaneKey,
+          ALFRED_AGENT_LAUNCH_TOKEN: 'launch-remint'
         })
       })
     )
@@ -556,22 +562,26 @@ describe('registerPtyHandlers', () => {
     const leafId = '11111111-1111-4111-8111-111111111111'
     const stablePaneKey = makePaneKey('tab-1', leafId)
 
-    const first = (await handlers.get('pty:spawn')!(null, {
-      cols: 80,
-      rows: 24,
-      worktreeId: 'wt-1',
-      tabId: 'tab-1',
-      leafId,
-      env: { ORCA_PANE_KEY: stablePaneKey }
-    })) as { id: string }
-    const second = (await handlers.get('pty:spawn')!(null, {
-      cols: 80,
-      rows: 24,
-      worktreeId: 'wt-1',
-      tabId: 'tab-1',
-      leafId,
-      env: { ORCA_PANE_KEY: stablePaneKey }
-    })) as { id: string }
+    const first = z.object({ id: z.string() }).parse(
+      await handlers.get('pty:spawn')!(null, {
+        cols: 80,
+        rows: 24,
+        worktreeId: 'wt-1',
+        tabId: 'tab-1',
+        leafId,
+        env: { ALFRED_PANE_KEY: stablePaneKey }
+      })
+    )
+    const second = z.object({ id: z.string() }).parse(
+      await handlers.get('pty:spawn')!(null, {
+        cols: 80,
+        rows: 24,
+        worktreeId: 'wt-1',
+        tabId: 'tab-1',
+        leafId,
+        env: { ALFRED_PANE_KEY: stablePaneKey }
+      })
+    )
 
     expect(getPtyIdForPaneKey(stablePaneKey)).toBe(second.id)
     clearAgentHookPaneStateMock.mockClear()
@@ -589,14 +599,16 @@ describe('registerPtyHandlers', () => {
     const leafId = '11111111-1111-4111-8111-111111111111'
     const stablePaneKey = makePaneKey('tab-1', leafId)
 
-    const current = (await handlers.get('pty:spawn')!(null, {
-      cols: 80,
-      rows: 24,
-      worktreeId: 'wt-1',
-      tabId: 'tab-1',
-      leafId,
-      env: { ORCA_PANE_KEY: stablePaneKey }
-    })) as { id: string }
+    const current = z.object({ id: z.string() }).parse(
+      await handlers.get('pty:spawn')!(null, {
+        cols: 80,
+        rows: 24,
+        worktreeId: 'wt-1',
+        tabId: 'tab-1',
+        leafId,
+        env: { ALFRED_PANE_KEY: stablePaneKey }
+      })
+    )
 
     expect(getPtyIdForPaneKey(stablePaneKey)).toBe(current.id)
     clearPaneKeyAliasesForPtyMock.mockClear()

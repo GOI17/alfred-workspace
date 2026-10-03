@@ -9,7 +9,7 @@ export async function readTypingScaleCensus(
   page: Page
 ): Promise<TypingLatencyReport['census'] | null> {
   return page.evaluate(() => {
-    const target: Window & { __orcaTypingDiagnostic?: TypingDiagnosticBridge } = window
-    return target.__orcaTypingDiagnostic?.report().census ?? null
+    const target: Window & { __alfredTypingDiagnostic?: TypingDiagnosticBridge } = window
+    return target.__alfredTypingDiagnostic?.report().census ?? null
   })
 }

@@ -176,9 +176,9 @@ describe('/shared ai-vault-session-filters (lifted core)', () => {
   })
 
   it('parses repo: and path: operators from the query', () => {
-    expect(parseVaultQuery('hello repo:orca path:/tmp world')).toEqual({
+    expect(parseVaultQuery('hello repo:alfred path:/tmp world')).toEqual({
       terms: ['hello', 'world'],
-      repoTerms: ['orca'],
+      repoTerms: ['alfred'],
       pathTerms: ['/tmp']
     })
   })

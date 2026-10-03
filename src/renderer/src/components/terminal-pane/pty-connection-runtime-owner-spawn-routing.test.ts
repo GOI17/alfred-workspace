@@ -231,7 +231,7 @@ describe('connectPanePty', () => {
         {
           id: 'repo1',
           connectionId: null,
-          displayName: 'orca',
+          displayName: 'alfred',
           executionHostId: 'runtime:owner-runtime'
         }
       ],
@@ -239,7 +239,7 @@ describe('connectPanePty', () => {
         ...mockStoreState.settings,
         activeRuntimeEnvironmentId: 'focused-runtime'
       }
-    } as StoreState
+    }
 
     const pane = createPane(2)
     const manager = createManager(2)
@@ -279,7 +279,7 @@ describe('connectPanePty', () => {
         {
           id: 'repo1',
           connectionId: null,
-          displayName: 'orca',
+          displayName: 'alfred',
           executionHostId: 'local'
         }
       ],
@@ -287,7 +287,7 @@ describe('connectPanePty', () => {
         ...mockStoreState.settings,
         activeRuntimeEnvironmentId: 'focused-runtime'
       }
-    } as StoreState
+    }
 
     const pane = createPane(2)
     const manager = createManager(2)

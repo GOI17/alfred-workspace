@@ -1,8 +1,8 @@
 import { execFileSync } from 'node:child_process'
 
-const PROJECT = 'onorca-cloud-staging'
-const SQL_INSTANCE = 'orca-cloud-staging-auth-db'
-const MIG_PREFIX = 'orca-cloud-staging-relay-gce-'
+const PROJECT = 'onalfred-cloud-staging'
+const SQL_INSTANCE = 'alfred-cloud-staging-auth-db'
+const MIG_PREFIX = 'alfred-cloud-staging-relay-gce-'
 
 function defaultGcloud(args) {
   return execFileSync('gcloud', args, {

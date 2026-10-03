@@ -4,10 +4,10 @@
   "namedDeltas": [],
   "runnerVersion": 1,
   "baseline": "b4dfad0a8ba4e15976ec06b9d38994b6a31e1643",
-  "lockfileSha256": "4568633356187895ccda8e2ff83245c37d5621832c69e268733733b6947971e3",
-  "recorderSha256": "f67c2f5b753d2a4f572599f6861fae8e6e917fe89ac75b58288f8e84be609d86",
+  "lockfileSha256": "6dc9405f6240556235cc8c897075c4dab1e8f5f8f1cf571c8eafdb496d3da818",
+  "recorderSha256": "96c80e2da6f1dbc42aad4f355811aa0e88e121b01243422126e7d08bd0ea57e2",
   "adapterSha256": "12a04986290715d5db23a1eb5192c1138bb2d375d1b1dd37ba310ea89eb11566",
-  "scenarioSha256": "b7a862c0de7dd4efcdf3f4db7c5aeda6b765ab58498f40f3b21232264758b16f",
+  "scenarioSha256": "eb434e82beeb3cc364aa7cbb6d00e382c0d13976a328c7bf906bb9c0a330ca62",
   "platform": "darwin",
   "scenarioVersion": 1,
   "projectionVersion": 2,
@@ -108,25 +108,6 @@
         "startedAt": 0
       }
     },
-    "1813829924d9": {
-      "crash": {
-        "$rpc": "null"
-      },
-      "elements": {
-        "Pressable": 2,
-        "Text": 6,
-        "View": 3
-      },
-      "labels": ["Send test notification"],
-      "text": [
-        "Having trouble receiving alerts?",
-        "Send a test through Orca’s push service.",
-        "Send test notification",
-        "Send test notification",
-        "Troubleshooting",
-        "Accepted by Orca’s push service. Check for the notification."
-      ]
-    },
     "1d12f3e78a48": {
       "name": "notifications.testPush#1",
       "ordinal": 1,
@@ -164,25 +145,6 @@
           }
         }
       }
-    },
-    "2632a7be552e": {
-      "crash": {
-        "$rpc": "null"
-      },
-      "elements": {
-        "Pressable": 2,
-        "Text": 6,
-        "View": 3
-      },
-      "labels": ["Send test notification"],
-      "text": [
-        "Having trouble receiving alerts?",
-        "Send a test through Orca’s push service.",
-        "Send test notification",
-        "Send test notification",
-        "Troubleshooting",
-        "Update your desktop to run this test."
-      ]
     },
     "401bb4233294": {
       "name": "notifications.testPush#1",
@@ -249,23 +211,22 @@
         }
       }
     },
-    "4f67ed2e2c74": {
+    "4b3f098e13ac": {
       "crash": {
         "$rpc": "null"
       },
       "elements": {
         "Pressable": 2,
-        "Text": 6,
+        "Text": 5,
         "View": 3
       },
-      "labels": ["Send test notification"],
+      "labels": ["Sending…"],
       "text": [
         "Having trouble receiving alerts?",
-        "Send a test through Orca’s push service.",
+        "Send a test through Alfred’s push service.",
         "Send test notification",
-        "Send test notification",
-        "Troubleshooting",
-        "Could not reach the desktop. Try again."
+        "Sending…",
+        "Troubleshooting"
       ]
     },
     "649d12c8eb9b": {
@@ -303,7 +264,7 @@
         }
       }
     },
-    "6967f95147f9": {
+    "88704d1f32dd": {
       "crash": {
         "$rpc": "null"
       },
@@ -312,13 +273,32 @@
         "Text": 5,
         "View": 3
       },
-      "labels": ["Sending…"],
+      "labels": ["Send test notification"],
       "text": [
         "Having trouble receiving alerts?",
-        "Send a test through Orca’s push service.",
+        "Send a test through Alfred’s push service.",
         "Send test notification",
-        "Sending…",
+        "Send test notification",
         "Troubleshooting"
+      ]
+    },
+    "94b0878be28a": {
+      "crash": {
+        "$rpc": "null"
+      },
+      "elements": {
+        "Pressable": 2,
+        "Text": 6,
+        "View": 3
+      },
+      "labels": ["Send test notification"],
+      "text": [
+        "Having trouble receiving alerts?",
+        "Send a test through Alfred’s push service.",
+        "Send test notification",
+        "Send test notification",
+        "Troubleshooting",
+        "transport failure"
       ]
     },
     "95172d96bab4": {
@@ -392,7 +372,7 @@
         }
       }
     },
-    "b7f125cb7db0": {
+    "ae14c31abe6a": {
       "crash": {
         "$rpc": "null"
       },
@@ -404,11 +384,11 @@
       "labels": ["Send test notification"],
       "text": [
         "Having trouble receiving alerts?",
-        "Send a test through Orca’s push service.",
+        "Send a test through Alfred’s push service.",
         "Send test notification",
         "Send test notification",
         "Troubleshooting",
-        "transport failure"
+        "Could not reach the desktop. Try again."
       ]
     },
     "c37bd4097e53": {
@@ -483,22 +463,23 @@
         }
       }
     },
-    "d86c08a509c4": {
+    "cfbe0a4e4d65": {
       "crash": {
         "$rpc": "null"
       },
       "elements": {
         "Pressable": 2,
-        "Text": 5,
+        "Text": 6,
         "View": 3
       },
       "labels": ["Send test notification"],
       "text": [
         "Having trouble receiving alerts?",
-        "Send a test through Orca’s push service.",
+        "Send a test through Alfred’s push service.",
         "Send test notification",
         "Send test notification",
-        "Troubleshooting"
+        "Troubleshooting",
+        "Accepted by Alfred’s push service. Check for the notification."
       ]
     },
     "eb79a9b3682a": {
@@ -545,7 +526,7 @@
         }
       }
     },
-    "f3e2e816b496": {
+    "ef9f9e3c0439": {
       "crash": {
         "$rpc": "null"
       },
@@ -557,11 +538,30 @@
       "labels": ["Send test notification"],
       "text": [
         "Having trouble receiving alerts?",
-        "Send a test through Orca’s push service.",
+        "Send a test through Alfred’s push service.",
         "Send test notification",
         "Send test notification",
         "Troubleshooting",
-        "Could not send through Orca’s push service. Try again."
+        "Could not send through Alfred’s push service. Try again."
+      ]
+    },
+    "f081e4b51311": {
+      "crash": {
+        "$rpc": "null"
+      },
+      "elements": {
+        "Pressable": 2,
+        "Text": 6,
+        "View": 3
+      },
+      "labels": ["Send test notification"],
+      "text": [
+        "Having trouble receiving alerts?",
+        "Send a test through Alfred’s push service.",
+        "Send test notification",
+        "Send test notification",
+        "Troubleshooting",
+        "Update your desktop to run this test."
       ]
     },
     "f68b017d64bd": {
@@ -581,7 +581,7 @@
           "settlements": {
             "mount": "eb79a9b3682a"
           },
-          "state": "d86c08a509c4",
+          "state": "88704d1f32dd",
           "effects": []
         }
       },
@@ -594,7 +594,7 @@
             "mount": "eb79a9b3682a",
             "press": "eb79a9b3682a"
           },
-          "state": "6967f95147f9",
+          "state": "4b3f098e13ac",
           "effects": []
         }
       },
@@ -607,7 +607,7 @@
             "mount": "eb79a9b3682a",
             "press": "eb79a9b3682a"
           },
-          "state": "1813829924d9",
+          "state": "cfbe0a4e4d65",
           "effects": []
         }
       },
@@ -620,7 +620,7 @@
             "mount": "eb79a9b3682a",
             "press": "eb79a9b3682a"
           },
-          "state": "f3e2e816b496",
+          "state": "ef9f9e3c0439",
           "effects": []
         }
       },
@@ -633,7 +633,7 @@
             "mount": "eb79a9b3682a",
             "press": "eb79a9b3682a"
           },
-          "state": "f3e2e816b496",
+          "state": "ef9f9e3c0439",
           "effects": []
         }
       },
@@ -646,7 +646,7 @@
             "mount": "eb79a9b3682a",
             "press": "eb79a9b3682a"
           },
-          "state": "f3e2e816b496",
+          "state": "ef9f9e3c0439",
           "effects": []
         }
       },
@@ -659,7 +659,7 @@
             "mount": "eb79a9b3682a",
             "press": "eb79a9b3682a"
           },
-          "state": "f3e2e816b496",
+          "state": "ef9f9e3c0439",
           "effects": []
         }
       },
@@ -672,7 +672,7 @@
             "mount": "eb79a9b3682a",
             "press": "eb79a9b3682a"
           },
-          "state": "f3e2e816b496",
+          "state": "ef9f9e3c0439",
           "effects": []
         }
       },
@@ -685,7 +685,7 @@
             "mount": "eb79a9b3682a",
             "press": "eb79a9b3682a"
           },
-          "state": "4f67ed2e2c74",
+          "state": "ae14c31abe6a",
           "effects": []
         }
       },
@@ -698,7 +698,7 @@
             "mount": "eb79a9b3682a",
             "press": "eb79a9b3682a"
           },
-          "state": "4f67ed2e2c74",
+          "state": "ae14c31abe6a",
           "effects": []
         }
       },
@@ -711,7 +711,7 @@
             "mount": "eb79a9b3682a",
             "press": "eb79a9b3682a"
           },
-          "state": "2632a7be552e",
+          "state": "f081e4b51311",
           "effects": []
         }
       },
@@ -724,7 +724,7 @@
             "mount": "eb79a9b3682a",
             "press": "eb79a9b3682a"
           },
-          "state": "b7f125cb7db0",
+          "state": "94b0878be28a",
           "effects": []
         }
       },
@@ -737,7 +737,7 @@
             "mount": "eb79a9b3682a",
             "press": "eb79a9b3682a"
           },
-          "state": "d86c08a509c4",
+          "state": "88704d1f32dd",
           "effects": []
         }
       }

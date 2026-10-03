@@ -1,3 +1,4 @@
+import { isJsonObject } from '../../shared/json-object'
 import type { SnapshotEntry } from './snapshot-ax-tree-walk'
 import type { CdpCommandSender } from './snapshot-engine'
 
@@ -15,7 +16,7 @@ export async function findCursorInteractiveElements(
   try {
     // Single evaluate call that finds interactive elements and returns their info
     // along with a way to reference them by index
-    const { result } = (await sendCommand('Runtime.evaluate', {
+    const response = await sendCommand('Runtime.evaluate', {
       expression: `(() => {
         const SKIP_ROLES = new Set(['button','link','textbox','checkbox','radio','tab',
           'menuitem','option','switch','slider','combobox','searchbox','spinbutton','treeitem',
@@ -51,37 +52,63 @@ export async function findCursorInteractiveElements(
           } catch {}
         });
 
-        window.__orcaCursorInteractive = matchedElements;
+        window.__alfredCursorInteractive = matchedElements;
         return JSON.stringify(found);
       })()`,
       returnByValue: true
-    })) as { result: { value: string } }
+    })
+    if (
+      !isJsonObject(response) ||
+      !isJsonObject(response.result) ||
+      typeof response.result.value !== 'string'
+    ) {
+      return results
+    }
 
-    const elements = JSON.parse(result.value) as { text: string; tag: string }[]
+    const elements: unknown = JSON.parse(response.result.value)
+    if (!Array.isArray(elements)) {
+      return results
+    }
 
     for (let i = 0; i < elements.length; i++) {
       try {
-        const { result: objResult } = (await sendCommand('Runtime.evaluate', {
-          expression: `window.__orcaCursorInteractive[${i}]`
-        })) as { result: { objectId?: string } }
+        const objectResponse = await sendCommand('Runtime.evaluate', {
+          expression: `window.__alfredCursorInteractive[${i}]`
+        })
 
-        if (!objResult.objectId) {
+        if (
+          !isJsonObject(objectResponse) ||
+          !isJsonObject(objectResponse.result) ||
+          typeof objectResponse.result.objectId !== 'string'
+        ) {
           continue
         }
 
-        const { node } = (await sendCommand('DOM.describeNode', {
-          objectId: objResult.objectId
-        })) as { node: { backendNodeId: number } }
+        const nodeResponse = await sendCommand('DOM.describeNode', {
+          objectId: objectResponse.result.objectId
+        })
+        if (
+          !isJsonObject(nodeResponse) ||
+          !isJsonObject(nodeResponse.node) ||
+          typeof nodeResponse.node.backendNodeId !== 'number'
+        ) {
+          continue
+        }
+        const backendNodeId = nodeResponse.node.backendNodeId
+        const element: unknown = elements[i]
+        if (!isJsonObject(element) || typeof element.text !== 'string') {
+          continue
+        }
 
-        if (existingNodeIds.has(node.backendNodeId)) {
+        if (existingNodeIds.has(backendNodeId)) {
           continue
         }
 
         results.push({
           ref: '',
           role: 'clickable',
-          name: elements[i].text,
-          backendDOMNodeId: node.backendNodeId,
+          name: element.text,
+          backendDOMNodeId: backendNodeId,
           depth: 0
         })
       } catch {
@@ -91,7 +118,7 @@ export async function findCursorInteractiveElements(
 
     // Clean up
     await sendCommand('Runtime.evaluate', {
-      expression: 'delete window.__orcaCursorInteractive',
+      expression: 'delete window.__alfredCursorInteractive',
       returnByValue: true
     })
   } catch {

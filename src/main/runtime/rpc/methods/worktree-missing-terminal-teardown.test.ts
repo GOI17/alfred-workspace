@@ -1,16 +1,16 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
-import type { OrcaRuntimeService } from '../../orca-runtime'
 import { RpcDispatcher } from '../dispatcher'
 import { WORKTREE_METHODS } from './worktree'
 
 describe('worktree missing-terminal teardown RPC', () => {
   it('routes the connection-scoped request through the runtime owner', async () => {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       teardownMissingManagedWorktreeTerminals: vi
         .fn()
         .mockResolvedValue({ stoppedWorktreeIds: ['repo-1::/workspace/deleted'] })
-    } as unknown as OrcaRuntimeService
+    })
     const dispatcher = new RpcDispatcher({ runtime, methods: WORKTREE_METHODS })
 
     const response = await dispatcher.dispatch({

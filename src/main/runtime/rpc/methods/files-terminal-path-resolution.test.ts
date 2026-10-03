@@ -1,7 +1,7 @@
+import { createRuntimeServiceTestDouble } from '../../runtime-service-test-double'
 import { describe, expect, it, vi } from 'vitest'
 import { RpcDispatcher } from '../dispatcher'
 import type { RpcRequest } from '../core'
-import type { OrcaRuntimeService } from '../../orca-runtime'
 import { FILE_METHODS } from './files'
 
 function makeRequest(method: string, params?: unknown): RpcRequest {
@@ -10,7 +10,7 @@ function makeRequest(method: string, params?: unknown): RpcRequest {
 
 describe('files.resolveTerminalPath RPC', () => {
   function createDispatcher() {
-    const runtime = {
+    const runtime = createRuntimeServiceTestDouble({
       getRuntimeId: () => 'test-runtime',
       resolveTerminalPath: vi.fn().mockResolvedValue({
         worktree: 'wt-1',
@@ -18,7 +18,7 @@ describe('files.resolveTerminalPath RPC', () => {
         exists: true,
         isDirectory: false
       })
-    } as unknown as OrcaRuntimeService
+    })
     return { runtime, dispatcher: new RpcDispatcher({ runtime, methods: FILE_METHODS }) }
   }
 

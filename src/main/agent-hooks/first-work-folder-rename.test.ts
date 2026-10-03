@@ -1,12 +1,13 @@
+import { makeRepo as fixtureMakeRepo } from '../../shared/repo-test-fixture'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { GlobalSettings } from '../../shared/global-settings-types'
-import type { Repo } from '../../shared/repo-types'
+
 import {
   renameWorktreeFolderOnFirstWork,
   type FirstWorkFolderRenameDeps
 } from './first-work-folder-rename'
 
-const REPO = { id: 'repo1', path: '/repos/orca', connectionId: null } as unknown as Repo
+const REPO = fixtureMakeRepo({ id: 'repo1', path: '/repos/alfred', connectionId: null })
 const SETTINGS = { nestWorkspaces: false, workspaceDir: '/ws' } as unknown as GlobalSettings
 const OLD_ID = 'repo1::/ws/cunner'
 const FOLDER_WORKSPACE_ID = 'repo1::/ws/cunner::workspace:12345678-1234-1234-1234-123456789abc'
@@ -37,7 +38,7 @@ describe('renameWorktreeFolderOnFirstWork', () => {
     const result = await renameWorktreeFolderOnFirstWork(OLD_ID, 'worktree-creation-spinner', deps)
     expect(result).toBe(true)
     expect(deps.moveWorktree).toHaveBeenCalledWith(
-      '/repos/orca',
+      '/repos/alfred',
       '/ws/cunner',
       '/ws/worktree-creation-spinner'
     )

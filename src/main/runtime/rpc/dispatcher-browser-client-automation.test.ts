@@ -1,6 +1,7 @@
+import { createRuntimeServiceTestDouble } from '../runtime-service-test-double'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
-import type { OrcaRuntimeService } from '../orca-runtime'
+import type { AlfredRuntimeService } from '../alfred-runtime'
 import { defineMethod, type RpcRequest } from './core'
 import { RpcDispatcher } from './dispatcher'
 
@@ -17,11 +18,13 @@ function request(params: unknown): RpcRequest {
   return { id: 'request-a', authToken: 'token-a', method: 'browser.click', params }
 }
 
-function runtime(routeClientHostedBrowserRpc?: OrcaRuntimeService['routeClientHostedBrowserRpc']) {
-  return {
+function runtime(
+  routeClientHostedBrowserRpc?: AlfredRuntimeService['routeClientHostedBrowserRpc']
+) {
+  return createRuntimeServiceTestDouble({
     getRuntimeId: () => 'runtime-a',
     routeClientHostedBrowserRpc
-  } as OrcaRuntimeService
+  })
 }
 
 describe('RpcDispatcher client-hosted browser automation', () => {

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { LINEAR_WRITE_BODY_CAP } from '../../shared/linear/agent-access'
 import * as linearTeams from '../linear/teams'
-import { OrcaRuntimeService } from './orca-runtime'
+import { AlfredRuntimeService } from './alfred-runtime'
 
 const issue = {
   id: 'issue-1',
@@ -21,23 +21,13 @@ const issue = {
   labels: []
 }
 
-type SaveIssueInternals = {
-  resolveLinearAssignee(input: string, teamId: string, workspaceId: string): Promise<string>
-  resolveLinearAgentState(input: string, states: unknown[]): unknown
-  buildLinearSaveUpdate(
-    params: { labels?: string[] },
-    current: typeof issue,
-    workspaceId: string
-  ): Promise<{ labelIds?: string[] }>
-}
-
 afterEach(() => {
   vi.restoreAllMocks()
 })
 
 describe('Linear save issue', () => {
   it('delegates creates with the MCP-required team and title', async () => {
-    const runtime = new OrcaRuntimeService()
+    const runtime = new AlfredRuntimeService()
     const create = vi.spyOn(runtime, 'linearIssueCreate').mockResolvedValue({
       issue,
       meta: { workspaceId: 'workspace-1', writeId: 'write-1', deduplicated: false }
@@ -57,7 +47,7 @@ describe('Linear save issue', () => {
   })
 
   it('keeps team changes explicitly unsupported on updates', async () => {
-    const runtime = new OrcaRuntimeService()
+    const runtime = new AlfredRuntimeService()
 
     await expect(
       runtime.linearSaveIssue({ input: 'ENG-1', team: 'OPS', title: 'Moved issue' })
@@ -68,7 +58,7 @@ describe('Linear save issue', () => {
   })
 
   it('rejects oversized descriptions before resolving an issue or calling Linear', async () => {
-    const runtime = new OrcaRuntimeService()
+    const runtime = new AlfredRuntimeService()
     const resolveTarget = vi.fn()
     Object.assign(runtime, { resolveLinearAgentWriteTarget: resolveTarget })
 
@@ -82,7 +72,7 @@ describe('Linear save issue', () => {
   })
 
   it('does not send a mutation or confirmation read when every field is already set', async () => {
-    const runtime = new OrcaRuntimeService()
+    const runtime = new AlfredRuntimeService()
     const runWrite = vi.fn()
     const notify = vi.fn().mockResolvedValue(undefined)
     Object.assign(runtime, {
@@ -104,7 +94,7 @@ describe('Linear save issue', () => {
   })
 
   it('accepts user UUIDs without listing every team member', async () => {
-    const runtime = new OrcaRuntimeService() as unknown as SaveIssueInternals
+    const runtime = new AlfredRuntimeService()
     const listMembers = vi.spyOn(linearTeams, 'getTeamMembersOrThrow')
     const userId = '11111111-1111-4111-8111-111111111111'
 
@@ -115,7 +105,7 @@ describe('Linear save issue', () => {
   })
 
   it('matches assignees by full name or email like Linear MCP', async () => {
-    const runtime = new OrcaRuntimeService() as unknown as SaveIssueInternals
+    const runtime = new AlfredRuntimeService()
     vi.spyOn(linearTeams, 'getTeamMembersOrThrow').mockResolvedValue([
       {
         id: 'user-1',
@@ -134,10 +124,22 @@ describe('Linear save issue', () => {
   })
 
   it('resolves workflow lifecycle types while preferring exact state names', () => {
-    const runtime = new OrcaRuntimeService() as unknown as SaveIssueInternals
+    const runtime = new AlfredRuntimeService()
     const states = [
-      { id: 'state-progress', name: 'In Progress', type: 'started' },
-      { id: 'state-started', name: 'Started', type: 'unstarted' }
+      {
+        id: 'state-progress',
+        name: 'In Progress',
+        type: 'started' as const,
+        color: '#000000',
+        position: 1
+      },
+      {
+        id: 'state-started',
+        name: 'Started',
+        type: 'unstarted' as const,
+        color: '#000000',
+        position: 1
+      }
     ]
 
     expect(runtime.resolveLinearAgentState('started', states)).toBe(states[1])
@@ -145,7 +147,7 @@ describe('Linear save issue', () => {
   })
 
   it('clears labels without listing the team label catalog', async () => {
-    const runtime = new OrcaRuntimeService() as unknown as SaveIssueInternals
+    const runtime = new AlfredRuntimeService()
     const listLabels = vi.spyOn(linearTeams, 'getTeamLabelsOrThrow')
 
     await expect(

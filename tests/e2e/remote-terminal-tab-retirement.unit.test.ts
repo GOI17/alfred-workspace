@@ -1,3 +1,4 @@
+import { createRuntimeStoreTestDouble } from '../../src/main/runtime/runtime-store-test-double'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { getDefaultWorkspaceSession } from '../../src/shared/constants'
 import type { RuntimeMobileSessionTabsSnapshot } from '../../src/shared/runtime-types'
@@ -9,7 +10,7 @@ import {
   shouldApplyWebSessionTabsSnapshot,
   type WebSessionTabsSyncState
 } from '../../src/renderer/src/runtime/web-session-tabs-sync'
-import { OrcaRuntimeService } from '../../src/main/runtime/orca-runtime'
+import { AlfredRuntimeService } from '../../src/main/runtime/alfred-runtime'
 
 vi.mock('../../src/renderer/src/store', () => ({
   useAppStore: { setState: vi.fn() }
@@ -129,13 +130,15 @@ describe('remote terminal tab retirement publication', () => {
   it('removes a permanent host exit from simultaneous viewers without stale resurrection', async () => {
     let session = makePersistedSession()
     const flushOrThrow = vi.fn()
-    const runtime = new OrcaRuntimeService({
-      getWorkspaceSession: () => session,
-      setWorkspaceSession: (next) => {
-        session = next
-      },
-      flushOrThrow
-    } as never)
+    const runtime = new AlfredRuntimeService(
+      createRuntimeStoreTestDouble({
+        getWorkspaceSession: () => session,
+        setWorkspaceSession: (next) => {
+          session = next
+        },
+        flushOrThrow
+      })
+    )
     runtime.attachWindow(1)
     const staleLiveSnapshot = makeHostSnapshot()
     runtime.syncWindowGraph(1, {

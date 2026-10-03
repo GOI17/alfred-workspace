@@ -1,5 +1,4 @@
 import { reportWorkerTerminalUserInput } from '../terminal/worker-terminal-takeover-report'
-import type { RpcClient } from '../transport/rpc-client'
 import { isRpcDeliveryUnknown } from '../transport/rpc-delivery-ambiguity'
 import { isLogicalClientCutoverError } from '../transport/stable-logical-rpc-client'
 import { nativeChatTerminalWrite } from './mobile-session-write-operations'
@@ -14,7 +13,7 @@ type MobileTerminalClient = {
 }
 
 type MobileNativeChatSendArgs = {
-  client: RpcClient
+  client: MobileNativeChatRpcSender
   terminal: string
   text: string
   enter?: boolean
@@ -92,7 +91,7 @@ export async function sendMobileNativeChatMessage(
 }
 
 export async function typeMobileNativeChatCommandWithOutcome(args: {
-  client: RpcClient
+  client: MobileNativeChatRpcSender
   terminal: string
   command: string
   resolvedLaunchDraft?: { text: string; createdAt: number }
@@ -130,7 +129,7 @@ export async function typeMobileNativeChatCommandWithOutcome(args: {
  * the shape the image paste has always used, and it clears as intended.
  */
 export async function clearMobileNativeChatInput(args: {
-  client: RpcClient
+  client: MobileNativeChatRpcSender
   terminal: string
   clearInput: string
   mobileClient?: MobileTerminalClient

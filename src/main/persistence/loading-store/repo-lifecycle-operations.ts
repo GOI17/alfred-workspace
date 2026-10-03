@@ -3,7 +3,7 @@ import type { Repo } from '../../../shared/repo-types'
 import {
   removeRepoFromHostWorkspaceSessions,
   removeRepoFromWorkspaceSession
-} from '../../orca-profiles/profile-project-session-state'
+} from '../../alfred-profiles/profile-project-session-state'
 import {
   getRepoExecutionHostId,
   parseExecutionHostId,

@@ -1,21 +1,24 @@
+import type { AppState } from '../../store/types'
+import { makeRepo as completeMakeRepo } from '../../../../shared/repo-test-fixture'
+import { makeWorktree as completeMakeWorktree } from '../../../../shared/worktree/worktree-test-fixture'
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
   ACTIVE_CHECKS_STATUS_INPUT_KEYS,
   clearActiveChecksStatusCacheForTests,
   getActiveChecksStatus
 } from './active-checks-status'
-import type { AppState } from '../../store/types'
+
 import type { PRInfo } from '../../../../shared/github/pull-request-types'
 
 function makePR(status: PRInfo['checksStatus']): PRInfo {
   return {
     number: 12,
     title: 'Test PR',
-    state: 'open',
-    url: 'https://github.com/acme/orca/pull/12',
+    state: 'open' as const,
+    url: 'https://github.com/acme/alfred/pull/12',
     checksStatus: status,
     updatedAt: '2026-05-20T00:00:00Z',
-    mergeable: 'MERGEABLE'
+    mergeable: 'MERGEABLE' as const
   }
 }
 
@@ -27,21 +30,21 @@ describe('getActiveChecksStatus', () => {
   it('prefers repo-id scoped status over stale path-scoped status for the active worktree', () => {
     const state = {
       activeWorktreeId: 'wt-1',
-      repos: [{ id: 'repo-1', path: '/repo' }],
+      repos: [completeMakeRepo({ id: 'repo-1', path: '/repo' })],
       worktreesByRepo: {
         'repo-1': [
-          {
+          completeMakeWorktree({
             id: 'wt-1',
             repoId: 'repo-1',
             branch: 'refs/heads/feature/test'
-          }
+          })
         ]
       },
       prCache: {
         'repo-1::feature/test': { data: makePR('success'), fetchedAt: 2 },
         '/repo::feature/test': { data: makePR('failure'), fetchedAt: 999 }
       }
-    } as unknown as Pick<AppState, 'activeWorktreeId' | 'repos' | 'worktreesByRepo' | 'prCache'>
+    }
 
     expect(getActiveChecksStatus(state)).toBe('success')
   })
@@ -49,37 +52,34 @@ describe('getActiveChecksStatus', () => {
   it('uses GitLab MR pipeline status when the active branch has no GitHub PR cache entry', () => {
     const state = {
       activeWorktreeId: 'wt-1',
-      repos: [{ id: 'repo-1', path: '/repo' }],
+      repos: [completeMakeRepo({ id: 'repo-1', path: '/repo' })],
       worktreesByRepo: {
         'repo-1': [
-          {
+          completeMakeWorktree({
             id: 'wt-1',
             repoId: 'repo-1',
             branch: 'refs/heads/feature/gitlab',
             linkedGitLabMR: 7
-          }
+          })
         ]
       },
       prCache: {},
       hostedReviewCache: {
         'local::repo-1::feature/gitlab': {
           data: {
-            provider: 'gitlab',
+            provider: 'gitlab' as const,
             number: 7,
             title: 'GitLab MR',
-            state: 'open',
-            url: 'https://gitlab.com/acme/orca/-/merge_requests/7',
-            status: 'success',
+            state: 'open' as const,
+            url: 'https://gitlab.com/acme/alfred/-/merge_requests/7',
+            status: 'success' as const,
             updatedAt: '2026-05-20T00:00:00Z',
-            mergeable: 'MERGEABLE'
+            mergeable: 'MERGEABLE' as const
           },
           fetchedAt: 2
         }
       }
-    } as unknown as Pick<
-      AppState,
-      'activeWorktreeId' | 'repos' | 'worktreesByRepo' | 'prCache' | 'hostedReviewCache'
-    >
+    }
 
     expect(getActiveChecksStatus(state)).toBe('success')
   })
@@ -87,25 +87,22 @@ describe('getActiveChecksStatus', () => {
   it('does not show stale GitHub PR status for a linked GitLab MR while MR status is loading', () => {
     const state = {
       activeWorktreeId: 'wt-1',
-      repos: [{ id: 'repo-1', path: '/repo' }],
+      repos: [completeMakeRepo({ id: 'repo-1', path: '/repo' })],
       worktreesByRepo: {
         'repo-1': [
-          {
+          completeMakeWorktree({
             id: 'wt-1',
             repoId: 'repo-1',
             branch: 'refs/heads/feature/gitlab',
             linkedGitLabMR: 7
-          }
+          })
         ]
       },
       prCache: {
         'repo-1::feature/gitlab': { data: makePR('failure'), fetchedAt: 2 }
       },
       hostedReviewCache: {}
-    } as unknown as Pick<
-      AppState,
-      'activeWorktreeId' | 'repos' | 'worktreesByRepo' | 'prCache' | 'hostedReviewCache'
-    >
+    }
 
     expect(getActiveChecksStatus(state)).toBeNull()
   })
@@ -113,22 +110,22 @@ describe('getActiveChecksStatus', () => {
   it('hides the matching suppressed GitHub PR status', () => {
     const state = {
       activeWorktreeId: 'wt-1',
-      repos: [{ id: 'repo-1', path: '/repo' }],
+      repos: [completeMakeRepo({ id: 'repo-1', path: '/repo' })],
       worktreesByRepo: {
         'repo-1': [
-          {
+          completeMakeWorktree({
             id: 'wt-1',
             repoId: 'repo-1',
             branch: 'refs/heads/feature/test',
             linkedPR: null,
             suppressedGitHubPR: 12
-          }
+          })
         ]
       },
       prCache: {
         'repo-1::feature/test': { data: makePR('failure'), fetchedAt: 2 }
       }
-    } as unknown as Pick<AppState, 'activeWorktreeId' | 'repos' | 'worktreesByRepo' | 'prCache'>
+    }
 
     expect(getActiveChecksStatus(state)).toBeNull()
   })
@@ -139,15 +136,17 @@ describe('getActiveChecksStatus caching', () => {
     clearActiveChecksStatusCacheForTests()
   })
 
-  function makeState(prCache: Record<string, unknown>) {
+  function makeState(prCache: AppState['prCache']) {
     return {
       activeWorktreeId: 'wt-1',
-      repos: [{ id: 'repo-1', path: '/repo' }],
+      repos: [completeMakeRepo({ id: 'repo-1', path: '/repo' })],
       worktreesByRepo: {
-        'repo-1': [{ id: 'wt-1', repoId: 'repo-1', branch: 'refs/heads/feature/test' }]
+        'repo-1': [
+          completeMakeWorktree({ id: 'wt-1', repoId: 'repo-1', branch: 'refs/heads/feature/test' })
+        ]
       },
       prCache
-    } as unknown as Pick<AppState, 'activeWorktreeId' | 'repos' | 'worktreesByRepo' | 'prCache'>
+    }
   }
 
   it('reuses the cached status when every input reference is unchanged', () => {

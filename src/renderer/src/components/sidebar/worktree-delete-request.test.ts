@@ -1,3 +1,4 @@
+import { makeWorktree as fixtureMakeWorktree } from '../../../../shared/worktree/worktree-test-fixture'
 /**
  * STA-4343: the confirmed row's host decides which workspace a batch delete
  * resolves to.
@@ -17,20 +18,20 @@ import {
   toWorktreeDeleteIdentities
 } from './worktree-delete-request'
 
-const SHARED_ID = 'repo-1::/work/orca'
+const SHARED_ID = 'repo-1::/work/alfred'
 const LOCAL: ExecutionHostId = 'local'
 const SSH: ExecutionHostId = 'ssh:build-box'
 
 function row(hostId: ExecutionHostId | undefined, overrides: Partial<Worktree> = {}): Worktree {
-  return {
+  return fixtureMakeWorktree({
     id: SHARED_ID,
     instanceId: `instance-${hostId ?? 'none'}`,
     repoId: 'repo-1',
-    path: '/work/orca',
+    path: '/work/alfred',
     isMainWorktree: false,
     ...(hostId ? { hostId } : {}),
     ...overrides
-  } as Worktree
+  })
 }
 
 /** Stands in for the store: every host's row for an id, resolved on the named host. */

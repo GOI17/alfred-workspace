@@ -1,3 +1,5 @@
+import { makeRepo as completeMakeRepo } from '../../../../shared/repo-test-fixture'
+import { makeWorktree as completeMakeWorktree } from '../../../../shared/worktree/worktree-test-fixture'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   createTestStore,
@@ -22,10 +24,10 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
     const worktreeId = 'wt-1'
 
     store.setState({
-      repos: [{ id: 'repo-1', path: repoPath, name: 'repo', kind: 'git' }],
+      repos: [completeMakeRepo({ id: 'repo-1', path: repoPath, displayName: 'repo', kind: 'git' })],
       worktreesByRepo: {
         'repo-1': [
-          {
+          completeMakeWorktree({
             id: worktreeId,
             repoId: 'repo-1',
             path: '/repo/worktrees/test',
@@ -34,7 +36,7 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
             isMainWorktree: false,
             isBare: false,
             isArchived: false
-          }
+          })
         ]
       },
       worktreeCardProperties: ['status', 'pr'],
@@ -44,7 +46,7 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
           fetchedAt: Date.now()
         }
       }
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().refreshGitHubForWorktreeIfStale(worktreeId)
 
@@ -72,10 +74,10 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
     })
 
     store.setState({
-      repos: [{ id: 'repo-1', path: repoPath, name: 'repo', kind: 'git' }],
+      repos: [completeMakeRepo({ id: 'repo-1', path: repoPath, displayName: 'repo', kind: 'git' })],
       worktreesByRepo: {
         'repo-1': [
-          {
+          completeMakeWorktree({
             id: worktreeId,
             repoId: 'repo-1',
             path: '/repo/worktrees/test',
@@ -84,10 +86,10 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
             isMainWorktree: false,
             isBare: false,
             isArchived: false
-          }
+          })
         ]
       }
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().enqueueGitHubPRRefresh(worktreeId, 'active', 80)
     await Promise.resolve()
@@ -105,7 +107,7 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
     mockApi.gh.enqueuePRRefresh.mockResolvedValueOnce({ kind: 'queued' })
 
     store.setState({
-      repos: [{ id: repoId, path: repoPath, name: 'repo', kind: 'git' }],
+      repos: [completeMakeRepo({ id: repoId, path: repoPath, displayName: 'repo', kind: 'git' })],
       worktreesByRepo: {
         [repoId]: [
           makePRRefreshWorktree({
@@ -128,7 +130,7 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
           fetchedAt: 1
         }
       }
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().enqueueGitHubPRRefresh(worktreeId, 'active', 80)
     await Promise.resolve()
@@ -157,10 +159,10 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
     mockApi.gh.refreshPRNow.mockResolvedValueOnce({ kind: 'no-pr', fetchedAt: 1 })
 
     store.setState({
-      repos: [{ id: 'repo-1', path: repoPath, name: 'repo', kind: 'git' }],
+      repos: [completeMakeRepo({ id: 'repo-1', path: repoPath, displayName: 'repo', kind: 'git' })],
       worktreesByRepo: {
         'repo-1': [
-          {
+          completeMakeWorktree({
             id: worktreeId,
             repoId: 'repo-1',
             path: '/repo/worktrees/test',
@@ -169,10 +171,10 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
             isMainWorktree: false,
             isBare: false,
             isArchived: false
-          }
+          })
         ]
       }
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().enqueueGitHubPRRefresh(worktreeId, 'active', 80)
     await Promise.resolve()
@@ -195,10 +197,10 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
     mockApi.gh.enqueuePRRefresh.mockRejectedValueOnce(error)
 
     store.setState({
-      repos: [{ id: 'repo-1', path: repoPath, name: 'repo', kind: 'git' }],
+      repos: [completeMakeRepo({ id: 'repo-1', path: repoPath, displayName: 'repo', kind: 'git' })],
       worktreesByRepo: {
         'repo-1': [
-          {
+          completeMakeWorktree({
             id: worktreeId,
             repoId: 'repo-1',
             path: '/repo/worktrees/test',
@@ -207,11 +209,11 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
             isMainWorktree: false,
             isBare: false,
             isArchived: false
-          }
+          })
         ]
       },
       worktreeCardProperties: ['status', 'pr']
-    } as unknown as Partial<AppState>)
+    })
 
     try {
       store.getState().refreshGitHubForWorktreeIfStale(worktreeId)
@@ -233,10 +235,10 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
     const hostedReviewCacheKey = getHostedReviewCacheKey(repoPath, branch, null, repoId)
 
     store.setState({
-      repos: [{ id: repoId, path: repoPath, name: 'repo', kind: 'git' }],
+      repos: [completeMakeRepo({ id: repoId, path: repoPath, displayName: 'repo', kind: 'git' })],
       worktreesByRepo: {
         [repoId]: [
-          {
+          completeMakeWorktree({
             id: worktreeId,
             repoId,
             path: '/repo/worktrees/test',
@@ -246,7 +248,7 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
             isBare: false,
             isArchived: false,
             linkedPR: null
-          }
+          })
         ]
       },
       worktreeCardProperties: ['status', 'pr'],
@@ -257,7 +259,7 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
             number: 44,
             title: 'Hosted review fallback PR',
             state: 'open',
-            url: 'https://github.com/acme/orca/pull/44',
+            url: 'https://github.com/acme/alfred/pull/44',
             status: 'pending',
             updatedAt: '2026-03-28T00:00:00Z',
             mergeable: 'UNKNOWN'
@@ -266,7 +268,7 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
           linkedReviewHintKey: 'github:44'
         }
       }
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().refreshGitHubForWorktreeIfStale(worktreeId)
 
@@ -288,14 +290,14 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
     const worktreeId = 'wt-1'
 
     store.setState({
-      repos: [{ id: 'repo-1', path: repoPath, name: 'repo', kind: 'git' }],
+      repos: [completeMakeRepo({ id: 'repo-1', path: repoPath, displayName: 'repo', kind: 'git' })],
       groupBy: 'repo',
       worktreeCardProperties: ['comment'],
       rightSidebarOpen: false,
       rightSidebarTab: 'source-control',
       worktreesByRepo: {
         'repo-1': [
-          {
+          completeMakeWorktree({
             id: worktreeId,
             repoId: 'repo-1',
             path: '/repo/worktrees/test',
@@ -304,10 +306,10 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
             isMainWorktree: false,
             isBare: false,
             isArchived: false
-          }
+          })
         ]
       }
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().refreshGitHubForWorktreeIfStale(worktreeId)
 
@@ -321,13 +323,13 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
     const worktreeId = 'wt-1'
 
     store.setState({
-      repos: [{ id: 'repo-1', path: repoPath, name: 'repo', kind: 'git' }],
+      repos: [completeMakeRepo({ id: 'repo-1', path: repoPath, displayName: 'repo', kind: 'git' })],
       groupBy: 'repo',
       worktreeCardProperties: ['comment'],
       rightSidebarOpen: false,
       worktreesByRepo: {
         'repo-1': [
-          {
+          completeMakeWorktree({
             id: worktreeId,
             repoId: 'repo-1',
             path: '/repo/worktrees/test',
@@ -337,10 +339,10 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
             isBare: false,
             isArchived: false,
             linkedIssue: 123
-          }
+          })
         ]
       }
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().refreshGitHubForWorktreeIfStale(worktreeId)
     await Promise.resolve()
@@ -355,13 +357,13 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
     const worktreeId = 'wt-1'
 
     store.setState({
-      repos: [{ id: 'repo-1', path: repoPath, name: 'repo', kind: 'git' }],
+      repos: [completeMakeRepo({ id: 'repo-1', path: repoPath, displayName: 'repo', kind: 'git' })],
       groupBy: 'repo',
       worktreeCardProperties: ['issue'],
       rightSidebarOpen: false,
       worktreesByRepo: {
         'repo-1': [
-          {
+          completeMakeWorktree({
             id: worktreeId,
             repoId: 'repo-1',
             path: '/repo/worktrees/test',
@@ -371,10 +373,10 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
             isBare: false,
             isArchived: false,
             linkedIssue: 123
-          }
+          })
         ]
       }
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().refreshGitHubForWorktreeIfStale(worktreeId)
     await Promise.resolve()
@@ -394,19 +396,21 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
 
     store.setState({
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo-1',
           path: repoPath,
-          name: 'repo',
+          displayName: 'repo',
           kind: 'git',
           connectionId: 'ssh-1'
-        }
+        })
       ],
       groupBy: 'pr-status',
-      sshConnectionStates: new Map([['ssh-1', { status: 'connected' }]]),
+      sshConnectionStates: new Map([
+        ['ssh-1', { targetId: 'ssh-1', status: 'connected', error: null, reconnectAttempt: 0 }]
+      ]),
       worktreesByRepo: {
         'repo-1': [
-          {
+          completeMakeWorktree({
             id: worktreeId,
             repoId: 'repo-1',
             path: '/repo/worktrees/test',
@@ -415,10 +419,10 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
             isMainWorktree: false,
             isBare: false,
             isArchived: false
-          }
+          })
         ]
       }
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().refreshGitHubForWorktreeIfStale(worktreeId)
 
@@ -441,7 +445,7 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
     const worktreeId = 'wt-1'
 
     store.setState({
-      repos: [{ id: 'repo-1', path: repoPath, name: 'repo', kind: 'git' }],
+      repos: [completeMakeRepo({ id: 'repo-1', path: repoPath, displayName: 'repo', kind: 'git' })],
       groupBy: 'repo',
       worktreeCardProperties: ['comment'],
       activeWorktreeId: worktreeId,
@@ -449,7 +453,7 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
       rightSidebarTab: 'source-control',
       worktreesByRepo: {
         'repo-1': [
-          {
+          completeMakeWorktree({
             id: worktreeId,
             repoId: 'repo-1',
             path: '/repo/worktrees/test',
@@ -458,10 +462,10 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
             isMainWorktree: false,
             isBare: false,
             isArchived: false
-          }
+          })
         ]
       }
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().refreshGitHubForWorktreeIfStale(worktreeId)
 
@@ -499,20 +503,21 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
     store.setState({
       settings: { activeRuntimeEnvironmentId: 'env-1' } as AppState['settings'],
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo-1',
           path: repoPath,
-          name: 'repo',
+          displayName: 'repo',
           kind: 'git',
           executionHostId: 'runtime:env-1'
-        }
+        })
       ],
       groupBy: 'pr-status',
       worktreeCardProperties: ['status'],
       worktreesByRepo: {
         'repo-1': [
-          {
+          completeMakeWorktree({
             id: worktreeId,
+            head: 'runtime-head',
             repoId: 'repo-1',
             path: '/repo/worktrees/runtime',
             branch,
@@ -521,10 +526,10 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
             isBare: false,
             isArchived: false,
             linkedPR: 12
-          }
+          })
         ]
       }
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().refreshGitHubForWorktreeIfStale(worktreeId)
     await new Promise((resolve) => setTimeout(resolve, 0))
@@ -537,7 +542,7 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
         repo: 'repo-1',
         branch,
         linkedPRNumber: 12,
-        currentHeadOid: null,
+        currentHeadOid: 'runtime-head',
         reason: 'active'
       },
       timeoutMs: 30_000
@@ -570,16 +575,16 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
     store.setState({
       settings: null,
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo-runtime',
           path: repoPath,
-          name: 'repo',
+          displayName: 'repo',
           kind: 'git',
           connectionId: null,
           executionHostId: 'runtime:env-1'
-        }
+        })
       ]
-    } as unknown as Partial<AppState>)
+    })
 
     await expect(
       store.getState().fetchPRForBranch(repoPath, branch, { repoId: 'repo-runtime' })
@@ -611,16 +616,16 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
     store.setState({
       settings: { activeRuntimeEnvironmentId: 'env-focused' } as AppState['settings'],
       repos: [
-        {
+        completeMakeRepo({
           id: 'repo-ssh',
           path: repoPath,
-          name: 'repo',
+          displayName: 'repo',
           kind: 'git',
           connectionId: 'ssh-1',
           executionHostId: 'ssh:ssh-1'
-        }
+        })
       ]
-    } as unknown as Partial<AppState>)
+    })
 
     await expect(
       store.getState().fetchPRForBranch(repoPath, branch, { repoId: 'repo-ssh' })
@@ -650,11 +655,11 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
     const worktreeId = 'wt-cached-pr'
 
     store.setState({
-      repos: [{ id: repoId, path: repoPath, name: 'repo', kind: 'git' }],
+      repos: [completeMakeRepo({ id: repoId, path: repoPath, displayName: 'repo', kind: 'git' })],
       groupBy: 'pr-status',
       worktreesByRepo: {
         [repoId]: [
-          {
+          completeMakeWorktree({
             id: worktreeId,
             repoId,
             path: '/repo/worktrees/cached-pr',
@@ -664,7 +669,7 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
             isBare: false,
             isArchived: false,
             linkedPR: null
-          }
+          })
         ]
       },
       prCache: {
@@ -673,7 +678,7 @@ describe('createGitHubSlice.refreshGitHubForWorktreeIfStale', () => {
           fetchedAt: 1
         }
       }
-    } as unknown as Partial<AppState>)
+    })
 
     store.getState().refreshGitHubForWorktreeIfStale(worktreeId)
 
