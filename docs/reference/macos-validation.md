@@ -93,11 +93,73 @@ execution, not a separate host, WAN reliability or other remote operating system
 
 ## Release prerequisites
 
-- Developer ID and notarization credentials: `APPLE_ID`,
-  `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID`, `CSC_LINK`, `CSC_KEY_PASSWORD`.
+- Apple Developer enrollment, a Developer ID Application certificate/private key,
+  and one notarization credential method from the signing section below.
 - A signed prior Alfred version and a signed candidate for an actual install,
   update and relaunch cycle with persisted settings and live work.
 - Alfred service configuration for pairing through the public relay; local
   loopback checks do not validate DNS, TLS, OAuth or deployed relay availability.
 - Real Keychain storage and permission dialogs require a separate interactive session.
 - Hardware/OS coverage beyond the local test machine must be recorded separately.
+
+## Signing and signed-update preparation
+
+On 2026-10-03 the owner confirmed that an Apple Developer account has not yet
+been created. No Developer ID Application identity or notarization credentials
+are configured on the validation Mac. Actual signing, Apple notarization and
+version-to-version installation have **not** been completed. The preparation
+passed 97 focused tests across five files and the changed-code quality gate.
+These tests simulate successful Apple checks and exercise rejection paths;
+a real ad-hoc package was also rejected by the artifact verifier as expected.
+
+First enroll the intended owner in the [Apple Developer Program](https://developer.apple.com/programs/enroll/),
+then obtain a [Developer ID Application certificate](https://developer.apple.com/developer-id/)
+with its private key. Use the same Apple team for both versions. Do not commit or
+paste certificates, private keys or passwords into the repository or chat.
+
+The release preflight supports these existing electron-builder credential paths:
+
+- Signing: an exported certificate through `CSC_LINK` and `CSC_KEY_PASSWORD`, or
+  an installed Developer ID Application selected explicitly with `CSC_NAME`.
+- Notarization: an interactive `notarytool` keychain profile, Apple ID plus an
+  app-specific password, or the three App Store Connect API key variables.
+- `APPLE_TEAM_ID` is required in every mode to verify the resulting signatures
+  against the intended owner, including when using an API key or keychain profile.
+
+For a local keychain setup, install the certificate and private key yourself,
+then run `xcrun notarytool store-credentials alfred-notary` interactively. Configure
+`APPLE_KEYCHAIN_PROFILE=alfred-notary`, `APPLE_TEAM_ID` and `CSC_NAME` in the build
+shell. Clear incomplete Apple ID/API variables: electron-builder gives those
+methods precedence over a keychain profile. See the
+[electron-builder notarization guide](https://www.electron.build/v26/docs/notarization/).
+
+`pnpm build:mac:release` checks the configuration before building, signs/notarizes,
+and runs `verify-macos-release-artifact.mjs` afterward. It explicitly uses
+`--publish never`. Verification requires the expected bundle ID, Apple team,
+Developer ID authority, secure timestamp, hardened runtime, arm64 executable,
+a valid stapled ticket and acceptance by enabled Gatekeeper. The three Alfred
+native helpers must also have Developer ID signatures from that team.
+
+Before trying an update, keep two notarized bundles with different versions and
+the candidate ZIP/manifests in separate directories. Check both bundles with:
+
+```sh
+node config/scripts/verify-macos-release-artifact.mjs \
+  '/path/to/candidate/Alfred workspace.app' \
+  '/path/to/previous/Alfred workspace.app'
+```
+
+In addition to checking each bundle, this asks `codesign` to verify that the
+candidate satisfies the previous application's designated signing requirement.
+This is a prerequisite check, **not evidence that an update was installed**.
+
+Once the credentials and both signed versions exist, the remaining acceptance
+run must use the actual updater on a disposable copy of the older app and an
+isolated profile. Seed settings, a folder workspace, a Git worktree, an unsaved
+draft and a live terminal; offer the newer ZIP through the existing local-build
+feed; install and relaunch; then verify the installed version, settings, draft,
+workspace recovery and terminal reconnection. Also check rejection of a damaged
+ZIP and a differently signed candidate. Keep native dialogs and foreground tests
+on a separate interactive session; automated app checks retain both background
+launch flags and mock-keychain isolation. This does not validate the user's real
+Keychain permissions.
