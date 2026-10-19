@@ -1,0 +1,56 @@
+.message-queue {
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  font-size: var(--text-xs);
+}
+.message-queue-heading,
+.message-queue li,
+.queue-send-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.message-queue-heading {
+  justify-content: space-between;
+}
+.message-queue ol {
+  max-height: 140px;
+  overflow-y: auto;
+  padding: 0;
+  margin: 4px 0 0;
+  list-style: none;
+}
+.message-queue li > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.message-queue li > button,
+.queue-send-actions > button {
+  flex-shrink: 0;
+}
+.composer-footer {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.queue-send-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+/* Match the centered message column and its avatar + gap indentation. */
+.messages .agent-progress {
+  max-width: 850px;
+  margin: 15px auto;
+  padding-inline-start: 41px;
+}
+@media (max-width: 700px) {
+  .messages .agent-progress {
+    padding-inline-start: 32px;
+  }
+}
