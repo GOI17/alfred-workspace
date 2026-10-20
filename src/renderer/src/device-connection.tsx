@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { QRCodeSVG } from 'qrcode.react'
 import { ArrowUpRight } from 'lucide-react'
 import { api, errorMessage } from './api'
 import { Button } from './components/ui/button'
@@ -9,6 +10,15 @@ export function Login({ connected }: { connected: () => Promise<void> }) {
   const [code, setCode] = useState(''),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.hash.slice(1))
+    const incoming = params.get('connectionCode')
+    if (!incoming) return
+    setCode(incoming)
+    params.delete('connectionCode')
+    const hash = params.toString()
+    window.history.replaceState(null, '', window.location.pathname + window.location.search + (hash ? '#' + hash : ''))
+  }, [])
   return (
     <div className="login-screen">
       <div className="login-card">
@@ -86,6 +96,24 @@ export function PhoneDialog({ onClose }: { onClose: () => void }) {
   const { tunnel, setTunnel, error, setError } = useTunnelStatus()
   const [busy, setBusy] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
+  const [pairing, setPairing] = useState<{ url: string; expiresAt: number }>()
+  const [pairingError, setPairingError] = useState('')
+  const [generation, setGeneration] = useState(0)
+  useEffect(() => {
+    setPairing(undefined)
+    setPairingError('')
+    if (tunnel?.state !== 'connected') return
+    const controller = new AbortController()
+    let timer: ReturnType<typeof setTimeout>
+    void api<{ url: string; expiresAt: number }>('/connection/pairing', {}, 'POST', controller.signal)
+      .then((result) => {
+        if (controller.signal.aborted) return
+        setPairing(result)
+        timer = setTimeout(() => setPairing(undefined), Math.max(0, result.expiresAt - Date.now()))
+      })
+      .catch((error) => { if (!controller.signal.aborted) setPairingError(errorMessage(error)) })
+    return () => { controller.abort(); clearTimeout(timer) }
+  }, [tunnel?.state, generation])
   async function change(connect: boolean) {
     setBusy(true)
     setError('')
@@ -104,6 +132,18 @@ export function PhoneDialog({ onClose }: { onClose: () => void }) {
       ) : tunnel && (
         <>
           {tunnel.url && <p><a className="text-link" href={tunnel.url} target="_blank" rel="noreferrer">{tunnel.url}</a></p>}
+          {tunnel.state === 'connected' && (
+            <section aria-label="Pair your phone" style={{ display: 'grid', justifyItems: 'center', gap: 12 }}>
+              {pairing ? <>
+                <div style={{ background: '#fff', padding: 16, borderRadius: 12 }}>
+                  <QRCodeSVG value={pairing.url} size={208} marginSize={2} title="Scan to connect to Alfred" />
+                </div>
+                <p className="field-note">Scan with your phone camera. The connection code is filled in automatically; tap Enter my workspace to connect. This QR expires in 5 minutes and works once. Do not share it.</p>
+              </> : <p role="status">Generate a new QR if it expired or was already used.</p>}
+              {pairingError && <p className="error-text" role="alert">{pairingError}</p>}
+              <Button variant="secondary" onClick={() => setGeneration((value) => value + 1)}>Generate new QR</Button>
+            </section>
+          )}
           <p className="field-note">The computer must remain on. Sign in on your phone with the Alfred code. Closing this dialog does not disconnect the tunnel.</p>
           {['stopped', 'error'].includes(tunnel.state) && (
             <label style={{ gridTemplateColumns: '20px minmax(0, 1fr)', alignItems: 'start', gap: '10px', cursor: 'pointer' }}>

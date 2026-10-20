@@ -19,11 +19,12 @@ export async function authentication(app: FastifyInstance, token: string, public
   // Store only hashes of independent, revocable bearer tokens. Restarting the
   // server deliberately requires devices to authenticate again.
   const sessions = new Map<string, number>()
+  const pairingCodes = new Map<string, number>()
   const prune = () => {
     const now = Date.now()
     for (const [key, expires] of sessions) if (expires <= now) sessions.delete(key)
   }
-  app.addHook('onClose', async () => { sessions.clear() })
+  app.addHook('onClose', async () => { sessions.clear(); pairingCodes.clear() })
   app.addHook('onRequest', async (request, reply) => {
     reply
       .header('X-Content-Type-Options', 'nosniff')
@@ -47,18 +48,36 @@ export async function authentication(app: FastifyInstance, token: string, public
       return reply.code(401).send({ error: 'Connect this device using the server code.' })
     }
   })
+  // Authenticated devices can issue a short-lived, single-use pairing code.
+  app.post('/api/connection/pairing', {
+    config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
+  }, async (_request, reply) => {
+    if (!publicOrigin) return reply.code(409).send({ error: 'Public access is not configured.' })
+    for (const [key, expires] of pairingCodes) if (expires <= Date.now()) pairingCodes.delete(key)
+    if (pairingCodes.size >= 100) return reply.code(429).send({ error: 'Too many pending pairing codes.' })
+    const code = randomBytes(32).toString('hex')
+    const expiresAt = Date.now() + 5 * 60 * 1000
+    pairingCodes.set(sessionKey(code), expiresAt)
+    const url = new URL(publicOrigin)
+    url.hash = new URLSearchParams({ connectionCode: code }).toString()
+    return { url: url.toString(), expiresAt }
+  })
   app.post(
     '/api/auth',
     { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } },
     async (request, reply) => {
       const { code } = z.object({ code: z.string().max(200) }).parse(request.body)
-      if (!matches(code, token)) return reply.code(401).send({ error: 'Incorrect code.' })
+      const pairingKey = sessionKey(code)
+      const pairingExpiry = pairingCodes.get(pairingKey)
+      const paired = pairingExpiry !== undefined && pairingExpiry > Date.now()
+      if (!matches(code, token) && !paired) return reply.code(401).send({ error: 'Incorrect or expired code.' })
       prune()
       const previous = request.cookies.alfred_session
       if (previous) sessions.delete(sessionKey(previous))
       // Bound memory without silently revoking other active devices.
       if (sessions.size >= 1000)
         return reply.code(429).send({ error: 'Too many active sessions. Sign out on another device.' })
+      if (paired) pairingCodes.delete(pairingKey)
       const session = randomBytes(32).toString('hex')
       sessions.set(sessionKey(session), Date.now() + lifetime * 1000)
       reply.setCookie('alfred_session', session, {
