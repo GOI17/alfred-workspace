@@ -1,32 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
-import {
-  GitCommitHorizontal,
-  GitBranch,
-  RefreshCw,
-  ChevronLeft,
-  ChevronRight,
-  Check,
-  Plus,
-  FileText,
-  Download,
-  GitMerge,
-  Search,
-} from 'lucide-react'
+import { GitCommitHorizontal, GitBranch, RefreshCw, ChevronLeft, ChevronRight, Check, Plus, FileText, Download, Upload, GitMerge, Search } from 'lucide-react'
 import type { GitHistory } from '../../shared/contracts'
 import { api, errorMessage } from './api'
 import { Button } from './components/ui/button'
 import { useUI } from './ui-preferences'
 import { GitFileGroup, GitDiff, useGitDiff } from './git-review'
 import './assets/git-panel.css'
-
 type Details = { branches: string[]; conflicts: string[] }
 type Section = 'changes' | 'history' | 'branches'
-
 // Reset repository-specific drafts and requests when the conversation changes.
 export function GitPanel({ conversationId }: { conversationId: string }) {
   return <RepositoryPanel key={conversationId} conversationId={conversationId} />
 }
-
 function RepositoryPanel({ conversationId }: { conversationId: string }) {
   const { t, language } = useUI()
   const [history, setHistory] = useState<GitHistory>()
@@ -45,9 +30,7 @@ function RepositoryPanel({ conversationId }: { conversationId: string }) {
   const [output, setOutput] = useState('')
   const [query, setQuery] = useState('')
   const endpoint = `/conversations/${conversationId}`
-
   const { diff, diffError } = useGitDiff(endpoint, revision, refresh)
-
   async function act(body: Record<string, string>) {
     if (actionLock.current || loading) return
     actionLock.current = true
@@ -72,7 +55,6 @@ function RepositoryPanel({ conversationId }: { conversationId: string }) {
       setRefresh((value) => value + 1)
     }
   }
-
   useEffect(() => {
     let current = true
     setLoading(true)
@@ -99,7 +81,6 @@ function RepositoryPanel({ conversationId }: { conversationId: string }) {
       current = false
     }
   }, [endpoint, skip, refresh])
-
   const changes = history?.changes || []
   const conflicted = (path: string) => details?.conflicts.includes(path) || false
   const staged = changes.filter(
@@ -119,7 +100,6 @@ function RepositoryPanel({ conversationId }: { conversationId: string }) {
     setError('')
     setRefresh((value) => value + 1)
   }
-
   return (
     <div className="git-panel git-workbench">
       <header className="git-repository-header">
@@ -174,6 +154,16 @@ function RepositoryPanel({ conversationId }: { conversationId: string }) {
         >
           <Download size={14} />
           Pull
+        </Button>
+        <Button
+          variant="ghost"
+          size="small"
+          disabled={locked}
+          title={t('Push commits to the configured remote', 'Enviar commits al remoto configurado')}
+          onClick={() => void act({ action: 'push' })}
+        >
+          <Upload size={14} />
+          Push
         </Button>
       </div>
       <nav className="git-section-nav" aria-label={t('Git views', 'Vistas de Git')}>

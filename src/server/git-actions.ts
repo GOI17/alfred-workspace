@@ -9,6 +9,7 @@ const schema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('branch'), name: z.string().trim().min(1).max(150) }),
   z.object({ action: z.literal('fetch') }),
   z.object({ action: z.literal('pull') }),
+  z.object({ action: z.literal('push') }),
   z.object({ action: z.literal('merge'), branch: z.string().min(1).max(250) }),
   z.object({ action: z.literal('stage'), path: z.string().min(1).max(4000) }),
   z.object({ action: z.literal('resolve'), path: z.string().min(1).max(4000) }),
@@ -44,6 +45,7 @@ export async function gitAction(root: string, input: unknown) {
     await git(root, ['check-ref-format', '--branch', body.name])
     return git(root, ['switch', '-c', body.name])
   }
+  if (body.action === 'push') return git(root, ['push'])
   if (body.action === 'fetch') return git(root, ['fetch', '--all'])
   if (body.action === 'pull') return git(root, ['-c', 'core.editor=true', 'pull', '--ff-only'])
   if (body.action === 'merge') {
