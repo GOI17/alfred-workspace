@@ -1,5 +1,6 @@
 import { copilotRoutes } from './copilot.js'
 import { revealFileRoutes } from './reveal-file.js'
+import { subagentRoutes } from './subagents.js'
 import { listWorkspaceFiles } from './workspace-files.js'
 import Fastify from 'fastify'
 import { cloudflareRoutes, type TunnelConfig } from './cloudflare.js'
@@ -44,6 +45,7 @@ export async function createApp(options: {
   })
   await app.register(websocket, { options: { maxPayload: 250_000 } })
   await authentication(app, options.token, options.tunnel?.origin)
+  subagentRoutes(app, service)
   cloudflareRoutes(app, options.tunnel)
   chatgptRoutes(app, service)
   copilotRoutes(app, service)

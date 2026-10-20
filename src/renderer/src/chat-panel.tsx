@@ -6,6 +6,7 @@ import { api, errorMessage } from './api'
 import { Button } from './components/ui/button'
 import { ComposerInput } from './composer-input'
 import { ModelPicker } from './model-picker'
+import { SubagentsPanel } from './subagents-panel'
 import { MessageNavigation } from './message-navigation'
 import { ContextPermissions } from './context-permissions'
 import { useUI } from './ui-preferences'
@@ -161,6 +162,7 @@ function ConversationChat({ conversation, state, agent, settings }: Props) {
               {message.notes.length > 0 && <details className="tool-notes"><summary>{t('Activity', 'Actividad')} · {message.notes.length}</summary>{message.notes.map((note, index) => <p key={index}>{note}</p>)}</details>}
             </div>
           </article>)}
+          <SubagentsPanel projections={conversation.subagents} />
           {agent?.status === 'running' && <div className="agent-progress"><span className="status-dot" data-status="running" />{t('Alfred is working…', 'Alfred está trabajando…')}</div>}
           {agent?.approval && <ApprovalCard key={agent.approval.id} approval={agent.approval} conversationId={conversation.id} onError={setError} />}
         </div>
