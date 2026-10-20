@@ -37,7 +37,7 @@
 .space-icon:hover { background: var(--sidebar-active); color: var(--sidebar-foreground); }
 .space-icon[data-active='true'] { background: #ffffff17; color: #fff; }
 .space-icon[data-active='true']::after { content: ''; position: absolute; bottom: 2px; width: 3px; height: 3px; border-radius: 50%; background: currentColor; }
-.space-dock-tooltip { position: fixed; transform: translate(-50%, -100%); width: max-content; max-width: min(240px, calc(100vw - 16px)); overflow-wrap: anywhere; padding: 9px 12px; background: var(--surface); color: var(--foreground); border: 1px solid var(--border); border-radius: 8px; font-size: 12px; z-index: 1000; pointer-events: none; box-shadow: 0 6px 20px var(--overlay); }
+.space-dock-tooltip { position: fixed; transform: translateY(-100%); width: max-content; max-width: min(240px, calc(100vw - 16px)); overflow-wrap: anywhere; padding: 9px 12px; background: var(--surface); color: var(--foreground); border: 1px solid var(--border); border-radius: 8px; font-size: 12px; z-index: 1000; pointer-events: none; box-shadow: 0 6px 20px var(--overlay); }
 .space-add { margin-left: auto; }
 .space-initial { position: absolute; right: 3px; bottom: 6px; font-size: 8px; font-weight: 700; line-height: 1; }
 .space-icon .status-dot { position: absolute; top: 3px; right: 3px; }

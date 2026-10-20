@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import { FolderPlus, GitBranch, Plus, Settings2, X, PanelLeftClose, ChevronDown, Pin } from 'lucide-react'
 import type { Conversation, Project, PublicState, Worktree } from '../../shared/contracts'
@@ -35,12 +35,20 @@ export function Sidebar({ state, project, conversation, worktrees, workspacePath
 }) {
   const { t } = useUI()
   const [dockTooltip, setDockTooltip] = useState<{ label: string; x: number; y: number } | null>(null)
+  const dockTooltipRef = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const element = dockTooltipRef.current
+    if (!element || !dockTooltip) return
+    const width = element.getBoundingClientRect().width
+    const left = Math.max(8, Math.min(window.innerWidth - width - 8, dockTooltip.x - width / 2))
+    element.style.left = `${left}px`
+  }, [dockTooltip])
   function showDockTooltip(target: EventTarget) {
     if (!(target instanceof Element)) return
     const button = target.closest<HTMLButtonElement>('.space-icon')
     if (!button) { setDockTooltip(null); return }
     const rect = button.getBoundingClientRect()
-    setDockTooltip({ label: button.getAttribute('aria-label') || '', x: Math.max(128, Math.min(window.innerWidth - 128, rect.left + rect.width / 2)), y: rect.top - 10 })
+    setDockTooltip({ label: button.getAttribute('aria-label') || '', x: rect.left + rect.width / 2, y: rect.top - 10 })
   }
   useEffect(() => {
     const dismiss = () => setDockTooltip(null)
@@ -161,7 +169,7 @@ export function Sidebar({ state, project, conversation, worktrees, workspacePath
         <button className="space-icon space-add" onClick={addProject} aria-label={t('Add space', 'Agregar espacio')}><Plus size={22} /></button>
       </div>
     </aside>
-    {dockTooltip && createPortal(<div className="space-dock-tooltip" role="tooltip" style={{ left: dockTooltip.x, top: dockTooltip.y }}>{dockTooltip.label}</div>, document.body)}
+    {dockTooltip && createPortal(<div ref={dockTooltipRef} className="space-dock-tooltip" role="tooltip" style={{ left: dockTooltip.x, top: dockTooltip.y }}>{dockTooltip.label}</div>, document.body)}
     {overview && <Dialog open onClose={() => setOverview(false)} title={t('Your spaces', 'Tus espacios')} description={t('Switch projects without losing your draft or reading position.', 'Cambia de proyecto sin perder tu borrador ni tu posición de lectura.')}>
       <div className="space-overview-list">{state.projects.map((item) => <button key={item.id} aria-pressed={project?.id === item.id} onClick={() => { setOverview(false); if (project?.id !== item.id) selectProject(item.id) }}>
         <span className="space-overview-symbol" style={{ background: spaceColor(item.id) }} aria-hidden="true">{spaceSymbols[spaceIndex(item.id) % spaceSymbols.length]}</span>
