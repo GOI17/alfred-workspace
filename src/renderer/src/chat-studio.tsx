@@ -1,37 +1,20 @@
-import { useState, type ComponentProps } from 'react'
-import { ExternalLink } from 'lucide-react'
+import { useState, type Dispatch, type SetStateAction, type ComponentProps } from 'react'
 import { ChatPanel } from './chat-panel'
 import { ChatDeck } from './chat-deck'
-import { Button } from './components/ui/button'
 import { useUI } from './ui-preferences'
 
-export function ChatStudio(props: ComponentProps<typeof ChatPanel>) {
-  return <ChatDeck key={props.conversation.id} conversation={props.conversation} conversations={props.state.conversations} render={(conversation) => <StudioContent {...props} conversation={conversation} agent={props.state.agents[conversation.id]} />} />
+export function ChatStudio({ floatingIds, setFloatingIds, onActiveChatChange, ...props }: ComponentProps<typeof ChatPanel> & { onActiveChatChange?: (id: string) => void; floatingIds?: string[]; setFloatingIds?: Dispatch<SetStateAction<string[]>> }) {
+  return <ChatDeck onActiveChatChange={onActiveChatChange} floatingIds={floatingIds} setFloatingIds={setFloatingIds} key={props.conversation.id} conversation={props.conversation} conversations={props.state.conversations} render={(conversation) => <StudioContent {...props} conversation={conversation} agent={props.state.agents[conversation.id]} />} />
 }
 
 /** Only summarize recorded activity; notes are not evidence of saved files. */
 function StudioContent(props: ComponentProps<typeof ChatPanel>) {
   const { t } = useUI()
   const [open, setOpen] = useState(true)
-  const [popupBlocked, setPopupBlocked] = useState(false)
   const { conversation, agent } = props
-  function openWindow() {
-    const url = new URL(window.location.href)
-    url.search = ''
-    url.hash = ''
-    url.searchParams.set('chatWindow', conversation.id)
-    // Named windows avoid creating duplicates for repeated clicks on the same chat.
-    const popup = window.open(url.href, `alfred-chat-${conversation.id}`, 'popup=yes,width=720,height=900,resizable=yes,scrollbars=yes')
-    setPopupBlocked(!popup)
-    popup?.focus()
-  }
   const notes = conversation.messages.flatMap((message) => message.notes.map((text, index) => ({ text, key: `${message.id}:${index}` }))).slice(-30)
   return <div className="chat-studio" data-inspector-open={open}>
     <div className="studio-chat">
-      <div style={{ display: 'flex', justifyContent: 'flex-end', flexShrink: 0 }}>
-        <Button variant="ghost" size="small" onClick={openWindow} title={t('Open an independent browser window', 'Abrir una ventana independiente del navegador')}><ExternalLink size={15} />{t('Open in separate window', 'Abrir en ventana independiente')}</Button>
-      </div>
-      {popupBlocked && <p role="alert" className="error-text">{t('Allow pop-ups for Alfred and try again.', 'Permite las ventanas emergentes de Alfred y vuelve a intentarlo.')}</p>}
       <ChatPanel {...props} />
     </div>
     <aside className="studio-inspector" aria-label={t('Changes and activity', 'Cambios y actividad')}>

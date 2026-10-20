@@ -1,4 +1,5 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { createPortal } from 'react-dom'
 import { FolderPlus, GitBranch, Plus, Settings2, X, PanelLeftClose, ChevronDown, Pin } from 'lucide-react'
 import type { Conversation, Project, PublicState, Worktree } from '../../shared/contracts'
 import { Button } from './components/ui/button'
@@ -33,6 +34,37 @@ export function Sidebar({ state, project, conversation, worktrees, workspacePath
   removeConversation: (id: string) => void; removeWorktree: (path: string) => void; settings: () => void; close: () => void
 }) {
   const { t } = useUI()
+  const [dockTooltip, setDockTooltip] = useState<{ label: string; x: number; y: number } | null>(null)
+  function showDockTooltip(target: EventTarget) {
+    if (!(target instanceof Element)) return
+    const button = target.closest<HTMLButtonElement>('.space-icon')
+    if (!button) { setDockTooltip(null); return }
+    const rect = button.getBoundingClientRect()
+    setDockTooltip({ label: button.getAttribute('aria-label') || '', x: Math.max(128, Math.min(window.innerWidth - 128, rect.left + rect.width / 2)), y: rect.top - 10 })
+  }
+  useEffect(() => {
+    const dismiss = () => setDockTooltip(null)
+    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') dismiss() }
+    window.addEventListener('resize', dismiss)
+    window.addEventListener('scroll', dismiss, true)
+    window.addEventListener('keydown', escape)
+    return () => {
+      window.removeEventListener('resize', dismiss)
+      window.removeEventListener('scroll', dismiss, true)
+      window.removeEventListener('keydown', escape)
+    }
+  }, [])
+  const conversationList = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const list = conversationList.current
+    const row = list?.querySelector<HTMLElement>('.conversation-row[data-active="true"]')
+    if (!list || !row) return
+    const bounds = list.getBoundingClientRect()
+    const item = row.getBoundingClientRect()
+    // Scroll only the list, without moving the canvas or stealing composer focus.
+    if (item.top < bounds.top) list.scrollTop += item.top - bounds.top
+    else if (item.bottom > bounds.bottom) list.scrollTop += item.bottom - bounds.bottom
+  }, [conversation?.id, mobileOpen])
   const [overview, setOverview] = useState(false)
   const [pins, setPins] = useState<string[]>(() => {
     try { const value: unknown = JSON.parse(localStorage.getItem('alfred.pinnedConversations') || '[]'); return Array.isArray(value) ? value.filter((id): id is string => typeof id === 'string') : [] } catch { return [] }
@@ -98,7 +130,7 @@ export function Sidebar({ state, project, conversation, worktrees, workspacePath
           </details>
           <button className="new-conversation" onClick={addConversation}><Plus size={16} />{t('New conversation', 'Nueva conversación')}</button>
           <div className="spaces-heading"><span>{t('Conversations', 'Conversaciones')}</span><span>{conversations.length}</span></div>
-          <nav className="conversation-list" aria-label={t('Conversations', 'Conversaciones')}>
+          <nav ref={conversationList} className="conversation-list" aria-label={t('Conversations', 'Conversaciones')}>
             {groups.filter((group) => group.items.length > 0).map((group) => <section key={group.key} aria-label={group.label} data-conversation-group={group.key}>
               <h3 className="spaces-heading" style={{ margin: '16px 0 6px', fontSize: 11, fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase' }}>{group.label}</h3>
               {group.items.map((item) => <div key={item.id} className="conversation-row" data-active={conversation?.id === item.id}>
@@ -115,9 +147,9 @@ export function Sidebar({ state, project, conversation, worktrees, workspacePath
         </> : <button className="project-item" onClick={addProject}><FolderPlus size={18} /><span>{t('Your first space', 'Tu primer espacio')}</span></button>}
       </div>
       {!connected && <p className="sidebar-connection" role="status">{t('Reconnecting…', 'Reconectando…')}</p>}
-      <div className="space-dock">
+      <div className="space-dock" onMouseOver={(event) => showDockTooltip(event.target)} onMouseLeave={() => setDockTooltip(null)} onFocus={(event) => showDockTooltip(event.target)} onBlur={() => setDockTooltip(null)} onClick={() => setDockTooltip(null)}>
         <nav className="space-switcher" aria-label={t('Spaces', 'Espacios')}>
-          {state.projects.map((item, index) => <button key={item.id} className="space-icon" data-active={project?.id === item.id} aria-pressed={project?.id === item.id} aria-label={item.name} title={item.name} onClick={() => { if (project?.id !== item.id) selectProject(item.id) }} onKeyDown={(event) => {
+          {state.projects.map((item, index) => <button key={item.id} className="space-icon" data-active={project?.id === item.id} aria-pressed={project?.id === item.id} aria-label={item.name} onClick={() => { if (project?.id !== item.id) selectProject(item.id) }} onKeyDown={(event) => {
             const next = event.key === 'ArrowRight' ? (index + 1) % state.projects.length : event.key === 'ArrowLeft' ? (index - 1 + state.projects.length) % state.projects.length : event.key === 'Home' ? 0 : event.key === 'End' ? state.projects.length - 1 : undefined
             if (next !== undefined) { event.preventDefault(); event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('button')[next]?.focus() }
           }}>
@@ -126,9 +158,10 @@ export function Sidebar({ state, project, conversation, worktrees, workspacePath
             {connected && state.conversations.some((chat) => chat.projectId === item.id && state.agents[chat.id]?.status === 'running') && <span className="status-dot" data-status="running" />}
           </button>)}
         </nav>
-        <button className="space-icon space-add" onClick={addProject} aria-label={t('Add space', 'Agregar espacio')} title={t('Add space', 'Agregar espacio')}><Plus size={22} /></button>
+        <button className="space-icon space-add" onClick={addProject} aria-label={t('Add space', 'Agregar espacio')}><Plus size={22} /></button>
       </div>
     </aside>
+    {dockTooltip && createPortal(<div className="space-dock-tooltip" role="tooltip" style={{ left: dockTooltip.x, top: dockTooltip.y }}>{dockTooltip.label}</div>, document.body)}
     {overview && <Dialog open onClose={() => setOverview(false)} title={t('Your spaces', 'Tus espacios')} description={t('Switch projects without losing your draft or reading position.', 'Cambia de proyecto sin perder tu borrador ni tu posición de lectura.')}>
       <div className="space-overview-list">{state.projects.map((item) => <button key={item.id} aria-pressed={project?.id === item.id} onClick={() => { setOverview(false); if (project?.id !== item.id) selectProject(item.id) }}>
         <span className="space-overview-symbol" style={{ background: spaceColor(item.id) }} aria-hidden="true">{spaceSymbols[spaceIndex(item.id) % spaceSymbols.length]}</span>

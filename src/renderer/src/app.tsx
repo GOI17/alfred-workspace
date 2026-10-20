@@ -1,5 +1,6 @@
+import { layoutKey, stringList, usePersistentLayout } from './use-persistent-layout'
 import { ActivityCenter } from './activity-center'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowUpRight, FolderPlus, GitBranch, Globe, Menu, MessageSquare, Plus, Smartphone, TerminalSquare, Columns2, Sparkles, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import type { Conversation, Layout, Worktree } from '../../shared/contracts'
 import { panes } from '../../shared/contracts'
@@ -36,6 +37,9 @@ export function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(localStorage.getItem('alfred.sidebarCollapsed') === 'true')
   const [workspacePath, setWorkspacePath] = useState(''), [worktrees, setWorktrees] = useState<Worktree[]>([]), [treeVersion, setTreeVersion] = useState(0)
   const recallSpace = useSpaceMemory(state, projectId, conversationId, workspacePath)
+  const [focusedChatId, setFocusedChatId] = useState('')
+  const [savedFloatingIds, setFloatingIds] = usePersistentLayout<string[]>(layoutKey(projectId, workspacePath, 'floating'), [], stringList)
+  const floatingIds = useMemo(() => savedFloatingIds.filter((id) => state?.conversations.some((item) => item.id === id && item.projectId === projectId && item.workspacePath === workspacePath)), [savedFloatingIds, state?.conversations, projectId, workspacePath])
   function selectSpace(id: string) {
     const saved = recallSpace(id)
     setProjectId(id); setWorkspacePath(saved.workspacePath); setConversationId(saved.conversationId); setActivePane(''); setMobileOpen(false)
@@ -153,10 +157,14 @@ export function App() {
   if (!authenticated || !state) return <Login connected={refresh} />
   return <div className="app-shell" data-sidebar-collapsed={sidebarCollapsed}>
     <div id="workspace-sidebar" className="workspace-sidebar-container">
-      <Sidebar state={state} project={project} conversation={conversation} worktrees={worktrees} workspacePath={workspacePath} connected={connected} mobileOpen={mobileOpen}
+      <Sidebar state={state} project={project} conversation={(floatingIds.length ? state.conversations.find((item) => item.id === focusedChatId && item.projectId === projectId && item.workspacePath === workspacePath) : undefined) || conversation} worktrees={worktrees} workspacePath={workspacePath} connected={connected} mobileOpen={mobileOpen}
         close={() => setMobileOpen(false)} selectProject={selectSpace}
         selectWorkspace={(path) => { setWorkspacePath(path); setConversationId(state.conversations.find((item) => item.projectId === projectId && item.workspacePath === path)?.id || '') }}
-        selectConversation={(id) => { setConversationId(id); setMobileOpen(false) }} addProject={addProject} addConversation={() => void newConversation()}
+        selectConversation={(id) => {
+          if (floatingIds.length) setFloatingIds((current) => [...current.filter((item) => item !== id), id])
+          else setConversationId(id)
+          setMobileOpen(false)
+        }} addProject={addProject} addConversation={() => void newConversation()}
         addWorktree={() => setDialog('worktree')} settings={() => { setMobileOpen(false); setDialog('settings') }}
         removeProject={() => { if (project) setConfirmation({ title: `${t('Remove', 'Eliminar')} ${project.name}`, description: t('Its conversations will be removed from Alfred and its sessions closed. The folder, files, and worktrees will remain on disk.', 'Se eliminarán sus conversaciones de Alfred y se cerrarán sus sesiones. La carpeta, los archivos y los worktrees permanecerán en el disco.'), perform: async () => { await api(`/projects/${project.id}`, undefined, 'DELETE'); await refresh() } }) }}
         removeConversation={(id) => setConfirmation({ title: t('Delete conversation', 'Eliminar conversación'), description: t('This conversation history will be deleted and its panels and sessions closed.', 'Se eliminará el historial de esta conversación y se cerrarán sus paneles y sesiones.'), perform: async () => { await api(`/conversations/${id}`, undefined, 'DELETE'); await refresh() } })}
@@ -169,7 +177,7 @@ export function App() {
         <span className="mobile-only"><Button variant="ghost" size="icon" aria-label={t('Open spaces', 'Abrir espacios')} aria-controls="workspace-sidebar" aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}><Menu size={19} /></Button></span>
         <div className="workspace-heading-context">
           <div className="workspace-breadcrumb"><span className="breadcrumb-project" title={project?.name}>{project?.name || t('Welcome to Alfred', 'Bienvenido a Alfred')}</span>{project && <><span className="breadcrumb-slash">/</span><GitBranch size={13} /><span className="breadcrumb-branch" title={workspacePath}>{worktrees.find((tree) => tree.path === workspacePath)?.branch || t('Workspace', 'Espacio')}</span></>}</div>
-          {conversation && <div className="conversation-title"><span title={conversation.title}>{conversation.title}</span></div>}
+          {conversation && !floatingIds.length && <div className="conversation-title"><span title={conversation.title}>{conversation.title}</span></div>}
         </div>
         <div className="panel-tools">
           <ActivityCenter state={state} connected={connected} select={openConversation} />
@@ -186,7 +194,7 @@ export function App() {
       {error && <div className="app-error" role="alert"><span>{error}</span><Button variant="ghost" size="small" onClick={() => setError('')}>{t('Close', 'Cerrar')}</Button></div>}
       {selecting && <div className="connection-banner" role="status">{t('Select a folder in the system dialog…', 'Selecciona una carpeta en el diálogo del sistema…')}</div>}
       {!connected && <div className="connection-banner" role="status">{t('Disconnected from the server. Agent status cannot be verified.', 'Desconectado del servidor. No se puede verificar el estado del agente.')}</div>}
-      {conversation ? <PanelLayout mobile={mobile} key={conversation.id} conversation={conversation} state={state} active={activePane} setActive={setActivePane} update={updateLayout} settings={() => setDialog('settings')} visible={tools.visible} toggle={toggleTool} maximized={tools.maximized && (!mobile || tools.maximized === 'git') && panes(conversation.layout).some((pane) => pane.kind === tools.maximized) ? tools.maximized : null} maximize={maximizeTool} addTerminal={() => addTool('terminal')} busy={busy} />
+      {conversation ? <PanelLayout onActiveChatChange={setFocusedChatId} floatingIds={floatingIds} setFloatingIds={setFloatingIds} mobile={mobile} key={conversation.id} conversation={conversation} state={state} active={activePane} setActive={setActivePane} update={updateLayout} settings={() => setDialog('settings')} visible={tools.visible} toggle={toggleTool} maximized={tools.maximized && (!mobile || tools.maximized === 'git') && panes(conversation.layout).some((pane) => pane.kind === tools.maximized) ? tools.maximized : null} maximize={maximizeTool} addTerminal={() => addTool('terminal')} busy={busy} />
         : <div className="start-screen">
           <div className="start-orbit"><span className="brand-mark">a<span>·</span></span><span className="orbit-symbol orbit-one"><MessageSquare size={20} /></span><span className="orbit-symbol orbit-two"><GitBranch size={20} /></span><span className="orbit-symbol orbit-three"><TerminalSquare size={20} /></span></div>
           <p className="eyebrow">{t('LESS NOISE. MORE SPACE.', 'MENOS RUIDO. MÁS ESPACIO.')}</p><h1>{project ? t('Your next step starts here.', 'Tu siguiente paso empieza aquí.') : t('A place for your ideas.', 'Un lugar para tus ideas.')}</h1>

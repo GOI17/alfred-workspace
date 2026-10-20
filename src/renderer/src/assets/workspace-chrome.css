@@ -141,6 +141,18 @@
       visibility 0s, box-shadow 280ms;
   }
 
+  /* Docked panes share a straight seam; rounded facing corners leave a
+     visible notch between the space color and the workspace surface. */
+  .app-shell[data-sidebar-collapsed='false'] .workspace-sidebar-container > .sidebar {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .app-shell[data-sidebar-collapsed='false'] > .main-workspace {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
   .app-shell[data-sidebar-collapsed='true'] .workspace-sidebar-container {
     width: 9px;
   }

@@ -35,6 +35,7 @@ test.beforeEach(async ({ page }) => {
     })),
     queue: [], queuePaused: false, compaction: undefined,
   }))
+  conversations.push({ ...conversations[0], id: 'ui-chat-extra', title: 'Second workspace chat' })
   const fixture = { ...base, projects, conversations, agents: {} }
   await page.route('**/api/state', (route) => route.fulfill({ json: fixture }))
   await page.route('**/api/events', (route) => route.fulfill({ contentType: 'text/event-stream', body: `event: state\ndata: ${JSON.stringify(fixture)}\n\n` }))
@@ -104,4 +105,61 @@ test('theme and language live in settings, persist and follow system appearance'
   await expect(page.getByLabel('Mensaje para Alfred')).toBeVisible()
   await sidebar(page)
   await expect(page.getByRole('button', { name: 'Agregar espacio', exact: true })).toBeVisible()
+})
+
+test('composer controls share geometry in both themes and narrow panes', async ({ page }, testInfo) => {
+  const expectedSize = testInfo.project.name === 'phone' ? 44 : 36
+  for (const theme of ['light', 'dark']) {
+    await page.evaluate((value) => document.documentElement.dataset.theme = value, theme)
+    const controls = page.locator('.composer-footer .context-control, .composer-footer .model-picker-trigger, .composer-footer .queue-send-actions > button')
+    const heights = await controls.evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().height))
+    expect(heights.length).toBeGreaterThanOrEqual(6)
+    for (const height of heights) expect(height).toBe(expectedSize)
+    const overflow = await page.locator('.composer').evaluate((node) => node.scrollWidth > node.clientWidth)
+    expect(overflow).toBe(false)
+    await expect(page.getByRole('button', { name: 'Attach files', exact: true })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Send message', exact: true })).toBeVisible()
+  }
+  if (testInfo.project.name === 'desktop') {
+    await page.locator('.chat-panel').evaluate((node) => { node.style.flex = '0 0 380px'; node.style.width = '380px' })
+    expect(await page.locator('.composer').evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(false)
+  }
+})
+
+test('chat utilities stay in a compact heading instead of a vertical action column', async ({ page }) => {
+  for (const theme of ['light', 'dark']) {
+    await page.evaluate((value) => document.documentElement.dataset.theme = value, theme)
+    const action = page.getByRole('button', { name: 'Open in separate window', exact: true })
+    await expect(action).toBeVisible()
+    await expect(page.locator('.chat-column-heading').getByRole('button', { name: 'Open in separate window', exact: true })).toHaveCount(1)
+    const bounds = await action.boundingBox()
+    expect(bounds!.height).toBeLessThanOrEqual(44)
+    expect(bounds!.width).toBeLessThanOrEqual(44)
+    await expect(page.getByRole('button', { name: 'Previous chat', exact: true })).toHaveCount(0)
+    const layout = await page.locator('.studio-chat').evaluate((node) => {
+      const panel = node.querySelector('.chat-panel')!.getBoundingClientRect()
+      const parent = node.getBoundingClientRect()
+      return { offset: panel.left - parent.left, width: panel.width / parent.width }
+    })
+    expect(Math.abs(layout.offset)).toBeLessThan(2)
+    expect(layout.width).toBeGreaterThan(.98)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  }
+})
+
+ test('floating mode hides workspace chrome and adds sidebar chats without duplicates', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name === 'phone', 'Floating controls are desktop-only')
+  await page.getByRole('button', { name: 'Float chat', exact: true }).click()
+  await expect(page.locator('.chat-deck-toolbar')).toHaveCount(0)
+  await expect(page.locator('.conversation-title')).toHaveCount(0)
+  await page.locator('.sidebar').getByTitle('Second workspace chat', { exact: true }).click()
+  await expect(page.locator('[data-floating="true"]')).toHaveCount(2)
+  await page.locator('.sidebar').getByTitle('Second workspace chat', { exact: true }).click()
+  await expect(page.locator('[data-floating="true"]')).toHaveCount(2)
+  await page.locator('[data-chat-column="ui-chat-extra"]').getByRole('button', { name: 'Dock chat', exact: true }).click()
+  await expect(page.locator('[data-floating="true"]')).toHaveCount(1)
+  await expect(page.locator('[data-chat-column="ui-chat-extra"]')).toBeVisible()
+  await page.locator('[data-chat-column="ui-chat-0"]').getByRole('button', { name: 'Dock chat', exact: true }).click()
+  await expect(page.locator('.chat-deck-toolbar')).toBeVisible()
+  await expect(page.locator('.conversation-title')).toBeVisible()
 })

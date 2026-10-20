@@ -101,3 +101,43 @@
   }
   .chat-deck-toolbar select { font-size: 16px; }
 }
+
+/* Floating positions are world coordinates; only the viewport is clipped. */
+@media (min-width: 701px) {
+  .chat-columns[data-canvas='true'] {
+    position: relative;
+    overflow: hidden;
+    scroll-snap-type: none;
+    touch-action: none;
+    cursor: grab;
+    background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .chat-columns[data-canvas='true']:active { cursor: grabbing; }
+  .chat-columns[data-canvas='true'] .chat-column { cursor: auto; touch-action: auto; }
+  .chat-columns[data-canvas='true'] .chat-column[data-floating='true'] {
+    width: 600px;
+    height: 640px;
+    min-width: 320px;
+    min-height: 240px;
+    max-width: none;
+    max-height: none;
+  }
+  .chat-columns[data-canvas='true'] .chat-column:not([data-floating='true']) { display: none; }
+}
+.chat-canvas-controls {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+}
+@media (max-width: 700px) { .chat-canvas-controls { display: none; } }

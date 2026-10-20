@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, type Dispatch, type SetStateAction } from 'react'
 import { MessageSquare, TerminalSquare, Globe, GitBranch, Maximize2, Minimize2, Plus, X, Minus } from 'lucide-react'
 import type { Conversation, Layout, Pane, PublicState } from '../../shared/contracts'
 import { panes } from '../../shared/contracts'
@@ -24,7 +24,10 @@ export function removePane(layout: Layout, id: string): Layout {
   if (layout.children[1].id === id) return layout.children[0]
   return { ...layout, children: [removePane(layout.children[0], id), removePane(layout.children[1], id)] }
 }
-export function PanelLayout({ mobile, conversation, state, active, setActive, update, settings, visible, toggle, maximized, maximize, addTerminal, busy }: {
+export function PanelLayout({ onActiveChatChange, floatingIds, setFloatingIds, mobile, conversation, state, active, setActive, update, settings, visible, toggle, maximized, maximize, addTerminal, busy }: {
+  onActiveChatChange?: (id: string) => void
+  floatingIds?: string[]
+  setFloatingIds?: Dispatch<SetStateAction<string[]>>
   mobile: boolean
   conversation: Conversation
   state: PublicState
@@ -44,7 +47,7 @@ export function PanelLayout({ mobile, conversation, state, active, setActive, up
   const selectedTerminal = terminals.find((pane) => pane.id === active)?.id || terminals[0]?.id
   function content(pane: Pane) {
     return <Suspense fallback={<p className="muted">Opening tool…</p>}>
-      {pane.kind === 'chat' ? <ChatStudio conversation={conversation} state={state} agent={state.agents[conversation.id]} settings={settings} />
+      {pane.kind === 'chat' ? <ChatStudio onActiveChatChange={onActiveChatChange} floatingIds={floatingIds} setFloatingIds={setFloatingIds} conversation={conversation} state={state} agent={state.agents[conversation.id]} settings={settings} />
         : pane.kind === 'terminal' ? <TerminalPanel conversationId={conversation.id} paneId={pane.id} />
         : pane.kind === 'browser' ? <BrowserPanel conversationId={conversation.id} paneId={pane.id} />
         : <GitPanel conversationId={conversation.id} />}
