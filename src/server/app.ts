@@ -1,3 +1,5 @@
+import { notificationRoutes } from './notifications.js'
+import { pwaRoutes } from './pwa.js'
 import { copilotRoutes } from './copilot.js'
 import { revealFileRoutes } from './reveal-file.js'
 import { subagentRoutes } from './subagents.js'
@@ -46,6 +48,8 @@ export async function createApp(options: {
   await app.register(websocket, { options: { maxPayload: 250_000 } })
   await authentication(app, options.token, options.tunnel?.origin)
   subagentRoutes(app, service)
+  await notificationRoutes(app, service)
+  pwaRoutes(app)
   cloudflareRoutes(app, options.tunnel)
   chatgptRoutes(app, service)
   copilotRoutes(app, service)

@@ -86,6 +86,8 @@ export const databaseSchema = z.object({
   version: z.literal(1), projects: z.array(projectSchema),
   conversations: z.array(conversationSchema), providers: z.array(providerSchema),
   hostId: z.string().optional(),
+  pushKeys: z.string().optional(),
+  pushSubscriptions: z.array(z.object({ id: z.string(), encrypted: z.string() })).max(100).optional(),
   chatgptAccounts: z.array(z.object({
     id: z.string().uuid(), clientId: z.string(), subject: z.string(), email: z.string(),
     encryptedTokens: z.string().optional(), model: z.string(), welcomed: z.boolean().default(false),
