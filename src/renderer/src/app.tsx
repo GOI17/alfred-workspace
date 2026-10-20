@@ -1,3 +1,4 @@
+import { ActivityCenter } from './activity-center'
 import { useCallback, useEffect, useState } from 'react'
 import { ArrowUpRight, FolderPlus, GitBranch, Globe, Menu, MessageSquare, Plus, Smartphone, TerminalSquare, Columns2, Sparkles, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import type { Conversation, Layout, Worktree } from '../../shared/contracts'
@@ -45,6 +46,10 @@ export function App() {
   }, setError)
   function addProject() { setMobileOpen(false); void select() }
   const [activePane, setActivePane] = useState('')
+  function openConversation(item: Conversation) {
+    setProjectId(item.projectId); setWorkspacePath(item.workspacePath); setConversationId(item.id)
+    setActivePane(panes(item.layout).find((pane) => pane.kind === 'chat')?.id || ''); setMobileOpen(false)
+  }
   const [toolStates, setToolStates] = useState<Record<string, { visible: ToolVisibility; maximized: ToolKind | null }>>({})
   const tools = toolStates[conversationId] || { visible: { terminal: false, browser: false, git: false }, maximized: null }
   const [confirmation, setConfirmation] = useState<{ title: string; description: string; perform: () => Promise<void> }>()
@@ -54,6 +59,17 @@ export function App() {
   useEffect(() => {
     if (state && !state.projects.some((item) => item.id === projectId)) selectSpace(state.projects[0]?.id || '')
   }, [state, projectId])
+  useEffect(() => {
+    if (!state) return
+    const url = new URL(window.location.href)
+    const target = url.searchParams.get('conversation')
+    if (!target) return
+    const item = state.conversations.find((item) => item.id === target)
+    if (item) openConversation(item)
+    else setError(t('This conversation is no longer available.', 'Esta conversación ya no está disponible.'))
+    url.searchParams.delete('conversation')
+    window.history.replaceState(null, '', url)
+  }, [state])
   useEffect(() => {
     if (!project) { setWorktrees([]); return }
     let current = true
@@ -156,6 +172,7 @@ export function App() {
           {conversation && <div className="conversation-title"><span title={conversation.title}>{conversation.title}</span></div>}
         </div>
         <div className="panel-tools">
+          <ActivityCenter state={state} connected={connected} select={openConversation} />
           {conversation && (['terminal', 'browser', 'git'] as const).filter((kind) => !mobile || kind === 'git').map((kind) => {
             const label = kind === 'terminal' ? 'Terminal' : kind === 'browser' ? t('Browser', 'Navegador') : 'Git'
             const Icon = kind === 'terminal' ? TerminalSquare : kind === 'browser' ? Globe : GitBranch

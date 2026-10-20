@@ -27,6 +27,7 @@ type Run = {
   modelId: string
 }
 export class Chat {
+  notice?: (id: string, kind: 'completed' | 'error' | 'approval') => void
   capabilities?: (request: CapabilityRequest) => Promise<Capabilities>
   private runs = new Map<string, Run>()
   private starting = new Set<string>()
@@ -125,7 +126,7 @@ export class Chat {
     catch (error) {
       this.lastStates[id] = { status: 'error', detail: providerError(error).slice(0, 600) }
       await this.setPaused(id, true)
-    } finally { this.starting.delete(id); this.changed() }
+    } finally { this.starting.delete(id); this.changed(); if (this.lastStates[id]?.status === 'error' && !this.runs.has(id)) this.notice?.(id, 'error') }
   }
   private async resolveModel(provider: ProviderId) {
     if (this.modelOverride) return this.modelOverride
@@ -378,6 +379,10 @@ export class Chat {
       } finally {
         this.runs.delete(id)
         this.changed()
+        if (!this.closing && !run.controller.signal.aborted) {
+          const current = this.store.get().conversations.find((item) => item.id === id)
+          if (current && (failed || !current.queue?.length)) this.notice?.(id, failed ? 'error' : 'completed')
+        }
         if (!failed && !run.controller.signal.aborted && !this.closing)
           void this.exclusive(id, () => this.drain(id)).catch(() => {})
       }
@@ -400,6 +405,8 @@ export class Chat {
       run.controller.signal.addEventListener('abort', abort, { once: true })
       run.state = { status: 'waiting', approval: { id: randomUUID(), path, content } }
       this.changed()
+      const id = [...this.runs].find(([, value]) => value === run)?.[0]
+      if (id) this.notice?.(id, 'approval')
     })
   }
   decide(id: string, approvalId: string, accepted: boolean) {

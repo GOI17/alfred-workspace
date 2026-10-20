@@ -88,3 +88,18 @@ pnpm check:format
 Las pruebas usan repositorios temporales, PTYs reales y Chromium headless. Cubren worktrees, persistencia, orígenes y autenticación, secretos cifrados, aprobaciones, OAuth, navegador HTTP/HTTPS y flujos de escritorio y teléfono. El selector nativo se sustituye por respuestas controladas; se prueban selección, cancelación, acceso local y cierre al desconectarse. `ORCA_BACKGROUND_LAUNCH=1` impide abrir el diálogo real durante las pruebas. La validación visual nativa queda para una sesión manual o un escritorio aislado. No abren ventanas ni toman el foco. `test:e2e` recompila antes de probar.
 
 La arquitectura está en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) y las reglas de interfaz en [docs/STYLEGUIDE.md](docs/STYLEGUIDE.md).
+
+## Actividad y notificaciones PWA
+
+La campana de la barra superior abre **Actividad y notificaciones**: muestra los chats en ejecución o esperando aprobación y permite abrirlos. El contador se actualiza con el estado del servidor; sin conexión se avisa de que puede estar desactualizado.
+
+Pulsa **Activar alertas** y concede permiso en cada dispositivo para recibir notificaciones de finalización, error y aprobación. Puedes desactivarlas desde el mismo panel. No se envía el contenido ni el título del chat. Tocar una alerta abre la conversación; si la sesión expiró, primero debes autenticarte. Las suscripciones persisten entre reinicios del servidor hasta desactivarlas o revocar el permiso en el navegador.
+
+- Requiere HTTPS con certificado confiable (localhost permite pruebas de escritorio), un navegador con Web Push y el servidor encendido con acceso a Internet. HTTP mediante una IP de red local no funciona.
+- En iPhone/iPad se necesita iOS/iPadOS 16.4+, añadir Alfred a la pantalla de inicio y abrirlo desde allí.
+- Configura `ALFRED_PUSH_SUBJECT` con un contacto del administrador en formato `mailto:tu-correo@dominio.com` o una URL HTTPS. Las claves VAPID se generan automáticamente y se guardan cifradas, igual que las suscripciones.
+- Usa una dirección HTTPS estable: permisos e instalación están asociados al origen. Para abrir el chat, el dispositivo necesita acceso al servidor.
+- La entrega depende de la conexión y de los ajustes del sistema; los avisos caducan tras diez minutos y se agrupan por conversación.
+- No son Live Activities nativas ni aparecen en Dynamic Island. No hay modo offline: el service worker no almacena chats, credenciales ni respuestas de la API en caché.
+
+Las pruebas de notificaciones simulan el proveedor push; la entrega real en un teléfono requiere una comprobación manual con permisos concedidos.
