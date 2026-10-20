@@ -54,3 +54,75 @@
     padding-inline-start: 32px;
   }
 }
+
+/* Prompt index stays beside the history, never over the composer or text. */
+.message-history {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+.message-history > .messages {
+  min-width: 0;
+  min-height: 0;
+}
+.message-history:has(.message-navigation) > .messages {
+  padding-inline-start: max(34px, 4%);
+}
+.message-navigation {
+  position: absolute;
+  inset-inline-start: 3px;
+  top: 24px;
+  bottom: 24px;
+  width: 26px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+.message-navigation::-webkit-scrollbar {
+  display: none;
+}
+.message-navigation button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+}
+.message-navigation button > span {
+  display: block;
+  width: 7px;
+  height: 3px;
+  background: currentColor;
+  opacity: 0.5;
+  transition: width 120ms, opacity 120ms;
+}
+.message-navigation button[aria-current='location'] > span {
+  width: 14px;
+  opacity: 1;
+  color: var(--primary);
+}
+.message-navigation button:hover,
+.message-navigation button:focus-visible {
+  background: var(--accent);
+  color: var(--primary);
+}
+.message-navigation button:hover > span,
+.message-navigation button:focus-visible > span {
+  width: 14px;
+  opacity: 1;
+}
+.message-navigation button:focus-visible {
+  outline-offset: -2px;
+}
+@media (pointer: coarse) {
+  .message-navigation button {
+    height: 44px;
+  }
+}

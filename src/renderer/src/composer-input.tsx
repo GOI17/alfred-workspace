@@ -1,18 +1,20 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { api, errorMessage } from './api'
+import { useUI } from './ui-preferences'
 
 type Props = {
   conversationId: string; value: string; onChange: (value: string) => void
   sending: boolean; busy: boolean; onSend: () => void; settings: () => void
 }
-const commands = [
-  { name: '/explore', description: 'Explore the project', text: 'Explore this project and explain its structure.' },
-  { name: '/plan', description: 'Prepare a plan', text: 'Help me plan the following feature: ' },
-  { name: '/review', description: 'Review code', text: 'Review the code and suggest improvements: ' },
-  { name: '/settings', description: 'Open settings', text: '' },
-]
 export function ComposerInput({ conversationId, value, onChange, sending, busy, onSend, settings }: Props) {
+  const { t } = useUI()
+  const commands = [
+    { name: '/explore', description: t('Explore the project', 'Explorar el proyecto'), text: t('Explore this project and explain its structure.', 'Explora este proyecto y explica su estructura.') },
+    { name: '/plan', description: t('Prepare a plan', 'Preparar un plan'), text: t('Help me plan the following feature: ', 'Ayúdame a planear la siguiente funcionalidad: ') },
+    { name: '/review', description: t('Review code', 'Revisar código'), text: t('Review the code and suggest improvements: ', 'Revisa el código y sugiere mejoras: ') },
+    { name: '/settings', description: t('Open settings', 'Abrir ajustes'), text: '' },
+  ]
   const input = useRef<HTMLTextAreaElement>(null)
   useLayoutEffect(() => {
     const element = input.current
@@ -32,7 +34,6 @@ export function ComposerInput({ conversationId, value, onChange, sending, busy, 
   const [selected, setSelected] = useState(0)
   const [result, setResult] = useState<{ key: string; files: string[]; truncated?: boolean; error?: string }>({ key: '', files: [] })
   const match = /(?:^|\s)([@/])([^\s@/]*)$/.exec(value.slice(0, caret))
-  // File queries may contain directory separators.
   const fileMatch = /(?:^|\s)@([^\s@]*)$/.exec(value.slice(0, caret))
   const marker = fileMatch ? '@' : match?.[1]
   const query = fileMatch ? fileMatch[1] : match?.[2] || ''
@@ -69,15 +70,14 @@ export function ComposerInput({ conversationId, value, onChange, sending, busy, 
     return () => { clearTimeout(timer); controller.abort() }
   }, [open, marker, query, conversationId, key])
   const items = marker === '@'
-    ? (result.key === key ? result.files : []).map((path) => ({ name: path, description: 'Workspace file', text: `@${JSON.stringify(path)} ` }))
+    ? (result.key === key ? result.files : []).map((path) => ({ name: path, description: t('Workspace file', 'Archivo del espacio'), text: `@${JSON.stringify(path)} ` }))
     : commands.filter((command) => command.name.includes(query.toLowerCase()))
   const active = Math.min(selected, Math.max(0, items.length - 1))
   function choose(index: number) {
     const item = items[index]
     if (!item) return
     const start = caret - query.length - 1
-    const next = value.slice(0, start) + item.text + value.slice(caret)
-    onChange(next)
+    onChange(value.slice(0, start) + item.text + value.slice(caret))
     setDismissed(true)
     if (item.name === '/settings' && marker === '/') { settings(); return }
     requestAnimationFrame(() => {
@@ -85,22 +85,23 @@ export function ComposerInput({ conversationId, value, onChange, sending, busy, 
       input.current?.setSelectionRange(start + item.text.length, start + item.text.length)
     })
   }
+  const listLabel = marker === '@' ? t('Project files', 'Archivos del proyecto') : t('Commands', 'Comandos')
   return <div style={{ position: 'relative' }}>
-    {open && createPortal(<div style={{ position: 'fixed', ...position, boxSizing: 'border-box', zIndex: 1000, overflowY: 'auto', background: 'var(--background, #202124)', color: 'var(--foreground, #fff)', border: '1px solid #777', borderRadius: 8, padding: 8 }}>
-      <div>{marker === '@' ? 'Project files' : 'Commands'} · ↑ ↓ select · Enter accept · Esc close</div>
-      <div id={id} role="listbox" aria-label={marker === '@' ? 'Project files' : 'Commands'}>
+    {open && createPortal(<div style={{ position: 'fixed', ...position, boxSizing: 'border-box', zIndex: 1000, overflowY: 'auto', background: 'var(--surface)', color: 'var(--foreground)', border: '1px solid var(--border)', borderRadius: 8, padding: 8 }}>
+      <div>{listLabel} · {t('↑ ↓ select · Enter accept · Esc close', '↑ ↓ seleccionar · Enter aceptar · Esc cerrar')}</div>
+      <div id={id} role="listbox" aria-label={listLabel}>
         {items.map((item, index) => <button id={`${id}-${index}`} key={item.name} type="button" role="option" aria-selected={active === index}
-          style={{ display: 'block', width: '100%', textAlign: 'left', padding: 8, background: active === index ? '#39465c' : 'transparent', color: 'inherit', border: 0 }}
+          style={{ display: 'block', width: '100%', textAlign: 'left', padding: 8, background: active === index ? 'var(--accent)' : 'transparent', color: 'inherit', border: 0 }}
           onMouseDown={(event) => event.preventDefault()} onClick={() => choose(index)}>
           <strong>{item.name}</strong> <small>{item.description}</small>
         </button>)}
       </div>
-      {!items.length && <p role="status">{marker === '@' && result.key !== key ? 'Searching files…' : result.key === key && marker === '@' && result.error ? result.error : 'No matches.'}</p>}
-      {marker === '@' && result.key === key && result.truncated && <small>List truncated; type a path to narrow the search.</small>}
+      {!items.length && <p role="status">{marker === '@' && result.key !== key ? t('Searching files…', 'Buscando archivos…') : result.key === key && marker === '@' && result.error ? result.error : t('No matches.', 'Sin coincidencias.')}</p>}
+      {marker === '@' && result.key === key && result.truncated && <small>{t('List truncated; type a path to narrow the search.', 'Lista truncada; escribe una ruta para acotar la búsqueda.')}</small>}
     </div>, document.body)}
-    <textarea ref={input} className="textarea" aria-label="Message for Alfred" value={value} readOnly={sending} aria-busy={sending}
+    <textarea ref={input} className="textarea" aria-label={t('Message for Alfred', 'Mensaje para Alfred')} value={value} readOnly={sending} aria-busy={sending}
       aria-autocomplete="list" aria-controls={open ? id : undefined} aria-expanded={open} aria-activedescendant={open && items.length ? `${id}-${active}` : undefined}
-      placeholder={busy ? 'Type to queue a message…' : 'Type / for commands or @ for files…'} rows={2}
+      placeholder={busy ? t('Type to queue a message…', 'Escribe para poner un mensaje en cola…') : t('Type / for commands or @ for files…', 'Escribe / para comandos o @ para archivos…')} rows={2}
       onFocus={() => { setFocused(true); setDismissed(false) }} onBlur={() => { setFocused(false); setDismissed(true) }}
       onSelect={(event) => setCaret(event.currentTarget.selectionStart)}
       onChange={(event) => { onChange(event.target.value); setCaret(event.target.selectionStart); setDismissed(false); setSelected(0) }}
@@ -110,14 +111,12 @@ export function ComposerInput({ conversationId, value, onChange, sending, busy, 
           const element = event.currentTarget
           const start = element.selectionStart
           const lineStart = value.lastIndexOf('\n', start - 1) + 1
-          // Only indent a new line while its prefix is still whitespace.
-          // Otherwise preserve native focus navigation, including Shift+Tab.
+          // Preserve native focus navigation unless indenting a new blank line.
           if (!sending && !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey &&
             start === element.selectionEnd && lineStart > 0 && /^[\t ]*$/.test(value.slice(lineStart, start))) {
             event.preventDefault()
             onChange(value.slice(0, start) + '\t' + value.slice(start))
-            setCaret(start + 1)
-            setDismissed(true)
+            setCaret(start + 1); setDismissed(true)
             requestAnimationFrame(() => element.setSelectionRange(start + 1, start + 1))
           }
           return
@@ -127,10 +126,7 @@ export function ComposerInput({ conversationId, value, onChange, sending, busy, 
           if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
             event.preventDefault(); setSelected(items.length ? (active + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length : 0); return
           }
-          if (event.key === 'Enter' && !event.shiftKey) {
-            if (items.length) { event.preventDefault(); choose(active); return }
-            if (event.key === 'Enter') { event.preventDefault(); return }
-          }
+          if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); if (items.length) choose(active); return }
         }
         if (event.key === 'Enter' && !event.shiftKey && !matchMedia('(pointer: coarse)').matches) { event.preventDefault(); onSend() }
       }} />

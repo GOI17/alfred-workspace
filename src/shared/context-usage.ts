@@ -21,3 +21,12 @@ export function latestContextUsage(messages: Conversation['messages'], provider:
 export function contextRemaining(usage: NonNullable<Message['contextUsage']>): number | undefined {
   return usage.limit === undefined ? undefined : Math.max(0, usage.limit - usage.inputTokens)
 }
+
+/** Only recorded usage: never extrapolate missing historical steps. */
+export function conversationConsumption(conversation: Conversation) {
+  const responses = conversation.messages.filter((message) => message.role === 'assistant')
+  return {
+    total: (conversation.compactionTokens || 0) + responses.reduce((sum, message) => sum + (message.consumedTokens || 0), 0),
+    incomplete: responses.some((message) => message.consumedTokens === undefined || message.consumptionIncomplete),
+  }
+}

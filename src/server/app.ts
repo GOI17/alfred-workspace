@@ -95,18 +95,30 @@ export async function createApp(options: {
       Connection: 'keep-alive',
       'X-Accel-Buffering': 'no',
     })
+    // Coalesce updates for slow clients instead of dropping their connection.
+    let blocked = false
+    let pending = false
     const send = () => {
-      if (!reply.raw.destroyed) {
-        if (reply.raw.writableLength > 2_000_000) reply.raw.destroy()
-        else reply.raw.write(`event: state\ndata: ${JSON.stringify(service.state())}\n\n`)
-      }
+      if (reply.raw.destroyed) return
+      if (blocked) { pending = true; return }
+      pending = false
+      blocked = !reply.raw.write(`event: state\ndata: ${JSON.stringify(service.state())}\n\n`)
     }
+    const drained = () => {
+      blocked = false
+      if (pending) send()
+    }
+    reply.raw.on('drain', drained)
     service.events.on('change', send)
-    const heartbeat = setInterval(() => reply.raw.write(': heartbeat\n\n'), 20_000)
+    const heartbeat = setInterval(() => {
+      if (!blocked && !reply.raw.destroyed)
+        blocked = !reply.raw.write(': heartbeat\n\n')
+    }, 20_000)
     send()
-    request.raw.on('close', () => {
+    reply.raw.on('close', () => {
       clearInterval(heartbeat)
       service.events.off('change', send)
+      reply.raw.off('drain', drained)
     })
   })
   app.post('/api/projects', async (request) => {
@@ -188,6 +200,11 @@ export async function createApp(options: {
     const conversation = service.conversation(id(request.params))
     await service.workspace(conversation)
     await service.chat.resume(conversation.id)
+    return { ok: true }
+  })
+  app.post('/api/conversations/:id/compact', async (request) => {
+    const body = z.object({ provider: providerId, reduction: z.union([z.literal(30), z.literal(50), z.literal(70)]) }).parse(request.body)
+    await service.chat.compact(id(request.params), body.provider, body.reduction)
     return { ok: true }
   })
   app.post('/api/conversations/:id/stop', async (request) => {

@@ -1,0 +1,24 @@
+import { defineConfig, devices } from '@playwright/test'
+
+export default defineConfig({
+  testDir: './tests',
+  testMatch: ['chat-lab.spec.ts', 'ui-spaces.spec.ts'],
+  workers: 1,
+  timeout: 30_000,
+  outputDir: 'test-results/chat-lab',
+  reporter: [['list'], ['html', { outputFolder: 'playwright-report/chat-lab', open: 'never' }]],
+  use: {
+    baseURL: 'http://127.0.0.1:4312',
+    trace: 'retain-on-failure', screenshot: 'only-on-failure', video: 'retain-on-failure',
+  },
+  projects: [
+    { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
+    { name: 'phone', use: { ...devices['Pixel 7'] } },
+  ],
+  webServer: {
+    command: 'pnpm exec tsx tests/chat-lab-server.ts',
+    url: 'http://127.0.0.1:4312',
+    reuseExistingServer: false,
+    env: { ORCA_BACKGROUND_LAUNCH: '1' },
+  },
+})

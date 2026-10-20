@@ -21,7 +21,7 @@ export async function generateWithRecovery(options: {
   signal: AbortSignal
   text: (text: string) => void
   tool: (name: string) => void
-  usage?: (usage: LanguageModelUsage) => void
+  usage?: (usage: LanguageModelUsage) => void | Promise<void>
   retry: (notice: string) => void
 }) {
   let messages = [...options.messages]
@@ -41,7 +41,7 @@ export async function generateWithRecovery(options: {
         model: options.model, messages, system: options.system, tools: options.tools,
         abortSignal: options.signal, stopWhen: stepCountIs(12),
         maxOutputTokens: 8192, maxRetries: 0, providerOptions: { openai: { store: false } },
-        onStepFinish: ({ response, usage }) => { completed = [...response.messages]; options.usage?.(usage) },
+        onStepFinish: async ({ response, usage }) => { completed = [...response.messages]; await options.usage?.(usage) },
       })
       for await (const part of output.fullStream) {
         if (part.type === 'text-delta') {

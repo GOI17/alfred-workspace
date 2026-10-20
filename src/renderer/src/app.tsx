@@ -9,12 +9,15 @@ import { Sidebar } from './sidebar'
 import { PanelLayout, type ToolKind, type ToolVisibility } from './panel-layout'
 import { WorktreeDialog, SettingsDialog } from './project-dialogs'
 import { useProjectSelection } from './use-project-selection'
+import { useSpaceMemory } from './use-space-memory'
+import { useUI } from './ui-preferences'
 import { Button } from './components/ui/button'
 import { Login, PhoneDialog, useTunnelStatus } from './device-connection'
 import { Dialog } from './components/ui/dialog'
 import './assets/workspace-chrome.css'
 
 export function App() {
+  const { t } = useUI()
   const { state, authenticated, connected, refresh } = useWorkspace()
   const [mobile, setMobile] = useState(() => matchMedia('(max-width: 700px)').matches)
   useEffect(() => {
@@ -26,11 +29,16 @@ export function App() {
   // Public tunnel requests may reach the backend over loopback; use the browser origin.
   const canConnectPhone = ['localhost', '127.0.0.1', '[::1]', '::1'].includes(window.location.hostname)
   const { tunnel, error: tunnelError } = useTunnelStatus(canConnectPhone && authenticated === true)
-  const phoneLabel = tunnelError ? 'Could not verify the tunnel' : !tunnel ? 'Checking phone connection…' : tunnel.state === 'connected' ? 'Phone: tunnel connected' : tunnel.state === 'connecting' ? 'Phone: connecting…' : tunnel.state === 'stopping' ? 'Phone: disconnecting…' : tunnel.state === 'error' ? 'Phone: connection error' : tunnel.state === 'disabled' ? 'Set up phone connection' : 'Connect phone'
+  const phoneLabel = tunnelError ? t('Could not verify the tunnel', 'No se pudo verificar el túnel') : !tunnel ? t('Checking phone connection…', 'Comprobando conexión móvil…') : tunnel.state === 'connected' ? t('Phone: tunnel connected', 'Móvil: túnel conectado') : tunnel.state === 'connecting' ? t('Phone: connecting…', 'Móvil: conectando…') : tunnel.state === 'stopping' ? t('Phone: disconnecting…', 'Móvil: desconectando…') : tunnel.state === 'error' ? t('Phone: connection error', 'Móvil: error de conexión') : tunnel.state === 'disabled' ? t('Set up phone connection', 'Configurar conexión móvil') : t('Connect phone', 'Conectar móvil')
   const [projectId, setProjectId] = useState(localStorage.getItem('alfred.project') || '')
   const [conversationId, setConversationId] = useState(localStorage.getItem('alfred.conversation') || '')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(localStorage.getItem('alfred.sidebarCollapsed') === 'true')
   const [workspacePath, setWorkspacePath] = useState(''), [worktrees, setWorktrees] = useState<Worktree[]>([]), [treeVersion, setTreeVersion] = useState(0)
+  const recallSpace = useSpaceMemory(state, projectId, conversationId, workspacePath)
+  function selectSpace(id: string) {
+    const saved = recallSpace(id)
+    setProjectId(id); setWorkspacePath(saved.workspacePath); setConversationId(saved.conversationId); setActivePane(''); setMobileOpen(false)
+  }
   const [dialog, setDialog] = useState<'worktree' | 'settings' | 'phone' | null>(null), [mobileOpen, setMobileOpen] = useState(false), [error, setError] = useState(''), [busy, setBusy] = useState(false)
   const { selecting, select } = useProjectSelection(async (item) => {
     await refresh(); setProjectId(item.id); setWorkspacePath(item.path); setConversationId('')
@@ -44,7 +52,7 @@ export function App() {
   const conversation = state?.conversations.find((item) => item.id === conversationId && item.projectId === projectId && item.workspacePath === workspacePath)
   useEffect(() => { localStorage.setItem('alfred.sidebarCollapsed', String(sidebarCollapsed)) }, [sidebarCollapsed])
   useEffect(() => {
-    if (state && !state.projects.some((item) => item.id === projectId)) setProjectId(state.projects[0]?.id || '')
+    if (state && !state.projects.some((item) => item.id === projectId)) selectSpace(state.projects[0]?.id || '')
   }, [state, projectId])
   useEffect(() => {
     if (!project) { setWorktrees([]); return }
@@ -87,10 +95,7 @@ export function App() {
     const next = { type: 'pane' as const, id: panelId(), kind }
     const layout: Layout = { type: 'split', id: panelId(), direction: kind === 'terminal' ? 'column' : 'row', ratio: 0.5, children: [conversation.layout, next] }
     void execute(async () => {
-      await api(`/conversations/${id}/layout`, layout, 'PUT')
-      await refresh()
-      setActivePane(next.id)
-      showTool(kind, true)
+      await api(`/conversations/${id}/layout`, layout, 'PUT'); await refresh(); setActivePane(next.id); showTool(kind, true)
     })
   }
   function toggleTool(kind: ToolKind) {
@@ -118,6 +123,7 @@ export function App() {
         event.preventDefault()
         const leaves = panes(conversation.layout).filter((pane) => !mobile || pane.kind === 'chat' || pane.kind === 'git'), current = leaves.findIndex((pane) => pane.id === activePane)
         const next = leaves[(current + 1) % leaves.length]
+        if (!next) return
         setActivePane(next.id)
         if (next.kind !== 'chat') showTool(next.kind, true)
         setToolStates((previous) => ({ ...previous, [conversationId]: { ...(previous[conversationId] || tools), maximized: null } }))
@@ -127,54 +133,54 @@ export function App() {
     window.addEventListener('keydown', handler, true)
     return () => { clearTimeout(timer); window.removeEventListener('keydown', handler, true) }
   }, [conversation, activePane, projectId, workspacePath, busy, tools, mobile])
-  if (authenticated === undefined) return <div className="loading-screen"><span className="brand-mark">a·</span><p>Opening your workspace…</p></div>
+  if (authenticated === undefined) return <div className="loading-screen"><span className="brand-mark">a·</span><p>{t('Opening your workspace…', 'Abriendo tu espacio…')}</p></div>
   if (!authenticated || !state) return <Login connected={refresh} />
   return <div className="app-shell" data-sidebar-collapsed={sidebarCollapsed}>
     <div id="workspace-sidebar" className="workspace-sidebar-container">
       <Sidebar state={state} project={project} conversation={conversation} worktrees={worktrees} workspacePath={workspacePath} connected={connected} mobileOpen={mobileOpen}
-        close={() => setMobileOpen(false)} selectProject={(id) => { setProjectId(id); setWorkspacePath(''); setConversationId('') }}
+        close={() => setMobileOpen(false)} selectProject={selectSpace}
         selectWorkspace={(path) => { setWorkspacePath(path); setConversationId(state.conversations.find((item) => item.projectId === projectId && item.workspacePath === path)?.id || '') }}
         selectConversation={(id) => { setConversationId(id); setMobileOpen(false) }} addProject={addProject} addConversation={() => void newConversation()}
-        addWorktree={() => setDialog('worktree')} settings={() => setDialog('settings')}
-        removeProject={() => { if (project) setConfirmation({ title: `Remove ${project.name}`, description: 'Its conversations will be removed from Alfred and its sessions closed. The folder, files, and worktrees will remain on disk.', perform: async () => { await api(`/projects/${project.id}`, undefined, 'DELETE'); await refresh() } }) }}
-        removeConversation={(id) => setConfirmation({ title: 'Delete conversation', description: 'This conversation history will be deleted and its panels and sessions closed.', perform: async () => { await api(`/conversations/${id}`, undefined, 'DELETE'); await refresh() } })}
-        removeWorktree={(path) => setConfirmation({ title: 'Delete worktree', description: 'Git will delete this worktree folder and Alfred will close its conversations. The operation will be rejected if there are uncommitted changes. The branch will be preserved.', perform: async () => { await api(`/projects/${projectId}/worktrees`, { path }, 'DELETE'); setTreeVersion((value) => value + 1); await refresh() } })}
+        addWorktree={() => setDialog('worktree')} settings={() => { setMobileOpen(false); setDialog('settings') }}
+        removeProject={() => { if (project) setConfirmation({ title: `${t('Remove', 'Eliminar')} ${project.name}`, description: t('Its conversations will be removed from Alfred and its sessions closed. The folder, files, and worktrees will remain on disk.', 'Se eliminarán sus conversaciones de Alfred y se cerrarán sus sesiones. La carpeta, los archivos y los worktrees permanecerán en el disco.'), perform: async () => { await api(`/projects/${project.id}`, undefined, 'DELETE'); await refresh() } }) }}
+        removeConversation={(id) => setConfirmation({ title: t('Delete conversation', 'Eliminar conversación'), description: t('This conversation history will be deleted and its panels and sessions closed.', 'Se eliminará el historial de esta conversación y se cerrarán sus paneles y sesiones.'), perform: async () => { await api(`/conversations/${id}`, undefined, 'DELETE'); await refresh() } })}
+        removeWorktree={(path) => setConfirmation({ title: t('Delete worktree', 'Eliminar worktree'), description: t('Git will delete this worktree folder and Alfred will close its conversations. The operation will be rejected if there are uncommitted changes. The branch will be preserved.', 'Git eliminará esta carpeta de worktree y Alfred cerrará sus conversaciones. Se rechazará la operación si hay cambios sin commit. Se conservará la rama.'), perform: async () => { await api(`/projects/${projectId}/worktrees`, { path }, 'DELETE'); setTreeVersion((value) => value + 1); await refresh() } })}
       />
     </div>
     <main className="main-workspace">
       <header className="workspace-header workspace-header-unified">
-        <span className="desktop-sidebar-toggle"><Button variant="ghost" size="icon" aria-controls="workspace-sidebar" aria-expanded={!sidebarCollapsed} aria-label={sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'} title={sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'} onClick={() => setSidebarCollapsed((value) => !value)}>{sidebarCollapsed ? <PanelLeftOpen size={19} /> : <PanelLeftClose size={19} />}</Button></span>
-        <span className="mobile-only"><Button variant="ghost" size="icon" aria-label="Open workspaces" aria-controls="workspace-sidebar" aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}><Menu size={19} /></Button></span>
+        <span className="desktop-sidebar-toggle"><Button variant="ghost" size="icon" aria-controls="workspace-sidebar" aria-expanded={!sidebarCollapsed} aria-label={sidebarCollapsed ? t('Show sidebar', 'Mostrar barra lateral') : t('Hide sidebar', 'Ocultar barra lateral')} title={sidebarCollapsed ? t('Show sidebar', 'Mostrar barra lateral') : t('Hide sidebar', 'Ocultar barra lateral')} onClick={() => setSidebarCollapsed((value) => !value)}>{sidebarCollapsed ? <PanelLeftOpen size={19} /> : <PanelLeftClose size={19} />}</Button></span>
+        <span className="mobile-only"><Button variant="ghost" size="icon" aria-label={t('Open spaces', 'Abrir espacios')} aria-controls="workspace-sidebar" aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}><Menu size={19} /></Button></span>
         <div className="workspace-heading-context">
-          <div className="workspace-breadcrumb"><span className="breadcrumb-project" title={project?.name}>{project?.name || 'Welcome to Alfred'}</span>{project && <><span className="breadcrumb-slash">/</span><GitBranch size={13} /><span className="breadcrumb-branch" title={workspacePath}>{worktrees.find((tree) => tree.path === workspacePath)?.branch || 'Workspace'}</span></>}</div>
+          <div className="workspace-breadcrumb"><span className="breadcrumb-project" title={project?.name}>{project?.name || t('Welcome to Alfred', 'Bienvenido a Alfred')}</span>{project && <><span className="breadcrumb-slash">/</span><GitBranch size={13} /><span className="breadcrumb-branch" title={workspacePath}>{worktrees.find((tree) => tree.path === workspacePath)?.branch || t('Workspace', 'Espacio')}</span></>}</div>
           {conversation && <div className="conversation-title"><span title={conversation.title}>{conversation.title}</span></div>}
         </div>
         <div className="panel-tools">
           {conversation && (['terminal', 'browser', 'git'] as const).filter((kind) => !mobile || kind === 'git').map((kind) => {
-            const label = kind === 'terminal' ? 'Terminal' : kind === 'browser' ? 'Browser' : 'Git'
+            const label = kind === 'terminal' ? 'Terminal' : kind === 'browser' ? t('Browser', 'Navegador') : 'Git'
             const Icon = kind === 'terminal' ? TerminalSquare : kind === 'browser' ? Globe : GitBranch
             const exists = panes(conversation.layout).some((pane) => pane.kind === kind)
             const shown = exists && tools.visible[kind]
-            return <Button key={kind} variant="ghost" size="small" disabled={busy || (!exists && panes(conversation.layout).length >= 8) || (kind === 'git' && project?.kind !== 'git')} onClick={() => toggleTool(kind)} aria-label={label} aria-pressed={shown} title={`${shown ? 'Hide' : 'Show'} ${label}`}><Icon size={15} /><span>{label}</span></Button>
+            return <Button key={kind} variant="ghost" size="small" disabled={busy || (!exists && panes(conversation.layout).length >= 8) || (kind === 'git' && project?.kind !== 'git')} onClick={() => toggleTool(kind)} aria-label={label} aria-pressed={shown} title={`${shown ? t('Hide', 'Ocultar') : t('Show', 'Mostrar')} ${label}`}><Icon size={15} /><span>{label}</span></Button>
           })}
-          {canConnectPhone && <Button variant="ghost" size="small" onClick={() => setDialog('phone')} aria-label={phoneLabel} title={phoneLabel}><Smartphone size={17} /><span>{tunnel?.state === 'connected' && !tunnelError ? 'Connected' : ''}</span></Button>}
+          {canConnectPhone && <Button variant="ghost" size="small" onClick={() => setDialog('phone')} aria-label={phoneLabel} title={phoneLabel}><Smartphone size={17} /><span>{tunnel?.state === 'connected' && !tunnelError ? t('Connected', 'Conectado') : ''}</span></Button>}
         </div>
       </header>
-      {error && <div className="app-error" role="alert"><span>{error}</span><Button variant="ghost" size="small" onClick={() => setError('')}>Close</Button></div>}
-      {selecting && <div className="connection-banner" role="status">Select a folder in the system dialog…</div>}
-      {!connected && <div className="connection-banner" role="status">Disconnected from the server. Agent status cannot be verified.</div>}
+      {error && <div className="app-error" role="alert"><span>{error}</span><Button variant="ghost" size="small" onClick={() => setError('')}>{t('Close', 'Cerrar')}</Button></div>}
+      {selecting && <div className="connection-banner" role="status">{t('Select a folder in the system dialog…', 'Selecciona una carpeta en el diálogo del sistema…')}</div>}
+      {!connected && <div className="connection-banner" role="status">{t('Disconnected from the server. Agent status cannot be verified.', 'Desconectado del servidor. No se puede verificar el estado del agente.')}</div>}
       {conversation ? <PanelLayout mobile={mobile} key={conversation.id} conversation={conversation} state={state} active={activePane} setActive={setActivePane} update={updateLayout} settings={() => setDialog('settings')} visible={tools.visible} toggle={toggleTool} maximized={tools.maximized && (!mobile || tools.maximized === 'git') && panes(conversation.layout).some((pane) => pane.kind === tools.maximized) ? tools.maximized : null} maximize={maximizeTool} addTerminal={() => addTool('terminal')} busy={busy} />
         : <div className="start-screen">
           <div className="start-orbit"><span className="brand-mark">a<span>·</span></span><span className="orbit-symbol orbit-one"><MessageSquare size={20} /></span><span className="orbit-symbol orbit-two"><GitBranch size={20} /></span><span className="orbit-symbol orbit-three"><TerminalSquare size={20} /></span></div>
-          <p className="eyebrow">LESS NOISE. MORE SPACE.</p><h1>{project ? 'Your next step starts here.' : 'A place for your ideas.'}</h1>
-          <p>{project ? 'A conversation, your tools, and all your project context.' : 'Your projects, conversations, and tools.\nOn your computer. With you wherever you are.'}</p>
-          <Button onClick={() => project ? void newConversation() : addProject()} disabled={busy || selecting}>{project ? <Plus size={17} /> : <FolderPlus size={17} />}{project ? 'New conversation' : 'Add my first project'}<ArrowUpRight size={16} /></Button>
-          <div className="start-features"><span><Sparkles size={15} />Native chat</span><span><Columns2 size={15} />Your own workspace</span><span><Smartphone size={15} />Wherever you are</span></div>
+          <p className="eyebrow">{t('LESS NOISE. MORE SPACE.', 'MENOS RUIDO. MÁS ESPACIO.')}</p><h1>{project ? t('Your next step starts here.', 'Tu siguiente paso empieza aquí.') : t('A place for your ideas.', 'Un lugar para tus ideas.')}</h1>
+          <p>{project ? t('A conversation, your tools, and all your project context.', 'Una conversación, tus herramientas y todo el contexto de tu proyecto.') : t('Your projects, conversations, and tools.\nOn your computer. With you wherever you are.', 'Tus proyectos, conversaciones y herramientas.\nEn tu equipo. Contigo donde estés.')}</p>
+          <Button onClick={() => project ? void newConversation() : addProject()} disabled={busy || selecting}>{project ? <Plus size={17} /> : <FolderPlus size={17} />}{project ? t('New conversation', 'Nueva conversación') : t('Add space', 'Agregar espacio')}<ArrowUpRight size={16} /></Button>
+          <div className="start-features"><span><Sparkles size={15} />{t('Native chat', 'Chat nativo')}</span><span><Columns2 size={15} />{t('Your own workspace', 'Tu propio espacio')}</span><span><Smartphone size={15} />{t('Wherever you are', 'Donde estés')}</span></div>
         </div>}
     </main>
     {dialog === 'worktree' && project && <WorktreeDialog project={project} onClose={() => setDialog(null)} onAdded={(path) => { setTreeVersion((value) => value + 1); setWorkspacePath(path); void newConversation(path) }} />}
     {dialog === 'settings' && <SettingsDialog state={state} onClose={() => setDialog(null)} />}
     {canConnectPhone && dialog === 'phone' && <PhoneDialog onClose={() => setDialog(null)} />}
-    {confirmation && <Dialog open onClose={() => setConfirmation(undefined)} title={confirmation.title} description={confirmation.description}><div className="dialog-actions"><Button variant="secondary" onClick={() => setConfirmation(undefined)}>Cancel</Button><Button variant="danger" disabled={busy} onClick={() => void execute(async () => { await confirmation.perform(); setConfirmation(undefined) })}>{busy ? 'Deleting…' : 'Confirm deletion'}</Button></div></Dialog>}
+    {confirmation && <Dialog open onClose={() => setConfirmation(undefined)} title={confirmation.title} description={confirmation.description}><div className="dialog-actions"><Button variant="secondary" onClick={() => setConfirmation(undefined)}>{t('Cancel', 'Cancelar')}</Button><Button variant="danger" disabled={busy} onClick={() => void execute(async () => { await confirmation.perform(); setConfirmation(undefined) })}>{busy ? t('Deleting…', 'Eliminando…') : t('Confirm deletion', 'Confirmar eliminación')}</Button></div></Dialog>}
   </div>
 }

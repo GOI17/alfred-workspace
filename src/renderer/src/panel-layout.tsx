@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react'
 import { MessageSquare, TerminalSquare, Globe, GitBranch, Maximize2, Minimize2, Plus, X, Minus } from 'lucide-react'
 import type { Conversation, Layout, Pane, PublicState } from '../../shared/contracts'
 import { panes } from '../../shared/contracts'
-import { ChatPanel } from './chat-panel'
+import { ChatStudio } from './chat-studio'
 import { Button } from './components/ui/button'
 import './assets/panel-content.css'
 
@@ -44,7 +44,7 @@ export function PanelLayout({ mobile, conversation, state, active, setActive, up
   const selectedTerminal = terminals.find((pane) => pane.id === active)?.id || terminals[0]?.id
   function content(pane: Pane) {
     return <Suspense fallback={<p className="muted">Opening tool…</p>}>
-      {pane.kind === 'chat' ? <ChatPanel conversation={conversation} state={state} agent={state.agents[conversation.id]} settings={settings} />
+      {pane.kind === 'chat' ? <ChatStudio conversation={conversation} state={state} agent={state.agents[conversation.id]} settings={settings} />
         : pane.kind === 'terminal' ? <TerminalPanel conversationId={conversation.id} paneId={pane.id} />
         : pane.kind === 'browser' ? <BrowserPanel conversationId={conversation.id} paneId={pane.id} />
         : <GitPanel conversationId={conversation.id} />}

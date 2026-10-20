@@ -62,6 +62,18 @@ export async function gitAction(root: string, input: unknown) {
   }
   if (body.action === 'stage' || body.action === 'resolve') {
     const file = await workspaceFile(root, body.path, true)
+    // A directory pathspec recursively stages children, bypassing per-file privacy checks.
+    // Missing paths are allowed only for an exact tracked file, never a deleted directory.
+    try {
+      const info = await lstat(file)
+      if (!info.isFile()) throw new Error('Select an individual file, not a directory.')
+    } catch (error) {
+      if (!(error instanceof Error && 'code' in error && error.code === 'ENOENT')) throw error
+      const tracked = (await git(root, ['ls-files', '-z', '--', body.path]))
+        .split('\0').filter(Boolean)
+      if (!tracked.length || tracked.some((path) => path !== body.path))
+        throw new Error('Select an exact tracked file for deletion staging.')
+    }
     const { conflicts } = await gitDetails(root)
     if (body.action === 'resolve') {
       if (!conflicts.includes(body.path))

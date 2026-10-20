@@ -3,13 +3,8 @@ import { dirname, isAbsolute, relative, resolve, sep } from 'node:path'
 import { tool } from 'ai'
 import { z } from 'zod'
 import { createHash } from 'node:crypto'
+import { privatePath } from './workspace-path-policy.js'
 
-const privateNames = new Set([
-  '.git', 'node_modules', '.env', '.ssh', '.aws', '.npmrc', '.netrc', '.pypirc', '.alfred', '.alfred-workspace',
-])
-function privatePath(path: string) {
-  return path.split(/[\\/]/).some((part) => privateNames.has(part) || part.startsWith('.env.') || /\.(pem|key)$/.test(part))
-}
 function inside(root: string, target: string) {
   const path = relative(root, target)
   return path !== '..' && !path.startsWith(`..${sep}`) && !isAbsolute(path)
@@ -23,6 +18,9 @@ export async function workspaceFile(root: string, path: string, creating = false
     const canonical = await realpath(target)
     if (!inside(canonicalRoot, canonical)) throw new Error('The link points outside the workspace.')
     if (privatePath(relative(canonicalRoot, canonical))) throw new Error('Private path.')
+    // A hard link can alias a private file or a file outside the workspace.
+    const info = await lstat(canonical)
+    if (info.isFile() && info.nlink > 1) throw new Error('Hard-linked files are not allowed.')
     return canonical
   } catch (error) {
     if (!(creating && error instanceof Error && 'code' in error && error.code === 'ENOENT')) throw error
@@ -40,7 +38,7 @@ export function workspaceTools(root: string, approve: (path: string, content: st
       inputSchema: z.object({ path: z.string().default('.') }),
       execute: async ({ path }) => {
         const entries = await readdir(await workspaceFile(root, path), { withFileTypes: true })
-        return entries.filter((entry) => !privateNames.has(entry.name) && !entry.name.startsWith('.env.'))
+        return entries.filter((entry) => !privatePath(entry.name))
           .slice(0, 300).map((entry) => ({ name: entry.name, directory: entry.isDirectory() }))
       },
     }),
@@ -50,7 +48,7 @@ export function workspaceTools(root: string, approve: (path: string, content: st
       execute: async ({ path }) => {
         const file = await workspaceFile(root, path)
         const info = await lstat(file)
-        if (!info.isFile() || info.size > 100_000) throw new Error('The file is not a small text file; choose another file.')
+        if (!info.isFile() || info.nlink > 1 || info.size > 100_000) throw new Error('The file is not a small text file; choose another file.')
         const content = await readFile(file, 'utf8')
         if (content.includes('\0')) throw new Error('Binary file.')
         return content
@@ -63,6 +61,8 @@ export function workspaceTools(root: string, approve: (path: string, content: st
       inputSchema: z.object({ path: z.string(), content: z.string().max(100_000) }),
       execute: async ({ path, content }) => {
         checkStopped()
+        if (content.includes('\0') || Buffer.byteLength(content, 'utf8') > 100_000)
+          throw new Error('Each file must be text up to 100 KB.')
         const original = await workspaceFile(root, path, true)
         const before = await fingerprint(original)
         if (!(await approve(path, content))) return 'The user rejected the write. The file was not modified.'
@@ -122,7 +122,7 @@ export function workspaceTools(root: string, approve: (path: string, content: st
 async function fingerprint(path: string) {
   try {
     const info = await lstat(path)
-    if (!info.isFile() || info.size > 100_000) throw new Error('Changes can only be proposed for text files up to 100 KB.')
+    if (!info.isFile() || info.nlink > 1 || info.size > 100_000) throw new Error('Changes can only be proposed for text files up to 100 KB without hard links.')
     return createHash('sha256').update(await readFile(path)).digest('hex')
   } catch (error) {
     if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return undefined

@@ -53,6 +53,8 @@ export const messageSchema = z.object({
   createdAt: z.string(), notes: z.array(z.string()).default([]),
   attachments: attachmentsSchema.optional(),
   contextUsage: contextUsageSchema.optional(),
+  consumedTokens: z.number().int().nonnegative().optional(),
+  consumptionIncomplete: z.boolean().optional(),
 })
 export type Message = z.infer<typeof messageSchema>
 export const queuedMessageSchema = z.object({
@@ -68,6 +70,11 @@ export const conversationSchema = z.object({
   messages: z.array(messageSchema).default([]),
   queue: z.array(queuedMessageSchema).max(20).optional(),
   queuePaused: z.boolean().optional(),
+  compaction: z.object({
+    summary: z.string(), throughMessageId: z.string().uuid(), createdAt: z.string(),
+    reduction: z.union([z.literal(30), z.literal(50), z.literal(70)]),
+  }).optional(),
+  compactionTokens: z.number().int().nonnegative().optional(),
 })
 export type Conversation = z.infer<typeof conversationSchema>
 export const providerSchema = z.object({

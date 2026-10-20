@@ -50,7 +50,7 @@ export class WorkspaceService {
       projects: data.projects,
       conversations: data.conversations.map((item) => ({
         ...item,
-        messages: partials[item.id] ? [...item.messages, partials[item.id]] : item.messages,
+        messages: partials[item.id] ? [...item.messages.filter((message) => message.id !== partials[item.id].id), partials[item.id]] : item.messages,
       })),
       providers: [
         ...data.providers.map(({ id, model }) => ({ id, model })),
