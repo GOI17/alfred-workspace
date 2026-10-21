@@ -138,8 +138,42 @@
   .chat-panel { --composer-control-size: 44px; }
 }
 @media (max-width: 700px) {
-  .chat-panel .composer .composer-footer { padding: 6px 8px 8px; }
-  .chat-panel .composer-footer .attachment-controls { flex-basis: 100%; }
+  .chat-panel .composer .composer-footer {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 4px;
+    padding: 6px 8px 8px;
+  }
+  .chat-panel .composer-footer .attachment-controls {
+    flex: 1 1 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-block: 3px;
+  }
+  .chat-panel .composer-footer .attachment-controls > select { flex: 0 0 auto; padding-inline: 2px; }
+  .chat-panel .composer-footer .model-picker-trigger { flex: 1 0 64px; width: auto; min-width: 64px; }
+  .chat-panel .composer-footer button.context-control {
+    position: relative;
+    flex: 0 0 44px;
+    width: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+  /* Keep the full labels available to screen readers while showing compact icons. */
+  .chat-panel .composer-footer button.context-control > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .chat-panel .composer-footer .queue-send-actions { gap: 4px; }
+  .chat-panel .message-navigation,
+  .message-preview,
+  .chat-deck .chat-column-heading > .button:has(.lucide-external-link) { display: none; }
   .chat-panel .message-history .messages > div > .subagents-panel { width: calc(100% - 52px); margin-inline: 44px 8px; }
   .chat-deck .chat-deck-toolbar { padding-inline: 8px; }
   .chat-deck .chat-deck-toolbar select { height: 44px; font-size: 16px; }
