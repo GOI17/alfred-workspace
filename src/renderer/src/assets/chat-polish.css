@@ -174,7 +174,7 @@
   .chat-panel .message-navigation,
   .message-preview,
   .chat-deck .chat-column-heading > .button:has(.lucide-external-link) { display: none; }
-  .chat-panel .message-history .messages > div > .subagents-panel { width: calc(100% - 52px); margin-inline: 44px 8px; }
+  .chat-panel .message-history .messages > div > .subagents-panel { width: calc(100% - 16px); margin-inline: 8px; }
   .chat-deck .chat-deck-toolbar { padding-inline: 8px; }
   .chat-deck .chat-deck-toolbar select { height: 44px; font-size: 16px; }
   .chat-deck .chat-deck-toolbar > .button { width: 44px; height: 44px; }

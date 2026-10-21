@@ -79,8 +79,13 @@
   .studio-inspector { display: none; }
 }
 @media (max-width: 700px) {
-  .chat-panel .message-history .messages > div > :is(.message, .chat-welcome, .agent-progress, .approval-card) { width: calc(100% - 52px); margin-inline: 44px 8px; }
-  .chat-studio .message-history .messages > div > .message[data-role='user'] { width: calc(100% - 64px); margin-inline: 56px 8px; padding: 12px; }
+  /* The navigation rail is hidden on phones; do not reserve its desktop gutter. */
+  .chat-panel .message-history > .messages { scrollbar-gutter: auto; }
+  .chat-panel .message-history .message-avatar { display: none; }
+  .chat-panel .message-history .message-content { width: 100%; }
+
+  .chat-panel .message-history .messages > div > :is(.message, .chat-welcome, .agent-progress, .approval-card) { width: calc(100% - 16px); margin-inline: 8px; }
+  .chat-studio .message-history .messages > div > .message[data-role='user'] { width: calc(100% - 16px); margin-inline: 8px; padding: 12px; }
   .chat-panel:has(.message-navigation) > .composer-wrap > * { width: calc(100cqi - 2 * var(--chat-gutter)); }
   .chat-panel .composer-footer .attachment-controls > .context-control:has(.context-ring) { grid-column: 1 / -1; grid-row: 2; justify-self: start; }
 }
