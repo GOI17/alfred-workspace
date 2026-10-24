@@ -1,10 +1,12 @@
 import { layoutKey, stringList, usePersistentLayout } from './use-persistent-layout'
 import { ActivityCenter } from './activity-center'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { NotificationPreferences } from './notification-preferences'
+import { useCallback, useEffect, useEffectEvent, useMemo, useState } from 'react'
 import { ArrowUpRight, FolderPlus, GitBranch, Globe, Menu, MessageSquare, Plus, Smartphone, TerminalSquare, Columns2, Sparkles, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import type { Conversation, Layout, Worktree } from '../../shared/contracts'
 import { panes } from '../../shared/contracts'
 import { api, errorMessage } from './api'
+import { liveRefresh } from './live-refresh'
 import { useWorkspace } from './use-workspace'
 import { panelId } from './panel-id'
 import { Sidebar } from './sidebar'
@@ -36,6 +38,7 @@ export function App() {
   const [conversationId, setConversationId] = useState(localStorage.getItem('alfred.conversation') || '')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(localStorage.getItem('alfred.sidebarCollapsed') === 'true')
   const [workspacePath, setWorkspacePath] = useState(''), [worktrees, setWorktrees] = useState<Worktree[]>([]), [treeVersion, setTreeVersion] = useState(0)
+  const [worktreeError, setWorktreeError] = useState('')
   const recallSpace = useSpaceMemory(state, projectId, conversationId, workspacePath)
   const [focusedChatId, setFocusedChatId] = useState('')
   const [savedFloatingIds, setFloatingIds] = usePersistentLayout<string[]>(layoutKey(projectId, workspacePath, 'floating'), [], stringList)
@@ -74,17 +77,25 @@ export function App() {
     url.searchParams.delete('conversation')
     window.history.replaceState(null, '', url)
   }, [state])
+  const applyWorktrees = useEffectEvent((trees: Worktree[]) => {
+    if (!project) return
+    setWorktrees((previous) => JSON.stringify(previous) === JSON.stringify(trees) ? previous : trees)
+    setWorktreeError('')
+    const chats = state?.conversations.filter((item) => item.projectId === project.id) || []
+    const selected = chats.find((item) => item.id === conversationId)
+    const exists = (path?: string) => trees.some((tree) => tree.path === path)
+    const nextPath = exists(workspacePath) ? workspacePath : selected && exists(selected.workspacePath) ? selected.workspacePath : project.path
+    if (workspacePath !== nextPath) setWorkspacePath(nextPath)
+    if (!selected || selected.workspacePath !== nextPath)
+      setConversationId(chats.find((item) => item.workspacePath === nextPath)?.id || '')
+  })
+  useEffect(() => { setWorktrees([]); setWorktreeError('') }, [project?.id])
   useEffect(() => {
-    if (!project) { setWorktrees([]); return }
-    let current = true
-    setWorktrees([])
-    void api<Worktree[]>(`/projects/${project.id}/worktrees`).then((trees) => {
-      if (!current) return
-      setWorktrees(trees)
-      const remembered = state?.conversations.find((item) => item.id === conversationId && item.projectId === project.id)?.workspacePath
-      setWorkspacePath((previous) => trees.some((tree) => tree.path === previous) ? previous : remembered && trees.some((tree) => tree.path === remembered) ? remembered : project.path)
-    }).catch((error) => { if (current) setError(errorMessage(error)) })
-    return () => { current = false }
+    if (!project) return
+    return liveRefresh(async (signal) => {
+      const trees = await api<Worktree[]>(`/projects/${project.id}/worktrees`, undefined, undefined, signal)
+      if (!signal.aborted) applyWorktrees(trees)
+    }, (error) => setWorktreeError(errorMessage(error)), project.kind === 'git' ? 3000 : null)
   }, [project?.id, treeVersion, state?.worktreeVersion])
   useEffect(() => {
     localStorage.setItem('alfred.project', projectId); localStorage.setItem('alfred.conversation', conversationId)
@@ -155,7 +166,7 @@ export function App() {
   }, [conversation, activePane, projectId, workspacePath, busy, tools, mobile])
   if (authenticated === undefined) return <div className="loading-screen"><span className="brand-mark">a·</span><p>{t('Opening your workspace…', 'Abriendo tu espacio…')}</p></div>
   if (!authenticated || !state) return <Login connected={refresh} />
-  return <div className="app-shell" data-sidebar-collapsed={sidebarCollapsed}>
+  return <NotificationPreferences><div className="app-shell" data-sidebar-collapsed={sidebarCollapsed}>
     <div id="workspace-sidebar" className="workspace-sidebar-container">
       <Sidebar state={state} project={project} conversation={(floatingIds.length ? state.conversations.find((item) => item.id === focusedChatId && item.projectId === projectId && item.workspacePath === workspacePath) : undefined) || conversation} worktrees={worktrees} workspacePath={workspacePath} connected={connected} mobileOpen={mobileOpen}
         close={() => setMobileOpen(false)} selectProject={selectSpace}
@@ -191,7 +202,7 @@ export function App() {
           {canConnectPhone && <Button variant="ghost" size="small" onClick={() => setDialog('phone')} aria-label={phoneLabel} title={phoneLabel}><Smartphone size={17} /><span>{tunnel?.state === 'connected' && !tunnelError ? t('Connected', 'Conectado') : ''}</span></Button>}
         </div>
       </header>
-      {error && <div className="app-error" role="alert"><span>{error}</span><Button variant="ghost" size="small" onClick={() => setError('')}>{t('Close', 'Cerrar')}</Button></div>}
+      {(error || worktreeError) && <div className="app-error" role="alert"><span>{error || worktreeError}</span><Button variant="ghost" size="small" onClick={() => { setError(''); setWorktreeError('') }}>{t('Close', 'Cerrar')}</Button></div>}
       {selecting && <div className="connection-banner" role="status">{t('Select a folder in the system dialog…', 'Selecciona una carpeta en el diálogo del sistema…')}</div>}
       {!connected && <div className="connection-banner" role="status">{t('Disconnected from the server. Agent status cannot be verified.', 'Desconectado del servidor. No se puede verificar el estado del agente.')}</div>}
       {conversation ? <PanelLayout onActiveChatChange={setFocusedChatId} floatingIds={floatingIds} setFloatingIds={setFloatingIds} mobile={mobile} key={conversation.id} conversation={conversation} state={state} active={activePane} setActive={setActivePane} update={updateLayout} settings={() => setDialog('settings')} visible={tools.visible} toggle={toggleTool} maximized={tools.maximized && (!mobile || tools.maximized === 'git') && panes(conversation.layout).some((pane) => pane.kind === tools.maximized) ? tools.maximized : null} maximize={maximizeTool} addTerminal={() => addTool('terminal')} busy={busy} />
@@ -207,5 +218,5 @@ export function App() {
     {dialog === 'settings' && <SettingsDialog state={state} onClose={() => setDialog(null)} />}
     {canConnectPhone && dialog === 'phone' && <PhoneDialog onClose={() => setDialog(null)} />}
     {confirmation && <Dialog open onClose={() => setConfirmation(undefined)} title={confirmation.title} description={confirmation.description}><div className="dialog-actions"><Button variant="secondary" onClick={() => setConfirmation(undefined)}>{t('Cancel', 'Cancelar')}</Button><Button variant="danger" disabled={busy} onClick={() => void execute(async () => { await confirmation.perform(); setConfirmation(undefined) })}>{busy ? t('Deleting…', 'Eliminando…') : t('Confirm deletion', 'Confirmar eliminación')}</Button></div></Dialog>}
-  </div>
+  </div></NotificationPreferences>
 }

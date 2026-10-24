@@ -3,6 +3,7 @@ import Markdown, { defaultUrlTransform, type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeHighlight from 'rehype-highlight'
 import { api, errorMessage } from './api'
+import { localFilePath } from './local-file-path'
 import './assets/markdown.css'
 
 function CodeBlock({ children }: { children?: ReactNode }) {
@@ -27,24 +28,6 @@ function CodeBlock({ children }: { children?: ReactNode }) {
     <header className="code-editor-toolbar"><span>{language}</span><button type="button" onClick={() => void copy()} aria-label="Copy code"><span aria-live="polite">{status}</span></button></header>
     <pre ref={content} tabIndex={0} aria-label="Code, horizontal scrolling">{children}</pre>
   </section>
-}
-
-export function localFilePath(href: string): string | null {
-  if (!href || href.startsWith('#') || href.startsWith('//')) return null
-  try {
-    let path: string
-    if (/^file:/i.test(href)) {
-      const url = new URL(href)
-      if (url.hostname && url.hostname !== 'localhost') return null
-      path = decodeURIComponent(url.pathname)
-      if (/^\/[a-z]:\//i.test(path)) path = path.slice(1)
-    } else {
-      if (/^[a-z][a-z\d+.-]*:/i.test(href) && !/^[a-z]:[\\/]/i.test(href)) return null
-      path = decodeURIComponent(href.split(/[?#]/)[0])
-    }
-    path = path.replace(/:\d+(?::\d+)?$/, '')
-    return path && !/[\x00-\x1f]/.test(path) ? path : null
-  } catch { return null }
 }
 
 function FileLink({ href, children, conversationId }: { href?: string; children?: ReactNode; conversationId?: string }) {

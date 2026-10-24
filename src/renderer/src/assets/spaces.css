@@ -41,13 +41,8 @@
 .space-add { margin-left: auto; }
 .space-initial { position: absolute; right: 3px; bottom: 6px; font-size: 8px; font-weight: 700; line-height: 1; }
 .space-icon .status-dot { position: absolute; top: 3px; right: 3px; }
-.space-overview-trigger { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; padding: 10px 0; border: 0; background: transparent; text-align: left; font-weight: 600; }
+.space-overview-trigger { display: flex; align-items: center; flex: 1; min-width: 0; padding: 10px 0; font-weight: 600; }
 .space-overview-trigger span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.space-overview-list { display: grid; gap: 10px; }
-.space-overview-list > button { display: flex; align-items: center; gap: 14px; padding: 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); text-align: left; min-width: 0; }
-.space-overview-list > button[aria-pressed='true'] { border-color: var(--primary); background: var(--surface-muted); }
-.space-overview-list small { display: block; color: var(--muted); font-size: 11px; overflow-wrap: anywhere; margin-top: 6px; }
-.space-overview-symbol { display: grid; place-items: center; width: 42px; height: 42px; flex-shrink: 0; border-radius: 10px; color: white; font-size: 24px; }
 @media (hover: hover) and (pointer: fine) {
   .sidebar .conversation-row > .button { opacity: 0; pointer-events: none; }
   .sidebar .conversation-row:hover > .button, .sidebar .conversation-row:focus-within > .button { opacity: 1; pointer-events: auto; }

@@ -22,6 +22,7 @@ async function completed(page: Page, id: string, count: number) {
 }
 
 test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('alfred.notifications.prompted', 'true'))
   await page.goto('/')
   await page.getByLabel('Connection code').fill('alfred-chat-lab-only')
   await page.getByRole('button', { name: 'Enter my workspace' }).click()

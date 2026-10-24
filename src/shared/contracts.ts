@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { attachmentsSchema } from './attachments.js'
 import { harnessProjectionSchema } from './subagents.js'
+import { harnessSelectionSchema } from './harnesses.js'
 
 export const apiProviderId = z.enum(['openai', 'anthropic', 'google', 'copilot', 'opencode'])
 export type ApiProviderId = z.infer<typeof apiProviderId>
@@ -53,6 +54,7 @@ export const messageSchema = z.object({
   id: z.string().uuid(), role: z.enum(['user', 'assistant']), text: z.string(),
   createdAt: z.string(), notes: z.array(z.string()).default([]),
   attachments: attachmentsSchema.optional(),
+  segments: z.array(z.object({ kind: z.enum(['activity', 'response', 'result']), text: z.string() })).optional(),
   contextUsage: contextUsageSchema.optional(),
   consumedTokens: z.number().int().nonnegative().optional(),
   consumptionIncomplete: z.boolean().optional(),
@@ -68,6 +70,7 @@ export const conversationSchema = z.object({
   title: z.string(), createdAt: z.string(), layout: layoutSchema,
   lastProvider: providerId.optional(),
   permissionMode: permissionModeSchema.optional(),
+  harness: harnessSelectionSchema.optional(),
   messages: z.array(messageSchema).default([]),
   subagents: z.array(harnessProjectionSchema).max(10).optional(),
   queue: z.array(queuedMessageSchema).max(20).optional(),

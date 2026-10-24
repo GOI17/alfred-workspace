@@ -10,6 +10,7 @@ async function sidebar(page: Page) {
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
+    localStorage.setItem('alfred.notifications.prompted', 'true')
     localStorage.setItem('alfred.language', 'en')
     localStorage.setItem('alfred.theme', 'light')
     localStorage.setItem('alfred.project', 'ui-project-0')

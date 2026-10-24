@@ -72,57 +72,56 @@
 }
 .message-navigation {
   position: absolute;
+  display: flex;
+  flex-direction: column;
   inset-inline-start: 3px;
   top: 24px;
   bottom: 24px;
   width: 26px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: none;
-}
-.message-navigation::-webkit-scrollbar {
-  display: none;
+  overflow: clip;
 }
 .message-navigation button {
   display: flex;
+  flex: 0 1 11px;
+  min-height: 0;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   width: 24px;
-  height: 24px;
-  padding: 0;
+  height: 11px;
+  padding: 0 0 0 5px;
   border: 0;
-  border-radius: 4px;
+  border-radius: 0;
   background: transparent;
   color: var(--muted);
 }
 .message-navigation button > span {
   display: block;
   width: 7px;
-  height: 3px;
+  height: min(3px, 50%);
   background: currentColor;
   opacity: 0.5;
   transition: width 120ms, opacity 120ms;
 }
 .message-navigation button[aria-current='location'] > span {
-  width: 14px;
+  width: 22px;
   opacity: 1;
   color: var(--primary);
 }
 .message-navigation button:hover,
 .message-navigation button:focus-visible {
-  background: var(--accent);
-  color: var(--primary);
+  color: var(--foreground);
 }
+.message-navigation button:has(+ button + button + button:is(:hover, :focus-visible)) > span,
+.message-navigation button:is(:hover, :focus-visible) + button + button + button > span { width: 10px; }
+.message-navigation button:has(+ button + button:is(:hover, :focus-visible)) > span,
+.message-navigation button:is(:hover, :focus-visible) + button + button > span { width: 16px; }
+.message-navigation button:has(+ button:is(:hover, :focus-visible)) > span,
+.message-navigation button:is(:hover, :focus-visible) + button > span { width: 22px; opacity: .75; }
 .message-navigation button:hover > span,
 .message-navigation button:focus-visible > span {
-  width: 14px;
+  width: 28px;
   opacity: 1;
 }
 .message-navigation button:focus-visible {
   outline-offset: -2px;
-}
-@media (pointer: coarse) {
-  .message-navigation button {
-    height: 44px;
-  }
 }

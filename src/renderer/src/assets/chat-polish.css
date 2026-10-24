@@ -194,9 +194,6 @@
 .chat-deck .chat-column-heading .button:hover { color: var(--foreground); background: var(--surface-muted); }
 .chat-deck .chat-column-title { padding-inline: 0; font-weight: 600; }
 .chat-window-error { margin: 0; padding: 8px 12px; font-size: var(--text-xs); color: var(--foreground); background: var(--surface-muted); border-bottom: 1px solid var(--border); }
-.chat-panel .message-navigation { border-right: 1px solid var(--border); }
-.chat-panel .message-navigation > small { color: var(--muted); font-size: 10px; text-align: center; padding-block: 8px; }
-.chat-panel .message-navigation button > span { border-radius: 2px; }
 @media (pointer: coarse) {
   .chat-deck .chat-column-heading .button,
   .chat-deck .chat-deck-navigation .button { width: 44px; height: 44px; }

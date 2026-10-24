@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom'
 import { FolderPlus, GitBranch, Plus, Settings2, X, PanelLeftClose, ChevronDown, Pin } from 'lucide-react'
 import type { Conversation, Project, PublicState, Worktree } from '../../shared/contracts'
 import { Button } from './components/ui/button'
-import { Dialog } from './components/ui/dialog'
 import { ProviderLogo } from './components/provider-logo'
 import { ProjectActions } from './components/project-actions'
 import { useUI } from './ui-preferences'
@@ -73,7 +72,6 @@ export function Sidebar({ state, project, conversation, worktrees, workspacePath
     if (item.top < bounds.top) list.scrollTop += item.top - bounds.top
     else if (item.bottom > bounds.bottom) list.scrollTop += item.bottom - bounds.bottom
   }, [conversation?.id, mobileOpen])
-  const [overview, setOverview] = useState(false)
   const [pins, setPins] = useState<string[]>(() => {
     try { const value: unknown = JSON.parse(localStorage.getItem('alfred.pinnedConversations') || '[]'); return Array.isArray(value) ? value.filter((id): id is string => typeof id === 'string') : [] } catch { return [] }
   })
@@ -125,7 +123,7 @@ export function Sidebar({ state, project, conversation, worktrees, workspacePath
       </div>
       <div className="space-content" key={project?.id || 'empty'}>
         {project ? <>
-          <div className="project-heading"><button className="space-overview-trigger" aria-haspopup="dialog" onClick={() => setOverview(true)} title={t('All spaces', 'Todos los espacios')}><span>{project.name}</span><ChevronDown size={14} /></button><ProjectActions removeProject={removeProject} /></div>
+          <div className="project-heading"><div className="space-overview-trigger" title={project.name}><span>{project.name}</span></div><ProjectActions removeProject={removeProject} /></div>
           <details className="workspace-picker" key={`${project.id}:${workspacePath}`}>
             <summary title={workspacePath}><GitBranch size={14} /><span>{activeWorkspace?.branch || (workspacePath === project.path ? t('Main', 'Principal') : t('Active workspace', 'Espacio activo'))}</span><ChevronDown size={14} /></summary>
             <div className="workspace-list" role="group" aria-label={t('Workspaces', 'Espacios de trabajo')}>
@@ -170,12 +168,5 @@ export function Sidebar({ state, project, conversation, worktrees, workspacePath
       </div>
     </aside>
     {dockTooltip && createPortal(<div ref={dockTooltipRef} className="space-dock-tooltip" role="tooltip" style={{ left: dockTooltip.x, top: dockTooltip.y }}>{dockTooltip.label}</div>, document.body)}
-    {overview && <Dialog open onClose={() => setOverview(false)} title={t('Your spaces', 'Tus espacios')} description={t('Switch projects without losing your draft or reading position.', 'Cambia de proyecto sin perder tu borrador ni tu posición de lectura.')}>
-      <div className="space-overview-list">{state.projects.map((item) => <button key={item.id} aria-pressed={project?.id === item.id} onClick={() => { setOverview(false); if (project?.id !== item.id) selectProject(item.id) }}>
-        <span className="space-overview-symbol" style={{ background: spaceColor(item.id) }} aria-hidden="true">{spaceSymbols[spaceIndex(item.id) % spaceSymbols.length]}</span>
-        <span><strong>{item.name}</strong><small>{item.path}</small></span>
-      </button>)}</div>
-      <div className="dialog-actions"><Button onClick={() => { setOverview(false); addProject() }}><Plus size={16} />{t('Add space', 'Agregar espacio')}</Button></div>
-    </Dialog>}
   </>
 }

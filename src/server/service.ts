@@ -4,7 +4,8 @@ import { join } from 'node:path'
 import { realpath } from 'node:fs/promises'
 import { panes, type Conversation, type Layout, type PublicState } from '../shared/contracts.js'
 import { Store } from './store.js'
-import { Chat } from './chat.js'
+import type { SessionPort } from './session-port.js'
+import { createLegacySessionAdapter, type SessionAdapter, type SessionAdapterFactory } from './session-adapter.js'
 import { Vault, loadSecret } from './vault.js'
 import { Browsers } from './browsers.js'
 import { Terminals } from './terminals.js'
@@ -16,28 +17,25 @@ export class WorkspaceService {
   readonly events = new EventEmitter()
   readonly terminals = new Terminals()
   readonly browsers = new Browsers()
-  readonly chat: Chat
+  readonly chat: SessionPort
+  readonly adapter: SessionAdapter
   readonly chatgpt: ChatgptOAuth
   private mutations: Promise<unknown> = Promise.resolve()
   private worktreeVersion = 0
   private constructor(
     readonly store: Store,
     readonly vault: Vault,
-    model?: LanguageModel,
+    model: LanguageModel | undefined,
+    adapterFactory: SessionAdapterFactory,
   ) {
     this.events.setMaxListeners(100)
     this.chatgpt = new ChatgptOAuth(store, vault, () => this.changed())
-    this.chat = new Chat(
-      store,
-      vault,
-      () => this.changed(),
-      model,
-      () => this.chatgpt.model(),
-    )
+    this.adapter = adapterFactory({ store, vault, changed: () => this.changed(), model, chatgptModel: () => this.chatgpt.model() })
+    this.chat = this.adapter.session
   }
-  static async open(directory: string, model?: LanguageModel) {
+  static async open(directory: string, model?: LanguageModel, adapterFactory: SessionAdapterFactory = createLegacySessionAdapter) {
     const store = await new Store(directory).open()
-    return new WorkspaceService(store, new Vault(await loadSecret(directory, 'vault.key')), model)
+    return new WorkspaceService(store, new Vault(await loadSecret(directory, 'vault.key')), model, adapterFactory)
   }
   changed() {
     this.events.emit('change')
@@ -158,15 +156,16 @@ export class WorkspaceService {
       this.worktreeVersion++
     })
   }
-  async createTree(projectId: string, branch: string) {
+  async createTree(projectId: string, branch: string, path?: string) {
     return this.mutate(async () => {
-      const path = await git.createWorktree(
+      const created = await git.createWorktree(
         this.project(projectId),
         branch,
         this.worktreeDirectory(),
+        path,
       )
       this.worktreeVersion++
-      return { path }
+      return { path: created }
     })
   }
   async setLayout(id: string, layout: Layout) {

@@ -48,7 +48,7 @@ Las variables se configuran con el mecanismo del shell o del servicio que inicia
 ## Primera etapa
 
 - **Espacios:** agregar, listar y quitar proyectos Git o carpetas normales. Quitar un proyecto conserva sus archivos y worktrees en disco.
-- **Worktrees:** listar los worktrees reales de Git, crear una nueva rama desde `HEAD` y eliminar worktrees secundarios. Git rechaza la eliminación si hay cambios locales. La rama se conserva. Las nuevas carpetas viven en el directorio de datos de Alfred.
+- **Worktrees:** listar los worktrees reales de Git, crear una nueva rama desde `HEAD` y eliminar worktrees secundarios. Git rechaza la eliminación si hay cambios locales. La rama se conserva. El modal muestra la ruta completa de destino: por defecto, `<ALFRED_DATA_DIR>/worktrees/<proyecto>/<id>` (`~/.alfred-workspace` es el directorio de datos habitual). «Cambiar ruta» permite indicar otra carpeta nueva para ese worktree, mediante una ruta absoluta o `~/…` en el equipo donde se ejecuta Alfred.
 - **Conversaciones:** historial persistente por proyecto y workspace, chat nativo en streaming, detener respuestas e indicador de actividad del servidor.
 - **Paneles:** conversación, terminal, navegador e historial Git; división horizontal o vertical, redimensionado y cierre. Máximo ocho paneles por conversación. En teléfono se cambia de panel mediante pestañas.
 - **Terminal:** PTY real por panel, reconexión con hasta 256 KB de salida y teclas auxiliares para teléfono. Es una herramienta independiente: los agentes no usan una CLI ni se representan mediante terminales.
@@ -66,6 +66,12 @@ También está implementado **Continue with ChatGPT** con el flujo oficial de re
 Selecciona un modelo después de conectar ChatGPT. El consumo elegible usa tu plan y puede administrarse en [Ajustes de uso de ChatGPT](https://chatgpt.com/settings/usage). La disponibilidad depende de la cuenta y del proveedor. El flujo sigue la [documentación oficial de registro](https://developers.openai.com/siwc/token-sharing-open-source/sign-in) y de [modelos e inferencia](https://developers.openai.com/siwc/token-sharing-open-source/models-and-inference).
 
 El agente puede listar carpetas, leer archivos de texto de hasta 100 KB y proponer escrituras dentro del workspace. **Cada escritura requiere aprobación** con el contenido visible en el chat. No tiene una herramienta de shell. La terminal independiente sí ejecuta lo que escriba el usuario. Los archivos necesarios para responder se comparten con el proveedor seleccionado.
+
+## Recursos de agent harnesses
+
+En **Ajustes → Agent harnesses**, Alfred descubre comandos, skills, definiciones de agentes, instrucciones y MCPs locales de Codex, Claude Code, OpenCode y Pi. Muestra su archivo de origen y permite activarlos por conversación. Los comandos aparecen al escribir `/`; los MCPs se importan como referencias y mantienen los permisos de Alfred. El catálogo se actualiza sin recargar la aplicación.
+
+Alfred ejecuta estos prompts con su motor de chat. Los hooks, plugins y la orquestación nativa permanecen en cada harness; los estados de subagentes llegan mediante la API de actividad. Consulta [rutas, compatibilidad y funcionamiento](docs/HARNESSES.md).
 
 ## Límites de esta base
 

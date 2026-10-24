@@ -1,5 +1,6 @@
-import { realpath, stat } from 'node:fs/promises'
-import { basename, join } from 'node:path'
+import { lstat, realpath, stat } from 'node:fs/promises'
+import { basename, isAbsolute, join, resolve } from 'node:path'
+import { homedir } from 'node:os'
 import { randomUUID } from 'node:crypto'
 import { runProcess } from '../shared/child-process/run-process.js'
 import type { GitHistory, Project, Worktree } from '../shared/contracts.js'
@@ -61,11 +62,24 @@ export async function verifyWorkspace(project: Project, path: string) {
     throw new Error('The workspace no longer belongs to this project.')
   return canonical
 }
-export async function createWorktree(project: Project, branch: string, directory: string) {
+export function defaultWorktreePath(project: Project, directory: string) {
+  if (project.kind !== 'git') throw new Error('This folder is not a Git repository.')
+  return resolve(directory, project.id, randomUUID())
+}
+export async function createWorktree(project: Project, branch: string, directory: string, destination?: string) {
   if (project.kind !== 'git') throw new Error('This folder is not a Git repository.')
   await git(project.path, ['check-ref-format', '--branch', branch])
   if (branch.startsWith('-')) throw new Error('Invalid branch name.')
-  const path = join(directory, project.id, randomUUID())
+  const input = destination ?? defaultWorktreePath(project, directory)
+  const expanded = /^~[\\/]/.test(input) ? join(homedir(), input.slice(2)) : input
+  if (!isAbsolute(expanded) || expanded.includes('\0'))
+    throw new Error('Use an absolute path for the new worktree folder.')
+  const path = resolve(expanded)
+  const existing = await lstat(path).catch((error) => {
+    if (error.code === 'ENOENT') return undefined
+    throw error
+  })
+  if (existing) throw new Error('The destination already exists. Choose a new folder for the worktree.')
   await git(project.path, ['worktree', 'add', '-b', branch, path, 'HEAD'])
   return realpath(path)
 }

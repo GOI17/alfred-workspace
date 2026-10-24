@@ -1,5 +1,5 @@
 import { CopilotSettings } from './copilot-settings'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Project, ProviderId, ApiProviderId, PublicState } from '../../shared/contracts'
 import { apiProviderId } from '../../shared/contracts'
 import { api, errorMessage } from './api'
@@ -15,21 +15,50 @@ export function WorktreeDialog({ project, onClose, onAdded }: {
 }) {
   const { t } = useUI()
   const [branch, setBranch] = useState(''), [error, setError] = useState(''), [busy, setBusy] = useState(false)
+  const [defaultPath, setDefaultPath] = useState(''), [customPath, setCustomPath] = useState('')
+  const [custom, setCustom] = useState(false), [loading, setLoading] = useState(true), [attempt, setAttempt] = useState(0)
+  useEffect(() => {
+    const controller = new AbortController()
+    setLoading(true); setError('')
+    void api<{ path: string }>(`/projects/${project.id}/worktrees/location`, undefined, undefined, controller.signal)
+      .then((location) => { if (!controller.signal.aborted) setDefaultPath(location.path) })
+      .catch((error) => { if (!controller.signal.aborted) setError(errorMessage(error)) })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+    return () => controller.abort()
+  }, [project.id, attempt])
+  const destination = custom ? customPath : defaultPath
   return <Dialog open onClose={onClose} title={t('New worktree', 'Nuevo worktree')}
     description={t('An independent branch and folder for parallel work, starting from the current project commit.', 'Una rama y carpeta independientes para trabajar en paralelo, desde el commit actual del proyecto.')}>
     <form onSubmit={async (event) => {
-      event.preventDefault(); setBusy(true)
+      event.preventDefault()
+      if (busy || loading || !destination.trim()) return
+      setBusy(true); setError('')
       try {
-        const result = await api<{ path: string }>(`/projects/${project.id}/worktrees`, { branch })
+        const result = await api<{ path: string }>(`/projects/${project.id}/worktrees`, { branch, path: destination })
         onAdded(result.path); onClose()
       } catch (error) { setError(errorMessage(error)) }
       finally { setBusy(false) }
     }}>
-      <label>{t('New branch name', 'Nombre de la nueva rama')}<Input required value={branch} onChange={(event) => setBranch(event.target.value)} placeholder="feature/my-idea" autoComplete="off" /></label>
+      <label>{t('New branch name', 'Nombre de la nueva rama')}<Input required disabled={busy} maxLength={150} value={branch} onChange={(event) => setBranch(event.target.value)} placeholder="feature/my-idea" autoComplete="off" /></label>
+      <div className="worktree-location">
+        <div className="worktree-location-heading"><span>{t('Worktree folder', 'Carpeta del worktree')}</span>
+          <Button variant="ghost" size="small" disabled={busy || loading || !defaultPath} onClick={() => {
+            if (!custom) setCustomPath(defaultPath)
+            setCustom(!custom)
+          }}>{custom ? t('Use default', 'Usar predeterminada') : t('Change path', 'Cambiar ruta')}</Button>
+        </div>
+        {loading ? <p className="field-note" role="status">{t('Loading default location…', 'Cargando ubicación predeterminada…')}</p>
+          : custom ? <Input aria-label={t('Worktree path', 'Ruta del worktree')} aria-describedby="worktree-location-note" autoFocus required disabled={busy} maxLength={4000} value={customPath} onChange={(event) => setCustomPath(event.target.value)} autoComplete="off" spellCheck={false} />
+          : defaultPath ? <code className="worktree-location-path">{defaultPath}</code>
+          : <Button variant="secondary" size="small" onClick={() => setAttempt((value) => value + 1)}>{t('Retry loading location', 'Reintentar cargar ubicación')}</Button>}
+        <p id="worktree-location-note" className="field-note">{custom
+          ? t('Enter the full path of a new folder on the computer running Alfred. The folder must not exist yet. This change applies only to this worktree.', 'Escribe la ruta completa de una carpeta nueva en el equipo donde se ejecuta Alfred. La carpeta no debe existir todavía. Este cambio solo se aplica a este worktree.')
+          : t('By default, Alfred creates a unique folder inside worktrees in its data directory. The full destination is shown above.', 'Por defecto, Alfred crea una carpeta única dentro de worktrees en su directorio de datos. Arriba se muestra la ruta completa de destino.')}</p>
+      </div>
       {error && <p role="alert" className="error-text">{error}</p>}
       <div className="dialog-actions">
         <Button variant="ghost" onClick={onClose}>{t('Cancel', 'Cancelar')}</Button>
-        <Button type="submit" disabled={busy}>{busy ? t('Creating…', 'Creando…') : t('Create worktree', 'Crear worktree')}</Button>
+        <Button type="submit" disabled={busy || loading || !destination.trim()}>{busy ? t('Creating…', 'Creando…') : t('Create worktree', 'Crear worktree')}</Button>
       </div>
     </form>
   </Dialog>

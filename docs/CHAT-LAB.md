@@ -10,7 +10,7 @@ pnpm browser:install
 pnpm test:chat
 ```
 
-Playwright starts its own server on `127.0.0.1:4312`; it refuses to reuse an existing server. Stop a manually running lab before testing. Desktop Chrome and Pixel 7 emulation run serially. No build is required.
+Playwright starts its own server on `127.0.0.1:4312`; it refuses to reuse an existing server. Stop a manually running lab before testing. Desktop Chrome and Pixel 7 emulation run serially. Device connection tests also run in WebKit with an iPhone viewport; `pnpm browser:install` installs both engines. No build is required.
 
 ## Manual reproduction
 
@@ -30,6 +30,8 @@ Do not expose this lab through a tunnel. Do not add real keys or enable terminal
 - Reload during an active response, checking that the prompt is not duplicated and another prompt can be submitted afterward.
 
 Each scenario runs on desktop and phone (eight cases total). The server fixture is shared across serial cases; use baseline counts and project-specific prompt text when asserting uniqueness. API calls are used for precise queue setup and state assertions; the composer and browser event channel remain real. This does not emulate Cloudflare, provider outages, large SSE backpressure or real hardware mobile browsers.
+
+Run `pnpm test:chat tests/device-connection.spec.ts` for QR pairing regressions. These use a synthetic camera stream with a real QR image and decoder, cover camera cleanup and denied permissions, verify same-server validation and clipboard handoff, and authenticate against the lab server. They do not verify Home Screen installation or physical iPhone camera permissions.
 
 ## Evidence
 

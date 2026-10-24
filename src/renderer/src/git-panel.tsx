@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { GitCommitHorizontal, GitBranch, RefreshCw, ChevronLeft, ChevronRight, Check, Plus, FileText, Download, Upload, GitMerge, Search } from 'lucide-react'
 import type { GitHistory } from '../../shared/contracts'
 import { api, errorMessage } from './api'
+import { liveRefresh } from './live-refresh'
 import { Button } from './components/ui/button'
 import { useUI } from './ui-preferences'
 import { GitFileGroup, GitDiff, useGitDiff } from './git-review'
@@ -9,15 +10,16 @@ import './assets/git-panel.css'
 type Details = { branches: string[]; conflicts: string[] }
 type Section = 'changes' | 'history' | 'branches'
 // Reset repository-specific drafts and requests when the conversation changes.
-export function GitPanel({ conversationId }: { conversationId: string }) {
-  return <RepositoryPanel key={conversationId} conversationId={conversationId} />
+export function GitPanel({ conversationId, active = true }: { conversationId: string; active?: boolean }) {
+  return <RepositoryPanel key={conversationId} conversationId={conversationId} active={active} />
 }
-function RepositoryPanel({ conversationId }: { conversationId: string }) {
+function RepositoryPanel({ conversationId, active }: { conversationId: string; active: boolean }) {
   const { t, language } = useUI()
   const [history, setHistory] = useState<GitHistory>()
   const [details, setDetails] = useState<Details>()
   const [section, setSection] = useState<Section>('changes')
   const [error, setError] = useState('')
+  const [loadError, setLoadError] = useState('')
   const [skip, setSkip] = useState(0)
   const [revision, setRevision] = useState('')
   const [refresh, setRefresh] = useState(0)
@@ -30,7 +32,7 @@ function RepositoryPanel({ conversationId }: { conversationId: string }) {
   const [output, setOutput] = useState('')
   const [query, setQuery] = useState('')
   const endpoint = `/conversations/${conversationId}`
-  const { diff, diffError } = useGitDiff(endpoint, revision, refresh)
+  const { diff, diffError } = useGitDiff(endpoint, revision, refresh, active && !busy)
   async function act(body: Record<string, string>) {
     if (actionLock.current || loading) return
     actionLock.current = true
@@ -56,31 +58,21 @@ function RepositoryPanel({ conversationId }: { conversationId: string }) {
     }
   }
   useEffect(() => {
-    let current = true
+    if (!active || busy) return
     setLoading(true)
-    void Promise.all([
-      api<GitHistory>(`${endpoint}/git?skip=${skip}`),
-      api<Details>(`${endpoint}/git/details`),
-    ])
-      .then(([nextHistory, nextDetails]) => {
-        if (!current) return
+    return liveRefresh(async (signal) => {
+      try {
+        const [nextHistory, nextDetails] = await Promise.all([
+          api<GitHistory>(`${endpoint}/git?skip=${skip}`, undefined, undefined, signal),
+          api<Details>(`${endpoint}/git/details`, undefined, undefined, signal),
+        ])
+        if (signal.aborted || actionLock.current) return
         setHistory(nextHistory)
         setDetails(nextDetails)
-      })
-      .catch((cause) => {
-        if (current) {
-          setError(errorMessage(cause))
-          setHistory(undefined)
-          setDetails(undefined)
-        }
-      })
-      .finally(() => {
-        if (current) setLoading(false)
-      })
-    return () => {
-      current = false
-    }
-  }, [endpoint, skip, refresh])
+        setLoadError('')
+      } finally { if (!signal.aborted) setLoading(false) }
+    }, (cause) => setLoadError(errorMessage(cause)))
+  }, [endpoint, skip, refresh, active, busy])
   const changes = history?.changes || []
   const conflicted = (path: string) => details?.conflicts.includes(path) || false
   const staged = changes.filter(
@@ -89,7 +81,34 @@ function RepositoryPanel({ conversationId }: { conversationId: string }) {
   const unstaged = changes.filter(
     (item) => item.status === '??' || item.status[1] !== ' ' || conflicted(item.path),
   )
-  const locked = !!busy || loading || !details || !history
+  async function stageAll() {
+    if (actionLock.current || loading || loadError || !details || !history) return
+    const files = unstaged.filter((item) => !conflicted(item.path))
+    if (!files.length) return
+    actionLock.current = true
+    setBusy('stage-all')
+    setError('')
+    setOutput('')
+    let completed = 0
+    try {
+      for (const file of files) {
+        await api(`${endpoint}/git/action`, { action: 'stage', path: file.path })
+        completed++
+      }
+      setOutput(t(`${completed} files staged.`, `${completed} archivos preparados.`))
+    } catch (cause) {
+      setError(t(
+        `Staged ${completed} of ${files.length} files. Stopped: ${errorMessage(cause)}`,
+        `Se prepararon ${completed} de ${files.length} archivos. Detenido: ${errorMessage(cause)}`,
+      ))
+    } finally {
+      actionLock.current = false
+      setBusy('')
+      setLoading(true)
+      setRefresh((value) => value + 1)
+    }
+  }
+  const locked = !!busy || loading || !!loadError || !details || !history
   const revisionTitle =
     revision === 'working'
       ? t('Unstaged changes', 'Cambios sin preparar')
@@ -194,9 +213,9 @@ function RepositoryPanel({ conversationId }: { conversationId: string }) {
           </button>
         ))}
       </nav>
-      {error && (
+      {(error || loadError) && (
         <div className="git-notice git-notice-error" role="alert">
-          <span>{error}</span>
+          <span>{error || loadError}</span>
           <Button variant="ghost" size="small" disabled={!!busy || loading} onClick={refreshData}>
             {t('Retry', 'Reintentar')}
           </Button>
@@ -321,6 +340,8 @@ function RepositoryPanel({ conversationId }: { conversationId: string }) {
                   </label>
                   <GitFileGroup
                     items={staged}
+                    unstageAll={() => act({ action: 'unstage-all' })}
+                    unstageAllBlocked={!!details?.conflicts.length}
                     prepared
                     query={query}
                     conflicted={conflicted}
@@ -331,6 +352,7 @@ function RepositoryPanel({ conversationId }: { conversationId: string }) {
                   />
                   <GitFileGroup
                     items={unstaged}
+                    stageAll={stageAll}
                     prepared={false}
                     query={query}
                     conflicted={conflicted}

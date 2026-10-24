@@ -2,18 +2,34 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { api, errorMessage } from './api'
 import { useUI } from './ui-preferences'
+import type { HarnessCatalog, HarnessResource, HarnessSelection } from '../../shared/harnesses'
+import { liveRefresh } from './live-refresh'
 
 type Props = {
   conversationId: string; value: string; onChange: (value: string) => void
   sending: boolean; busy: boolean; onSend: () => void; settings: () => void
+  harness?: HarnessSelection
 }
-export function ComposerInput({ conversationId, value, onChange, sending, busy, onSend, settings }: Props) {
+export function ComposerInput({ conversationId, value, onChange, sending, busy, onSend, settings, harness }: Props) {
   const { t } = useUI()
+  const [harnessResources, setHarnessResources] = useState<{ conversation: string; harness: string; resources: HarnessResource[] }>()
+  const [harnessError, setHarnessError] = useState('')
+  useEffect(() => {
+    if (!harness) return
+    return liveRefresh(async (signal) => {
+      const catalog = await api<HarnessCatalog>(`/conversations/${conversationId}/harnesses`, undefined, 'GET', signal)
+      if (!signal.aborted) {
+        setHarnessResources({ conversation: conversationId, harness: harness.id, resources: catalog.resources.filter((item) => item.harness === harness.id && item.invocation && item.usable && !item.shadowedBy) })
+        setHarnessError('')
+      }
+    }, (error) => setHarnessError(errorMessage(error)), 15000)
+  }, [conversationId, harness?.id])
   const commands = [
     { name: '/explore', description: t('Explore the project', 'Explorar el proyecto'), text: t('Explore this project and explain its structure.', 'Explora este proyecto y explica su estructura.') },
     { name: '/plan', description: t('Prepare a plan', 'Preparar un plan'), text: t('Help me plan the following feature: ', 'Ayúdame a planear la siguiente funcionalidad: ') },
     { name: '/review', description: t('Review code', 'Revisar código'), text: t('Review the code and suggest improvements: ', 'Revisa el código y sugiere mejoras: ') },
     { name: '/settings', description: t('Open settings', 'Abrir ajustes'), text: '' },
+    ...(harnessResources?.conversation === conversationId && harnessResources.harness === harness?.id ? harnessResources.resources.map((resource) => ({ name: resource.invocation!, description: resource.description, text: resource.invocation + ' ' })) : []),
   ]
   const input = useRef<HTMLTextAreaElement>(null)
   useLayoutEffect(() => {
@@ -71,7 +87,7 @@ export function ComposerInput({ conversationId, value, onChange, sending, busy, 
   }, [open, marker, query, conversationId, key])
   const items = marker === '@'
     ? (result.key === key ? result.files : []).map((path) => ({ name: path, description: t('Workspace file', 'Archivo del espacio'), text: `@${JSON.stringify(path)} ` }))
-    : commands.filter((command) => command.name.includes(query.toLowerCase()))
+    : commands.filter((command) => command.name.toLowerCase().includes(query.toLowerCase()))
   const active = Math.min(selected, Math.max(0, items.length - 1))
   function choose(index: number) {
     const item = items[index]
@@ -89,6 +105,7 @@ export function ComposerInput({ conversationId, value, onChange, sending, busy, 
   return <div style={{ position: 'relative' }}>
     {open && createPortal(<div style={{ position: 'fixed', ...position, boxSizing: 'border-box', zIndex: 1000, overflowY: 'auto', background: 'var(--surface)', color: 'var(--foreground)', border: '1px solid var(--border)', borderRadius: 8, padding: 8 }}>
       <div>{listLabel} · {t('↑ ↓ select · Enter accept · Esc close', '↑ ↓ seleccionar · Enter aceptar · Esc cerrar')}</div>
+      {marker === '/' && harness && harnessError && <p role="status">{t('Could not refresh harness commands.', 'No se pudieron actualizar los comandos del harness.')}</p>}
       <div id={id} role="listbox" aria-label={listLabel}>
         {items.map((item, index) => <button id={`${id}-${index}`} key={item.name} type="button" role="option" aria-selected={active === index}
           style={{ display: 'block', width: '100%', textAlign: 'left', padding: 8, background: active === index ? 'var(--accent)' : 'transparent', color: 'inherit', border: 0 }}

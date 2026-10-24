@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api, errorMessage } from './api'
+import { liveRefresh } from './live-refresh'
 import { ArrowLeft, Check, Plus, X } from 'lucide-react'
 import type { GitHistory } from '../../shared/contracts'
 import { Button } from './components/ui/button'
@@ -14,7 +15,13 @@ export function GitFileGroup({
   loading,
   setRevision,
   act,
+  stageAll,
+  unstageAll,
+  unstageAllBlocked = false,
 }: {
+  unstageAll?: () => Promise<void>
+  unstageAllBlocked?: boolean
+  stageAll?: () => Promise<void>
   items: GitHistory['changes']
   prepared: boolean
   query: string
@@ -33,6 +40,7 @@ export function GitFileGroup({
           {prepared ? t('Staged', 'Preparados') : t('Changes', 'Sin preparar')}{' '}
           <span className="git-count">{items.length}</span>
         </h3>
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
         <Button
           variant="ghost"
           size="small"
@@ -41,6 +49,35 @@ export function GitFileGroup({
         >
           {t('Review diff', 'Revisar diff')}
         </Button>
+          {prepared && unstageAll && (
+            <Button
+              variant="ghost"
+              size="small"
+              disabled={locked || unstageAllBlocked || !items.length}
+              title={t(
+                'Unstage all files, regardless of filter. Working files are preserved.',
+                'Quitar todos del área de preparación, sin importar el filtro. Se conservan los archivos.',
+              )}
+              onClick={() => void unstageAll()}
+            >
+              {t('Unstage all', 'Quitar todos de preparación')}
+            </Button>
+          )}
+          {!prepared && stageAll && (
+            <Button
+              variant="ghost"
+              size="small"
+              disabled={locked || !items.some((item) => !conflicted(item.path))}
+              title={t(
+                'Stage all unstaged files, regardless of filter. Conflicts are excluded.',
+                'Preparar todos los archivos sin preparar, sin importar el filtro. Se excluyen conflictos.',
+              )}
+              onClick={() => void stageAll()}
+            >
+              {t('Stage all', 'Preparar todos')}
+            </Button>
+          )}
+        </div>
       </div>
       {!items.length ? (
         <p className="git-hint">
@@ -192,27 +229,22 @@ export function GitDiff({
   )
 }
 
-export function useGitDiff(endpoint: string, revision: string, refresh: number) {
+export function useGitDiff(endpoint: string, revision: string, refresh: number, active = true) {
   const [diff, setDiff] = useState<{ text: string; truncated: boolean }>()
   const [diffError, setDiffError] = useState('')
   useEffect(() => {
-    if (!revision) return
-    let current = true
+    if (!revision || !active) return
     setDiff(undefined)
     setDiffError('')
-    void api<{ text: string; truncated: boolean }>(
-      `${endpoint}/diff?revision=${encodeURIComponent(revision)}`,
-    )
-      .then((data) => {
-        if (current) setDiff(data)
-      })
-      .catch((cause) => {
-        if (current) setDiffError(errorMessage(cause))
-      })
-    return () => {
-      current = false
-    }
-  }, [endpoint, revision, refresh])
+    return liveRefresh(async (signal) => {
+      const data = await api<{ text: string; truncated: boolean }>(
+        `${endpoint}/diff?revision=${encodeURIComponent(revision)}`, undefined, undefined, signal,
+      )
+      if (signal.aborted) return
+      setDiff((previous) => previous?.text === data.text && previous.truncated === data.truncated ? previous : data)
+      setDiffError('')
+    }, (cause) => setDiffError(errorMessage(cause)), revision === 'working' || revision === 'staged' ? 3000 : null)
+  }, [endpoint, revision, refresh, active])
 
   return { diff, diffError }
 }

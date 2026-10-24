@@ -47,10 +47,10 @@ export function PanelLayout({ onActiveChatChange, floatingIds, setFloatingIds, m
   const selectedTerminal = terminals.find((pane) => pane.id === active)?.id || terminals[0]?.id
   function content(pane: Pane) {
     return <Suspense fallback={<p className="muted">Opening tool…</p>}>
-      {pane.kind === 'chat' ? <ChatStudio onActiveChatChange={onActiveChatChange} floatingIds={floatingIds} setFloatingIds={setFloatingIds} conversation={conversation} state={state} agent={state.agents[conversation.id]} settings={settings} />
+      {pane.kind === 'chat' ? <ChatStudio onOpenGit={!busy && (leaves.some((item) => item.kind === 'git') || leaves.length < 8) && state.projects.find((project) => project.id === conversation.projectId)?.kind === 'git' ? () => { if (!visible.git) toggle('git') } : undefined} onActiveChatChange={onActiveChatChange} floatingIds={floatingIds} setFloatingIds={setFloatingIds} conversation={conversation} state={state} agent={state.agents[conversation.id]} settings={settings} />
         : pane.kind === 'terminal' ? <TerminalPanel conversationId={conversation.id} paneId={pane.id} />
         : pane.kind === 'browser' ? <BrowserPanel conversationId={conversation.id} paneId={pane.id} />
-        : <GitPanel conversationId={conversation.id} />}
+        : <GitPanel conversationId={conversation.id} active={visible.git && (maximized === null || maximized === 'git') && (leaves.find((item) => item.kind === 'git' && item.id === active) || leaves.find((item) => item.kind === 'git'))?.id === pane.id} />}
     </Suspense>
   }
   function controls(kind: ToolKind) {

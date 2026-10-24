@@ -1,8 +1,12 @@
+import type { SessionAdapterFactory } from './session-adapter.js'
 import { notificationRoutes } from './notifications.js'
 import { pwaRoutes } from './pwa.js'
 import { copilotRoutes } from './copilot.js'
 import { revealFileRoutes } from './reveal-file.js'
 import { subagentRoutes } from './subagents.js'
+import { harnessRoutes } from './harness-routes.js'
+import { HarnessRegistry } from './harness-runtime.js'
+import type { HarnessEnvironment } from './harness-discovery.js'
 import { listWorkspaceFiles } from './workspace-files.js'
 import Fastify from 'fastify'
 import { cloudflareRoutes, type TunnelConfig } from './cloudflare.js'
@@ -37,8 +41,12 @@ export async function createApp(options: {
   model?: LanguageModel
   serve?: boolean
   pickFolder?: (signal: AbortSignal) => Promise<string | null>
+  sessionAdapter?: SessionAdapterFactory
+  harnessEnvironment?: HarnessEnvironment
 }) {
-  const service = await WorkspaceService.open(options.directory, options.model)
+  const service = await WorkspaceService.open(options.directory, options.model, options.sessionAdapter)
+  const harnesses = new HarnessRegistry(options.harnessEnvironment)
+  if (service.adapter.legacyBindings) service.adapter.legacyBindings.harnesses = harnesses
   const app = Fastify({
     logger: false,
     bodyLimit: 250_000,
@@ -48,6 +56,8 @@ export async function createApp(options: {
   await app.register(websocket, { options: { maxPayload: 250_000 } })
   await authentication(app, options.token, options.tunnel?.origin)
   subagentRoutes(app, service)
+  if (service.adapter.legacyBindings) harnessRoutes(app, service, harnesses)
+  app.get('/api/runtime', async () => service.adapter.describe())
   await notificationRoutes(app, service)
   pwaRoutes(app)
   cloudflareRoutes(app, options.tunnel)
@@ -56,7 +66,7 @@ export async function createApp(options: {
   gitActionRoutes(app, service)
   revealFileRoutes(app, service)
   projectSelection(app, service, options.pickFolder)
-  await configureAgentAccess(app, service, options.directory)
+  await configureAgentAccess(app, service, options.directory, harnesses)
   app.setErrorHandler((error, _request, reply) => {
     const message =
       error instanceof ZodError
@@ -138,9 +148,15 @@ export async function createApp(options: {
   app.get('/api/projects/:id/worktrees', async (request) =>
     git.listWorktrees(service.project(id(request.params))),
   )
+  app.get('/api/projects/:id/worktrees/location', async (request) => ({
+    path: git.defaultWorktreePath(service.project(id(request.params)), service.worktreeDirectory()),
+  }))
   app.post('/api/projects/:id/worktrees', async (request) => {
-    const { branch } = z.object({ branch: z.string().min(1).max(150) }).parse(request.body)
-    return service.createTree(id(request.params), branch)
+    const { branch, path } = z.object({
+      branch: z.string().min(1).max(150),
+      path: z.string().min(1).max(4000).optional(),
+    }).parse(request.body)
+    return service.createTree(id(request.params), branch, path)
   })
   app.delete('/api/projects/:id/worktrees', async (request) => {
     const { path } = z.object({ path: z.string().min(1).max(4000) }).parse(request.body)

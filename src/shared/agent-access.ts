@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { mcpPermissionSchema } from './mcp-permissions.js'
+import { harnessIdSchema, resourceIdSchema } from './harnesses.js'
 
 export const mcpServerSchema = z.object({
   id: z.string().regex(/^[a-zA-Z0-9_-]{1,40}$/),
@@ -9,6 +10,7 @@ export const mcpServerSchema = z.object({
       const url = new URL(value)
       return ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password && !url.search && !url.hash
     }, 'Use an HTTP(S) URL without credentials or parameters.') }),
+    z.object({ type: z.literal('harness'), harness: harnessIdSchema, resourceId: resourceIdSchema, fingerprint: z.string().regex(/^[a-f0-9]{64}$/) }),
   ]),
   permission: mcpPermissionSchema.default('blocked'),
   tools: z.record(z.string().max(200), mcpPermissionSchema).default({}),

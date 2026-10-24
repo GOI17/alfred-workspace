@@ -11,6 +11,7 @@ const schema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('pull') }),
   z.object({ action: z.literal('push') }),
   z.object({ action: z.literal('merge'), branch: z.string().min(1).max(250) }),
+  z.object({ action: z.literal('unstage-all') }),
   z.object({ action: z.literal('stage'), path: z.string().min(1).max(4000) }),
   z.object({ action: z.literal('resolve'), path: z.string().min(1).max(4000) }),
   z.object({ action: z.literal('commit'), message: z.string().trim().min(1).max(10000) }),
@@ -44,6 +45,17 @@ export async function gitAction(root: string, input: unknown) {
     if (body.name.startsWith('-')) throw new Error('Invalid branch name.')
     await git(root, ['check-ref-format', '--branch', body.name])
     return git(root, ['switch', '-c', body.name])
+  }
+  if (body.action === 'unstage-all') {
+    const { conflicts } = await gitDetails(root)
+    if (conflicts.length) throw new Error('Resolve merge conflicts before unstaging all files.')
+    const refs = await git(root, ['for-each-ref', '--format=%(refname)', 'refs/heads/'])
+    const head = await runProcess('git', ['rev-parse', '--verify', 'HEAD'], root)
+    if (head.code === 0) return git(root, ['reset', '--mixed', 'HEAD'])
+    // An unborn branch has no HEAD: remove index entries, never working files.
+    const symbolic = await git(root, ['symbolic-ref', 'HEAD'])
+    if (refs.split('\n').includes(symbolic.trim())) throw new Error('Could not resolve HEAD.')
+    return git(root, ['rm', '--cached', '-r', '-f', '--ignore-unmatch', '--', '.'])
   }
   if (body.action === 'push') return git(root, ['push'])
   if (body.action === 'fetch') return git(root, ['fetch', '--all'])

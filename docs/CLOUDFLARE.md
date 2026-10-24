@@ -37,7 +37,7 @@ Las tres variables son obligatorias conjuntamente. El origen debe ser HTTPS, sin
 
 ## Protección
 
-Antes de publicar, configura una aplicación de Cloudflare Access para el hostname y limita quién puede entrar. Alfred mantiene además su autenticación por código. No incluyas ese código en la URL ni en un QR.
+Antes de publicar, configura una aplicación de Cloudflare Access para el hostname y limita quién puede entrar. Alfred mantiene además su autenticación por código. No incluyas el código permanente del servidor en la URL ni en un QR. El QR que genera Alfred utiliza un código temporal de un solo uso que caduca a los 5 minutos.
 
 El servidor reconoce únicamente el origen público configurado para esta conexión y usa cookies Secure al iniciar sesión por ese hostname. No confía indiscriminadamente en cabeceras forwarded.
 
@@ -48,10 +48,15 @@ Publicar Alfred permite acceder a las capacidades habilitadas de tu workspace a 
 1. Abre **Conectar teléfono**.
 2. Revisa y acepta la autorización de publicación.
 3. Pulsa **Conectar teléfono** y espera el estado **Disponible**.
-4. Abre el enlace desde el teléfono, supera Cloudflare Access si está configurado e inicia sesión con el código de Alfred.
+4. Si ya instalaste Alfred, ábrelo desde la pantalla de inicio del teléfono, pulsa **Escanear QR** en la pantalla de bienvenida y apunta al QR de la computadora. Pulsa **Entrar a mi workspace** para conectar dentro de la app instalada. También puedes pegar el enlace del QR o introducir el código del servidor.
+   Si aún no instalaste la app, abre el enlace desde el teléfono, supera Cloudflare Access si está configurado y añádelo a la pantalla de inicio. Instálalo desde la misma dirección HTTPS del túnel.
 5. Pulsa **Desconectar** para cerrar el proceso de túnel iniciado por Alfred.
 
 Cerrar el diálogo no cierra el túnel. Cerrar normalmente el servidor sí solicita su terminación. No se detienen conectores externos, servicios u otros procesos de cloudflared: si los hay, el hostname podría seguir accesible.
+
+En iPhone/iPad, escanear el QR con la Cámara del sistema abre el navegador. La app instalada conserva su propia sesión; iniciar sesión en Safari no conecta automáticamente la PWA existente. Si ya abriste el QR en Safari, pulsa **Copiar código de conexión**, abre Alfred desde su icono y pega el código allí antes de que caduque. No lo uses primero en Safari: los códigos del QR funcionan una sola vez. Apple describe esta separación de sesiones en [What’s new in web apps](https://developer.apple.com/videos/play/wwdc2023/10120/).
+
+El lector dentro de Alfred solicita la cámara únicamente al pulsar **Escanear QR**, necesita HTTPS (o localhost) y procesa las imágenes en el dispositivo. Detiene la cámara al leer el QR, cancelar o salir de la app. Si deniegas el permiso, puedes pegar el enlace o código. Solo acepta enlaces del mismo servidor que la app instalada.
 
 **Disponible** significa que cloudflared informó de una conexión al servicio de túneles; no prueba que DNS, Access y el enrutamiento al servidor estén correctamente configurados. Comprueba el acceso desde datos móviles antes de dar por concluida la instalación.
 
@@ -63,4 +68,4 @@ Cerrar el diálogo no cierra el túnel. Cerrar normalmente el servidor sí solic
 - **El enlace abre pero no carga Alfred:** verifica el hostname de ingress y el puerto del servicio local.
 - **No autentica:** verifica el origen HTTPS exacto, el Host enviado al servidor y el código de Alfred.
 
-La interfaz no muestra los logs crudos de cloudflared porque podrían contener información sensible. Actualmente muestra el enlace; no genera un QR.
+La interfaz muestra el enlace y el QR temporal. No muestra los logs crudos de cloudflared porque podrían contener información sensible.

@@ -1,4 +1,9 @@
+import { CopilotError } from './copilot.js'
+import { HarnessError } from './harness-runtime.js'
+
 export function providerError(error: unknown) {
+  if (error instanceof CopilotError) return error.message
+  if (error instanceof HarnessError) return error.message
   if (error instanceof Error && 'statusCode' in error) {
     if (error.statusCode === 401 || error.statusCode === 403)
       return 'The provider rejected authorization. Check the connection in Settings.'

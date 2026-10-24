@@ -15,7 +15,7 @@ async function fixture() {
   return root
 }
 const files = [{ path: 'a.txt', content: 'updated' }, { path: 'b.txt', content: 'new' }]
-const options = { toolCallId: 'batch-test', messages: [] }
+const options = { toolCallId: 'batch-test', messages: [], context: {} }
 
 describe('batch write approval', () => {
   it('shows exact contents and waits for one explicit approval for the entire batch', async () => {

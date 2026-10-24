@@ -10,6 +10,7 @@ import { ChatPanel } from './chat-panel'
 import { Login } from './device-connection'
 import { SettingsDialog } from './project-dialogs'
 import { Button } from './components/ui/button'
+import { NotificationPreferences } from './notification-preferences'
 
 /** A separate client: no workspace selection or layout persistence side effects. */
 function DetachedChat({ id }: { id: string }) {
@@ -22,7 +23,7 @@ function DetachedChat({ id }: { id: string }) {
   }, [conversation?.title])
   if (authenticated === undefined) return <div className="loading-screen">{t('Opening chat…', 'Abriendo chat…')}</div>
   if (!authenticated || !state) return <Login connected={refresh} />
-  return <main style={{ display: 'flex', flexDirection: 'column', height: '100dvh', minWidth: 0, overflow: 'hidden' }}>
+  return <NotificationPreferences><main style={{ display: 'flex', flexDirection: 'column', height: '100dvh', minWidth: 0, overflow: 'hidden' }}>
     <header className="workspace-header">
       <strong style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{conversation?.title || t('Chat unavailable', 'Chat no disponible')}</strong>
       <Button variant="ghost" size="small" onClick={() => setSettings(true)}>{t('Settings', 'Ajustes')}</Button>
@@ -32,7 +33,7 @@ function DetachedChat({ id }: { id: string }) {
     {conversation ? <div className="studio-chat" style={{ flex: 1, minHeight: 0 }}><ChatPanel conversation={conversation} state={state} agent={state.agents[id]} settings={() => setSettings(true)} /></div>
       : <p role="status">{t('This conversation no longer exists or is unavailable.', 'Esta conversación ya no existe o no está disponible.')}</p>}
     {settings && <SettingsDialog state={state} onClose={() => setSettings(false)} />}
-  </main>
+  </main></NotificationPreferences>
 }
 
 const root = document.getElementById('root')

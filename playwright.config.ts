@@ -3,7 +3,7 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
   testDir: './tests',
   testMatch: '**/*.spec.ts',
-  testIgnore: '**/chat-lab.spec.ts',
+  testIgnore: ['chat-lab', 'ui-spaces', 'notification-preferences', 'worktree-dialog', 'git-live', 'device-connection', 'harnesses'].map((name) => `**/${name}.spec.ts`),
   workers: 1,
   timeout: 30_000,
   use: {

@@ -43,16 +43,14 @@ export function MessageNavigation({ messages, scroller, content, onNavigate }: P
     return () => { viewport.removeEventListener('scroll', schedule); observer.disconnect(); cancelAnimationFrame(frame) }
   }, [messages, scroller, content])
   useLayoutEffect(() => {
-    const nav = rail.current, button = nav?.querySelectorAll('button')[active]
-    if (!nav || !button) return
-    if (button.offsetTop < nav.scrollTop) nav.scrollTop = button.offsetTop
-    else if (button.offsetTop + button.offsetHeight > nav.scrollTop + nav.clientHeight) nav.scrollTop = button.offsetTop + button.offsetHeight - nav.clientHeight
-  }, [active])
-  useLayoutEffect(() => {
     const dismiss = () => setPreview(null)
+    // Scrolling message content does not move the fixed navigation rail.
+    const dismissOnScroll = (event: Event) => {
+      if (event.target instanceof Node && event.target.contains(rail.current)) dismiss()
+    }
     window.addEventListener('resize', dismiss)
-    window.addEventListener('scroll', dismiss, true)
-    return () => { window.removeEventListener('resize', dismiss); window.removeEventListener('scroll', dismiss, true) }
+    window.addEventListener('scroll', dismissOnScroll, true)
+    return () => { window.removeEventListener('resize', dismiss); window.removeEventListener('scroll', dismissOnScroll, true) }
   }, [])
   function show(button: HTMLButtonElement, label: string, index: number) {
     const rect = button.getBoundingClientRect()
@@ -61,7 +59,6 @@ export function MessageNavigation({ messages, scroller, content, onNavigate }: P
   if (!entries.length) return null
   return <>
     <nav ref={rail} className="message-navigation" aria-label={`${t('Messages', 'Mensajes')}: ${active + 1} / ${entries.length}`}>
-      <small title={t('Current message / total messages', 'Mensaje actual / total de mensajes')} style={{ fontSize: 9, color: 'var(--muted)', textAlign: 'center', whiteSpace: 'nowrap' }}>{Math.max(0, active + 1)}/{entries.length}</small>
       {entries.map((message, index) => {
         const text = (message.text.trim() || message.attachments?.map((file) => file.name).join(', ') || t('Attachments', 'Adjuntos')).replace(/\s+/g, ' ')
         const excerpt = text.length > 160 ? `${text.slice(0, 157)}…` : text

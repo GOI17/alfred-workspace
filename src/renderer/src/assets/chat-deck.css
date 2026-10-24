@@ -99,7 +99,9 @@
     border-radius: 0;
     box-shadow: none;
   }
-  .chat-deck-toolbar select { font-size: 16px; }
+  .chat-deck .chat-deck-toolbar > select,
+  .chat-deck .chat-deck-toolbar > svg { display: none; }
+  .chat-deck .chat-deck-toolbar:not(:has(.chat-deck-navigation)) { display: none; }
 }
 
 /* Floating positions are world coordinates; only the viewport is clipped. */

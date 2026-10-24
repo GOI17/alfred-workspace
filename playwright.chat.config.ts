@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests',
-  testMatch: ['chat-lab.spec.ts', 'ui-spaces.spec.ts'],
+  testMatch: ['chat-lab.spec.ts', 'ui-spaces.spec.ts', 'notification-preferences.spec.ts', 'worktree-dialog.spec.ts', 'git-live.spec.ts', 'device-connection.spec.ts', 'harnesses.spec.ts'],
   workers: 1,
   timeout: 30_000,
   outputDir: 'test-results/chat-lab',
@@ -14,6 +14,7 @@ export default defineConfig({
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
     { name: 'phone', use: { ...devices['Pixel 7'] } },
+    { name: 'iphone', testMatch: 'device-connection.spec.ts', use: { ...devices['iPhone 13'] } },
   ],
   webServer: {
     command: 'pnpm exec tsx tests/chat-lab-server.ts',

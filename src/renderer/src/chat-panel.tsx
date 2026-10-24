@@ -13,6 +13,7 @@ import { useUI } from './ui-preferences'
 import { useChatReading } from './use-chat-reading'
 import './assets/attachments.css'
 import './assets/message-queue.css'
+import './assets/message-phases.css'
 
 const Markdown = lazy(() => import('./message-markdown'))
 type Props = { conversation: Conversation; state: PublicState; agent?: AgentState; settings: () => void }
@@ -30,7 +31,7 @@ function ApprovalCard({ approval, conversationId, onError }: {
     try {
       const parsed: unknown = JSON.parse(approval.content)
       if (parsed && typeof parsed === 'object' && 'files' in parsed && Array.isArray(parsed.files) && parsed.files.length > 0 &&
-        parsed.files.every((file: unknown) => file && typeof file === 'object' && 'path' in file && typeof file.path === 'string' && 'content' in file && typeof file.content === 'string')) files = parsed.files as { path: string; content: string }[]
+        parsed.files.every((file: unknown): file is { path: string; content: string } => !!file && typeof file === 'object' && 'path' in file && typeof file.path === 'string' && 'content' in file && typeof file.content === 'string')) files = parsed.files
     } catch { /* Fall back to the exact original preview. */ }
   }
   async function decide(accepted: boolean) {
@@ -43,11 +44,11 @@ function ApprovalCard({ approval, conversationId, onError }: {
   return <div className="approval-card">
     <div><FileCheck2 size={18} /><strong>{operation ? t('Authorize operation', 'Autorizar operación') : t('Review changes', 'Revisar cambios')}</strong></div>
     {files ? <>
-      <p>{t(`Alfred proposes saving ${files.length} file(s). This approval covers only the contents shown.`, `Alfred propone guardar ${files.length} archivo(s). Esta aprobación cubre solo el contenido mostrado.`)}</p>
+      <p>{t(`The runtime proposes saving ${files.length} file(s). This approval covers only the contents shown.`, `El runtime propone guardar ${files.length} archivo(s). Esta aprobación cubre solo el contenido mostrado.`)}</p>
       {files.map((file, index) => <details key={index}><summary><code>{file.path}</code> · {t('View proposed content', 'Ver contenido propuesto')}</summary><pre>{file.content}</pre></details>)}
       <p>{t('Saving is not atomic: if a file fails, successfully saved files will be reported.', 'El guardado no es atómico: si un archivo falla, se informarán los archivos guardados correctamente.')}</p>
     </> : <>
-      <p>{operation ? t('Alfred requests authorization for', 'Alfred solicita autorización para') : t('Alfred proposes saving', 'Alfred propone guardar')} <code>{approval.path}</code></p>
+      <p>{operation ? t('The runtime requests authorization for', 'El runtime solicita autorización para') : t('The runtime proposes saving', 'El runtime propone guardar')} <code>{approval.path}</code></p>
       <details><summary>{t('View proposed content', 'Ver contenido propuesto')}</summary><pre>{approval.content}</pre></details>
     </>}
     {approval.path.startsWith('Connect MCP:') && <p>{t('Authorize the connection for this conversation during the server session. Changing the configuration revokes this authorization. Tool calls retain their own permissions.', 'Autoriza la conexión para esta conversación durante la sesión del servidor. Cambiar la configuración revoca esta autorización. Las llamadas a herramientas conservan sus propios permisos.')}</p>}
@@ -154,16 +155,25 @@ function ConversationChat({ conversation, state, agent, settings }: Props) {
           {conversation.messages.map((message) => <article key={message.id} className="message" data-role={message.role} data-message-id={message.id}>
             <div className="message-avatar">{message.role === 'user' ? t('You', 'Tú') : 'a·'}</div>
             <div className="message-content">
-              <div className="message-heading">{message.role === 'user' ? t('You', 'Tú') : 'Alfred'}<time>{new Date(message.createdAt).toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' })}</time></div>
+              <div className="message-heading">{message.role === 'user' ? t('You', 'Tú') : t('Assistant', 'Asistente')}<time>{new Date(message.createdAt).toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' })}</time></div>
               {!!message.attachments?.length && <div className="attachment-list" aria-label={t('Attachments', 'Adjuntos')}>
                 {message.attachments.map((file, index) => <a className="attachment-chip" key={index} download={file.name} href={`data:${file.mediaType};base64,${file.data}`} title={`${t('Download', 'Descargar')} ${file.name}`}><Paperclip size={14} /><span>{file.name}</span></a>)}
               </div>}
-              <div className="markdown"><Suspense fallback={<p>{message.text}</p>}><Markdown conversationId={conversation.id}>{message.text}</Markdown></Suspense></div>
-              {message.notes.length > 0 && <details className="tool-notes"><summary>{t('Activity', 'Actividad')} · {message.notes.length}</summary>{message.notes.map((note, index) => <p key={index}>{note}</p>)}</details>}
+              {message.role === 'assistant' && message.segments?.length ? <div className="message-phases">
+                {message.segments.some((segment) => segment.kind === 'activity') && <details className="message-activity" open={busy && message === conversation.messages.at(-1) ? true : undefined}>
+                  <summary>{t('Activity', 'Actividad')}</summary>
+                  {message.segments.filter((segment) => segment.kind === 'activity').map((segment, index) => <div className="markdown message-phase" key={index}><Suspense fallback={<p>{segment.text}</p>}><Markdown conversationId={conversation.id}>{segment.text}</Markdown></Suspense></div>)}
+                </details>}
+                {message.segments.filter((segment) => segment.kind !== 'activity').map((segment, index) => <section className="message-result" key={index}>
+                  <h3>{segment.kind === 'result' ? t('Result', 'Resultado') : busy && message === conversation.messages.at(-1) ? t('Response in progress', 'Respuesta en curso') : t('Partial response', 'Respuesta parcial')}</h3>
+                  <div className="markdown"><Suspense fallback={<p>{segment.text}</p>}><Markdown conversationId={conversation.id}>{segment.text}</Markdown></Suspense></div>
+                </section>)}
+              </div> : <div className="markdown"><Suspense fallback={<p>{message.text}</p>}><Markdown conversationId={conversation.id}>{message.text}</Markdown></Suspense></div>}
+              {message.notes.length > 0 && <details className="tool-notes"><summary>{t('Tool log and notices', 'Herramientas y avisos')} · {message.notes.length}</summary>{message.notes.map((note, index) => <p key={index}>{note}</p>)}</details>}
             </div>
           </article>)}
           <SubagentsPanel projections={conversation.subagents} />
-          {agent?.status === 'running' && <div className="agent-progress"><span className="status-dot" data-status="running" />{t('Alfred is working…', 'Alfred está trabajando…')}</div>}
+          {agent?.status === 'running' && <div className="agent-progress"><span className="status-dot" data-status="running" />{t('Runtime is working…', 'El runtime está trabajando…')}</div>}
           {agent?.approval && <ApprovalCard key={agent.approval.id} approval={agent.approval} conversationId={conversation.id} onError={setError} />}
         </div>
       </div>
@@ -181,7 +191,7 @@ function ConversationChat({ conversation, state, agent, settings }: Props) {
       </section>}
       <form ref={composer} className={`composer${dragging ? ' composer-dragging' : ''}`}
         onDragOver={(event) => { if (event.dataTransfer.types.includes('Files')) { event.preventDefault(); event.dataTransfer.dropEffect = sending || reading ? 'none' : 'copy'; setDragging(!sending && !reading) } }}
-        onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragging(false) }}
+        onDragLeave={(event) => { if (!(event.relatedTarget instanceof Node) || !event.currentTarget.contains(event.relatedTarget)) setDragging(false) }}
         onDrop={(event) => { event.preventDefault(); setDragging(false); void addFiles(Array.from(event.dataTransfer.files)) }}
         onPaste={(event) => {
           if (!(event.target instanceof HTMLTextAreaElement)) return
@@ -194,11 +204,11 @@ function ConversationChat({ conversation, state, agent, settings }: Props) {
         {!!attachments.length && <div className="attachment-list" aria-label={t('Pending attachments', 'Adjuntos pendientes')}>
           {attachments.map((file, index) => <span className="attachment-chip" key={index}><Paperclip size={14} /><span title={file.name}>{file.name}</span><button type="button" disabled={sending || reading} aria-label={`${t('Remove', 'Quitar')} ${file.name}`} onClick={() => setAttachments((current) => current.filter((_, i) => i !== index))}><X size={14} /></button></span>)}
         </div>}
-        <ComposerInput conversationId={conversation.id} value={text} onChange={setText} sending={sending} busy={busy} onSend={() => void send()} settings={settings} />
+        <ComposerInput conversationId={conversation.id} harness={conversation.harness} value={text} onChange={setText} sending={sending} busy={busy} onSend={() => void send()} settings={settings} />
         <div className="composer-footer">
           <div className="attachment-controls">
             <input ref={fileInput} type="file" multiple hidden onChange={(event) => { void addFiles(Array.from(event.target.files || [])); event.target.value = '' }} />
-            <select className="context-control" aria-label={t('Select agent', 'Seleccionar agente')} title={t('Alfred is the only available agent', 'Alfred es el único agente disponible')} value="alfred" disabled><option value="alfred">Alfred</option></select>
+            <span className="context-control" title={t('Execution is provided by the configured runtime adapter', 'La ejecución corresponde al adaptador de runtime configurado')}>{t('Runtime', 'Runtime')}</span>
             <ModelPicker state={state} provider={provider} onSelect={setProvider} settings={settings} disabled={sending} />
             <ContextPermissions conversation={conversation} state={state} provider={provider} busy={busy || sending || queueAction} />
           </div>

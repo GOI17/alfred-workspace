@@ -57,6 +57,8 @@ it('streams native model text, persists it, and owns the agent state on the serv
   expect(measured).toMatchObject({ provider: 'openai', inputTokens: 1, outputTokens: 1 })
   const savedUsage = JSON.parse(await readFile(join(root, 'data', 'workspace.json'), 'utf8')).conversations[0].messages.at(-1).contextUsage
   expect(savedUsage).toEqual(measured)
+  const savedMessage = JSON.parse(await readFile(join(root, 'data', 'workspace.json'), 'utf8')).conversations[0].messages.at(-1)
+  expect(savedMessage.segments).toEqual([{ kind: 'result', text: 'Una idea propia.' }])
 })
 it('does not write until approval and handles multiple requested writes one at a time', async () => {
   let step = 0
@@ -65,6 +67,9 @@ it('does not write until approval and handles multiple requested writes one at a
       stream: new ReadableStream({
         start(controller) {
           if (step++ === 0) {
+            controller.enqueue({ type: 'text-start', id: 'progress' })
+            controller.enqueue({ type: 'text-delta', id: 'progress', delta: 'Voy a proponer dos archivos.' })
+            controller.enqueue({ type: 'text-end', id: 'progress' })
             for (const path of ['one.txt', 'two.txt'])
               controller.enqueue({
                 type: 'tool-call',
@@ -107,6 +112,10 @@ it('does not write until approval and handles multiple requested writes one at a
   await expect.poll(() => service.state().agents[conversation.id]?.status).toBe('idle')
   expect(await readFile(join(repository, first.path), 'utf8')).toBe(`Content for ${first.path}`)
   await expect(readFile(join(repository, second.path))).rejects.toThrow()
+  expect(service.conversation(conversation.id).messages.at(-1)?.segments).toEqual([
+    { kind: 'activity', text: 'Voy a proponer dos archivos.' },
+    { kind: 'result', text: 'Cambios revisados.' },
+  ])
 })
 it('queues concurrent turns and stopping cancels approval while persisting the paused queue', async () => {
   const model = new MockLanguageModelV4({
@@ -359,7 +368,7 @@ it.each(['reject', 'hang'])('releases the run when tool cleanup will %s and allo
     } }),
   }) })
   const { service, conversation } = await setup(model)
-  service.chat.capabilities = async () => ({ tools: {}, close: async () => {
+  service.adapter.legacyBindings!.capabilities = async () => ({ tools: {}, close: async () => {
     if (failure === 'reject') throw new Error('Cleanup failed')
     await new Promise<void>(() => {})
   } })
@@ -367,7 +376,7 @@ it.each(['reject', 'hang'])('releases the run when tool cleanup will %s and allo
   await expect.poll(() => service.chat.isRunning(conversation.id), { timeout: 8000 }).toBe(false)
   expect(service.conversation(conversation.id).queuePaused).toBe(true)
   expect(service.state().agents[conversation.id]?.status).toBe('error')
-  service.chat.capabilities = undefined
+  service.adapter.legacyBindings!.capabilities = undefined
   await service.chat.start(conversation.id, 'Continue', 'openai')
   await expect.poll(() => service.chat.isRunning(conversation.id)).toBe(false)
   expect(service.conversation(conversation.id).queue).toEqual([])

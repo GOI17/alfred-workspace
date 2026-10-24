@@ -3,6 +3,10 @@ import { mkdir, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { gitFixture } from './fixtures.js'
 
+test.beforeEach(async ({ context }) => {
+  await context.addInitScript(() => localStorage.setItem('alfred.notifications.prompted', 'true'))
+})
+
 test('native selection cancellation keeps projects unchanged and remote errors stay visible', async ({
   page,
 }, testInfo) => {

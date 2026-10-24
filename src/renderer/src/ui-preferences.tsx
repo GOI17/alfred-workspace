@@ -23,10 +23,10 @@ export const useUI = () => useContext(Preferences)
 export function AppearanceSettings() {
   const { theme, language, setTheme, setLanguage, t } = useUI()
   return <div className="appearance-settings">
-    <label>{t('Appearance', 'Apariencia')}<select className="input" value={theme} onChange={(event) => setTheme(event.target.value as Theme)}>
+    <label>{t('Appearance', 'Apariencia')}<select className="input" aria-label={t('Appearance', 'Apariencia')} value={theme} onChange={(event) => setTheme(event.target.value as Theme)}>
       <option value="system">{t('System', 'Sistema')}</option><option value="light">{t('Light', 'Claro')}</option><option value="dark">{t('Dark', 'Oscuro')}</option>
     </select></label>
-    <label>{t('Language', 'Idioma')}<select className="input" value={language} onChange={(event) => setLanguage(event.target.value as Language)}><option value="es">Español</option><option value="en">English</option></select></label>
+    <label>{t('Language', 'Idioma')}<select className="input" aria-label={t('Language', 'Idioma')} value={language} onChange={(event) => setLanguage(event.target.value as Language)}><option value="es">Español</option><option value="en">English</option></select></label>
     <p className="field-note">{t('Applies to all spaces on this browser. Conversation content is not translated.', 'Se aplica a todos los espacios en este navegador. El contenido de las conversaciones no se traduce.')}</p>
   </div>
 }

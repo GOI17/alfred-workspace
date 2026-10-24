@@ -100,14 +100,14 @@ it('remembers MCP connection consent per conversation and invalidates it on sett
     }
     await save()
     const fullAccessApproval = vi.fn(async () => false)
-    const fullAccess = await service.chat.capabilities!({ id, root: directory, mode: 'full-access', signal: new AbortController().signal, approve: fullAccessApproval, note: () => {} })
+    const fullAccess = await service.adapter.legacyBindings!.capabilities!({ id, root: directory, mode: 'full-access', signal: new AbortController().signal, approve: fullAccessApproval, note: () => {} })
     await fullAccess.close()
     expect(fullAccessApproval).not.toHaveBeenCalled()
     expect(connect).toHaveBeenCalledTimes(1)
     connect.mockClear()
     const approve = vi.fn(async () => true)
     const run = async () => {
-      const result = await service.chat.capabilities!({ id, root: directory, mode: 'approval', signal: new AbortController().signal, approve, note: () => {} })
+      const result = await service.adapter.legacyBindings!.capabilities!({ id, root: directory, mode: 'approval', signal: new AbortController().signal, approve, note: () => {} })
       await result.close()
     }
     await run()

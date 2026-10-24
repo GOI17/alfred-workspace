@@ -1,4 +1,5 @@
-import { copilotHeaders, copilotToken } from './copilot.js'
+import { copilotSession } from './copilot.js'
+import { copilotModels } from './copilot-model.js'
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { apiProviderId, providerId } from '../shared/contracts.js'
@@ -11,12 +12,12 @@ export function providerModels(app: FastifyInstance, service: WorkspaceService) 
     const settings = service.store.get().providers.find((item) => item.id === provider)
     if (!settings) throw new Error('Connect this provider in Settings.')
     const storedKey = service.vault.decrypt(settings.encryptedKey)
-    const key = provider === 'copilot' ? await copilotToken(storedKey) : storedKey
-    const headers: Record<string, string> = provider === 'copilot' ? { ...copilotHeaders, Authorization: `Bearer ${key}` } : provider === 'anthropic'
+    if (provider === 'copilot') return (await copilotModels(await copilotSession(storedKey))).map(({ id, name }) => ({ id, name }))
+    const key = storedKey
+    const headers: Record<string, string> = provider === 'anthropic'
       ? { 'x-api-key': key, 'anthropic-version': '2023-06-01' }
       : provider === 'google' ? { 'x-goog-api-key': key } : { Authorization: `Bearer ${key}` }
-    const endpoint = provider === 'copilot' ? 'https://api.githubcopilot.com/models'
-      : provider === 'opencode' ? 'https://opencode.ai/zen/v1/models' : provider === 'openai' ? 'https://api.openai.com/v1/models'
+    const endpoint = provider === 'opencode' ? 'https://opencode.ai/zen/v1/models' : provider === 'openai' ? 'https://api.openai.com/v1/models'
       : provider === 'anthropic' ? 'https://api.anthropic.com/v1/models' : 'https://generativelanguage.googleapis.com/v1beta/models'
     const models: Model[] = []
     let next = ''
@@ -32,7 +33,7 @@ export function providerModels(app: FastifyInstance, service: WorkspaceService) 
         next = result.nextPageToken || ''
       } else {
         const result = z.object({ data: z.array(z.object({ id: z.string(), display_name: z.string().optional(), name: z.string().optional(), capabilities: z.object({ type: z.string().optional() }).optional() })), has_more: z.boolean().optional(), last_id: z.string().optional() }).parse(data)
-        models.push(...result.data.filter((item) => provider !== 'copilot' || item.capabilities?.type === 'chat').filter((item) => provider !== 'openai' || /^(gpt-|chatgpt-|o[134](?:-|$))/.test(item.id) && !/(audio|realtime|transcribe|tts|image)/.test(item.id)).map((item) => ({ id: item.id, name: item.display_name || item.name || item.id })))
+        models.push(...result.data.filter((item) => provider !== 'openai' || /^(gpt-|chatgpt-|o[134](?:-|$))/.test(item.id) && !/(audio|realtime|transcribe|tts|image)/.test(item.id)).map((item) => ({ id: item.id, name: item.display_name || item.name || item.id })))
         next = result.has_more ? result.last_id || '' : ''
       }
       if (!next) break

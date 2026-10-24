@@ -5,17 +5,29 @@ import type { WorkspaceService } from './service.js'
 
 const clientId = 'Iv1.b507a08c87ecfe98'
 export const copilotHeaders = {
-  'Editor-Version': 'vscode/1.95.0',
-  'Editor-Plugin-Version': 'copilot-chat/0.22.0',
+  'User-Agent': 'GitHubCopilotChat/0.35.0',
+  'Editor-Version': 'vscode/1.107.0',
+  'Editor-Plugin-Version': 'copilot-chat/0.35.0',
   'Copilot-Integration-Id': 'vscode-chat',
+  'X-GitHub-Api-Version': '2026-06-01',
 }
-export async function copilotToken(githubToken: string): Promise<string> {
+export class CopilotError extends Error {}
+export type CopilotSession = { token: string; baseURL: string }
+export async function copilotSession(githubToken: string): Promise<CopilotSession> {
   const response = await fetch('https://api.github.com/copilot_internal/v2/token', {
     headers: { ...copilotHeaders, Authorization: `Bearer ${githubToken}`, Accept: 'application/json' },
     signal: AbortSignal.timeout(15000),
   })
-  if (!response.ok) throw new Error('Could not authorize Copilot. Check your GitHub subscription and organization policy.')
-  return z.object({ token: z.string().min(1) }).parse(await response.json()).token
+  if (!response.ok) throw new CopilotError('Could not authorize Copilot. Reconnect GitHub Copilot in Settings.')
+  const data = z.object({ token: z.string().min(1), endpoints: z.object({ api: z.string().optional() }).optional() }).parse(await response.json())
+  const proxy = data.token.match(/(?:^|;)proxy-ep=([^;]+)/)?.[1]
+  const baseURL = new URL(data.endpoints?.api || (proxy ? `https://${proxy.replace(/^proxy\./, 'api.')}` : 'https://api.individual.githubcopilot.com'))
+  if (baseURL.protocol !== 'https:' || !baseURL.hostname.endsWith('.githubcopilot.com') || baseURL.username || baseURL.password || baseURL.port || baseURL.search || baseURL.hash)
+    throw new CopilotError('Copilot returned an invalid service address. Reconnect GitHub Copilot in Settings.')
+  return { token: data.token, baseURL: baseURL.href.replace(/\/+$/, '') }
+}
+export async function copilotToken(githubToken: string): Promise<string> {
+  return (await copilotSession(githubToken)).token
 }
 export function copilotRoutes(app: FastifyInstance, service: WorkspaceService) {
   const pending = new Map<string, { code: string; expires: number; next: number; interval: number; busy: boolean }>()

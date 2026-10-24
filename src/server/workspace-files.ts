@@ -83,7 +83,7 @@ export function workspaceTools(root: string, approve: (path: string, content: st
         checkStopped()
         if (files.reduce((size, file) => size + Buffer.byteLength(file.content, 'utf8'), 0) > 500_000)
           throw new Error('The batch cannot exceed 500 KB.')
-        const prepared = []
+        const prepared: { path: string; content: string; target: string; before: string | undefined }[] = []
         const targets = new Set<string>()
         for (const file of files) {
           if (file.content.includes('\0') || Buffer.byteLength(file.content, 'utf8') > 100_000)
